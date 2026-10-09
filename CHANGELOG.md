@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-09
+
+### Added
+- **Bokeh** laboratory:
+  - Defocus kernels built by forward-splatting a dense pupil grid through the iris polygon (blade count and roundness, stop-down), mechanical vignetting (cat's eye), central obstruction and apodisation.
+  - Spherical aberration as a cubic transverse ray error with the correct sign flip between foreground and background (under-corrected → smooth background, over-corrected → soap bubbles), caustic folding, and asphere "onion-ring" ripple.
+  - Night scene with field-dependent kernels and energy-conserving brightness, a four-kernel close-up, and the measured intensity profile across the disk.
+
+### Changed
+- Readout panels give values more width, so long values wrap less.
+
 ## [0.8.0] - 2026-10-09
 
 ### Added
@@ -101,7 +112,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.5.0...v0.6.0
