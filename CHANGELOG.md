@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-10-09
+
+### Added
+- **Vignetting & relative illumination** laboratory:
+  - Natural falloff cosⁿθ with adjustable exponent (pupil-aberration effects).
+  - Mechanical vignetting from the exact three-circle overlap of the entrance pupil with the projected front and rear rims, with pupil cross-sections at five field heights.
+  - Pixel vignetting from the chief-ray angle (exit-pupil distance) against microlens acceptance.
+  - Flat-field render with gradient-normalised ⅓-EV contours, component falloff curves in EV, and a live relative-illumination calculation.
+
 ## [0.16.0] - 2026-10-09
 
 ### Added
@@ -177,7 +186,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.13.0...v0.14.0
