@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-10-09
+
+### Added
+- **Rolling shutter & time** laboratory:
+  - Propeller rendered with per-row capture times and 10-sample exposure integration, rolling vs global shutter.
+  - Live wheel playback at the chosen frame rate and shutter angle with motion-blur integration; wagon-wheel aliasing chart of apparent vs true speed.
+  - Flicker banding from 100/120 Hz mains and 400 Hz PWM LEDs, integrated per row over the exposure window, with a row-brightness profile.
+
 ## [0.15.0] - 2026-10-09
 
 ### Added
@@ -169,7 +177,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.12.0...v0.13.0

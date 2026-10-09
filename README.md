@@ -12,7 +12,7 @@ Nothing is a canned animation. Lenses are ray traced, diffraction is Fourier tra
 
 ## Status
 
-Version **0.15.0**. See [CHANGELOG.md](CHANGELOG.md).
+Version **0.16.0**. See [CHANGELOG.md](CHANGELOG.md).
 
 | Laboratory | Group | Status |
 |---|---|---|
@@ -33,7 +33,7 @@ Version **0.15.0**. See [CHANGELOG.md](CHANGELOG.md).
 | Flare, ghosts & coatings | Light, sensor & time | ✅ |
 | Aliasing, moiré & Bayer | Light, sensor & time | ✅ |
 | Noise & exposure | Light, sensor & time | ✅ |
-| Rolling shutter & time | Light, sensor & time | planned |
+| Rolling shutter & time | Light, sensor & time | ✅ |
 | Atmospheric seeing & AO | Astronomy & space | ✅ |
 | Space telescopes | Astronomy & space | ✅ |
 | Gravitational lensing | Astronomy & space | ✅ |
