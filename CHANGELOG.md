@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-10-09
+
+### Added
+- **Perspective & distortion** laboratory:
+  - Ray-cast portrait scene (head with nose, eyes and ears; shoulders; pillars at 4–16 m; back wall) with a dolly-zoom mode that holds the face size constant, plus a top-view diagram of camera, field of view and scene.
+  - Readouts of nose-vs-ear magnification and background scale, showing that perspective depends only on distance.
+  - Brown–Conrady distortion (k₁–k₃, p₁, p₂) with barrel, pincushion and moustache presets: distorted-grid render, radial distortion curve and SMIA TV distortion.
+
 ## [0.17.0] - 2026-10-09
 
 ### Added
@@ -186,7 +194,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.14.0...v0.15.0

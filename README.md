@@ -12,7 +12,7 @@ Nothing is a canned animation. Lenses are ray traced, diffraction is Fourier tra
 
 ## Status
 
-Version **0.17.0**. See [CHANGELOG.md](CHANGELOG.md).
+Version **0.18.0**. See [CHANGELOG.md](CHANGELOG.md).
 
 | Laboratory | Group | Status |
 |---|---|---|
@@ -22,7 +22,7 @@ Version **0.17.0**. See [CHANGELOG.md](CHANGELOG.md).
 | Depth of field | Geometric optics | ✅ |
 | Sensor size & equivalence | Geometric optics | ✅ |
 | Fisheye vs rectilinear | Geometric optics | ✅ |
-| Perspective & distortion | Geometric optics | planned |
+| Perspective & distortion | Geometric optics | ✅ |
 | Tilt–shift & Scheimpflug | Geometric optics | planned |
 | Vignetting & relative illumination | Geometric optics | ✅ |
 | Diffraction & the PSF | Wave optics | ✅ |
