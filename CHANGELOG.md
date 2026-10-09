@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-09
+
+### Added
+- **Wavefront aberrations** laboratory:
+  - Sliders for 11 Noll Zernike modes and 7 presets, including Hubble's 1990 spherical aberration.
+  - Wavefront map, double-pass Fizeau interferogram with adjustable tilt, PSF, and a 5-step through-focus series.
+  - Exact FFT Strehl ratio compared with the Maréchal approximation, plotted as Strehl vs RMS for the current mode mix.
+  - JWST segment-phasing simulation (deployed → stacked → coarse → fine phased) with per-segment piston and tilt.
+- `segmentMap()` in the pupil library: per-pixel segment membership for JWST and Keck.
+- `scripts/release.sh`: bumps the version, commits, tags, pushes and publishes a GitHub release from the CHANGELOG section.
+
 ## [0.3.0] - 2026-10-09
 
 ### Added
@@ -50,7 +61,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/iiogurt/Optica_Viva/releases/tag/v0.1.0

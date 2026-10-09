@@ -146,6 +146,21 @@ export const TELESCOPES = {
   })(),
 };
 
+// Segment membership map for segmented telescopes: per-pixel segment index (−1 = none)
+// plus per-segment centres in normalised pupil units (circumradius = 1).
+export function segmentMap(type, n, Dpx) {
+  const geo = { jwst: { flat: 1.32, gap: 0.007, rings: 2, R: 3.35 }, keck: { flat: 1.8, gap: 0.003, rings: 3, R: 5.6 } }[type];
+  const s = geo.flat + geo.gap;
+  const centers = hexCenters(s, geo.rings, (x, y, d) => d > 0);
+  const idx = new Int16Array(n * n).fill(-1);
+  const c = n / 2, scale = (2 * geo.R) / Dpx;
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+    const x = (i - c) * scale, y = -(j - c) * scale;
+    for (let k = 0; k < centers.length; k++) if (hexInside(x - centers[k][0], y - centers[k][1], geo.flat / 2 + 0.01)) { idx[j * n + i] = k; break; }
+  }
+  return { idx, centers: centers.map(([x, y]) => [x / geo.R, y / geo.R]), segRadius: geo.flat / 2 / geo.R };
+}
+
 // Generic camera-lens / laboratory apertures in normalised units (circumradius 1).
 export function apertureFn(spec) {
   const t = spec.type;

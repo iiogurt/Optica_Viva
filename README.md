@@ -12,7 +12,7 @@ Nothing is a canned animation. Lenses are ray traced, diffraction is Fourier tra
 
 ## Status
 
-Version **0.3.0**. See [CHANGELOG.md](CHANGELOG.md).
+Version **0.4.0**. See [CHANGELOG.md](CHANGELOG.md).
 
 | Laboratory | Group | Status |
 |---|---|---|
@@ -26,7 +26,7 @@ Version **0.3.0**. See [CHANGELOG.md](CHANGELOG.md).
 | Tilt–shift & Scheimpflug | Geometric optics | planned |
 | Vignetting & relative illumination | Geometric optics | planned |
 | Diffraction & the PSF | Wave optics | ✅ |
-| Wavefront aberrations (Zernike) | Wave optics | planned |
+| Wavefront aberrations (Zernike) | Wave optics | ✅ |
 | Sharpness: MTF & resolution | Wave optics | planned |
 | Chromatic aberration | Wave optics | planned |
 | Bokeh | Wave optics | planned |
@@ -77,6 +77,7 @@ js/lib/               numerical core
   plot.js             canvas charting
   ui.js, page.js      DOM, controls, KaTeX helpers, page scaffolding
 js/modules/           one file per laboratory
+scripts/release.sh    version bump, tag, push and GitHub release
 vendor/katex/         KaTeX 0.16.11 (MIT)
 ```
 
@@ -85,6 +86,7 @@ vendor/katex/         KaTeX 0.16.11 (MIT)
 - The project follows [Semantic Versioning](https://semver.org/). Before 1.0.0, each new laboratory is a **minor** release and fixes are **patch** releases.
 - Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `refactor:` …).
 - Every change updates [CHANGELOG.md](CHANGELOG.md), in [Keep a Changelog](https://keepachangelog.com/) format, and this README where relevant. Releases are tagged `vX.Y.Z`.
+- To release: add the `## [X.Y.Z] - date` section to the changelog, then run `scripts/release.sh X.Y.Z "feat: …"`.
 
 ## Third-party
 
