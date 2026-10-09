@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-09
+
+### Added
+- **Sensor size & equivalence** laboratory:
+  - "Same lens" overlay of ten formats inside the reference lens's real image circle, showing where larger formats vignette.
+  - "Same framing" view of the shared entrance pupil.
+  - Equivalence table for all formats: equivalent f, N and ISO, field of view, depth of field, pixel pitch, diffraction-limited aperture and light gathered in EV.
+  - Field of view vs focal length per format, and shot-noise SNR vs sensor area.
+  - Live crop-factor equivalence calculation.
+
 ## [0.5.0] - 2026-10-09
 
 ### Added
@@ -73,7 +83,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.2.0...v0.3.0

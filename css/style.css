@@ -217,3 +217,11 @@ button.btn:hover { border-color: var(--accent); }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .cat-list { grid-template-columns: 1fr; }
 }
+
+/* Equivalence table */
+.eqtab { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+.eqtab th { text-align: left; color: var(--fg-dim); font-weight: 600; font-size: 11px; letter-spacing: .04em; padding: 6px 6px; border-bottom: 1px solid var(--line-2); }
+.eqtab td { padding: 5px 6px; border-bottom: 1px solid var(--line); font-family: var(--font-mono); }
+.eqtab td:first-child { font-family: var(--font-sans); }
+.eqtab td i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 8px; }
+.eqtab tr.sel td { background: rgba(255, 181, 71, 0.08); color: #fff; }
