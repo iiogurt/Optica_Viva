@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-09
+
+### Added
+- **Fisheye vs rectilinear** laboratory:
+  - Per-pixel inverse ray casting into a 3-D hall (windows, chequered floor, latitude–longitude globes) with 2×2 anti-aliasing.
+  - Seven projections: rectilinear, stereographic, equidistant, equisolid, orthographic, Panini and equirectangular.
+  - Exact Tissot indicatrices (mapped 10° circles), coloured by local area scale.
+  - Mapping-function chart r(θ) against the sensor half-diagonal; diagonal FOV for each projection; live scale factors h and k.
+
 ## [0.6.0] - 2026-10-09
 
 ### Added
@@ -83,7 +92,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.3.0...v0.4.0
