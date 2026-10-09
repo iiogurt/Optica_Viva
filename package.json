@@ -1,0 +1,14 @@
+{
+  "name": "optica-viva",
+  "version": "0.1.0",
+  "description": "Interactive, physically exact simulations of optical phenomena in photography, cinematography and space telescopes.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iiogurt/Optica_Viva.git"
+  }
+}

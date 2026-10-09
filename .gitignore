@@ -1,0 +1,14 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Node (no dependencies are needed at runtime)
+node_modules/
+npm-debug.log*
+
+# Local scratch / screenshots
+*.log
+/tmp/
