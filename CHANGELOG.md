@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-09
+
+### Added
+- **Flare, ghosts & coatings** laboratory:
+  - Paraxial ghost tracing (Hullin et al. 2011) through the real Double-Gauss and Cooke prescriptions: every two-reflection path as a 2×2 system with signed media, iris-shaped ghost footprints, intensity R_iR_j(r_EP/ρ_g)², and an independent trace at each of 8 wavelengths for coloured fringes.
+  - Draggable sun with a windowed polychromatic diffraction starburst of the iris, plus veiling glare.
+  - Readouts: lens transmission, total ghost energy and brightest ghost pair.
+- `js/lib/thinfilm.js`: Fresnel equations and characteristic-matrix multilayer reflectance (s and p, oblique incidence); coating designs: uncoated, MgF₂ quarter-wave, QHQ three-layer, and a 30-layer quintic graded-index (moth-eye) profile.
+- Coating reflectance spectra with the residual reflection tint, and Fresnel Rs/Rp vs angle with Brewster's angle.
+
 ## [0.9.0] - 2026-10-09
 
 ### Added
@@ -112,7 +122,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.6.0...v0.7.0

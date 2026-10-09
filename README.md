@@ -12,7 +12,7 @@ Nothing is a canned animation. Lenses are ray traced, diffraction is Fourier tra
 
 ## Status
 
-Version **0.9.0**. See [CHANGELOG.md](CHANGELOG.md).
+Version **0.10.0**. See [CHANGELOG.md](CHANGELOG.md).
 
 | Laboratory | Group | Status |
 |---|---|---|
@@ -30,7 +30,7 @@ Version **0.9.0**. See [CHANGELOG.md](CHANGELOG.md).
 | Sharpness: MTF & resolution | Wave optics | ✅ |
 | Chromatic aberration | Wave optics | ✅ |
 | Bokeh | Wave optics | ✅ |
-| Flare, ghosts & coatings | Light, sensor & time | planned |
+| Flare, ghosts & coatings | Light, sensor & time | ✅ |
 | Aliasing, moiré & Bayer | Light, sensor & time | planned |
 | Noise & exposure | Light, sensor & time | planned |
 | Rolling shutter & time | Light, sensor & time | planned |
@@ -57,6 +57,8 @@ Then open <http://localhost:8000>. All dependencies are vendored, so it works of
 | First-order optics | y–nu paraxial matrices: EFL, BFL, entrance and exit pupils, Petzval sum |
 | Wavefront | Optical path difference against the exit-pupil reference sphere |
 | Diffraction | Fraunhofer integral by 2-D radix-2 FFT of the anti-aliased pupil function, with an independent FFT per wavelength for polychromatic PSFs |
+| Thin films | Characteristic-matrix (transfer-matrix) method, s and p polarisation, oblique incidence; Fresnel equations |
+| Lens flare | Paraxial ghost tracing of all two-reflection paths, per wavelength |
 | Colour | CIE 1931 2° colour-matching functions (Wyman–Sloan–Shirley fit) → linear sRGB → sRGB transfer curve |
 
 Lens prescriptions: plano-convex singlet (both orientations), a BK7/F2 cemented achromat designed for this project (spherical aberration corrected, F and C share a focus), the Cooke triplet, and the Double-Gauss.
@@ -72,6 +74,7 @@ js/lib/               numerical core
   color.js            colour-matching functions, sRGB, colormaps
   glass.js            Sellmeier glass catalogue, Abbe number, partial dispersion
   raytrace.js         exact ray tracer, paraxial analysis, ray aiming, OPD
+  thinfilm.js         Fresnel equations, multilayer coatings (transfer matrix)
   pupil.js            apertures (incl. Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel J1
   sensors.js          sensor and film formats
   plot.js             canvas charting
