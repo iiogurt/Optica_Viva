@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-10-09
+
+### Added
+- **Noise & exposure** laboratory:
+  - Photon-transfer model from scene EV (meter constant K = 12.5) through the camera equation to photoelectrons per pixel.
+  - Poisson shot noise, two-stage read noise (pre- and post-amplifier, giving ISO invariance), dark current, PRNU, full-well and ISO-dependent clipping, and 14-bit quantisation.
+  - 100 % crop of a ½-stop step wedge and gradient, optionally brightened to the metered level.
+  - Photon-transfer curve with shot, read and PRNU limits; dynamic range vs ISO for five formats; SNR, exposure offset and DR readouts.
+
 ## [0.14.0] - 2026-10-09
 
 ### Added
@@ -160,7 +169,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.11.0...v0.12.0
