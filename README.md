@@ -12,7 +12,7 @@ Nothing is a canned animation. Lenses are ray traced, diffraction is Fourier tra
 
 ## Status
 
-Version **0.10.0**. See [CHANGELOG.md](CHANGELOG.md).
+Version **0.11.0**. See [CHANGELOG.md](CHANGELOG.md).
 
 | Laboratory | Group | Status |
 |---|---|---|
@@ -34,7 +34,7 @@ Version **0.10.0**. See [CHANGELOG.md](CHANGELOG.md).
 | Aliasing, moiré & Bayer | Light, sensor & time | planned |
 | Noise & exposure | Light, sensor & time | planned |
 | Rolling shutter & time | Light, sensor & time | planned |
-| Atmospheric seeing & AO | Astronomy & space | planned |
+| Atmospheric seeing & AO | Astronomy & space | ✅ |
 | Space telescopes | Astronomy & space | planned |
 | Gravitational lensing | Astronomy & space | planned |
 
@@ -59,6 +59,7 @@ Then open <http://localhost:8000>. All dependencies are vendored, so it works of
 | Diffraction | Fraunhofer integral by 2-D radix-2 FFT of the anti-aliased pupil function, with an independent FFT per wavelength for polychromatic PSFs |
 | Thin films | Characteristic-matrix (transfer-matrix) method, s and p polarisation, oblique incidence; Fresnel equations |
 | Lens flare | Paraxial ghost tracing of all two-reflection paths, per wavelength |
+| Turbulence | von Kármán phase screens (FFT + Lane subharmonics), frozen flow, DM fitting and servo-lag errors |
 | Colour | CIE 1931 2° colour-matching functions (Wyman–Sloan–Shirley fit) → linear sRGB → sRGB transfer curve |
 
 Lens prescriptions: plano-convex singlet (both orientations), a BK7/F2 cemented achromat designed for this project (spherical aberration corrected, F and C share a focus), the Cooke triplet, and the Double-Gauss.

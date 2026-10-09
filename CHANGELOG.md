@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-09
+
+### Added
+- **Atmospheric seeing & AO** laboratory:
+  - von Kármán phase screens (L₀ = 25 m) by the FFT method plus three levels of Lane subharmonics, 8D wide, cached per aperture and rescaled analytically with r₀.
+  - Taylor frozen-flow animation; short-exposure speckle, accumulated long-exposure and diffraction-limited PSFs.
+  - Correction modes: none, tip-tilt, and a deformable mirror with an (n+1)² actuator grid and bilinear influence functions, with servo lag.
+  - Readouts: r₀(λ), D/r₀, seeing FWHM, τ₀, Greenwood frequency, isoplanatic angle, AO error budget (fitting + lag), and the measured long-exposure Strehl.
+
 ## [0.10.0] - 2026-10-09
 
 ### Added
@@ -122,7 +131,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.7.0...v0.8.0

@@ -1,6 +1,6 @@
 {
   "name": "optica-viva",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Interactive, physically exact simulations of optical phenomena in photography, cinematography and space telescopes.",
   "private": true,
   "type": "module",
