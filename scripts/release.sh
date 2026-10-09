@@ -5,6 +5,8 @@
 set -euo pipefail
 V="$1"; MSG="$2"
 cd "$(dirname "$0")/.."
+# syntax gate: every JS module must parse
+for f in js/*.js js/lib/*.js js/modules/*.js; do node --check "$f" || { echo "syntax error in $f" >&2; exit 1; }; done
 grep -q "^## \[$V\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$V] section" >&2; exit 1; }
 sed -i -E "s/\"version\": \"[0-9.]+\"/\"version\": \"$V\"/" package.json
 sed -i -E "s/Version \*\*[0-9.]+\*\*/Version **$V**/" README.md

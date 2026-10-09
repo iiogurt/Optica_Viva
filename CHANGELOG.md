@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-10-09
+
+### Added
+- **Gravitational lensing** laboratory:
+  - Inverse ray-shooting through point-mass, SIS and SIE (Kormann et al. 1994) lenses with external shear; a procedural spiral source that can be dragged; optional de Vaucouleurs lens-galaxy light.
+  - Critical curves by marching squares on det A, with the caustics mapped into the source plane.
+  - Flat ΛCDM angular-diameter distances, physical Einstein radius, enclosed mass, SIS velocity dispersion, and total magnification from the area ratio.
+
+### Changed
+- `scripts/release.sh` now refuses to release if any JavaScript file fails `node --check`.
+
 ## [0.12.0] - 2026-10-09
 
 ### Added
@@ -140,7 +151,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.9.0...v0.10.0
