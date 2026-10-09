@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-10-09
+
+### Added
+- **Space telescopes** laboratory:
+  - Diffraction limit vs wavelength for Hubble, JWST, Roman, Euclid, Spitzer, Keck+AO and ELT+AO against ground seeing, with the Nyquist-sampling wavelength of 8 real cameras.
+  - Planck radiance (why IR telescopes must be cold) and collecting-area comparison.
+  - Lyot coronagraph simulation (pupil → focal mask → Lyot stop → image, by FFT): clear or obstructed pupil, adjustable mask and Lyot stop, a planet at any separation and contrast, and a low-order wavefront-error speckle floor.
+  - Readouts for throughput, residual starlight, and planet detectability; azimuthal contrast curves.
+
 ## [0.11.0] - 2026-10-09
 
 ### Added
@@ -131,7 +140,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.8.0...v0.9.0

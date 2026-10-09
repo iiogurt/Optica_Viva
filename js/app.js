@@ -2,7 +2,7 @@
 import { h } from './lib/ui.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing']);
+export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'telescope']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
