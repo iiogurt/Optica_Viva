@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-10-09
+
+### Added
+- **Tilt–shift & Scheimpflug** laboratory:
+  - Exact tilted-thin-lens imaging (refocused so the sensor centre stays conjugate to the chosen distance). The traced plane of focus reproduces the hinge rule J = f/sin α numerically.
+  - Ray-cast toy town (2-D DDA over a 12 m cell grid) with per-pixel defocus through the tilted lens and a blur-stack composite: the reverse-tilt miniature effect.
+  - Side view at true image-space scale, showing the plane of focus, the DoF wedge (conjugates of the sensor ± Nc) and the ground.
+  - Shift mode: level camera with sensor rise vs pitched camera (keystoning) on a façade, with the required image circle.
+
 ## [0.18.0] - 2026-10-09
 
 ### Added
@@ -194,7 +203,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.15.0...v0.16.0
