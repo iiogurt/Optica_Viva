@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-10-09
+
+### Added
+- **Aliasing, moiré & Bayer** laboratory:
+  - Four achromatic test scenes (zone plate, woven fabric, tilted stripes, distant bricks) with adjustable detail.
+  - Sensor model integrating over the pixel aperture (fill factor) of a four-spot OLPF-blurred scene.
+  - RGGB mosaicking with bilinear or Malvar–He–Cutler gradient-corrected demosaicing; measured false-colour (chroma) error.
+  - 1-D spectral-folding chart with the pixel × OLPF pre-filter MTF and the luma and R/B Nyquist limits.
+
 ## [0.13.0] - 2026-10-09
 
 ### Added
@@ -151,7 +160,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.10.0...v0.11.0
