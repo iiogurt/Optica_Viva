@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-09
+
+### Added
+- **Chromatic aberration** laboratory:
+  - Sellmeier n(λ) curves, Abbe diagram and partial-dispersion map with the Schott normal line; anomalous glasses are highlighted.
+  - Thin-lens focal-shift curves for a singlet, an achromat (solved from Abbe numbers) and an apochromat (3×3 solve at C, F and g), drawn against the diffraction depth of focus.
+  - LoCA render: a backlit-branch scene convolved per wavelength with the exact defocus OTF in Fourier space (15 λ, CIE-weighted), plus per-channel edge-spread functions.
+  - LaCA render: wavelength-dependent magnification of a test grid, scaled by the glass dispersion.
+
+### Fixed
+- Linear chart axes can now be reversed (needed for Abbe diagrams).
+
 ## [0.4.0] - 2026-10-09
 
 ### Added
@@ -61,7 +73,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.1.0...v0.2.0

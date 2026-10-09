@@ -13,9 +13,10 @@ function ticks(ax, target) {
     }
     return out;
   }
-  const st = ax.step || niceStep(ax.max - ax.min, target);
+  const lo = Math.min(ax.min, ax.max), hi = Math.max(ax.min, ax.max); // reversed axes allowed
+  const st = ax.step || niceStep(hi - lo, target);
   const out = [];
-  for (let v = Math.ceil(ax.min / st - 1e-9) * st; v <= ax.max + st * 1e-9; v += st) out.push({ v: Math.abs(v) < st * 1e-9 ? 0 : v, major: true });
+  for (let v = Math.ceil(lo / st - 1e-9) * st; v <= hi + st * 1e-9; v += st) out.push({ v: Math.abs(v) < st * 1e-9 ? 0 : v, major: true });
   return out;
 }
 const tickLabel = (v, ax) => ax.fmt ? ax.fmt(v) : Math.abs(v) >= 1e4 || (Math.abs(v) < 1e-2 && v !== 0) ? v.toExponential(0) : String(+v.toPrecision(4));

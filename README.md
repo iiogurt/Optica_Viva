@@ -12,7 +12,7 @@ Nothing is a canned animation. Lenses are ray traced, diffraction is Fourier tra
 
 ## Status
 
-Version **0.4.0**. See [CHANGELOG.md](CHANGELOG.md).
+Version **0.5.0**. See [CHANGELOG.md](CHANGELOG.md).
 
 | Laboratory | Group | Status |
 |---|---|---|
@@ -28,7 +28,7 @@ Version **0.4.0**. See [CHANGELOG.md](CHANGELOG.md).
 | Diffraction & the PSF | Wave optics | ✅ |
 | Wavefront aberrations (Zernike) | Wave optics | ✅ |
 | Sharpness: MTF & resolution | Wave optics | planned |
-| Chromatic aberration | Wave optics | planned |
+| Chromatic aberration | Wave optics | ✅ |
 | Bokeh | Wave optics | planned |
 | Flare, ghosts & coatings | Light, sensor & time | planned |
 | Aliasing, moiré & Bayer | Light, sensor & time | planned |
