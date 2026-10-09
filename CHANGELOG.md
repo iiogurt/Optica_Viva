@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-09
+
+### Added
+- **Diffraction & the PSF** laboratory:
+  - 13 apertures: circular, 5/6/7/9-blade irises (adjustable blade count and roundness), Newtonian, mirror lens, Hubble, JWST, Keck, ELT, double slit and square.
+  - 512² FFT PSF with log display, polychromatic white light (13 λ, CIE-weighted) and near-IR false colour.
+  - Zernike defocus, which triggers a separate FFT per wavelength.
+  - Azimuthal profile compared with the analytic annular Airy function, encircled energy compared with 1 − J₀² − J₁², Strehl ratio, angular scale in mas for telescopes and µm for cameras.
+
+### Fixed
+- The 0.2.0 changelog wrongly listed the sensor table as new; it shipped in 0.1.0.
+
 ## [0.2.0] - 2026-10-09
 
 ### Added
@@ -15,7 +27,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   - Cards and scenery convolved with a true uniform-disk kernel by Vogel-spiral sampling, so distant lights render as bokeh.
   - Log-distance DoF diagram with hyperfocal marker, and a blur-diameter vs distance chart with CoC and Airy floors.
   - Live hyperfocal and near/far-limit calculation; four circle-of-confusion criteria.
-- Shared sensor/film format table (`js/lib/sensors.js`), from phone sensors to 4×5″ and IMAX.
 
 ### Changed
 - Ray-tracing live calculation split onto shorter lines so it fits the side panel.
@@ -39,6 +50,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/iiogurt/Optica_Viva/releases/tag/v0.1.0
