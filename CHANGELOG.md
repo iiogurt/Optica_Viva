@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-09
+
+### Added
+- **Sharpness: MTF & resolution** laboratory:
+  - Optics OTF computed numerically (pupil → PSF → OTF) with defocus W₀₂₀ and spherical aberration W₀₄₀, keeping its sign so contrast reversal shows; polychromatic V(λ)-weighted averaging.
+  - Cascade with the pixel-aperture sinc (fill factor) and a four-spot birefringent OLPF; Nyquist band, MTF50, MTF at Nyquist and an aliasing-risk readout.
+  - 72-spoke Siemens star filtered in Fourier space by the 2-D system transfer function, shown before and after pixel sampling, with the Nyquist radius marked.
+  - Two-point (Rayleigh/Sparrow) resolution profile with live dip percentage.
+
 ## [0.7.0] - 2026-10-09
 
 ### Added
@@ -92,7 +101,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.4.0...v0.5.0
