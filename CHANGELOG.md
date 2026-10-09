@@ -6,6 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-09
+
+### Added
+- **Depth of field** laboratory:
+  - Simulated photograph rendered from the real camera geometry (sensor format, focal length, shift-lens horizon).
+  - Ground texture attenuated by the exact defocus OTF 2J₁(πcν)/(πcν), including contrast reversal, and by the diffraction MTF.
+  - Cards and scenery convolved with a true uniform-disk kernel by Vogel-spiral sampling, so distant lights render as bokeh.
+  - Log-distance DoF diagram with hyperfocal marker, and a blur-diameter vs distance chart with CoC and Airy floors.
+  - Live hyperfocal and near/far-limit calculation; four circle-of-confusion criteria.
+- Shared sensor/film format table (`js/lib/sensors.js`), from phone sensors to 4×5″ and IMAX.
+
+### Changed
+- Ray-tracing live calculation split onto shorter lines so it fits the side panel.
+- Theory sections with two columns now use the full page width.
+
 ## [0.1.0] - 2026-10-09
 
 ### Added
@@ -24,5 +39,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/iiogurt/Optica_Viva/releases/tag/v0.1.0
