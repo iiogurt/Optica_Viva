@@ -1,5 +1,6 @@
 import { h } from '../lib/ui.js';
 import { MODULES, READY } from '../app.js';
+import { COUNT } from '../lib/phenomena.js';
 import { index } from '../lib/glass.js';
 import { wavelengthRGB } from '../lib/color.js';
 
@@ -124,8 +125,9 @@ export default function mount(root) {
   const groups = [...new Set(MODULES.filter((m) => m.blurb).map((m) => m.group))];
   root.append(h('section.block', { style: { marginTop: '38px' } },
     h('div.stat-row', {},
-      h('div.stat', {}, h('b', {}, `${[...READY].filter((id) => id !== 'home').length} / ${MODULES.length - 1}`), h('span', {}, 'laboratories live (the rest are in progress)')),
+      h('div.stat', {}, h('b', {}, `${[...READY].filter((id) => id !== 'home').length} / ${MODULES.length - 1}`), h('span', {}, READY.size >= MODULES.length ? 'interactive laboratories and reference pages' : 'laboratories live (the rest are in progress)')),
       
+      h('div.stat', {}, h('b', {}, String(COUNT)), h('span', {}, 'catalogued phenomena with governing equations')),
       h('div.stat', {}, h('b', {}, '12'), h('span', {}, 'real glasses (Sellmeier), 5 real lens prescriptions')),
       h('div.stat', {}, h('b', {}, '0'), h('span', {}, 'precomputed images: everything is simulated live')),
     )));

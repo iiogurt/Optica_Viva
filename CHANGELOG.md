@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-09
+
+All planned laboratories are complete; this release marks the first stable version.
+
+### Added
+- **Catalogue of phenomena**: 148 optical phenomena and imaging challenges in 13 groups (geometrical image formation, monochromatic and chromatic aberrations, diffraction, radiometry, stray light, polarisation, sensors and noise, time and motion, atmosphere, space telescopes, lens design, rendering). Each has a description, governing equation, domain tags and a link to its laboratory, plus live search, domain filters and an "only simulated" filter.
+- `js/lib/phenomena.js` catalogue data module.
+
+### Changed
+- The Introduction page now shows the catalogue size, and the laboratory counter recognises completion.
+
 ## [0.19.0] - 2026-10-09
 
 ### Added
@@ -203,7 +214,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.19.0...v1.0.0
 [0.19.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.16.0...v0.17.0

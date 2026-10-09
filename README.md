@@ -12,13 +12,13 @@ Nothing is a canned animation. Lenses are ray traced, diffraction is Fourier tra
 
 ## Status
 
-Version **0.19.0**. See [CHANGELOG.md](CHANGELOG.md).
+Version **1.0.0**. All 20 laboratories, the foundations page and the 148-entry catalogue are complete. See [CHANGELOG.md](CHANGELOG.md).
 
 | Laboratory | Group | Status |
 |---|---|---|
 | Physical foundations | Overview | ✅ |
 | Real-lens ray tracing | Geometric optics | ✅ |
-| Catalogue of phenomena | Overview | planned |
+| Catalogue of phenomena (148 entries) | Overview | ✅ |
 | Depth of field | Geometric optics | ✅ |
 | Sensor size & equivalence | Geometric optics | ✅ |
 | Fisheye vs rectilinear | Geometric optics | ✅ |
@@ -59,6 +59,8 @@ Then open <http://localhost:8000>. All dependencies are vendored, so it works of
 | Diffraction | Fraunhofer integral by 2-D radix-2 FFT of the anti-aliased pupil function, with an independent FFT per wavelength for polychromatic PSFs |
 | Thin films | Characteristic-matrix (transfer-matrix) method, s and p polarisation, oblique incidence; Fresnel equations |
 | Lens flare | Paraxial ghost tracing of all two-reflection paths, per wavelength |
+| Gravitational lensing | Inverse ray-shooting through point, SIS and SIE+shear lenses; marching-squares critical curves; flat ΛCDM distances |
+| Sensor | Poisson photon statistics, two-stage read noise, PRNU, dark current, full-well and quantisation; Bayer mosaics with Malvar–He–Cutler demosaicing |
 | Turbulence | von Kármán phase screens (FFT + Lane subharmonics), frozen flow, DM fitting and servo-lag errors |
 | Colour | CIE 1931 2° colour-matching functions (Wyman–Sloan–Shirley fit) → linear sRGB → sRGB transfer curve |
 
@@ -78,6 +80,7 @@ js/lib/               numerical core
   thinfilm.js         Fresnel equations, multilayer coatings (transfer matrix)
   pupil.js            apertures (incl. Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel J1
   sensors.js          sensor and film formats
+  phenomena.js        catalogue data (148 phenomena, equations, domains, links)
   plot.js             canvas charting
   ui.js, page.js      DOM, controls, KaTeX helpers, page scaffolding
 js/modules/           one file per laboratory
