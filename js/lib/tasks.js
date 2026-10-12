@@ -4,7 +4,7 @@
 import { rasterAperture, psf, rescale, zernikeWavefront, rmsWavefront, zernike, segmentMap } from './pupil.js';
 import { spectralBasis, wavelengthRGB } from './color.js';
 import { fft2d } from './fft.js';
-import { paraxial, referenceSphere, opd } from './raytrace.js';
+import { paraxial, referenceSphere, opd, aimRay, trace } from './raytrace.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -192,24 +192,29 @@ function segPhasing(p) {
 // pupil grid, interpolated onto a 256² pupil and Fourier-transformed.
 // p = { lens, theta (deg), zImg (mm), N }
 function lensPSF(p) {
-  const { lens, theta, zImg, N } = p, lam = 587.56;
+  const { lens, theta, zImg, N, sd } = p, lam = 587.56;
   const par = paraxial(lens, lam);
   const ref = referenceSphere(lens, lam, theta, zImg, par);
   if (!ref) return { result: null, transfer: [] };
-  const G = 41, grid = new Float64Array(G * G).fill(NaN);
+  // OPD on a 41×41 pupil grid; `lit` marks rays that pass every clear aperture (vignetting)
+  const G = 41, grid = new Float64Array(G * G).fill(NaN), lit = new Float64Array(G * G);
+  let inPupil = 0, passed = 0;
   for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) {
     const px = -1 + (2 * i) / (G - 1), py = 1 - (2 * j) / (G - 1);
     if (px * px + py * py > 1.0001) continue;
+    inPupil++;
+    if (sd) { const a = aimRay(lens, lam, theta, px, py, par); if (!a || !trace(lens, lam, a.p, a.d, { sd, zv: par.zv }).ok) continue; }
     const v = opd(lens, lam, theta, px, py, ref, par);
-    if (v != null) grid[j * G + i] = v;
+    if (v != null) { grid[j * G + i] = v; lit[j * G + i] = 1; passed++; }
   }
+  if (!passed) return { result: null, transfer: [] };
   // remove piston; RMS
   let s = 0, s2 = 0, c = 0, maxStep = 0;
   for (let k = 0; k < G * G; k++) if (!isNaN(grid[k])) { s += grid[k]; s2 += grid[k] ** 2; c++; }
   const mean = s / c, rmsW = Math.sqrt(s2 / c - mean * mean);
   for (let k = 0; k < G * G; k++) if (!isNaN(grid[k])) grid[k] -= mean;
   const n = 256, Dpx = 128;
-  const amp = rasterAperture({ type: 'circle' }, n, Dpx, 3);
+  const amp = rasterAperture({ type: 'circle' }, n, Dpx, 3).slice(); // copy: the cached raster is shared
   const W = new Float64Array(n * n);
   let pv = [Infinity, -Infinity];
   for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
@@ -219,6 +224,10 @@ function lensPSF(p) {
     const fx = Math.min(1, Math.max(0, u - i0)), fy = Math.min(1, Math.max(0, v - j0));
     const q = [grid[j0 * G + i0], grid[j0 * G + i0 + 1], grid[(j0 + 1) * G + i0], grid[(j0 + 1) * G + i0 + 1]];
     const ok = q.map((t) => !isNaN(t));
+    // vignetting: amplitude = bilinear coverage of lit samples (anti-aliased pupil edge)
+    const cover = (lit[j0 * G + i0] * (1 - fx) + lit[j0 * G + i0 + 1] * fx) * (1 - fy) + (lit[(j0 + 1) * G + i0] * (1 - fx) + lit[(j0 + 1) * G + i0 + 1] * fx) * fy;
+    amp[k] *= Math.min(1, Math.max(0, (cover - 0.25) / 0.5));
+    if (!amp[k] || !ok.some(Boolean)) { amp[k] = 0; continue; }
     let val;
     if (ok.every(Boolean)) val = (q[0] * (1 - fx) + q[1] * fx) * (1 - fy) + (q[2] * (1 - fx) + q[3] * fx) * fy;
     else { const v2 = q.filter((t, i) => ok[i]); val = v2.length ? v2.reduce((a, b) => a + b) / v2.length : 0; }
@@ -229,7 +238,7 @@ function lensPSF(p) {
   const P = psf(amp, W, n, lam / 1000), P0 = psf(amp, null, n, lam / 1000);
   const ampC = amp.slice();
   return {
-    result: { I: P.I, n, Wmap: W, amp: ampC, rmsW, pvW: (pv[1] - pv[0]) / (lam / 1000), strehl: P.peak / P0.peak, aliased: maxStep > 0.5, N, lam },
+    result: { I: P.I, n, Wmap: W, amp: ampC, rmsW, pvW: (pv[1] - pv[0]) / (lam / 1000), strehl: P.peak / P0.peak, aliased: maxStep > 0.5, N, lam, transmitted: passed / inPupil },
     transfer: [P.I.buffer, W.buffer, ampC.buffer],
   };
 }
