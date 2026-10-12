@@ -11,6 +11,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - `scripts/check.mjs` (`npm run check`): syntax check of all modules and verification of every relative link, image and heading anchor in the Markdown files.
 - `scripts/smoke.sh` (`npm run smoke`): loads every page in headless Chrome and fails on uncaught errors or modules that fail to load.
 - GitHub Actions CI (`.github/workflows/ci.yml`): syntax and links, physics tests, and browser smoke test on every push and pull request.
+- GitHub Pages deployment (`.github/workflows/pages.yml`): every push to `main` is checked, tested and published to <https://iiogurt.github.io/Optica_Viva/>.
+- `main` is protected: pull requests must pass the three CI checks before merging.
 - `js/lib/optics.js`: thin-lens depth of field, tilted-lens (Scheimpflug) imaging and ΛCDM distances, extracted from the laboratories so they can be tested.
 
 ### Changed

@@ -10,7 +10,7 @@ Use the most precise model that runs interactively, and state every approximatio
 
 ## Tech
 - Static HTML/CSS + vanilla ES modules. **No build step, no runtime dependencies** except vendored KaTeX (`vendor/katex/`). Must work offline.
-- Run: `npm start` (= `python3 -m http.server 8000`). Hash router: `#/<lab-id>`.
+- Run: `npm start` (= `python3 -m http.server 8000`). Hash router: `#/<lab-id>`. Live site: https://iiogurt.github.io/Optica_Viva/ (deployed from `main` by `.github/workflows/pages.yml`; keep all paths relative).
 - `js/app.js`: lab registry (`MODULES`) and `READY` set. `js/lib/`: numerical core (fft, color, glass, raytrace, pupil, thinfilm, sensors, phenomena, plot, ui, page). `js/modules/<id>.js`: one page each, exporting `mount(root, meta)` that returns a cleanup function.
 - New lab: create the module, register it in `MODULES` and `READY`, link it from `js/lib/phenomena.js`, add a screenshot entry in `scripts/screenshots.py`.
 - Style: match the surrounding code; dark design system in `css/style.css`. Theory text goes in `String.raw` templates with `\( \)` / `\[ \]` math (never `$`). Never put a `//` comment inside a one-line `{ … }` block.
