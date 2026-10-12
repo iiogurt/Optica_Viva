@@ -582,6 +582,41 @@ export default function mount(root, meta) {
     const a = h('a', { href: URL.createObjectURL(new Blob([lensToJSON(LENSES.custom)], { type: 'application/json' })), download: 'optica-viva-lens.json' });
     a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
+  // ── Monte-Carlo tolerancing (worker) ──
+  const tolCtl = controls({
+    radiusPct: { type: 'range', label: 'Radius error σ', min: 0, max: 1, step: 0.01, value: 0.1, unit: '%' },
+    thicknessUm: { type: 'range', label: 'Thickness error σ', min: 0, max: 200, step: 5, value: 25, unit: 'µm' },
+    indexE4: { type: 'range', label: 'Index error σ', min: 0, max: 20, step: 0.5, value: 3, fmt: (v) => v + '×10⁻⁴' },
+    trials: { type: 'range', label: 'Monte-Carlo trials', min: 10, max: 200, step: 10, value: 40 },
+  }, () => {});
+  const tolRo = h('div.note', { role: 'status' }, 'Random manufacturing errors are applied to the current lens; each trial is refocused (image distance as compensator) and scored by the RMS ray error over fields 0, 0.7, 1 and F, d, C.');
+  const tolHist = stage({ aspect: 2.6, label: '', draw: drawTol, cls: 'plain', minH: 200 });
+  const tolJob = latest('tolerance');
+  let tolData = null;
+  const tolBtn = h('button.btn', { type: 'button', onClick: () => {
+    const st = tolCtl.state;
+    tolBtn.disabled = true; tolRo.textContent = `Running ${st.trials} trials in the background…`;
+    tolJob('tolerance', { lens: clone(LENSES[ctl.state.lens]), tol: { radiusPct: st.radiusPct, thicknessUm: st.thicknessUm, indexDelta: st.indexE4 * 1e-4 }, trials: st.trials, seed: 7 })
+      .then((r) => {
+        tolData = r; tolHist.redraw();
+        tolRo.textContent = `Nominal ${(r.nominal * 1000).toFixed(2)} µm · median ${(r.median * 1000).toFixed(2)} µm · 90th percentile ${(r.p90 * 1000).toFixed(2)} µm (${(r.p90 / r.nominal).toFixed(2)}× nominal)${r.failed ? ` · ${r.failed} trials failed to trace` : ''}.`;
+      }).catch((e) => { tolRo.textContent = 'Tolerance run failed: ' + e.message; })
+      .finally(() => { tolBtn.disabled = false; });
+  } }, 'Run tolerance analysis');
+  function drawTol(ctx, w, hh) {
+    if (!tolData || !tolData.scores.length) return;
+    const sc = tolData.scores.map((v) => v * 1000), lo = Math.min(...sc, tolData.nominal * 1000), hi = Math.max(...sc) * 1.05 + 1e-6;
+    const bins = 24, cnt = new Array(bins).fill(0);
+    sc.forEach((v) => cnt[Math.min(bins - 1, Math.floor(((v - lo) / (hi - lo)) * bins))]++);
+    const { X, Y } = plot(ctx, w, hh, {
+      title: 'Monte-Carlo distribution of RMS ray error after refocus', x: { min: lo, max: hi, label: 'RMS ray error (µm)' }, y: { min: 0, max: Math.max(...cnt) * 1.15, label: 'trials' },
+      vlines: [{ x: tolData.nominal * 1000, color: '#6be3a4', label: 'nominal' }, { x: tolData.p90 * 1000, color: '#ff6b6b', label: '90 %', dy: 14 }],
+    });
+    const bw = (X(hi) - X(lo)) / bins;
+    ctx.fillStyle = 'rgba(255,181,71,0.75)';
+    cnt.forEach((c, i) => { if (c) ctx.fillRect(X(lo) + i * bw + 1, Y(c), bw - 2, Y(0) - Y(c)); });
+  }
+
   root.append(h('section.block', {}, h('h2', {}, 'Prescription editor'),
     h('div.card', {},
       h('p.note', {}, 'Edit the custom lens surface by surface (R = ∞ for a plane; leave Semi-Ø empty for automatic clear apertures, or set it to vignette oblique beams). Changes are traced immediately and travel in the page link, so a design can be shared. Import a Zemax .zmx (sequential STANDARD/EVENASPH) or an Optica Viva .json; unknown glasses are modelled from their n_d and V_d.'),
@@ -599,7 +634,9 @@ export default function mount(root, meta) {
         h('button.btn', { type: 'button', onClick: () => fileIn.click() }, 'Import .zmx / .json'),
         h('button.btn', { type: 'button', onClick: download }, 'Export JSON'),
         fileIn),
-      tableWrap, msg)));
+      tableWrap, msg),
+    h('div.card', { style: { marginTop: '14px' } }, h('h3', { style: { margin: '0 0 10px', font: '500 17px var(--font-serif)' } }, 'Tolerance analysis'),
+      h('div.grid-2', {}, h('div', {}, tolCtl.el, h('div', { style: { marginTop: '10px' } }, tolBtn), h('div', { style: { marginTop: '10px' } }, tolRo)), tolHist.el))));
   bindUrlParam('rx', () => (ctl.state.lens === 'custom' ? encodeLens(LENSES.custom) : null));
   renderTable();
 

@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Monte-Carlo tolerancing** (`js/lib/tolerance.js`) in the ray tracer: Gaussian errors in radii (%), thicknesses (µm) and refractive indices; every trial is refocused (image distance as compensator) and scored by the RMS ray error over fields and F, d, C. It runs in the worker and shows a histogram with the nominal and 90th-percentile results. Perturbed glasses use `{ base, dn }` in `index()`.
+- Test: zero errors reproduce nominal; under identical tolerances the f/3 Double-Gauss is more sensitive than the f/5 Cooke triplet.
+
+### Added
 - **Lens optimiser** (`js/lib/optimise.js`): damped least squares (Levenberg–Marquardt) on surface curvatures and the image distance, with a merit of real-ray transverse errors over fields 0, 0.7, 1 and the F, d, C wavelengths, plus a focal-length target. An **Optimise** button in the prescription editor runs it in the worker.
 - Test: starting from an equiconvex singlet, the optimiser rediscovers Coddington's best-form bending (q = 0.727 against the third-order 0.740) at exactly f = 100 mm; it also never worsens the Cooke triplet.
 

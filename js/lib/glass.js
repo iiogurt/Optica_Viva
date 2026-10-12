@@ -25,6 +25,8 @@ export function index(glass, lambdaNm) {
   if (!glass || glass === 'air') return 1.0;
   const G = typeof glass === 'string' ? GLASSES[glass] : glass;
   if (!G) throw new Error('unknown glass ' + glass);
+  // perturbed glass for tolerancing: { base, dn } shifts the whole dispersion curve by dn
+  if (G.base !== undefined) return index(G.base, lambdaNm) + (G.dn || 0);
   const l2 = (lambdaNm / 1000) ** 2;
   // model glass from (n_d, V_d): two-term Cauchy n = A + B/λ², reproducing n_d and V_d exactly
   if (G.nd) {

@@ -6,6 +6,7 @@ import { spectralBasis, wavelengthRGB } from './color.js';
 import { fft2d } from './fft.js';
 import { paraxial, referenceSphere, opd, aimRay, trace } from './raytrace.js';
 import { optimise } from './optimise.js';
+import { monteCarlo } from './tolerance.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -281,4 +282,7 @@ function lensMTF(p) {
 // Damped-least-squares optimisation of a prescription (see js/lib/optimise.js).
 function optimiseLens(p) { return { result: optimise(p.lens, p.opts || {}), transfer: [] }; }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens };
+// Monte-Carlo tolerance analysis (see js/lib/tolerance.js).
+function tolerance(p) { return { result: monteCarlo(p.lens, p.tol, p.trials, p.seed), transfer: [] }; }
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance };
