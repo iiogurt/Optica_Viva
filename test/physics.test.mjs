@@ -136,3 +136,29 @@ test('natural vignetting: cos⁴ at the corner of a 28 mm full-frame lens', () =
   near((th * 180) / Math.PI, 37.69, 0.01, 'corner field angle (°)');
   near(Math.log2(Math.cos(th) ** 4), -1.3506, 0.0005, 'falloff in EV');
 });
+
+test('2-D FFT matches a direct DFT (n = 8 and 64)', () => {
+  for (const n of [8, 64]) {
+    const re = new Float64Array(n * n), im = new Float64Array(n * n);
+    let seed = 7; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647 - 0.5; };
+    for (let i = 0; i < n * n; i++) { re[i] = rnd(); im[i] = rnd(); }
+    const R = re.slice(), I = im.slice();
+    fft2d(re, im, n);
+    for (const [u, v] of [[0, 0], [1, 3], [n - 1, 2], [n / 2, n / 2]]) {
+      let sr = 0, si = 0;
+      for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+        const a = (-2 * Math.PI * (u * x + v * y)) / n, c = Math.cos(a), s = Math.sin(a);
+        sr += R[y * n + x] * c - I[y * n + x] * s; si += R[y * n + x] * s + I[y * n + x] * c;
+      }
+      near(re[v * n + u], sr, 1e-9, `Re F(${u},${v}) n=${n}`);
+      near(im[v * n + u], si, 1e-9, `Im F(${u},${v}) n=${n}`);
+    }
+  }
+});
+
+test('pupil rasters are cached and shared', () => {
+  const a = rasterAperture({ type: 'polygon', blades: 7, curvature: 0.2 }, 64, 32, 2);
+  const b = rasterAperture({ type: 'polygon', blades: 7, curvature: 0.2 }, 64, 32, 2);
+  assert.equal(a, b, 'same spec returns the cached array');
+  assert.notEqual(a, rasterAperture({ type: 'polygon', blades: 8, curvature: 0.2 }, 64, 32, 2), 'different spec → new raster');
+});

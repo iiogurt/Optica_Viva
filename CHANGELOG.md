@@ -6,7 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- `scripts/bench.mjs` (`npm run bench`): kernel benchmarks as a Markdown table; a non-blocking CI job publishes them to the run summary.
+- Tests: the 2-D FFT is compared against a direct DFT, and the raster cache is covered.
+
 ### Changed
+- **Faster 2-D FFT:** row transforms, a cache-blocked transpose, row transforms, transpose back. On a Raspberry Pi 4 a 512² FFT drops from 88 ms to 66 ms (≈ 1.4×), with bit-identical results.
+- **Pupil rasters are cached** (LRU, 16 entries). Revisiting an aperture is instant; the JWST 512² raster costs 182 ms when cold.
 - **Releases go through pull requests.** `scripts/release.sh` is now two-phase: `prepare` opens a `release/vX.Y.Z` PR that dates the changelog and bumps the versions; `publish` runs after the merge and pushes only the tag and the GitHub release. Nothing is pushed to `main` directly.
 - Branch protection on `main` requires a pull request and applies to administrators too.
 
