@@ -112,6 +112,7 @@ main { min-width: 0; padding: 0 clamp(16px, 3.2vw, 48px) 80px; outline: none; }
 
 /* Controls */
 .controls { display: grid; gap: 12px; }
+[hidden] { display: none !important; }
 .ctl { display: grid; gap: 6px; font-size: 13px; }
 .ctl-heading { font: 600 10.5px/1 var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-faint); margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
 .ctl-heading:first-child { border-top: 0; padding-top: 0; margin-top: 0; }

@@ -57,7 +57,8 @@ export function paraxialGhosts(lens, lam, zImg) {
 }
 
 // Optical system prepared for ghost tracing at a set of wavelengths.
-// o = { lambdas, coat, sd (clear semi-diameters), stopR, blades (0 = circular iris), zImg }
+// o = { lambdas, coat, sd (clear semi-diameters), stopR, blades (0 = circular iris), round
+//       (blade roundness 0–1), zImg (sensor plane) }
 export function ghostSystem(lens, o) {
   const S = lens.surfaces, N = S.length;
   const media = o.lambdas.map((l) => {
@@ -77,13 +78,16 @@ export function ghostSystem(lens, o) {
   }));
   const nb = o.blades || 0, sector = nb ? (2 * Math.PI) / nb : 0, cp = nb ? Math.cos(Math.PI / nb) : 1;
   const rot = nb ? Math.PI / 2 - sector / 2 : 0; // a blade vertex at the top
+  // iris radius at azimuth φ: straight blades r = cp/cos φ (circumradius 1), blended toward a
+  // circle by the blade roundness
+  const rd = o.round || 0;
   const gaugeStop = nb
-    ? (x, y) => { let ph = Math.atan2(y, x) - rot; ph = ((ph % sector) + sector) % sector - sector / 2; return (Math.sqrt(x * x + y * y) * Math.cos(ph)) / (cp * o.stopR); }
+    ? (x, y) => { let ph = Math.atan2(y, x) - rot; ph = ((ph % sector) + sector) % sector - sector / 2; return Math.sqrt(x * x + y * y) / (o.stopR * ((cp / Math.cos(ph)) * (1 - rd) + rd)); }
     : (x, y) => Math.sqrt(x * x + y * y) / o.stopR;
   return { lens, S, N, zv: vertices(lens), si: stopIndex(lens), sd: o.sd, stopR: o.stopR, zImg: o.zImg, lambdas: o.lambdas, media, tables, gaugeStop, asph: S.map(isAspheric) };
 }
 
-// Exact trace of one ray along ghost path (i, j) at wavelength index li.
+// Exact trace of one ray along ghost path (i, j), or the direct path (i = j = −1), at wavelength index li.
 // Returns [x, y, gauge, R] on the sensor (a reused array: copy it), or null if the ray misses a surface, suffers TIR on a
 // refraction, or strays far outside an aperture (gauge > 2).
 export function makeGhostTracer(sys, li) {
@@ -96,11 +100,14 @@ export function makeGhostTracer(sys, li) {
     if (q) return q;
     const ks = [], n1 = [], n2 = [], rf = [];
     const add = (k, a, b, r) => { ks.push(k); n1.push(a); n2.push(b); rf.push(r); };
+    if (i < 0) for (let k = 0; k < N; k++) add(k, before[k], after[k], 0); // the direct path
+    else {
     for (let k = 0; k < j; k++) add(k, before[k], after[k], 0);
     add(j, before[j], after[j], 1);
     for (let k = j - 1; k > i; k--) add(k, after[k], before[k], 0);
     add(i, after[i], before[i], 1);
     for (let k = i + 1; k < N; k++) add(k, before[k], after[k], 0);
+    }
     q = { ks: Int32Array.from(ks), n1: Float64Array.from(n1), n2: Float64Array.from(n2), rf: Uint8Array.from(rf) };
     seqs.set(i * 4096 + j, q);
     return q;
@@ -158,72 +165,120 @@ export function makeGhostTracer(sys, li) {
   };
 }
 
-// Render all ghosts into a linear RGB float image of the sensor.
-// o = { theta: [tan θx, tan θy] of the source, basis: RGB weight per wavelength,
-//       mmW, mmH (sensor size), W (pixels across), grid (rays per pupil side), coarse, pairs,
-//       cull (skip paths whose estimated peak value is below this) }
-// Pixel value = Σ_λ basis_λ · E_ghost/E_source, where E_source is the source irradiance on a
-// plane normal to its direction. Returns { rgb, W, H, stats }.
-export function renderGhosts(sys, o) {
-  const mmW = o.mmW || 36, mmH = o.mmH || 24, W = o.W || 360, H = Math.round((W * mmH) / mmW);
-  const mmpx = mmW / W, pxA = mmpx * mmpx, rgb = new Float32Array(W * H * 3);
+// Render light paths into a linear RGB float image of the sensor: the ghosts (pairs i < j) or the
+// direct, image-forming path ([-1, -1]: defocused point images, i.e. bokeh kernels).
+// o = { theta: [tan θx, tan θy] of a distant source, or point: [x, y, z] of a near one (mm),
+//       basis: RGB weight per wavelength, pairs (default: every ghost),
+//       mmW, mmH, center: [x, y] (window on the sensor, mm; default 36 × 24 centred on the axis),
+//       fit (size the square window to the traced spot instead), W (pixels across),
+//       grid (rays per side of the launch window), coarse, cull (skip paths whose estimated
+//       peak value is below this) }
+// Pixel value = Σ_λ basis_λ · E/E_source for a distant source (E_source on a plane normal to
+// its direction), or Σ_λ basis_λ · E/I for a point source of intensity I.
+// Returns { rgb, W, H, mmW, mmH, center, stats }.
+export function renderPaths(sys, o) {
   const G = o.grid || 40, C = o.coarse || 28, basis = o.basis;
-  const nrm = Math.hypot(o.theta[0], o.theta[1], 1), ux = o.theta[0] / nrm, uy = o.theta[1] / nrm, uz = 1 / nrm;
+  const P = o.point || null;
+  let ux = 0, uy = 0, uz = 1;
+  if (!P) { const nrm = Math.hypot(o.theta[0], o.theta[1], 1); ux = o.theta[0] / nrm; uy = o.theta[1] / nrm; uz = 1 / nrm; }
   // launch plane in front of the first surface; grids are centred on the beam that hits its vertex
   const s0 = sys.S[0], sag0 = isFinite(s0.R) ? Math.abs(s0.R) - Math.sqrt(Math.max(0, s0.R * s0.R - sys.sd[0] ** 2)) : 0;
-  const zL = -2 - sag0, cx0 = (ux / uz) * zL, cy0 = (uy / uz) * zL, h0 = sys.sd[0] * 1.05;
+  const zL = -2 - sag0, h0 = sys.sd[0] * 1.05;
+  const cx0 = P ? P[0] * (1 - (zL - P[2]) / -P[2]) : (ux / uz) * zL, cy0 = P ? P[1] * (1 - (zL - P[2]) / -P[2]) : (uy / uz) * zL;
   const pairs = o.pairs || ghostPairs(sys.lens);
   const lmid = sys.lambdas.length >> 1, tracers = sys.lambdas.map((_, li) => makeGhostTracer(sys, li));
+  // one ray from launch point (x, y): direction and the source weight per unit launch area
+  // (cos θ for a collimated beam, cos θ / r² for a point source)
+  let wt = uz;
+  const shoot = (t, i, j, x, y) => {
+    if (P) {
+      const dx = x - P[0], dy = y - P[1], dz = zL - P[2], r2 = dx * dx + dy * dy + dz * dz, r = Math.sqrt(r2);
+      ux = dx / r; uy = dy / r; uz = dz / r; wt = uz / r2;
+    }
+    return t(i, j, x, y, zL, ux, uy, uz);
+  };
   const stats = { paths: 0, culled: 0, rays: 0, triangles: 0, flux: [] };
-  const cull = o.cull ?? 0, cX = new Float64Array((C + 1) ** 2), cY = new Float64Array(cX.length), cR = new Float64Array(cX.length), cOk = new Uint8Array(cX.length);
-  const X = new Float64Array((G + 1) ** 2), Y = new Float64Array(X.length), Gg = new Float64Array(X.length), Rr = new Float64Array(X.length), ok = new Uint8Array(X.length);
-  for (const [i, j] of pairs) {
-    // 1. coarse search for the part of the launch plane that reaches the sensor along this
-    //    path, and an estimate of its peak irradiance: paths too faint to see are skipped
-    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, peak = 0;
+  // 1. coarse pass per path: the part of the launch plane that reaches the sensor along it, the
+  //    extent of its spot, and an estimate of its peak irradiance (faint paths are skipped)
+  const cX = new Float64Array((C + 1) ** 2), cY = new Float64Array(cX.length), cR = new Float64Array(cX.length), cOk = new Uint8Array(cX.length);
+  const coarse = pairs.map(([i, j]) => {
+    const e = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity, X0: Infinity, X1: -Infinity, Y0: Infinity, Y1: -Infinity, cells: [] };
     const tr = tracers[lmid], dc = (2 * h0) / C;
     for (let b = 0, q = 0; b <= C; b++) for (let a = 0; a <= C; a++, q++) {
-      const x = cx0 - h0 + a * dc, y = cy0 - h0 + b * dc, r = tr(i, j, x, y, zL, ux, uy, uz);
+      const x = cx0 - h0 + a * dc, y = cy0 - h0 + b * dc, r = shoot(tr, i, j, x, y);
       stats.rays++;
       cOk[q] = r && r[2] < 1 ? 1 : 0;
       if (!cOk[q]) continue;
-      cX[q] = r[0]; cY[q] = r[1]; cR[q] = r[3];
-      x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      cX[q] = r[0]; cY[q] = r[1]; cR[q] = r[3] * wt;
+      e.x0 = Math.min(e.x0, x); e.x1 = Math.max(e.x1, x); e.y0 = Math.min(e.y0, y); e.y1 = Math.max(e.y1, y);
+      e.X0 = Math.min(e.X0, r[0]); e.X1 = Math.max(e.X1, r[0]); e.Y0 = Math.min(e.Y0, r[1]); e.Y1 = Math.max(e.Y1, r[1]);
       if (a && b && cOk[q - 1] && cOk[q - C - 1] && cOk[q - C - 2]) {
         const A = Math.abs((cX[q] - cX[q - C - 2]) * (cY[q - 1] - cY[q - C - 1]) - (cY[q] - cY[q - C - 2]) * (cX[q - 1] - cX[q - C - 1])) / 2;
-        peak = Math.max(peak, (cR[q] * dc * dc * uz) / Math.max(A, pxA));
+        e.cells.push(cR[q] * dc * dc, A); // flux and image area of a coarse cell
       }
     }
-    let pathFlux = 0;
-    if (x0 > x1 || peak < cull) { stats.flux.push(0); if (x0 <= x1) stats.culled++; continue; }
+    e.dc = dc;
+    return e;
+  });
+  // 2. fine grid per path and wavelength: trace everything first, so a fitted window can use the
+  //    full set of landing points
+  const NV = (G + 1) ** 2, nl = sys.lambdas.length;
+  const fine = pairs.map(([i, j], pi) => {
+    const e = coarse[pi];
+    let peak = 0;
+    for (let c = 0; c < e.cells.length; c += 2) peak = Math.max(peak, e.cells[c] / Math.max(e.cells[c + 1], o.fit ? 0 : ((o.mmW || 36) / (o.W || 360)) ** 2));
+    if (e.x0 > e.x1 || peak < (o.cull ?? 0)) { if (e.x0 <= e.x1) stats.culled++; return null; }
     stats.paths++;
-    x0 -= dc; x1 += dc; y0 -= dc; y1 += dc;
-    const gx = (x1 - x0) / G, gy = (y1 - y0) / G, aSrc = (gx * gy * uz) / 2; // projected area per triangle
-    // 2. fine grid per wavelength, rasterised as triangles
+    const x0 = e.x0 - e.dc, y0 = e.y0 - e.dc, gx = (e.x1 - e.x0 + 2 * e.dc) / G, gy = (e.y1 - e.y0 + 2 * e.dc) / G;
+    const X = new Float64Array(NV * nl), Y = new Float64Array(X.length), Gg = new Float64Array(X.length), Rr = new Float64Array(X.length), ok = new Uint8Array(X.length);
     sys.lambdas.forEach((_, li) => {
-      const t = tracers[li], [cr, cg, cb] = basis[li];
-      for (let b = 0, q = 0; b <= G; b++) for (let a = 0; a <= G; a++, q++) {
-        const r = t(i, j, x0 + a * gx, y0 + b * gy, zL, ux, uy, uz);
+      const t = tracers[li];
+      for (let b = 0, q = li * NV; b <= G; b++) for (let a = 0; a <= G; a++, q++) {
+        const r = shoot(t, i, j, x0 + a * gx, y0 + b * gy);
         stats.rays++;
-        if (!r) { ok[q] = 0; continue; }
-        ok[q] = 1; X[q] = r[0] / mmpx + W / 2; Y[q] = H / 2 - r[1] / mmpx; Gg[q] = r[2]; Rr[q] = r[3];
+        if (!r) continue;
+        ok[q] = 1; X[q] = r[0]; Y[q] = r[1]; Gg[q] = r[2]; Rr[q] = r[3] * wt;
       }
+    });
+    return { i, j, X, Y, Gg, Rr, ok, aSrc: (gx * gy) / 2 };
+  });
+  // the sensor window
+  let mmW = o.mmW || 36, mmH = o.mmH || 24, center = o.center || [0, 0];
+  if (o.fit) {
+    let X0 = Infinity, X1 = -Infinity, Y0 = Infinity, Y1 = -Infinity;
+    for (const f of fine) if (f) for (let q = 0; q < f.ok.length; q++) if (f.ok[q] && f.Gg[q] < 1) {
+      X0 = Math.min(X0, f.X[q]); X1 = Math.max(X1, f.X[q]); Y0 = Math.min(Y0, f.Y[q]); Y1 = Math.max(Y1, f.Y[q]);
+    }
+    if (X0 <= X1) { mmW = mmH = Math.max(X1 - X0, Y1 - Y0, 1e-3) * 1.15 + 0.01; center = [(X0 + X1) / 2, (Y0 + Y1) / 2]; }
+  }
+  const W = o.W || 360, H = Math.round((W * mmH) / mmW), mmpx = mmW / W, pxA = mmpx * mmpx, rgb = new Float32Array(W * H * 3);
+  // 3. rasterise each path's triangles at every wavelength
+  for (const f of fine) {
+    if (!f) { stats.flux.push(0); continue; }
+    let pathFlux = 0;
+    const { X, Y, Gg, Rr, ok, aSrc } = f;
+    for (let q = 0; q < X.length; q++) if (ok[q]) { X[q] = (X[q] - center[0]) / mmpx + W / 2; Y[q] = H / 2 - (Y[q] - center[1]) / mmpx; }
+    for (let li = 0; li < nl; li++) {
+      const [cr, cg, cb] = basis[li], off = li * NV;
       for (let b = 0; b < G; b++) for (let a = 0; a < G; a++) {
-        const q = b * (G + 1) + a;
-        for (const [p0, p1, p2] of [[q, q + 1, q + G + 2], [q, q + G + 2, q + G + 1]]) {
+        const q = off + b * (G + 1) + a;
+        for (let tri = 0; tri < 2; tri++) {
+          const p0 = q, p1 = tri ? q + G + 2 : q + 1, p2 = tri ? q + G + 1 : q + G + 2;
           if (!ok[p0] || !ok[p1] || !ok[p2]) continue;
           const g0 = Gg[p0], g1 = Gg[p1], g2 = Gg[p2];
           if (g0 >= 1 && g1 >= 1 && g2 >= 1) continue;
           stats.triangles++;
           const flux = ((Rr[p0] + Rr[p1] + Rr[p2]) / 3) * aSrc;
-          pathFlux += splat(rgb, W, H, X[p0], Y[p0], g0, X[p1], Y[p1], g1, X[p2], Y[p2], g2, flux, pxA, cr, cg, cb) * (li === lmid ? 1 : 0);
+          const d = splat(rgb, W, H, X[p0], Y[p0], g0, X[p1], Y[p1], g1, X[p2], Y[p2], g2, flux, pxA, cr, cg, cb);
+          if (li === lmid) pathFlux += d;
         }
       }
-    });
+    }
     stats.flux.push(pathFlux);
   }
-  return { rgb, W, H, stats };
+  return { rgb, W, H, mmW, mmH, center, stats };
 }
+export const renderGhosts = renderPaths;
 
 // Deposit a triangle carrying `flux` (mm² · E_source): irradiance flux/area on every pixel whose
 // centre it covers, weighted by the anti-aliased aperture mask (interpolated gauge < 1).
@@ -231,7 +286,9 @@ export function renderGhosts(sys, o) {
 function splat(rgb, W, H, x0, y0, g0, x1, y1, g1, x2, y2, g2, flux, pxA, cr, cg, cb) {
   const A2 = (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0), area = Math.abs(A2) / 2; // px²
   if (area < 1) {
-    const gc = (g0 + g1 + g2) / 3, m = Math.min(1, Math.max(0, 0.5 + (1 - gc) * 4));
+    // fraction inside the aperture, from where g = 1 falls within the triangle's gauge range
+    const gc = (g0 + g1 + g2) / 3, gs = Math.max(g0, g1, g2) - Math.min(g0, g1, g2);
+    const m = Math.min(1, Math.max(0, 0.5 + (1 - gc) / Math.max(gs, 1e-9)));
     const x = Math.floor((x0 + x1 + x2) / 3), y = Math.floor((y0 + y1 + y2) / 3);
     if (!m || x < 0 || y < 0 || x >= W || y >= H) return 0;
     const v = (flux * m) / pxA, q = (y * W + x) * 3;
@@ -246,10 +303,12 @@ function splat(rgb, W, H, x0, y0, g0, x1, y1, g1, x2, y2, g2, flux, pxA, cr, cg,
   const xa = Math.max(0, Math.floor(Math.min(x0, x1, x2))), xb = Math.min(W - 1, Math.ceil(Math.max(x0, x1, x2)));
   const ya = Math.max(0, Math.floor(Math.min(y0, y1, y2))), yb = Math.min(H - 1, Math.ceil(Math.max(y0, y1, y2)));
   let dep = 0;
+  // sample points are nudged off the pixel centres by an irrational sub-pixel offset, so a centre
+  // can never lie exactly on an edge shared by two triangles and be counted twice
   for (let y = ya; y <= yb; y++) {
-    const py = y + 0.5;
+    const py = y + 0.5 + 1.7e-7;
     for (let x = xa; x <= xb; x++) {
-      const px = x + 0.5;
+      const px = x + 0.5 + 3.1e-7;
       const w0 = ((x1 - px) * (y2 - py) - (x2 - px) * (y1 - py)) * inv, w1 = ((x2 - px) * (y0 - py) - (x0 - px) * (y2 - py)) * inv, w2 = 1 - w0 - w1;
       if (w0 < 0 || w1 < 0 || w2 < 0) continue;
       const gp = w0 * g0 + w1 * g1 + w2 * g2;

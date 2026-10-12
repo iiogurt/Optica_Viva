@@ -67,7 +67,7 @@ flowchart LR
 | Laboratories | 20 | +19 proposed (v1.5, v1.6) |
 | Catalogue entries | 148 | link every new lab; add polarisation and colour-science entries |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 38 tests (physics, blur, lens I/O, ghosts) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 41 tests (physics, blur, lens I/O, ghosts, bokeh) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -178,7 +178,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | A6 | Canvases have no text alternative; almost no ARIA | one `aria-` attribute in the codebase | Screen-reader users get no results | v1.1 |
 | A7 | No shareable state | no URL parameters | Teachers can't link to a specific configuration | v1.1 |
 | A8 | No licence | README states all rights reserved | Blocks contributions and reuse | v1.1 (owner decision) |
-| A9 | Known model simplifications (see README) | ~~paraxial ghosts~~ (real rays since v1.5), geometric bokeh, Gaussian blur stack, circular off-axis pupil | Accuracy ceiling for advanced users | v1.3–v1.4 |
+| A9 | Known model simplifications (see README) | ~~paraxial ghosts~~ (real rays since v1.5), ~~phenomenological bokeh~~ (traced since v1.5), Gaussian blur stack, circular off-axis pupil | Accuracy ceiling for advanced users | v1.3–v1.4 |
 | A10 | Spherical surfaces only; prescriptions are hard-coded | `raytrace.js` | Can't model modern aspheric lenses or user lenses | v1.3 |
 
 ---
@@ -239,7 +239,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 *Goal: remove the remaining phenomenological shortcuts (A9).*
 
 - [x] **P1 · L** **Real-ray ghost tracing** for flare: sample pupil rays through each two-reflection path, giving aberrated, vignetted ghosts (Hullin 2011 full method). *Includes angle-dependent coating reflectance, TIR, per-pixel aperture gauge and path culling; runs in the worker with draft and refined passes.*
-- [ ] **P2 · L** **Bokeh from the traced lens**: defocus kernels built from real rays of the chosen prescription, including LoCA rims (magenta and green) and field-dependent cat's eyes.
+- [x] **P2 · L** **Bokeh from the traced lens**: defocus kernels built from real rays of the chosen prescription, including LoCA rims (magenta and green) and field-dependent cat's eyes. *Default bokeh model; 18 kernels in the worker; validated for size, flux, SA and colour order.*
 - [ ] **P2 · M** **Diffraction-aware bokeh**: Fresnel edge ripples for small disks via the defocused-PSF FFT path.
 - [ ] **P2 · M** Exact disk kernel in tilt-shift and DoF (shares the v1.1 blur code).
 - [ ] **P3 · L** **Spectral scene renderer**: render a whole scene per wavelength through the PSF, the colour-matching functions and the sensor's spectral response.
