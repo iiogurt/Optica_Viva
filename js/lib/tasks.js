@@ -1,9 +1,10 @@
 // Heavy, pure computations that run inside the compute worker (or on the main thread as a
 // fallback). Each task takes plain data and returns { result, transfer } where `transfer`
 // lists the ArrayBuffers to hand over without copying.
-import { rasterAperture, psf, rescale, zernikeWavefront, rmsWavefront } from './pupil.js';
+import { rasterAperture, psf, rescale, zernikeWavefront, rmsWavefront, zernike, segmentMap } from './pupil.js';
 import { spectralBasis, wavelengthRGB } from './color.js';
 import { fft2d } from './fft.js';
+import { paraxial, referenceSphere, opd } from './raytrace.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -97,4 +98,140 @@ function otfCurves(p) {
   return { result: curves, transfer: [] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves };
+
+// Lyot coronagraph: star and planet propagated pupil → occulting mask → Lyot stop → image.
+// p = { st: {pupil, mask, lyot, sep, con, wfe, lam}, n, Dp }
+function coronagraph(p) {
+  const { st, n, Dp } = p, Q = n / Dp;
+  const amp = rasterAperture(st.pupil === 'clear' ? { type: 'circle' } : { type: 'circle', obstruction: 0.25, spiders: 4, spiderWidth: 0.02, rotation: 45 }, n, Dp, 4);
+  // fixed random low-order aberration pattern, scaled to the requested RMS
+  let sd = 12345; const rnd = () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647 - 0.5; };
+  const coeffs = []; for (let j = 4; j <= 22; j++) coeffs.push([j, rnd() / Math.pow(j, 0.6)]);
+  const norm = Math.sqrt(coeffs.reduce((a, [, c]) => a + c * c, 0));
+  const W = new Float64Array(n * n); // waves
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    const k = y * n + x; if (!amp[k]) continue;
+    const xn = (x - n / 2) / (Dp / 2), yn = -(y - n / 2) / (Dp / 2), r = Math.hypot(xn, yn), t = Math.atan2(yn, xn);
+    let v = 0; for (const [j, c] of coeffs) v += c * zernike(j, Math.min(1, r), t);
+    W[k] = (v / norm) * (st.wfe / 1000) / st.lam;
+  }
+  const lyot = rasterAperture({ type: 'circle', obstruction: st.pupil === 'clear' ? 0 : 0.25 / st.lyot * 1.15, spiders: st.pupil === 'clear' ? 0 : 4, spiderWidth: 0.04, rotation: 45 }, n, Dp * st.lyot, 4);
+  const maskR = st.mask * Q; // px
+  const propagate = (tilt, withCoro) => {
+    const re = new Float64Array(n * n), im = new Float64Array(n * n);
+    for (let k = 0; k < n * n; k++) if (amp[k]) { const x = (k % n) - n / 2; const ph = 2 * Math.PI * (W[k] + (tilt * x) / Dp); re[k] = amp[k] * Math.cos(ph); im[k] = amp[k] * Math.sin(ph); }
+    fft2d(re, im, n); // focal plane (unshifted: DC at 0)
+    if (withCoro) {
+      for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+        const fx = x < n / 2 ? x : x - n, fy = y < n / 2 ? y : y - n;
+        if (Math.hypot(fx, fy) < maskR) { re[y * n + x] = 0; im[y * n + x] = 0; }
+      }
+      fft2d(re, im, n, true); // Lyot plane
+      var lyotPlane = new Float64Array(n * n); for (let k = 0; k < n * n; k++) lyotPlane[k] = Math.hypot(re[k], im[k]);
+      for (let k = 0; k < n * n; k++) { re[k] *= lyot[k]; im[k] *= lyot[k]; }
+      fft2d(re, im, n);
+    }
+    const I = new Float64Array(n * n), hn = n / 2;
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) I[((y + hn) % n) * n + ((x + hn) % n)] = re[y * n + x] ** 2 + im[y * n + x] ** 2;
+    return { I, lyotPlane };
+  };
+  const star = propagate(0, false), starC = propagate(0, true), pl = propagate(st.sep, false), plC = propagate(st.sep, true);
+  let peak = 0; for (let k = 0; k < n * n; k++) peak = Math.max(peak, star.I[k]);
+  const dI = new Float64Array(n * n), cI = new Float64Array(n * n);
+  for (let k = 0; k < n * n; k++) { dI[k] = (star.I[k] + st.con * pl.I[k]) / peak; cI[k] = (starC.I[k] + st.con * plC.I[k]) / peak; }
+  // radial contrast profiles (azimuthal mean of the star alone)
+  const bins = 120, rmax = 30, pd = new Float64Array(bins), pc = new Float64Array(bins), cnt = new Float64Array(bins);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const r = Math.hypot(x - n / 2, y - n / 2) / Q, b = Math.floor((r / rmax) * bins); if (b < bins) { pd[b] += star.I[y * n + x] / peak; pc[b] += starC.I[y * n + x] / peak; cnt[b]++; } }
+  let plPeak = 0, plPeakC = 0; for (let k = 0; k < n * n; k++) { plPeak = Math.max(plPeak, pl.I[k]); plPeakC = Math.max(plPeakC, plC.I[k]); }
+  const throughput = plPeakC / plPeak;
+  const px = Math.round(n / 2 + st.sep * Q), py = n / 2;
+  let starAt = 0; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) starAt = Math.max(starAt, starC.I[(py + dy) * n + px + dx] / peak);
+  let lyotIn = 0, lyotTot = 0; for (let k = 0; k < n * n; k++) { lyotTot += amp[k]; lyotIn += amp[k] * lyot[k]; }
+  const prof = Array.from({ length: bins }, (_, i) => [((i + 0.5) / bins) * rmax, cnt[i] ? pd[i] / cnt[i] : NaN, cnt[i] ? pc[i] / cnt[i] : NaN]);
+  const bi = Math.floor((st.sep / rmax) * bins), directAt = pd[bi] / cnt[bi];
+  const snrRatio = (st.con * throughput * plPeak / peak) / Math.max(starAt, 1e-14);
+  const ampC = amp.slice(), lyotC = lyot.slice(), lp = starC.lyotPlane;
+  return {
+  result: { dI, cI, lyotPlane: lp, amp: ampC, lyot: lyotC, maskR, prof, throughput, starAt, directAt, snrRatio },
+  transfer: [dI.buffer, cI.buffer, lp.buffer, ampC.buffer, lyotC.buffer],
+  };
+}
+
+// JWST segment phasing: random per-segment piston and tip/tilt for a commissioning stage.
+// p = { st: {stage, seed, lam}, nS, DS }. The raster and segment map are cached per size.
+const SEG_CACHE = new Map();
+function segPhasing(p) {
+  const { st, nS, DS } = p, key = nS + '|' + DS;
+  if (!SEG_CACHE.has(key)) SEG_CACHE.set(key, { amp: rasterAperture({ type: 'jwst' }, nS, DS, 3), SM: segmentMap('jwst', nS, DS) });
+  const { amp, SM } = SEG_CACHE.get(key);
+  let seed = st.seed * 9301 + 49297;
+  const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280 - 0.5; };
+  const gauss = () => { let s = 0; for (let i = 0; i < 6; i++) s += rnd(); return s * Math.SQRT2; };
+  // per-segment piston (µm OPD) and tip/tilt (µm across segment radius). Deployed tilts were
+  // arcminutes; they are compressed to ±1.2 λ per segment radius so the 18 spots stay inside
+  // the FFT field (wavefront slope < 0.5 cycle/pixel, no wrap-around).
+  const P = { raw: [0.5, 1.2 * st.lam], stack: [2.0, 0.05], coarse: [0.12, 0.02], fine: [0.012, 0.004] }[st.stage];
+  const seg = SM.centers.map(() => ({ p: gauss() * P[0], tx: gauss() * P[1], ty: gauss() * P[1] }));
+  const W = new Float64Array(nS * nS), c = nS / 2;
+  for (let j = 0; j < nS; j++) for (let i = 0; i < nS; i++) {
+    const k = j * nS + i, s = SM.idx[k];
+    if (s < 0 || !amp[k]) continue;
+    const x = (i - c) / (DS / 2), y = -(j - c) / (DS / 2);
+    const dx = (x - SM.centers[s][0]) / SM.segRadius, dy = (y - SM.centers[s][1]) / SM.segRadius;
+    W[k] = seg[s].p + seg[s].tx * dx + seg[s].ty * dy;
+  }
+  const I = psf(amp, W, nS, st.lam).I;
+  const I0 = psf(amp, null, nS, st.lam).peak;
+  let mx = 0; for (let k = 0; k < nS * nS; k++) mx = Math.max(mx, I[k]);
+  const rmsP = Math.sqrt(seg.reduce((a, s) => a + s.p * s.p, 0) / seg.length);
+  const ampC = amp.slice();
+  return { result: { W, I, mx, strehl: mx / I0, rmsP, amp: ampC }, transfer: [W.buffer, I.buffer, ampC.buffer] };
+}
+
+// Diffraction PSF of a traced lens: OPD against the exit-pupil reference sphere on a 41×41
+// pupil grid, interpolated onto a 256² pupil and Fourier-transformed.
+// p = { lens, theta (deg), zImg (mm), N }
+function lensPSF(p) {
+  const { lens, theta, zImg, N } = p, lam = 587.56;
+  const par = paraxial(lens, lam);
+  const ref = referenceSphere(lens, lam, theta, zImg, par);
+  if (!ref) return { result: null, transfer: [] };
+  const G = 41, grid = new Float64Array(G * G).fill(NaN);
+  for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) {
+    const px = -1 + (2 * i) / (G - 1), py = 1 - (2 * j) / (G - 1);
+    if (px * px + py * py > 1.0001) continue;
+    const v = opd(lens, lam, theta, px, py, ref, par);
+    if (v != null) grid[j * G + i] = v;
+  }
+  // remove piston; RMS
+  let s = 0, s2 = 0, c = 0, maxStep = 0;
+  for (let k = 0; k < G * G; k++) if (!isNaN(grid[k])) { s += grid[k]; s2 += grid[k] ** 2; c++; }
+  const mean = s / c, rmsW = Math.sqrt(s2 / c - mean * mean);
+  for (let k = 0; k < G * G; k++) if (!isNaN(grid[k])) grid[k] -= mean;
+  const n = 256, Dpx = 128;
+  const amp = rasterAperture({ type: 'circle' }, n, Dpx, 3);
+  const W = new Float64Array(n * n);
+  let pv = [Infinity, -Infinity];
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    const k = y * n + x; if (!amp[k]) continue;
+    const u = ((x - n / 2) / (Dpx / 2) + 1) / 2 * (G - 1), v = ((y - n / 2) / (Dpx / 2) + 1) / 2 * (G - 1);
+    const i0 = Math.max(0, Math.min(G - 2, Math.floor(u))), j0 = Math.max(0, Math.min(G - 2, Math.floor(v)));
+    const fx = Math.min(1, Math.max(0, u - i0)), fy = Math.min(1, Math.max(0, v - j0));
+    const q = [grid[j0 * G + i0], grid[j0 * G + i0 + 1], grid[(j0 + 1) * G + i0], grid[(j0 + 1) * G + i0 + 1]];
+    const ok = q.map((t) => !isNaN(t));
+    let val;
+    if (ok.every(Boolean)) val = (q[0] * (1 - fx) + q[1] * fx) * (1 - fy) + (q[2] * (1 - fx) + q[3] * fx) * fy;
+    else { const v2 = q.filter((t, i) => ok[i]); val = v2.length ? v2.reduce((a, b) => a + b) / v2.length : 0; }
+    W[k] = val * lam / 1000; // µm of OPD
+    pv = [Math.min(pv[0], W[k]), Math.max(pv[1], W[k])];
+    if (x > 0 && amp[k - 1]) maxStep = Math.max(maxStep, Math.abs(W[k] - W[k - 1]) / (lam / 1000));
+  }
+  const P = psf(amp, W, n, lam / 1000), P0 = psf(amp, null, n, lam / 1000);
+  const ampC = amp.slice();
+  return {
+    result: { I: P.I, n, Wmap: W, amp: ampC, rmsW, pvW: (pv[1] - pv[0]) / (lam / 1000), strehl: P.peak / P0.peak, aliased: maxStep > 0.5, N, lam },
+    transfer: [P.I.buffer, W.buffer, ampC.buffer],
+  };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF };

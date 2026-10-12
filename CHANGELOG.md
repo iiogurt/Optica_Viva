@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- **More work in the compute worker:** the Lyot coronagraph (12 FFTs per update), JWST segment phasing (including the raster and segment map that used to be built on the main thread at page load) and the ray tracer's diffraction PSF (41×41 aimed-ray OPD grid plus two FFTs) now run in the worker. Numbers are unchanged and pinned by new regression tests (coronagraph throughput 40.9 %, stacked-segment Strehl 0.217, Cooke 14° OPD P-V 3.30 λ).
+
 ### Added
 - `scripts/bench.mjs` (`npm run bench`): kernel benchmarks as a Markdown table; a non-blocking CI job publishes them to the run summary.
 ### Removed
