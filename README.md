@@ -481,7 +481,7 @@ Optica_Viva/
 ├── scripts/
 │   ├── check.mjs              Syntax check + Markdown link/anchor check
 │   ├── smoke.sh               Loads every page in headless Chrome
-│   ├── release.sh             Checks & tests → version bump → tag → push → GitHub release
+│   ├── release.sh             prepare: release PR (date changelog, bump) · publish: tag + GitHub release
 │   └── screenshots.py         Regenerates docs/screenshots with headless Chromium
 ├── CHANGELOG.md               Keep a Changelog
 ├── ROADMAP.md                 Completed and planned milestones
@@ -569,17 +569,16 @@ In short: branch from `main` → `npm run ci` → pull request → green CI (`ch
 
 Version **1.1.0** · [all releases](https://github.com/iiogurt/Optica_Viva/releases) · [changelog](CHANGELOG.md)
 
-The project follows [Semantic Versioning](https://semver.org/): a new laboratory or capability is a **minor** release, and fixes and documentation are **patch** releases. Releases are cut with one command:
+The project follows [Semantic Versioning](https://semver.org/): a new laboratory or capability is a **minor** release, and fixes and documentation are **patch** releases. `main` is protected: every change, including the version bump, arrives through a pull request with green CI, and releases only push a tag.
 
 ```mermaid
 flowchart LR
-    A["Write CHANGELOG<br/><sub>## [X.Y.Z] - date</sub>"] --> B["scripts/release.sh X.Y.Z 'feat: …'"]
-    B --> C{"node --check<br/>all modules"}
+    A["feature PRs<br/><sub>entries under [Unreleased]</sub>"] --> B["release.sh prepare X.Y.Z"]
+    B --> C{"checks + tests"}
     C -- fail --> X["❌ abort"]
-    C -- pass --> D["bump package.json<br/>& README version"]
-    D --> E["commit + annotated tag vX.Y.Z"]
-    E --> F["git push --follow-tags"]
-    F --> G["gh release create<br/><sub>notes from CHANGELOG</sub>"]
+    C -- pass --> D["branch release/vX.Y.Z<br/><sub>date CHANGELOG · bump versions</sub>"]
+    D --> E["release PR"] --> F{"CI green"} --> G["squash-merge to main"]
+    G --> H["release.sh publish X.Y.Z"] --> I["push tag only + gh release"]
 ```
 
 ---
