@@ -1,7 +1,8 @@
-import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
-import { rasterAperture, psf, rescale, airy, zernikeWavefront, besselJ1 as besselJ1x } from '../lib/pupil.js';
-import { spectralBasis, oetf, linspace, wavelengthRGB } from '../lib/color.js';
+import { airy, besselJ1 as besselJ1x } from '../lib/pupil.js';
+import { latest } from '../lib/compute.js';
+import { oetf, linspace } from '../lib/color.js';
 import { plot } from '../lib/plot.js';
 
 const PRESETS = {
@@ -42,7 +43,6 @@ export default function mount(root, meta) {
   const ro = h('div');
   const calc = liveCalc();
 
-  const n = 512, Q = 4, Dpx = n / Q;
   let data = null;
 
   const main = stage({ aspect: 1.25, label: 'Point-spread function (log intensity)', draw: drawPSF, minH: 300 });
@@ -51,50 +51,21 @@ export default function mount(root, meta) {
   const ee = stage({ aspect: 1, label: '', draw: drawEE, cls: 'plain' });
   root.append(lab([main.el, h('div.grid-3', {}, pup.el, prof.el, ee.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
-  const recompute = debounce(() => {
+  // Heavy work runs in the compute worker. While controls move, a 256² preview (same field of
+  // view, Q = 2) answers quickly; the full 512² render (Q = 4) follows once input settles.
+  const job = latest('psf');
+  let fullTimer = 0;
+  const recompute = () => {
     const st = ctl.state, P = PRESETS[st.preset];
     const spec = { ...P.spec };
     if (spec.type === 'polygon') { spec.blades = st.blades; spec.curvature = st.curvature; }
-    const amp = rasterAperture(spec, n, Dpx, 4);
     const band = BANDS[st.band];
-    const W = st.defocus ? zernikeWavefront(n, Dpx, { 4: st.defocus * band.ref / 1000 }) : null; // µm OPD
-    const R = new Float64Array(n * n), G = new Float64Array(n * n), B = new Float64Array(n * n), Lm = new Float64Array(n * n);
-    const lams = band.lambdas;
-    const basis = lams.length === 1 ? [wavelengthRGB(lams[0], false)] : band.falseColor ? spectralBasis(lams.map((l) => 420 + ((l - lams[0]) / (lams[lams.length - 1] - lams[0])) * 260)) : spectralBasis(lams);
-    let base = null;
-    lams.forEach((l, i) => {
-      let I;
-      if (!W) { if (!base) base = psf(amp, null, n, band.ref / 1000).I; I = rescale(base, n, l / band.ref); }
-      else I = rescale(psf(amp, W, n, l / 1000).I, n, l / band.ref);
-      const [r, g, b] = basis[i];
-      for (let k = 0; k < n * n; k++) { const v = I[k]; R[k] += v * r; G[k] += v * g; B[k] += v * b; Lm[k] += v / lams.length; }
-    });
-    // perfect-PSF peak for Strehl (same pupil, no aberration, reference λ)
-    const p0 = psf(amp, null, n, band.ref / 1000).peak;
-    const pk = W ? psf(amp, W, n, band.ref / 1000).peak : p0;
-    // radial profile & encircled energy (in units of λref/D, D = circumscribed diameter)
-    const bins = 240, rmax = 30, prof = new Float64Array(bins), cnt = new Float64Array(bins);
-    const c = n / 2;
-    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-      const r = Math.hypot(x - c, y - c) / Q; // λ/D units
-      const b = Math.floor((r / rmax) * bins);
-      if (b < bins) { prof[b] += Lm[y * n + x]; cnt[b]++; }
-    }
-    let cum = 0, tot = 0;
-    for (let k = 0; k < n * n; k++) tot += Lm[k];
-    const eeCurve = [], profCurve = [];
-    const peak = Math.max(...Array.from(prof, (v, i) => (cnt[i] ? v / cnt[i] : 0)));
-    for (let i = 0; i < bins; i++) {
-      cum += prof[i];
-      const r = ((i + 0.5) / bins) * rmax;
-      if (cnt[i]) profCurve.push([r, prof[i] / cnt[i] / peak]);
-      eeCurve.push([((i + 1) / bins) * rmax, cum / tot]);
-    }
-    let area = 0; for (let k = 0; k < n * n; k++) area += amp[k];
-    const fill = area / (Math.PI * (Dpx / 2) ** 2);
-    data = { amp, R, G, B, Lm, profCurve, eeCurve, strehl: pk / p0, P, spec, band, fill };
-    update();
-  }, 40);
+    const args = { spec, lambdas: band.lambdas, ref: band.ref, defocus: st.defocus, falseColor: !!band.falseColor };
+    const show = (r, preview) => { data = { ...r, P, spec, band, preview }; update(); };
+    clearTimeout(fullTimer);
+    job('psfLab', { ...args, n: 256, Dpx: 128 }).then((r) => show(r, true)).catch(console.error);
+    fullTimer = setTimeout(() => job('psfLab', { ...args, n: 512, Dpx: 128 }).then((r) => show(r, false)).catch(console.error), 300);
+  };
 
   function update() {
     if (!data) return;
@@ -121,6 +92,7 @@ export default function mount(root, meta) {
   function drawPSF(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!data) return;
+    const { n, Q } = data;
     const st = ctl.state;
     const crop = Math.round(n / st.zoom), off = Math.round((n - crop) / 2);
     const ic = imageCanvas(crop, crop);
@@ -152,12 +124,13 @@ export default function mount(root, meta) {
     const unit = P.tel ? `${nice} λ/D = ${fmt((nice * data.band.ref * 1e-9) / P.D * 206265 * 1000, 3)} mas` : `${nice} λN = ${fmt((nice * data.band.ref) / 1000 * st.N, 3)} µm`;
     ctx.fillText(unit, (w - side) / 2 + 14, hh - 24);
     ctx.textAlign = 'right';
-    ctx.fillText(`${data.band.label}${st.defocus ? `  ·  defocus ${st.defocus} λ` : ''}`, (w + side) / 2 - 12, hh - 12);
+    ctx.fillText(`${data.preview ? 'preview · ' : ''}${data.band.label}${st.defocus ? `  ·  defocus ${st.defocus} λ` : ''}`, (w + side) / 2 - 12, hh - 12);
   }
 
   function drawPupil(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!data) return;
+    const { n, Dpx } = data;
     const crop = Dpx + 8, off = (n - crop) / 2;
     const ic = imageCanvas(crop, crop);
     for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {

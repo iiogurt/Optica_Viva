@@ -2,6 +2,7 @@ import { h, controls, stage, readouts, debounce, imageCanvas, texNum } from '../
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { rasterAperture, psf, zernike, zernikeWavefront, rmsWavefront, ZERNIKE_NAMES, segmentMap, pupilCoords } from '../lib/pupil.js';
 import { lut } from '../lib/color.js';
+import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 
 const MODES = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 22];
@@ -43,7 +44,6 @@ export default function mount(root, meta) {
 
   const n = 256, Dpx = 64; // Q = 4
   const amp = rasterAperture({ type: 'circle' }, n, Dpx, 4);
-  const P0 = psf(amp, null, n, 1).peak;
   let D = null;
 
   const wf = stage({ aspect: 1, label: 'Wavefront W(ρ,θ)', draw: (c, w, hh) => drawMap(c, w, hh, 'wf') });
@@ -55,22 +55,15 @@ export default function mount(root, meta) {
 
   const coeffs = () => { const c = {}; for (const j of MODES) c[j] = ctl.state['z' + j]; return c; };
 
+  // 23 FFTs per update (PSF, 5 through-focus, 17-point Strehl curve) run in the compute worker
+  const job = latest('zernike');
   const recompute = debounce(() => {
     const c = coeffs();
-    const W = zernikeWavefront(n, Dpx, c); // units: waves (λ = 1)
-    const P = psf(amp, W, n, 1);
-    const rms = rmsWavefront(amp, W, n);
-    let mn = Infinity, mx = -Infinity;
-    for (let k = 0; k < n * n; k++) if (amp[k] > 0.5) { mn = Math.min(mn, W[k]); mx = Math.max(mx, W[k]); }
-    const through = [-1, -0.5, 0, 0.5, 1].map((d) => psf(amp, zernikeWavefront(n, Dpx, { ...c, 4: (c[4] || 0) + d / Math.sqrt(3) / 2 }), n, 1).I);
-    // Strehl vs scaled aberration: exact (FFT) vs Maréchal
-    const curve = [];
-    for (let k = 0; k <= 16; k++) {
-      const s = k / 8;
-      const Ws = new Float64Array(W.length); for (let i = 0; i < W.length; i++) Ws[i] = W[i] * s;
-      curve.push([rms * s, psf(amp, Ws, n, 1).peak / P0]);
-    }
-    D = { W, I: P.I, strehl: P.peak / P0, rms, pv: mx - mn, through, curve };
+    job('zernikeLab', { coeffs: c, n, Dpx }).then((r) => present(c, r)).catch(console.error);
+  }, 30);
+  function present(c, r) {
+    const { rms } = r, mx = r.pv, mn = 0;
+    D = r;
     const sm = Math.exp(-((2 * Math.PI * rms) ** 2));
     ro.replaceChildren(readouts([
       ['RMS wavefront σ', rms.toFixed(4) + ' λ'],
@@ -84,7 +77,7 @@ export default function mount(root, meta) {
     const terms = (nz.slice(0, 3).map((j) => `${texNum(c[j], 2)}^2`).join('+') + (nz.length > 3 ? '+\\cdots' : '')) || '0';
     calc.set(String.raw`\begin{aligned}\sigma_W^2 &= \textstyle\sum_{j\ge4} a_j^2 = ${terms}\\ \sigma_W &= ${texNum(rms, 4)}\,\lambda\\ S &\approx e^{-(2\pi\sigma_W)^2} = ${texNum(sm, 4)}\\ S_\text{exact} &= \frac{\max|\mathcal F\{Pe^{i2\pi W}\}|^2}{\max|\mathcal F\{P\}|^2} = ${texNum(D.strehl, 4)}\end{aligned}`);
     [wf, ifg, ps, tf, sp].forEach((s) => s.redraw());
-  }, 30);
+  }
 
   const DIV = lut('diverging'), INF = lut('inferno');
   function drawMap(ctx, w, hh, kind) {
@@ -95,7 +88,7 @@ export default function mount(root, meta) {
       const crop = 96, off = (n - crop) / 2, ic = imageCanvas(crop, crop);
       let mx = 0; for (let k = 0; k < n * n; k++) mx = Math.max(mx, D.I[k]);
       for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-        let v = D.I[(y + off) * n + x + off] / (P0);
+        let v = D.I[(y + off) * n + x + off] / (D.P0);
         v = ctl.state.log ? Math.max(0, 1 + Math.log10(v + 1e-12) / 4) : Math.min(1, v);
         const t = Math.round(v * 255) * 3, o = (y * crop + x) * 4;
         ic.data[o] = INF[t]; ic.data[o + 1] = INF[t + 1]; ic.data[o + 2] = INF[t + 2]; ic.data[o + 3] = 255;
@@ -137,7 +130,7 @@ export default function mount(root, meta) {
     D.through.forEach((I, i) => {
       const ic = imageCanvas(crop, crop);
       for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-        const v = Math.max(0, 1 + Math.log10(I[(y + off) * n + x + off] / P0 + 1e-12) / 3.5);
+        const v = Math.max(0, 1 + Math.log10(I[(y + off) * n + x + off] / D.P0 + 1e-12) / 3.5);
         const t = Math.round(v * 255) * 3, o = (y * crop + x) * 4;
         ic.data[o] = INF[t]; ic.data[o + 1] = INF[t + 1]; ic.data[o + 2] = INF[t + 2]; ic.data[o + 3] = 255;
       }

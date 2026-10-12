@@ -94,7 +94,7 @@ flowchart LR
 - [x] **v1.0.0** Catalogue of 148 phenomena in 13 groups, with search, domain filter and "only simulated" filter
 - [x] **v1.0.0** All labs registered as ready; home page counters
 - [x] **v1.0.1** GitHub-style README: banner, badges, gallery of all labs, Mermaid diagrams, validation table, contributing guide
-- [x] **v1.0.1** `scripts/screenshots.py` for reproducible WebP screenshots
+- [x] **v1.0.1** `scripts/screenshots.mjs` for reproducible WebP screenshots
 - [x] **v1.0.2** This roadmap, with audit findings and planned milestones
 - [x] **v1.0.3** `CLAUDE.md` project guide for consistent future sessions
 
@@ -175,9 +175,10 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 *Goal: fluid on a Raspberry Pi 4 and on mid-range phones (A4).*
 
-- [ ] **P1 · M** Move FFT/PSF, ray-trace and ray-cast work into **Web Workers** with transferable buffers. Keep the UI thread for drawing only.
+- [x] **P1 · M** Move FFT/PSF work into **Web Workers** with transferable buffers. *Done for the PSF, Zernike and MTF labs (longest freeze 1 s → 16 ms on the Pi).*
+- [ ] **P2 · M** Extend the worker to the remaining heavy paths: seeing (animated FFTs), the coronagraph, the JWST phasing section, the ray tracer's OPD/PSF, and the projection, tilt-shift and perspective ray casters.
 - [x] **P1 · S** **Cache pupil rasters** per aperture and size; the JWST raster alone costs 184 ms on the Pi.
-- [ ] **P2 · M** **Progressive rendering**: low-resolution preview while a slider is dragging, full resolution on release.
+- [x] **P2 · M** **Progressive rendering**: low-resolution preview while a slider is dragging, full resolution on release. *Done in the PSF lab (256² preview, then 512²); extend alongside the worker migration.*
 - [ ] **P2 · L** **WebGPU compute path** for FFTs, phase screens and per-pixel ray casting, with CPU fallback. WebGPU now ships in Chrome, Safari 26 and recent Firefox, but Android coverage is incomplete, so the fallback stays mandatory.
 - [x] **P2 · M** **Faster FFT**: a cache-blocked transpose replaces strided column passes, 1.4× faster at 512² on the Pi. *A real-input FFT was dropped: nearly every PSF field is complex because of its phase, so the half-complex trick rarely applies.*
 - [x] **P3 · S** Performance report in CI: `npm run bench` publishes kernel timings to the run summary. *It is informational rather than a failing budget, because shared runners are too noisy for a 25 % threshold.*

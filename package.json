@@ -8,9 +8,10 @@
     "start": "python3 -m http.server 8000",
     "test": "node --test test/",
     "check": "node scripts/check.mjs",
-    "smoke": "bash scripts/smoke.sh",
+    "smoke": "node --experimental-websocket scripts/smoke.mjs",
     "ci": "npm run check && npm test && npm run smoke",
-    "bench": "node scripts/bench.mjs"
+    "bench": "node scripts/bench.mjs",
+    "screenshots": "node --experimental-websocket scripts/screenshots.mjs"
   },
   "repository": {
     "type": "git",
