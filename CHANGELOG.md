@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-12
+
+Performance milestone (PRs [#7](https://github.com/iiogurt/Optica_Viva/pull/7)–[#10](https://github.com/iiogurt/Optica_Viva/pull/10)): a faster FFT, cached rasters, a compute worker that keeps the UI responsive on a Raspberry Pi 4, real-time browser testing, and releases that go through pull requests.
+
 ### Changed
 - **More work in the compute worker:** the Lyot coronagraph (12 FFTs per update), JWST segment phasing (including the raster and segment map that used to be built on the main thread at page load) and the ray tracer's diffraction PSF (41×41 aimed-ray OPD grid plus two FFTs) now run in the worker. Numbers are unchanged and pinned by new regression tests (coronagraph throughput 40.9 %, stacked-segment Strehl 0.217, Cooke 14° OPD P-V 3.30 λ).
 
@@ -293,7 +297,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.1...v1.0.2

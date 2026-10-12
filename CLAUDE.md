@@ -36,4 +36,4 @@ Use the most precise model that runs interactively, and state every approximatio
 See also `CONTRIBUTING.md` (human-facing version of these rules) and the PR template checklist.
 
 ## Next work
-Pick from `ROADMAP.md`. v1.1 has shipped; next is v1.2 (performance: Web Workers, cached pupil rasters, progressive rendering, WebGPU). The licence is still undecided and is the owner's call.
+Pick from `ROADMAP.md`. v1.1 and v1.2 have shipped; next is v1.3 (lens-design depth: aspheric surfaces, prescription editor and `.zmx` import, Seidel sums, through-field analysis), plus the open v1.2 worker items. The licence is still undecided and is the owner's call.
