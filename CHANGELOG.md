@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **MTF across the field** in the ray tracer: sagittal and tangential MTF at 10 and 30 lp/mm vs image height (the curves lens makers publish), from the OTF of the traced, vignetted pupil at 7 field positions, computed in the worker. Diffraction-limit references are drawn.
+- Test: a near-perfect f/20 aspheric lens reproduces the analytic diffraction MTF within 1.5 %; S = T on axis; off-axis astigmatism splits them.
+
+### Changed
+- `lensPSF` and the new `lensMTF` share one traced-pupil builder (`lensPupil`) in `js/lib/tasks.js`.
+
 ## [1.3.0] - 2026-10-12
 
 Lens-design milestone (PRs [#12](https://github.com/iiogurt/Optica_Viva/pull/12)–[#16](https://github.com/iiogurt/Optica_Viva/pull/16)): aspheric surfaces, a prescription editor with Zemax import and shareable designs, per-surface Seidel sums, through-field analysis and vignetted PSF pupils, each validated against exact ray tracing.

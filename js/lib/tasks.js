@@ -192,10 +192,24 @@ function segPhasing(p) {
 // pupil grid, interpolated onto a 256² pupil and Fourier-transformed.
 // p = { lens, theta (deg), zImg (mm), N }
 function lensPSF(p) {
+  const f = lensPupil(p, 256, 128);
+  if (!f) return { result: null, transfer: [] };
+  const { amp, W, n, lam, rmsW, pvW, maxStep, transmitted } = f;
+  const P = psf(amp, W, n, lam / 1000), P0 = psf(amp, null, n, lam / 1000);
+  const ampC = amp.slice();
+  return {
+    result: { I: P.I, n, Wmap: W, amp: ampC, rmsW, pvW, strehl: P.peak / P0.peak, aliased: maxStep > 0.5, N: p.N, lam, transmitted },
+    transfer: [P.I.buffer, W.buffer, ampC.buffer],
+  };
+}
+
+// Traced, vignetted exit-pupil field: OPD on a 41×41 grid (rays blocked by clear apertures
+// carry no light), interpolated onto an n×n grid with a Dpx-pixel pupil. µm of OPD.
+function lensPupil(p, n, Dpx) {
   const { lens, theta, zImg, N, sd } = p, lam = 587.56;
   const par = paraxial(lens, lam);
   const ref = referenceSphere(lens, lam, theta, zImg, par);
-  if (!ref) return { result: null, transfer: [] };
+  if (!ref) return null;
   // OPD on a 41×41 pupil grid; `lit` marks rays that pass every clear aperture (vignetting)
   const G = 41, grid = new Float64Array(G * G).fill(NaN), lit = new Float64Array(G * G);
   let inPupil = 0, passed = 0;
@@ -207,13 +221,12 @@ function lensPSF(p) {
     const v = opd(lens, lam, theta, px, py, ref, par);
     if (v != null) { grid[j * G + i] = v; lit[j * G + i] = 1; passed++; }
   }
-  if (!passed) return { result: null, transfer: [] };
+  if (!passed) return null;
   // remove piston; RMS
   let s = 0, s2 = 0, c = 0, maxStep = 0;
   for (let k = 0; k < G * G; k++) if (!isNaN(grid[k])) { s += grid[k]; s2 += grid[k] ** 2; c++; }
   const mean = s / c, rmsW = Math.sqrt(s2 / c - mean * mean);
   for (let k = 0; k < G * G; k++) if (!isNaN(grid[k])) grid[k] -= mean;
-  const n = 256, Dpx = 128;
   const amp = rasterAperture({ type: 'circle' }, n, Dpx, 3).slice(); // copy: the cached raster is shared
   const W = new Float64Array(n * n);
   let pv = [Infinity, -Infinity];
@@ -235,12 +248,33 @@ function lensPSF(p) {
     pv = [Math.min(pv[0], W[k]), Math.max(pv[1], W[k])];
     if (x > 0 && amp[k - 1]) maxStep = Math.max(maxStep, Math.abs(W[k] - W[k - 1]) / (lam / 1000));
   }
-  const P = psf(amp, W, n, lam / 1000), P0 = psf(amp, null, n, lam / 1000);
-  const ampC = amp.slice();
-  return {
-    result: { I: P.I, n, Wmap: W, amp: ampC, rmsW, pvW: (pv[1] - pv[0]) / (lam / 1000), strehl: P.peak / P0.peak, aliased: maxStep > 0.5, N, lam, transmitted: passed / inPupil },
-    transfer: [P.I.buffer, W.buffer, ampC.buffer],
-  };
+  return { amp, W, n, lam, rmsW, pvW: (pv[1] - pv[0]) / (lam / 1000), maxStep, transmitted: passed / inPupil };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF };
+// MTF across the field of a traced lens: for each field angle, OTF = FFT(PSF of the traced,
+// vignetted pupil); sagittal (x) and tangential (y) cuts read at the requested lp/mm.
+// p = { lens, sd, zImg, N, freqs: [lp/mm], fields: n }
+function lensMTF(p) {
+  const n = 256, Dpx = 64, Q = n / Dpx, hn = n / 2, rows = [];
+  const fmax = p.lens.field, nf = p.fields || 7;
+  for (let k = 0; k < nf; k++) {
+    const theta = (fmax * k) / (nf - 1);
+    const f = lensPupil({ ...p, theta }, n, Dpx);
+    if (!f) continue;
+    const { I } = psf(f.amp, f.W, n, f.lam / 1000);
+    const re = new Float64Array(n * n), im = new Float64Array(n * n);
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) re[((y + hn) % n) * n + ((x + hn) % n)] = I[y * n + x];
+    fft2d(re, im, n);
+    const du = (f.lam * 1e-6 * p.N) / Q;   // PSF sample (mm)
+    const dnu = 1 / (n * du);               // OTF sample (cycles/mm)
+    const at = (axis, nu) => {               // |OTF| along x (sagittal) or y (tangential), linear interp
+      const t = nu / dnu, i0 = Math.floor(t), fr = t - i0;
+      const g = (i) => (axis === 'x' ? Math.hypot(re[i], im[i]) : Math.hypot(re[i * n], im[i * n])) / re[0];
+      return i0 + 1 < hn ? g(i0) * (1 - fr) + g(i0 + 1) * fr : 0;
+    };
+    rows.push({ theta, h: p.efl * Math.tan((theta * Math.PI) / 180), S: p.freqs.map((nu) => at('x', nu)), T: p.freqs.map((nu) => at('y', nu)), transmitted: f.transmitted });
+  }
+  return { result: { rows, freqs: p.freqs }, transfer: [] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF };

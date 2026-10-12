@@ -6,6 +6,7 @@ import { GLASSES, abbe, index } from '../lib/glass.js';
 import { wavelengthCSS } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
 import { latest } from '../lib/compute.js';
+import { mtfDiffraction } from '../lib/pupil.js';
 import { lut } from '../lib/color.js';
 
 
@@ -43,6 +44,7 @@ export default function mount(root, meta) {
   const spot = stage({ aspect: 1, label: 'Spot diagram', draw: drawSpot });
   const fan = stage({ aspect: 1, label: '', draw: drawFan, cls: 'plain' });
   const chroma = stage({ aspect: 1, label: '', draw: drawChroma, cls: 'plain' });
+  const mtfSt = stage({ aspect: 2.7, label: '', draw: drawMTFField, cls: 'plain', minH: 230 });
   const fieldSt = stage({ aspect: 2.7, label: '', draw: drawField, cls: 'plain', minH: 230 });
   const seidSt = stage({ aspect: 2.7, label: '', draw: drawSeidel, cls: 'plain', minH: 230 });
   const psfStage = stage({ aspect: 2, label: 'Wavefront (OPD) · diffraction PSF from the traced rays', draw: drawPSF, minH: 220 });
@@ -52,6 +54,7 @@ export default function mount(root, meta) {
     h('div.grid-3', {}, spot.el, fan.el, chroma.el),
     h('div.card', { style: { padding: '6px' } }, seidSt.el),
     h('div.card', { style: { padding: '6px' } }, fieldSt.el),
+    h('div.card', { style: { padding: '6px' } }, mtfSt.el),
     psfStage.el,
   ], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '12px' } }, bestBtn)), h('div.card', {}, ro), calc.el], true));
 
@@ -156,6 +159,7 @@ export default function mount(root, meta) {
     \end{aligned}`);
     layout.redraw(); zoom.redraw(); spot.redraw(); fan.redraw(); chroma.redraw(); seidSt.redraw(); fieldSt.redraw();
     computePSF();
+    computeMTF();
   }
 
   function autoFocus() {
@@ -350,7 +354,7 @@ export default function mount(root, meta) {
     const half = w / 2 - 6;
     ctx.save(); ctx.beginPath(); ctx.rect(0, 0, half, hh); ctx.clip();
     plot(ctx, half, hh, {
-      title: 'Field curves: T and S focus vs field (mm from paraxial image)', x: { min: -zm, max: zm, label: 'focus shift Δz (mm)' }, y: { min: 0, max: fmax, label: 'field angle (°)' },
+      title: 'Field curves: T and S focus vs field', x: { min: -zm, max: zm, label: 'focus shift Δz (mm)' }, y: { min: 0, max: fmax, label: 'field angle (°)' },
       series: [
         { data: fc.map((r) => [r.zt, r.theta]), color: '#6ad7ff', width: 2.2, label: 'tangential (exact)' },
         { data: fc.map((r) => [r.zs, r.theta]), color: '#ffb547', width: 2.2, label: 'sagittal (exact)' },
@@ -418,6 +422,33 @@ export default function mount(root, meta) {
   // Diffraction PSF from the traced OPD (Huygens/Fraunhofer).
   let psfData = null;
   // 41×41 aimed rays for the OPD grid plus two 256² FFTs run in the compute worker
+  // MTF across the field (worker): 7 field positions × traced pupil → PSF → OTF
+  const mtfJob = latest('lensMTF');
+  let mtfData = null;
+  const computeMTF = debounce(() => {
+    const m = model; if (!m) return;
+    mtfJob('lensMTF', { lens: { ...m.lens, field: m.base.field }, sd: m.sd, zImg: m.zImg, N: m.pd.efl / m.lens.epd, efl: m.pd.efl, freqs: [10, 30], fields: 7 })
+      .then((r) => { mtfData = r; mtfSt.redraw(); }).catch(console.error);
+  }, 250);
+  function drawMTFField(ctx, w, hh) {
+    if (!mtfData || !model) { ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '12px Inter, sans-serif'; ctx.fillText('computing MTF across the field…', 20, 30); return; }
+    const rows = mtfData.rows, hmax = Math.max(1, ...rows.map((r) => r.h));
+    const N = model.pd.efl / model.lens.epd, nuc = 1 / (587.56e-6 * N);
+    const dl = (nu) => mtfDiffraction(Math.min(1, nu / nuc));
+    plot(ctx, w, hh, {
+      title: `MTF across the field at the current image plane (588 nm, f/${N.toFixed(1)}): sagittal solid, tangential dashed`,
+      x: { min: 0, max: hmax, label: 'image height (mm)' }, y: { min: 0, max: 1, label: 'MTF' },
+      series: [
+        { data: rows.map((r) => [r.h, r.S[0]]), color: '#6ad7ff', width: 2.4, label: '10 lp/mm' },
+        { data: rows.map((r) => [r.h, r.T[0]]), color: '#6ad7ff', width: 2.4, dash: [6, 4] },
+        { data: rows.map((r) => [r.h, r.S[1]]), color: '#ffb547', width: 1.6, label: '30 lp/mm' },
+        { data: rows.map((r) => [r.h, r.T[1]]), color: '#ffb547', width: 1.6, dash: [6, 4] },
+      ],
+      hlines: [{ y: dl(10), color: 'rgba(106,215,255,0.35)', label: 'diffraction limit 10' }, { y: dl(30), color: 'rgba(255,181,71,0.35)', label: 'diffraction limit 30' }],
+      legend: true, legendX: 70, legendY: hh - 90,
+    });
+  }
+
   const psfJob = latest('lensPSF');
   const computePSF = debounce(() => {
     const m = model; if (!m) return;
