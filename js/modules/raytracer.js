@@ -1,6 +1,6 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, readUrlParam, bindUrlParam, syncUrl } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
-import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag } from '../lib/raytrace.js';
+import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag, seidel } from '../lib/raytrace.js';
 import { parseZmx, lensToJSON, lensFromJSON, validateLens, encodeLens, decodeLens } from '../lib/lensio.js';
 import { GLASSES, abbe, index } from '../lib/glass.js';
 import { wavelengthCSS } from '../lib/color.js';
@@ -43,11 +43,13 @@ export default function mount(root, meta) {
   const spot = stage({ aspect: 1, label: 'Spot diagram', draw: drawSpot });
   const fan = stage({ aspect: 1, label: '', draw: drawFan, cls: 'plain' });
   const chroma = stage({ aspect: 1, label: '', draw: drawChroma, cls: 'plain' });
+  const seidSt = stage({ aspect: 2.7, label: '', draw: drawSeidel, cls: 'plain', minH: 230 });
   const psfStage = stage({ aspect: 2, label: 'Wavefront (OPD) · diffraction PSF from the traced rays', draw: drawPSF, minH: 220 });
 
   root.append(lab([
     layout.el, zoom.el,
     h('div.grid-3', {}, spot.el, fan.el, chroma.el),
+    h('div.card', { style: { padding: '6px' } }, seidSt.el),
     psfStage.el,
   ], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '12px' } }, bestBtn)), h('div.card', {}, ro), calc.el], true));
 
@@ -118,7 +120,8 @@ export default function mount(root, meta) {
     // distortion of the chief ray at full field
     const chiefFull = (() => { const a = aimRay(lens, 587.56, base.field, 0, 0, pd); const r = trace(lens, 587.56, a.p, a.d, { clip: false, zv: pd.zv }); return toPlane(r, pd.zImage)[1]; })();
     const ideal = pd.efl * Math.tan(base.field * Math.PI / 180);
-    model = { base, lens, lambdas, sd, par, pd, zImg, theta, fans, spots, rms, geo, cx, cy, fanCurves, chromaCurve, distortion: (chiefFull - ideal) / ideal * 100, p0 };
+    const seid = seidel({ ...lens, field: base.field });
+    model = { base, lens, lambdas, sd, par, pd, zImg, theta, fans, spots, rms, geo, cx, cy, fanCurves, chromaCurve, distortion: (chiefFull - ideal) / ideal * 100, p0, seid };
   }
 
   function update() {
@@ -147,7 +150,7 @@ export default function mount(root, meta) {
     &r_\text{Airy} = 1.22\lambda N = ${texNum(airy, 3)}\ \mu\text{m}\\
     &\textstyle\sum \phi_k/(n_k n_k') = ${texNum(pd.petzval, 4)}\,\text{mm}^{-1}
     \end{aligned}`);
-    layout.redraw(); zoom.redraw(); spot.redraw(); fan.redraw(); chroma.redraw();
+    layout.redraw(); zoom.redraw(); spot.redraw(); fan.redraw(); chroma.redraw(); seidSt.redraw();
     computePSF();
   }
 
@@ -331,6 +334,34 @@ export default function mount(root, meta) {
     ctx.fillText('— tangential   ┄ sagittal', w - 18, hh - 46);
   }
 
+  // Seidel wavefront coefficients per surface (waves at 588 nm, full field and aperture)
+  const SEID = [['SI', 'W₀₄₀ spherical', 1 / 8, '#ff6b6b'], ['SII', 'W₁₃₁ coma', 1 / 2, '#ffb547'], ['SIII', 'W₂₂₂ astigmatism', 1 / 2, '#ffd27a'],
+    ['SIV', 'W₂₂₀ Petzval', 1 / 4, '#6be3a4'], ['SV', 'W₃₁₁ distortion', 1 / 2, '#6ad7ff'], ['CI', 'axial colour', 1 / 2, '#c18cff'], ['CII', 'lateral colour', 1, '#ff9cc0']];
+  function drawSeidel(ctx, w, hh) {
+    if (!model) return;
+    const { rows, total } = model.seid, lamMm = 587.56e-6;
+    const val = (r, [k, , f]) => (r[k] * f) / lamMm;
+    let m = 1e-9; rows.forEach((r) => SEID.forEach((d) => (m = Math.max(m, Math.abs(val(r, d))))));
+    const ym = m * 1.15;
+    const { X, Y } = plot(ctx, w, hh, {
+      title: 'Seidel aberrations per surface: wavefront coefficients at full field and aperture (waves, 588 nm)',
+      x: { min: 0.5, max: rows.length + 0.5, label: 'surface', step: 1, fmt: (v) => (Number.isInteger(v) ? String(v) : '') },
+      y: { min: -ym, max: ym, label: 'waves' }, padR: 170,
+      hlines: [{ y: 0, color: 'rgba(255,255,255,0.3)', dash: [] }],
+    });
+    const gw = (X(1.5) - X(0.5)) * 0.8, bw = gw / SEID.length;
+    rows.forEach((r, i) => SEID.forEach((d, j) => {
+      const v = val(r, d), x = X(i + 1) - gw / 2 + j * bw;
+      ctx.fillStyle = d[3]; ctx.fillRect(x, Math.min(Y(0), Y(v)), Math.max(1, bw - 1), Math.abs(Y(v) - Y(0)));
+    }));
+    ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    SEID.forEach((d, j) => {
+      const y = 34 + j * 17, t = (total[d[0]] * d[2]) / lamMm;
+      ctx.fillStyle = d[3]; ctx.fillRect(w - 162, y - 4, 10, 8);
+      ctx.fillStyle = '#e9ebf3'; ctx.fillText(`${d[1]}  Σ ${t >= 0 ? '+' : ''}${t.toFixed(2)}`, w - 147, y);
+    });
+  }
+
   function drawChroma(ctx, w, hh) {
     if (!model) return;
     const c = model.chromaCurve;
@@ -511,6 +542,10 @@ export default function mount(root, meta) {
 </div><div>
 <h3>Paraxial first-order data</h3>
 <p>The focal length, back focus and pupils come from the \(y\)–\(nu\) matrix trace. The entrance pupil is found by solving for the object-space ray that crosses the stop centre: if \(y_\text{stop} = A\,y_1 + B\,u_1\), the pupil lies at \(z_{EP} = B/A\) with radius \(r_\text{stop}/A\). The Petzval sum gives the radius of the natural image surface of an anastigmat.</p>
+<h3>Seidel sums: where aberrations come from</h3>
+<p>Two paraxial rays, a marginal ray \((y,u)\) and a chief ray \((\bar y,\bar u)\), give each surface's third-order contribution in closed form (Welford). With refraction invariants \(A = n(u + yc)\) and \(\bar A = n(\bar u + \bar yc)\) and Lagrange invariant \(H\):</p>
+\[S_I = -A^2y\,\Delta\!\left(\tfrac{u}{n}\right),\quad S_{II} = -A\bar A y\,\Delta\!\left(\tfrac{u}{n}\right),\quad S_{III} = -\bar A^2y\,\Delta\!\left(\tfrac{u}{n}\right),\quad S_{IV} = -H^2c\,\Delta\!\left(\tfrac1n\right),\quad S_V = \tfrac{\bar A}{A}(S_{III}+S_{IV}).\]
+<p>A conic or aspheric surface adds \(\Delta S_I = 8G(n'-n)y^4\) with \(G = kc^3/8 + a_4\), plus its stop-shifted partners. The bar chart converts the sums to wavefront coefficients \(W_{040} = S_I/8\), \(W_{131} = S_{II}/2\) and so on. It shows the essence of lens design: surfaces contribute large amounts of coma and distortion that cancel between elements. The sums are checked against the exact tracer: the predicted transverse spherical aberration \(S_I/(2n'u')\) agrees within 2 % at small apertures, and \(S_{IV}/H^2\) equals the Petzval sum.</p>
 <h3>From rays to waves</h3>
 <p>The optical path length \(\mathrm{OPL} = \sum n_i t_i\) is accumulated from a common incident wavefront to the exit-pupil reference sphere. That sphere is centred on the chief-ray image point, and its radius is the distance from the exit pupil. The optical path difference</p>
 \[W(p_x,p_y) = \mathrm{OPL}(p_x,p_y) - \mathrm{OPL}_\text{chief}\]

@@ -198,3 +198,29 @@ test('aspheres: Newton intersection agrees with the closed-form sphere; k = −1
   for (let i = 0; i < 3; i++) { near(b.p[i], a.p[i], 1e-9, 'exit point ' + i); near(b.d[i], a.d[i], 1e-12, 'exit direction ' + i); }
   near(surfaceSag({ R: 50, k: -1 }, 7), (7 * 7) / (2 * 50), 1e-12, 'paraboloid sag r²/2R');
 });
+
+test('Seidel sums agree with exact ray tracing (small aperture) and with the Petzval sum', async () => {
+  const { seidel } = await import('../js/lib/raytrace.js');
+  const tsa = (L) => { const p = paraxial(L), a = aimRay(L, 587.56, 0, 0, 1, p); return toPlane(trace(L, 587.56, a.p, a.d, { clip: false, zv: p.zv }), p.zImage)[1]; };
+  for (const key of ['plano-convex', 'plano-convex-rev', 'cooke']) {
+    const L = { ...LENSES[key], epd: key === 'cooke' ? 2 : 4 }, sd = seidel(L);
+    const pred = sd.total.SI / (2 * sd.nImage * sd.uImage), real = tsa(L);
+    assert.ok(Math.abs(pred - real) < 0.02 * Math.abs(real), `${key}: Seidel TSA ${pred} vs real ${real}`);
+    near(sd.total.SIV / sd.H ** 2, paraxial(L).petzval, 1e-12, `${key}: S_IV / H² = Petzval sum`);
+  }
+  // bending: reversing the plano-convex lens multiplies spherical aberration by ≈ 4
+  const r = seidel({ ...LENSES['plano-convex-rev'], epd: 4 }).total.SI / seidel({ ...LENSES['plano-convex'], epd: 4 }).total.SI;
+  near(r, 3.95, 0.05, 'S_I ratio reversed / correct orientation');
+  // the conic term cancels S_I of the hyperbolic singlet
+  const hyp = seidel(LENSES['plano-hyperbolic']).total.SI, sph = seidel(LENSES['plano-convex-rev']).total.SI;
+  assert.ok(Math.abs(hyp) < 1e-5 * Math.abs(sph), `hyperbolic S_I ${hyp}`);
+});
+
+test('chromatic Seidel sum C_I predicts the F–C focus shift', async () => {
+  const { seidel } = await import('../js/lib/raytrace.js');
+  const shift = (L) => paraxial(L, 486.13).zImage - paraxial(L, 656.27).zImage;
+  const pred = (L) => { const s = seidel(L); return -s.total.CI / (s.nImage * s.uImage ** 2); };
+  const single = LENSES['plano-convex'];
+  assert.ok(Math.abs(pred(single) - shift(single)) < 0.01 * Math.abs(shift(single)), 'singlet within 1 %');
+  assert.ok(Math.abs(pred(LENSES.achromat)) < 1e-3 * Math.abs(shift(single)), 'achromat ≈ 0');
+});
