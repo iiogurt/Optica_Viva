@@ -67,7 +67,7 @@ flowchart LR
 | Laboratories | 20 | +19 proposed (v1.5, v1.6) |
 | Catalogue entries | 148 | link every new lab; add polarisation and colour-science entries |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 43 tests (physics, blur, lens I/O, ghosts, bokeh) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 44 tests (physics, blur, lens I/O, ghosts, bokeh) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -240,7 +240,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 - [x] **P1 · L** **Real-ray ghost tracing** for flare: sample pupil rays through each two-reflection path, giving aberrated, vignetted ghosts (Hullin 2011 full method). *Includes angle-dependent coating reflectance, TIR, per-pixel aperture gauge and path culling; runs in the worker with draft and refined passes.*
 - [x] **P2 · L** **Bokeh from the traced lens**: defocus kernels built from real rays of the chosen prescription, including LoCA rims (magenta and green) and field-dependent cat's eyes. *Default bokeh model; 18 kernels in the worker; validated for size, flux, SA and colour order.*
-- [ ] **P2 · M** **Diffraction-aware bokeh**: Fresnel edge ripples for small disks via the defocused-PSF FFT path.
+- [x] **P2 · M** **Diffraction-aware bokeh**: Fresnel edge ripples for small disks via the defocused-PSF FFT path. *Traced pupil + defocus, 5 wavelengths, compared with pure defocus; validated against sinc²(W₀₂₀/λ).*
 - [x] **P2 · M** Exact disk kernel in tilt-shift and DoF (shares the v1.1 blur code). *Anti-aliased pillbox from per-row prefix sums, downsampled above r = 8 px; Vogel taps remain only for very large near cards in DoF.*
 - [ ] **P3 · L** **Spectral scene renderer**: render a whole scene per wavelength through the PSF, the colour-matching functions and the sensor's spectral response.
 - [x] **P3 · M** Polychromatic ghosts with dispersion inside the paraxial and real-ray models. *Both models trace each of the 8 wavelengths with its own indices and coating reflectance.*
