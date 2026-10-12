@@ -24,7 +24,13 @@ export const LINES = { i: 365.01, h: 404.66, g: 435.83, F: 486.13, e: 546.07, d:
 export function index(glass, lambdaNm) {
   if (!glass || glass === 'air') return 1.0;
   const G = typeof glass === 'string' ? GLASSES[glass] : glass;
+  if (!G) throw new Error('unknown glass ' + glass);
   const l2 = (lambdaNm / 1000) ** 2;
+  // model glass from (n_d, V_d): two-term Cauchy n = A + B/λ², reproducing n_d and V_d exactly
+  if (G.nd) {
+    const B = (G.nd - 1) / G.vd / (1 / (LINES.F / 1000) ** 2 - 1 / (LINES.C / 1000) ** 2);
+    return G.nd + B * (1 / l2 - 1 / (LINES.d / 1000) ** 2);
+  }
   let s = 1;
   for (let i = 0; i < 3; i++) s += G.B[i] * l2 / (l2 - G.C[i]);
   return Math.sqrt(s);

@@ -7,6 +7,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Prescription editor** in the ray tracer: an editable surface table (radius, thickness, glass, conic, a₄, a₆, stop, add and remove), entrance pupil and field, live validation, and traced results on every change. A custom design travels in the page link (`rx=…`, a compact URL-safe encoding), so it can be shared.
+- **Import/export** (`js/lib/lensio.js`): Zemax `.zmx` subset (sequential STANDARD and EVENASPH; CURV, DISZ, GLAS, CONI, PARM, DIAM, STOP, ENPD, YFLN; UTF-16 files decoded) and Optica Viva JSON. Unknown glasses become **model glasses** from their n_d and V_d (two-term Cauchy that reproduces both).
+- Tests: Zemax fixtures reproduce the Cooke triplet EFL and the SA-free hyperbolic singlet; JSON and URL round trips for every built-in lens; model glasses keep n_d and V_d; validation; every glass used by a built-in lens is in the catalogue.
+
+### Fixed
+- The library's `achromat` prescription was an early, incorrect doublet (f ≈ 84 mm); the laboratory had been patching it at runtime. The designed N-BK7/F2 doublet (f = 100 mm) now lives in `js/lib/raytrace.js`, so tests, the worker and the editor see the same lens.
+
+### Added
 - **Aspheric surfaces** in the exact ray tracer: conic constant `k` plus even polynomial terms `a = [a₄, a₆, a₈, a₁₀]`. Rays are intersected by Newton iteration on z − sag(r) = 0, with the analytic sag slope for the surface normal; spheres keep their closed-form path.
 - **Plano-aspheric singlet** prescription (N-BK7, hyperbolic surface k = −n²). It focuses a collimated beam with zero spherical aberration: worst zone error 0.0005 µm against 457 µm for the spherical singlet of the same power, leaving only chromatic defocus.
 - Tests: the hyperbolic singlet is free of spherical aberration, the Newton path matches the closed-form sphere, and k = −1 gives an exact paraboloid.
