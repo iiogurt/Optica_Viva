@@ -51,11 +51,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"]
     end
     subgraph Next["Planned"]
         direction TB
-        N2["v1.2 performance<br/>workers · WebGPU"] --> N3["v1.3 lens design<br/>aspheres · editor · import"]
+        N3["v1.3 lens design<br/>aspheres · editor · import"]
         N3 --> N4["v1.4 rendering<br/>real-ray flare & bokeh"] --> N5["v1.5 photo/cine labs"] --> N6["v1.6 space labs"] --> N7["v2.0 learning platform"]
     end
     Done --> Next
@@ -76,6 +76,17 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.2.0 Performance</b> (2026-10-12, PRs #7–#10)</summary>
+
+- [x] Releases go through pull requests; `main` requires a PR and green checks, also for admins (#7)
+- [x] Transpose-based 2-D FFT (512²: 88 → 66 ms on the Pi), LRU-cached pupil rasters, `npm run bench` and a CI performance report (#8)
+- [x] Compute worker for the PSF, Zernike and MTF labs: longest main-thread freeze 1040 ms → 16 ms; progressive 256² → 512² PSF (#9)
+- [x] Real-time CDP smoke test and screenshots (virtual time does not run workers); the smoke test fails on labs that render nothing (#9)
+- [x] Coronagraph, JWST phasing and ray-tracer PSF moved to the worker, with regression tests (#10)
+
+</details>
+
+<details>
 <summary><b>v1.1.0 Robustness, testing & deployment</b> (2026-10-12, PRs #1–#6)</summary>
 
 - [x] Physics test suite (17 tests) + link checker + headless smoke test, run by GitHub Actions on every PR (#1)
@@ -172,6 +183,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P3 · S** `CONTRIBUTING.md` split out of the README, plus issue and PR templates. *A code of conduct is deferred until outside contributors arrive.*
 
 ### v1.2 Performance
+
+✅ **Released as v1.2.0.** The remaining worker paths are open below; WebGPU is deferred to v1.4.
 
 *Goal: fluid on a Raspberry Pi 4 and on mid-range phones (A4).*
 
