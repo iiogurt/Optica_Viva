@@ -458,6 +458,8 @@ Optica_Viva/
 │   ├── app.js                 Laboratory registry, hash router, navigation
 │   ├── lib/                   Numerical core (pure functions, no DOM unless noted)
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
+│   │   ├── blur.js            Safari-safe Gaussian blur (3 box passes, premultiplied alpha)
+│   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
 │   │   ├── color.js           CIE 1931 CMFs, sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── raytrace.js        Exact ray tracer, paraxial analysis, ray aiming, OPD
@@ -470,7 +472,7 @@ Optica_Viva/
 │   └── modules/               One file per page (22)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
-├── test/physics.test.mjs      Physics validation suite (node --test)
+├── test/                      Physics and blur test suites (node --test)
 ├── .github/workflows/
 │   ├── ci.yml                 CI: syntax & links, physics tests, browser smoke test
 │   └── pages.yml              Deploys main to GitHub Pages
@@ -531,7 +533,7 @@ Every page states its model's assumptions. The main simplifications are:
 | | Chrome / Edge | Firefox | Safari |
 |---|---|---|---|
 | All laboratories | ✅ | ✅ | ✅ |
-| `ctx.filter` blur (DoF, tilt-shift, bokeh softening) | ✅ | ✅ | ⚠️ disabled by default in Safari (≤ 26.5): those blurs render sharp until the in-house blur lands in [v1.1](ROADMAP.md#v11-robustness-testing--deployment) |
+| Blur in DoF and tilt-shift (in-house Gaussian, no `ctx.filter`) | ✅ | ✅ | ✅ |
 
 The heavier pages run 256²–512² FFTs or ray-cast hundreds of thousands of rays per update: seeing (animated), coronagraph, tilt-shift, PSF and projection. They are fluid on a modern desktop and noticeably slower on low-power devices such as a Raspberry Pi. Computations are debounced while you drag sliders.
 

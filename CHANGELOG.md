@@ -19,6 +19,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - `scripts/release.sh` now also runs the physics test suite before releasing.
 
 ### Fixed
+- **Safari:** depth-of-field, bokeh-softening and tilt-shift blurs no longer depend on `CanvasRenderingContext2D.filter`, which Safari ships disabled. The new `js/lib/blur.js` is an O(1)-per-pixel Gaussian (three box passes, premultiplied alpha), tested in `test/blur.test.mjs`. In the depth-of-field lab the source is blurred once instead of once per kernel tap, which is equivalent because blurring commutes with shifting and summing, and faster.
 - cos⁴ falloff at the corner of a 28 mm full-frame lens (37.7°) is −1.35 EV, not −1.30 EV (README validation table and vignetting theory). Found by the new test suite.
 
 ## [1.0.3] - 2026-10-12
