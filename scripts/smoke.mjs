@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { launch, serve } from './lib/browser.mjs';
+import { launch, serve, sleep } from './lib/browser.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ids = [...readFileSync(resolve(ROOT, 'js/app.js'), 'utf8').matchAll(/\{ id: '([a-z]+)'/g)].map((m) => m[1]);
@@ -20,8 +20,10 @@ const probe = `(() => ({
 }))()`;
 try {
   for (const id of ids) {
-    const errors = await page.goto(site.url + '#/' + (id === 'home' ? '' : id), 5000);
-    const s = await page.eval(probe);
+    const errors = await page.goto(site.url + '#/' + (id === 'home' ? '' : id), 2500);
+    // poll instead of a fixed wait: worker-backed labs can need several seconds on a cold CI runner
+    let s = await page.eval(probe);
+    for (let t = 0; t < 45 && !REFERENCE.has(id) && !s.alert && s.readouts === 0; t++) { await sleep(500); s = await page.eval(probe); }
     const problems = [...errors];
     if (s.alert) problems.push('error panel shown');
     if (!REFERENCE.has(id) && s.readouts === 0) problems.push('no results rendered');
