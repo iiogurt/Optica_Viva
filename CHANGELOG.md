@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-12
+
+Lens design II (PRs [#15](https://github.com/iiogurt/Optica_Viva/pull/15) follow-ups, [#18](https://github.com/iiogurt/Optica_Viva/pull/18)–[#20](https://github.com/iiogurt/Optica_Viva/pull/20)): MTF across the field, a damped-least-squares optimiser that rediscovers Coddington's best-form singlet, and Monte-Carlo tolerancing. The ray tracer now covers the core lens-design loop: analyse, optimise, tolerance.
+
 ### Added
 - **Monte-Carlo tolerancing** (`js/lib/tolerance.js`) in the ray tracer: Gaussian errors in radii (%), thicknesses (µm) and refractive indices; every trial is refocused (image distance as compensator) and scored by the RMS ray error over fields and F, d, C. It runs in the worker and shows a histogram with the nominal and 90th-percentile results. Perturbed glasses use `{ base, dn }` in `index()`.
 - Test: zero errors reproduce nominal; under identical tolerances the f/3 Double-Gauss is more sensitive than the f/5 Cooke triplet.
@@ -344,7 +348,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.3...v1.1.0
