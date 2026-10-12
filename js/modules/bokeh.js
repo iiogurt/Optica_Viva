@@ -130,7 +130,12 @@ export default function mount(root, meta) {
   const scene = stage({ aspect: 1.6, label: 'Night scene: background behind focus, a few lights in front', draw: drawScene, minH: 300 });
   const close = stage({ aspect: 4, label: 'Kernels: centre behind · centre in front · edge behind · corner behind', draw: drawClose, minH: 140 });
   const prof = stage({ aspect: 2.6, label: '', draw: drawProf, cls: 'plain', minH: 200 });
-  root.append(lab([scene.el, note, close.el, h('div.card', { style: { padding: '6px' } }, prof.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  // small disks: the diffraction PSF of the traced, defocused pupil
+  const dctl = controls({ w020: { type: 'range', label: 'Defocus W₀₂₀ of a small disk', min: 0.25, max: 12, step: 0.05, value: 2.5, unit: 'waves' } }, () => recomputeDiff());
+  const dview = stage({ aspect: 2.4, label: 'Diffraction PSF', draw: drawDiff, minH: 220 });
+  const dnote = h('div.note', { role: 'status' });
+  const diffCard = h('div.card', {}, h('h3', {}, 'Small disks: diffraction'), dctl.el, dview.el, dnote);
+  root.append(lab([scene.el, note, close.el, h('div.card', { style: { padding: '6px' } }, prof.el), diffCard], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   // deterministic set of lights
   let seed = 11; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
@@ -192,7 +197,8 @@ export default function mount(root, meta) {
   }
   const recompute = debounce(() => {
     const st = ctl.state;
-    if (st.model === 'traced') { recomputeTraced(st); return; }
+    diffCard.hidden = st.model !== 'traced';
+    if (st.model === 'traced') { recomputeTraced(st); recomputeDiff(); return; }
     TK = null;
     note.textContent = 'Phenomenological model: the pupil outline and a cubic transverse aberration set by the sliders.';
     const P = { blades: st.blades < 3 ? 0 : st.blades, round: st.round, stop: st.stop, vig: st.vig, sa: st.sa, ripple: st.ripple, obs: st.obs, apod: st.apod, rot: Math.PI / 2 };
@@ -289,6 +295,58 @@ export default function mount(root, meta) {
     });
   }
 
+  // Diffraction of a small defocused disk (worker task defocusPSF) for the current lens and stop.
+  const diffJob = latest('bokehDiff');
+  let DF = null;
+  const recomputeDiff = debounce(() => {
+    const st = ctl.state;
+    if (st.model !== 'traced') return;
+    const base = LENSES[st.lens], lens = { ...base, epd: base.epd * Math.pow(2, -st.stop / 2) };
+    if (!sdCache.has(st.lens)) sdCache.set(st.lens, autoSemiDiameters(base));
+    dnote.textContent = 'Computing the defocused diffraction PSF…';
+    diffJob('defocusPSF', { lens, sd: sdCache.get(st.lens), w020: dctl.state.w020, lambdas: linspace(450, 650, 5), ref: 550 }).then((r) => {
+      if (!alive || !r) return;
+      const n = r.n, img = document.createElement('canvas');
+      img.width = img.height = n;
+      const g = img.getContext('2d'), im = g.createImageData(n, n);
+      let mx = 0; for (let k = 0; k < n * n; k++) mx = Math.max(mx, r.rgb[k * 3 + 1]);
+      for (let k = 0; k < n * n; k++) {
+        for (let c = 0; c < 3; c++) im.data[k * 4 + c] = Math.min(255, 255 * Math.pow(Math.max(0, r.rgb[k * 3 + c] / mx), 1 / 2.2));
+        im.data[k * 4 + 3] = 255;
+      }
+      g.putImageData(im, 0, 0);
+      DF = { ...r, img, w020: dctl.state.w020 };
+      const airy = 2.44 * 550e-6 * r.N, Dgeo = 2 * r.Rgeo * r.du, sinc = Math.sin(Math.PI * DF.w020) / (Math.PI * DF.w020);
+      dnote.textContent = `Geometric disk Ø ${(Dgeo * 1000).toFixed(1)} µm = ${(Dgeo / airy).toFixed(1)} Airy diameters (f/${r.N.toFixed(1)}, sensor moved ${(r.dz * 1000).toFixed(0)} µm). Centre intensity I(0)/I₀ = ${r.centre.toFixed(3)}; pure defocus predicts sinc²(W₀₂₀/λ) = ${(sinc * sinc).toFixed(3)}.`;
+      dview.redraw();
+    }, (e) => { dnote.textContent = 'Diffraction PSF failed: ' + e.message; });
+  }, 60);
+
+  function drawDiff(ctx, w, hh) {
+    ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
+    if (!DF) return;
+    // left: the PSF, cropped to 1.5 geometric radii (at least 12 px)
+    const half = Math.min(DF.n / 2, Math.max(12, DF.Rgeo * 1.5)), side = Math.min(hh - 30, w * 0.38);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(DF.img, DF.n / 2 - half, DF.n / 2 - half, 2 * half, 2 * half, 12, 24, side, side);
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.arc(12 + side / 2, 24 + side / 2, (DF.Rgeo / half) * (side / 2), 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    // right: radial profiles in µm, normalised to the geometric disk's uniform irradiance
+    const geo = 1 / (Math.PI * Math.max(DF.Rgeo, 0.5) ** 2), um = DF.du * 1000, rmax = half * um;
+    const series = (arr, color, label, width = 1.8) => ({ data: Array.from(arr, (v, b) => [b * DF.binPx * um, v / geo]).filter(([x]) => x <= rmax), color, width, label });
+    const ox = side + 30;
+    ctx.save(); ctx.translate(ox, 0);
+    plot(ctx, w - ox, hh, {
+      title: 'Radial profile, normalised to the geometric disk', x: { min: 0, max: rmax, label: 'radius on the sensor (µm)' }, y: { min: 0, max: 3, label: 'irradiance / geometric' },
+      series: [
+        { data: [[0, 1], [DF.Rgeo * um, 1], [DF.Rgeo * um, 0], [rmax, 0]], color: 'rgba(255,255,255,0.55)', width: 1.2, dash: [4, 3], label: 'geometric disk' },
+        series(DF.pure, 'rgba(193,140,255,0.8)', 'pure defocus, 550 nm', 1.3), series(DF.prof, '#6ad7ff', 'this lens, 550 nm'), series(DF.poly, '#ffb547', 'this lens, 450–650 nm'),
+      ],
+      legend: true, legendX: w - ox - 175,
+    });
+    ctx.restore();
+  }
+
   function drawProf(ctx, w, hh) {
     if (!KS) return;
     plot(ctx, w, hh, {
@@ -327,8 +385,12 @@ export default function mount(root, meta) {
 <li>the barrel's clear apertures cut cat's eyes off axis, and coma shades them unevenly.</li>
 </ul>
 <p>Disks are drawn at their physical size on a 36 mm sensor, so the scaling \(c = f^2/(N(s-f))\) is visible directly: a 50 mm f/5 lens gives small disks, a 100 mm f/3 large ones. The traced diameter agrees with this thin-lens value to within a few per cent, and the flux of a stopped-down kernel equals \(\pi r_{EP}^2\) within 1 % (see the tests).</p>
+<h3>Small disks: diffraction</h3>
+<p>Geometry is the limit of large defocus. The <em>Small disks</em> panel computes the Fraunhofer PSF of the traced, defocused pupil by FFT. It uses the lens's own aberrations and vignetting, with the sensor moved by \(\Delta z = W_{020}/(1-\cos U')\). For pure defocus the pupil phase \(2\pi W_{020}\rho^2/\lambda\) divides the disk into Fresnel zones. Each extra wave of defocus adds one ring, and the centre alternates between bright and dark:</p>
+\[\frac{I(0)}{I_0} = \operatorname{sinc}^2\!\left(\frac{W_{020}}{\lambda}\right),\]
+<p>which is exactly zero at every whole number of waves. The edge rings are the Fresnel diffraction of the iris rim, and they survive when the disk is only a few dozen Airy diameters across, as for distant lights slightly out of focus, specular highlights, or stopped-down lenses. Averaging over 450–650 nm washes the rings into the soft coloured fringes of real small disks. Spherical aberration (try the Double-Gauss wide open) breaks the zone symmetry, and the profile departs from the pure-defocus curve. The FFT uses the same OPD in µm for every wavelength, so dispersion of the aberrations is neglected in this panel; the traced kernels above include it.</p>
 <h3>What both models omit</h3>
-<p>Diffraction adds Fresnel edge ringing, which is visible only for small disks (see <a href="#/psf">PSF</a>). Polishing ripples on the real lens surfaces and an apodisation filter are available only in the phenomenological model.</p>
+<p>Polishing ripples on the real lens surfaces and an apodisation filter are available only in the phenomenological model.</p>
 </div></div>`));
   root.append(references([
     'H. H. Nasse, "Depth of Field and Bokeh", Carl Zeiss Camera Lens Division (2010).',
@@ -336,5 +398,5 @@ export default function mount(root, meta) {
     'M. Hullin et al., "Polynomial optics: a construction kit for efficient ray-tracing of lens systems", Comput. Graph. Forum 31 (2012).',
     'S. Bhagavathula &amp; K. Thompson, "Bokeh: a review of the physics and aesthetics", Optics &amp; Photonics News (2020).',
   ]));
-  return () => { alive = false; [scene, close, prof].forEach((s) => s.destroy()); };
+  return () => { alive = false; [scene, close, prof, dview].forEach((s) => s.destroy()); };
 }

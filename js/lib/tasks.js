@@ -301,10 +301,45 @@ function flareGhosts(p) {
   return { result: r, transfer: [r.rgb.buffer] };
 }
 
+// Diffraction of a small bokeh disk: the traced on-axis pupil of a lens with its sensor moved by
+// Δz so that the defocus is W020 waves at λref, W020 = Δz (1 − cos U′) with tan U′ = 1/(2N).
+// One FFT per wavelength with the same OPD in µm (dispersion of the OPD neglected), resampled to
+// a common angular grid. p = { lens, sd, w020 (waves), lambdas (nm), ref (nm) }
+// Returns the RGB PSF, the reference-λ PSF, both radial profiles and the geometric disk radius,
+// in pixels of du = λref N / Q.
+function defocusPSF(p) {
+  const n = 256, Dpx = 128, Q = n / Dpx, par = paraxial(p.lens, 587.56), N = par.fnum;
+  const U = Math.atan(1 / (2 * N)), dz = (p.w020 * p.ref * 1e-6) / (1 - Math.cos(U));
+  const f = lensPupil({ lens: p.lens, sd: p.sd, theta: 0, zImg: par.zImage + dz, N }, n, Dpx);
+  if (!f) return { result: null, transfer: [] };
+  const basis = spectralBasis(p.lambdas), rgb = new Float32Array(n * n * 3);
+  p.lambdas.forEach((l, li) => {
+    const I = rescale(psf(f.amp, f.W, n, l / 1000).I, n, l / p.ref), [r, g, b] = basis[li];
+    for (let k = 0; k < n * n; k++) { rgb[k * 3] += I[k] * r; rgb[k * 3 + 1] += I[k] * g; rgb[k * 3 + 2] += I[k] * b; }
+  });
+  const mono = psf(f.amp, f.W, n, p.ref / 1000).I, focused = psf(f.amp, null, n, p.ref / 1000).I;
+  // the same defocus on an aberration-free, unvignetted circular pupil: W = W020 ρ²
+  const circ = rasterAperture({ type: 'circle' }, n, Dpx, 3), Wd = new Float64Array(n * n);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const r2 = ((x - n / 2) ** 2 + (y - n / 2) ** 2) / (Dpx / 2) ** 2; Wd[y * n + x] = (p.w020 * p.ref * 1e-3) * r2; }
+  const ideal = psf(circ, Wd, n, p.ref / 1000).I;
+  // azimuthal averages in 1 px bins
+  const bins = n / 2, prof = new Float64Array(bins), poly = new Float64Array(bins), pure = new Float64Array(bins), cnt = new Float64Array(bins);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    const b = Math.floor(Math.hypot(x - n / 2, y - n / 2) + 0.5), k = y * n + x;
+    if (b < bins) { prof[b] += mono[k]; pure[b] += ideal[k]; poly[b] += 0.2126 * rgb[k * 3] + 0.7152 * rgb[k * 3 + 1] + 0.0722 * rgb[k * 3 + 2]; cnt[b]++; }
+  }
+  for (let b = 0; b < bins; b++) if (cnt[b]) { prof[b] /= cnt[b]; poly[b] /= cnt[b]; pure[b] /= cnt[b]; }
+  const du = (p.ref * 1e-6 * N) / Q; // mm per PSF pixel
+  return {
+    result: { n, rgb, prof, poly, pure, binPx: 1, du, dz, N, Rgeo: dz * Math.tan(U) / du, centre: mono[(n / 2) * n + n / 2] / focused[(n / 2) * n + n / 2], rmsW: f.rmsW },
+    transfer: [rgb.buffer, prof.buffer, poly.buffer, pure.buffer],
+  };
+}
+
 // Bokeh kernels traced through a lens prescription (see js/lib/bokeh.js).
 function bokehTraced(p) {
   const r = bokehKernels({ ...p, basis: spectralBasis(p.lambdas) });
   return { result: r, transfer: r.kernels.map((k) => k.rgb.buffer) };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced };
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF };

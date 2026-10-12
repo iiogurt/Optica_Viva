@@ -5,6 +5,7 @@ import { LENSES, autoSemiDiameters } from '../js/lib/raytrace.js';
 import { bokehKernels } from '../js/lib/bokeh.js';
 
 const K = 128;
+const near = (a, e, tol, msg) => assert.ok(Math.abs(a - e) <= tol, `${msg}: got ${a}, expected ${e} ± ${tol}`);
 const kernels = (name, lambdas, basis, stop) => bokehKernels({ lens: LENSES[name], sd: autoSemiDiameters(LENSES[name]), lambdas, basis, focus: 1000, near: 500, stop, blades: 0, round: 0, fields: [[0, 0]], K, grid: 48 });
 // radius of a uniform disk with the same second moment, in mm, for one colour channel
 function radius(k, c) {
@@ -50,4 +51,18 @@ test('longitudinal colour: singlet violet behind focus; achromat green behind, m
   const [ab, af] = kernels('achromat', L, B, 0).kernels.map(rad);
   assert.ok(ab[1] > Math.max(ab[0], ab[2]), `achromat background ${ab}`); // secondary spectrum: green focus shortest
   assert.ok(af[1] < Math.min(af[0], af[2]), `achromat foreground ${af}`);
+});
+
+test('diffraction of a small defocused disk: on-axis intensity follows sinc²(W020/λ) (Born & Wolf §8.8)', async () => {
+  const { TASKS } = await import('../js/lib/tasks.js');
+  const lens = { ...LENSES['double-gauss'], epd: LENSES['double-gauss'].epd / 4 }, sd = autoSemiDiameters(LENSES['double-gauss']);
+  const at = (w020) => TASKS.defocusPSF({ lens, sd, w020, lambdas: [550], ref: 550 }).result;
+  const sinc2 = (w) => (Math.sin(Math.PI * w) / (Math.PI * w)) ** 2;
+  for (const w of [0.25, 0.5, 1.5]) near(at(w).centre, sinc2(w), 0.03, `W020 = ${w}`);
+  for (const w of [1, 2]) assert.ok(at(w).centre < 0.005, `W020 = ${w}: dark centre`);
+  // large defocus approaches the geometric disk: RMS radius → R/√2
+  const r = at(6);
+  let s = 0, s2 = 0;
+  r.prof.forEach((v, b) => { const a = 2 * Math.PI * Math.max(b, 0.25); s += v * a; s2 += v * a * b * b; });
+  near(Math.sqrt((2 * s2) / s) / r.Rgeo, 1, 0.06, 'W020 = 6: RMS radius / geometric');
 });

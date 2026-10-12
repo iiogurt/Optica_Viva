@@ -225,7 +225,7 @@ Sellmeier dispersion, the Abbe diagram and the partial-dispersion normal line. T
 **Bokeh** · `#/bokeh`<br>
 <img src="docs/screenshots/bokeh.webp" alt="Night scene with bokeh traced through a Double-Gauss lens, with green and magenta colour fringes" width="70%">
 
-**Traced from the real lens**: defocus kernels come from exact rays through the chosen prescription at 8 wavelengths, at their physical size. The lens's own spherical aberration gives soft-edged backgrounds and bright-rimmed foregrounds, and its secondary spectrum gives the classic **magenta foreground and green background** fringes. The clear apertures cut **cat's eyes** off axis. A phenomenological mode keeps sliders for over-correction (**soap-bubble** disks), mirror-lens obstruction, apodisation and onion-ring ripple.
+**Traced from the real lens**: defocus kernels come from exact rays through the chosen prescription at 8 wavelengths, at their physical size. The lens's own spherical aberration gives soft-edged backgrounds and bright-rimmed foregrounds, and its secondary spectrum gives the classic **magenta foreground and green background** fringes. The clear apertures cut **cat's eyes** off axis. For small disks, an FFT panel shows the **Fresnel rings** of the defocused pupil (on-axis intensity sinc²(W₀₂₀/λ)). A phenomenological mode keeps sliders for over-correction (**soap-bubble** disks), mirror-lens obstruction, apodisation and onion-ring ripple.
 
 </td>
 </tr>
@@ -528,6 +528,7 @@ The numerical core was checked against published or analytically known values. E
 | Hyperfocal, 50 mm f/2.8, c = 0.029 mm | 31 m | f²/(Nc) + f = 31.0 m |
 | cos⁴ at 37.7° (28 mm FF corner) | −1.35 EV | log₂ cos⁴θ = −1.351 EV |
 | Traced bokeh disk at 4 EV down: Ø and flux (3 lenses) | within 1 % and 0.5 % | paraxial 2 r<sub>EP</sub> Δz / f; π r<sub>EP</sub>² |
+| Defocused PSF centre, W₀₂₀ = 0.25, 0.5, 1, 1.5, 2 λ | sinc²(W₀₂₀/λ) within 0.03; dark at 1 and 2 λ | Born & Wolf §8.8 |
 | Traced bokeh colour fringes | singlet: violet behind, red in front; achromat: green behind, magenta in front | longitudinal colour and secondary spectrum |
 | Real-ray flare ghosts, Double-Gauss at f/18, 0.57° (4 paths) | position within 3 %, size within 2 %, flux within 3 % | y–nu ghost matrices: (B − AD/C)θ, \|A/C\| r<sub>stop</sub>, R<sub>i</sub>R<sub>j</sub> π(r<sub>stop</sub>/C)² |
 
@@ -541,7 +542,7 @@ Every page states its model's assumptions. The main simplifications are:
 |---|---|---|
 | Ray tracer (PSF) | Off-axis pupil treated as circular in normalised stop coordinates | Ignores the ≈ cos θ pupil anamorphosis |
 | Flare | Real-ray ghosts at 8 wavelengths on a 33 × 33 ray grid; diffraction at the iris only in the source's starburst | Ghost edges are geometric (no Fresnel ringing); ghosts below 10⁻⁶ of the source irradiance are skipped |
-| Bokeh | Geometric optics: traced kernels (or a phenomenological pupil model) | No Fresnel edge ringing; disks drawn on a 3 × 3 grid of field positions |
+| Bokeh | Geometric optics for the scene kernels; FFT diffraction of the traced pupil for single small disks | Scene disks have no Fresnel ringing; drawn on a 3 × 3 grid of field positions; dispersion of the OPD neglected in the diffraction panel |
 | Depth of field, tilt-shift | Thin-lens model; exact disk kernels, blended between 11 radii in tilt-shift | Blur radius interpolated between stack levels in tilt-shift; disks above r = 8 px blurred at reduced resolution (edge softer by ≤ r/4 px) |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |
 | Seeing | Single frozen-flow layer; screens periodic over 8D | One seam per 8D of travel |
