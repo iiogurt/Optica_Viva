@@ -62,6 +62,13 @@ export default function mount(root, meta) {
   const SFOV = 3.5; // source-plane panel
   let dragging = false;
   const mv = (e) => { const r = src.canvas.getBoundingClientRect(); srcPos = [((e.clientX - r.left) / r.width - 0.5) * SFOV, (0.5 - (e.clientY - r.top) / r.height) * SFOV]; render(); };
+  src.canvas.tabIndex = 0;
+  src.canvas.setAttribute('aria-label', 'Source plane. Arrow keys move the background galaxy.');
+  src.canvas.addEventListener('keydown', (e) => {
+    const d = { ArrowLeft: [-0.05, 0], ArrowRight: [0.05, 0], ArrowUp: [0, 0.05], ArrowDown: [0, -0.05] }[e.key];
+    if (!d) return;
+    e.preventDefault(); srcPos = [srcPos[0] + d[0], srcPos[1] + d[1]]; render();
+  });
   src.canvas.addEventListener('pointerdown', (e) => { dragging = true; src.canvas.setPointerCapture(e.pointerId); mv(e); });
   src.canvas.addEventListener('pointermove', (e) => dragging && mv(e));
   src.canvas.addEventListener('pointerup', () => (dragging = false));

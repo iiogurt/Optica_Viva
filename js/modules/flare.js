@@ -71,6 +71,13 @@ export default function mount(root, meta) {
   let sun = [0.68, 0.3];
   const move = (e) => { const r = view.canvas.getBoundingClientRect(); sun = [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; view.redraw(); };
   let dragging = false;
+  view.canvas.tabIndex = 0;
+  view.canvas.setAttribute('aria-label', 'Lens flare render. Arrow keys move the sun.');
+  view.canvas.addEventListener('keydown', (e) => {
+    const d = { ArrowLeft: [-0.02, 0], ArrowRight: [0.02, 0], ArrowUp: [0, -0.02], ArrowDown: [0, 0.02] }[e.key];
+    if (!d) return;
+    e.preventDefault(); sun = [Math.min(1, Math.max(0, sun[0] + d[0])), Math.min(1, Math.max(0, sun[1] + d[1]))]; view.redraw();
+  });
   view.canvas.addEventListener('pointerdown', (e) => { dragging = true; view.canvas.setPointerCapture(e.pointerId); move(e); });
   view.canvas.addEventListener('pointermove', (e) => dragging && move(e));
   view.canvas.addEventListener('pointerup', () => (dragging = false));

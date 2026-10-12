@@ -1,4 +1,4 @@
-import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, reducedMotion } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { fft2d } from '../lib/fft.js';
 import { rasterAperture, psf } from '../lib/pupil.js';
@@ -58,7 +58,7 @@ export default function mount(root, meta) {
     ao: { type: 'seg', label: 'Correction', value: 'ao', options: [['off', 'None'], ['tt', 'Tip-tilt'], ['ao', 'Full AO']] },
     nact: { type: 'range', label: 'Actuators across the pupil', min: 4, max: 32, step: 1, value: 16 },
     lag: { type: 'range', label: 'AO servo lag', min: 0, max: 10, step: 0.5, value: 2, unit: 'ms' },
-    run: { type: 'toggle', label: 'Animate (frozen-flow turbulence)', value: true },
+    run: { type: 'toggle', label: 'Animate (frozen-flow turbulence)', value: !reducedMotion() },
   }, () => reset());
   const resetBtn = h('button.btn', { type: 'button', onClick: () => reset(true) }, 'New turbulence realisation');
   const ro = h('div');

@@ -36,7 +36,8 @@ export const MODULES = [
 const nav = document.getElementById('nav');
 const main = document.getElementById('main');
 const sidebar = document.getElementById('sidebar');
-document.getElementById('navToggle').addEventListener('click', () => sidebar.classList.toggle('open'));
+const navToggle = document.getElementById('navToggle');
+navToggle.addEventListener('click', () => navToggle.setAttribute('aria-expanded', String(sidebar.classList.toggle('open'))));
 
 function buildNav() {
   const groups = [...new Set(MODULES.map((m) => m.group))];
@@ -55,8 +56,9 @@ let token = 0;
 async function route() {
   const id = (location.hash.replace(/^#\/?/, '').split('?')[0]) || 'home';
   const meta = MODULES.find((m) => m.id === id) || MODULES[0];
-  document.querySelectorAll('.nav-link').forEach((a) => a.classList.toggle('active', a.dataset.id === meta.id));
+  document.querySelectorAll('.nav-link').forEach((a) => { const on = a.dataset.id === meta.id; a.classList.toggle('active', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   sidebar.classList.remove('open');
+  navToggle.setAttribute('aria-expanded', 'false');
   const my = ++token;
   if (cleanup) { try { cleanup(); } catch (e) { console.error(e); } cleanup = null; }
   main.innerHTML = '';
@@ -81,5 +83,7 @@ async function route() {
 }
 
 buildNav();
+// the skip link must not change the hash (that would re-route): focus <main> directly
+document.querySelector('.skip-link')?.addEventListener('click', (e) => { e.preventDefault(); main.focus(); });
 window.addEventListener('hashchange', route);
 route();

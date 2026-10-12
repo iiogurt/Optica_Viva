@@ -7,7 +7,7 @@
   --line-2: rgba(255, 255, 255, 0.13);
   --fg: #e9ebf3;
   --fg-dim: #9aa1b5;
-  --fg-faint: rgba(200, 206, 225, 0.32);
+  --fg-faint: rgba(200, 206, 225, 0.5);
   --grid: rgba(255, 255, 255, 0.07);
   --accent: #ffb547;
   --accent-2: #6ad7ff;
@@ -227,5 +227,34 @@ button.btn:hover { border-color: var(--accent); }
 .eqtab tr.sel td { background: rgba(255, 181, 71, 0.08); color: #fff; }
 
 /* Share button */
-.tag.share { background: transparent; cursor: pointer; color: var(--fg); border-color: var(--line-2); }
+.tag.share { display: inline-flex; align-items: center; gap: 6px; background: transparent; cursor: pointer; color: var(--fg); border-color: var(--line-2); }
 .tag.share:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Accessibility */
+.skip-link { position: absolute; left: 12px; top: -48px; z-index: 50; background: var(--accent); color: #111; padding: 8px 12px; border-radius: 8px; font-weight: 600; }
+.skip-link:focus { top: 12px; }
+:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; border-radius: 6px; }
+input[type=range]:focus-visible { outline-offset: 4px; }
+canvas:focus-visible { outline-offset: -2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* Controls bottom sheet (phones). On larger screens the handle is hidden and the card is static. */
+.sheet-handle { display: none; }
+@media (max-width: 860px) {
+  .lab-side .ctl-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; margin: 0;
+    max-height: 58vh; overflow-y: auto; border-radius: 16px 16px 0 0;
+    box-shadow: 0 -18px 40px rgba(0, 0, 0, 0.55); padding-top: 0;
+    transform: translateY(calc(100% - 46px)); transition: transform .25s ease;
+    visibility: hidden;
+  }
+  .lab-side .ctl-sheet.in-view, .lab-side .ctl-sheet.open { visibility: visible; }
+  .lab-side .ctl-sheet.open { transform: none; }
+  .sheet-handle {
+    display: flex; justify-content: space-between; align-items: center; width: calc(100% + 32px); margin: 0 -16px 12px;
+    position: sticky; top: 0; z-index: 1; padding: 12px 18px; border: 0; border-bottom: 1px solid var(--line);
+    background: var(--panel-2); color: var(--fg); font: 600 13px var(--font-sans); cursor: pointer;
+  }
+  .ctl-sheet.open .chev { transform: rotate(180deg); }
+  main { padding-bottom: 64px; }
+}

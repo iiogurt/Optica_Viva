@@ -15,9 +15,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - `main` is protected: pull requests must pass the three CI checks before merging.
 - `js/lib/optics.js`: thin-lens depth of field, tilted-lens (Scheimpflug) imaging and ΛCDM distances, extracted from the laboratories so they can be tested.
 
-- **Shareable links:** every control in every laboratory mirrors its non-default value into the URL (`#/psf?preset=jwst&band=nir`). Opening such a link restores the exact configuration. Each page header has a **🔗 Copy link** button.
+- **Shareable links:** every control in every laboratory mirrors its non-default value into the URL (`#/psf?preset=jwst&band=nir`). Opening such a link restores the exact configuration. Each page header has a **Copy link** button.
+
+- **Mobile controls sheet:** on screens ≤ 860 px each lab's controls card becomes a collapsible bottom sheet, shown while its lab is on screen, so sliders and results are visible together.
+- **Accessibility:** canvases are labelled images (`role="img"`), result panels are labelled groups, there is a skip-to-content link, visible `:focus-visible` outlines, `aria-current` in the navigation and `aria-expanded` on the menu and sheet buttons. The draggable sun (flare) and source galaxy (lensing) respond to the arrow keys. `prefers-reduced-motion` stops the hero animation, starts the seeing simulation paused and shows a single wheel frame.
 
 ### Changed
+- Small labels have higher contrast (`--fg-faint` 0.32 → 0.5 alpha).
 - Range sliders carry an `aria-label`, and segmented buttons expose `aria-pressed`.
 - `scripts/release.sh` now also runs the physics test suite before releasing.
 

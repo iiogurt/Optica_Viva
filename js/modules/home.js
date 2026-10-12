@@ -1,4 +1,4 @@
-import { h } from '../lib/ui.js';
+import { h, reducedMotion } from '../lib/ui.js';
 import { MODULES, READY } from '../app.js';
 import { COUNT } from '../lib/phenomena.js';
 import { index } from '../lib/glass.js';
@@ -108,7 +108,7 @@ function heroCanvas() {
     const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.8);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.65)');
     ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-    raf = requestAnimationFrame(frame);
+    if (!reducedMotion()) raf = requestAnimationFrame(frame);
   }
   raf = requestAnimationFrame(frame);
   return { canvas, destroy: () => { cancelAnimationFrame(raf); ro.disconnect(); } };

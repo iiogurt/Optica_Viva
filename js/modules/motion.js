@@ -1,4 +1,4 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
 
@@ -138,7 +138,8 @@ export default function mount(root, meta) {
     ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
     ctx.fillText(`${st.fps} fps · ${st.angle}° · frame ${frame}`, w - 10, hh - 10);
   }
-  const loop = () => { wheel.redraw(); raf = requestAnimationFrame(loop); };
+  // with prefers-reduced-motion the wheel shows a single integrated frame instead of playing
+  const loop = () => { wheel.redraw(); if (!reducedMotion()) raf = requestAnimationFrame(loop); };
   raf = requestAnimationFrame(loop);
 
   function drawAlias(ctx, w, hh) {
