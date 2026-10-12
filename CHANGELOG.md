@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Seidel aberration sums** (`seidel()` in `js/lib/raytrace.js`, Welford formulation): per-surface S_I–S_V and chromatic C_I, C_II from paraxial marginal and chief rays, including the conic/asphere surface term. The ray tracer shows them as per-surface wavefront coefficients (waves at 588 nm) with totals.
+- Tests: Seidel spherical aberration agrees with exact ray tracing within 2 % at small apertures (plano-convex in both orientations, Cooke triplet), S_IV/H² equals the Petzval sum, the bending ratio is ≈ 4, the hyperbolic singlet's S_I vanishes, and C_I predicts the F–C focus shift within 1 %.
+
+### Added
 - **Prescription editor** in the ray tracer: an editable surface table (radius, thickness, glass, conic, a₄, a₆, stop, add and remove), entrance pupil and field, live validation, and traced results on every change. A custom design travels in the page link (`rx=…`, a compact URL-safe encoding), so it can be shared.
 - **Import/export** (`js/lib/lensio.js`): Zemax `.zmx` subset (sequential STANDARD and EVENASPH; CURV, DISZ, GLAS, CONI, PARM, DIAM, STOP, ENPD, YFLN; UTF-16 files decoded) and Optica Viva JSON. Unknown glasses become **model glasses** from their n_d and V_d (two-term Cauchy that reproduces both).
 - Tests: Zemax fixtures reproduce the Cooke triplet EFL and the SA-free hyperbolic singlet; JSON and URL round trips for every built-in lens; model glasses keep n_d and V_d; validation; every glass used by a built-in lens is in the catalogue.

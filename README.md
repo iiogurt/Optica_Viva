@@ -377,6 +377,7 @@ flowchart LR
 | Glass dispersion | Three-term Sellmeier with Schott catalogue coefficients (12 glasses) and Malitson (1965) for fused silica and CaF₂ | ray tracer, chromatic, flare |
 | Exact ray tracing | 3-D vector Snell refraction through spherical and even-aspheric surfaces (conic + polynomial, Newton intersection), clear-aperture vignetting, Newton ray aiming at the stop | ray tracer |
 | First-order optics | y–nu paraxial matrices: EFL, BFD, entrance and exit pupils, Petzval sum | ray tracer, flare |
+| Third-order aberrations | Seidel sums S_I–S_V, C_I, C_II per surface (Welford), including aspheric terms; validated against exact rays | ray tracer |
 | Wavefront | OPD against the exit-pupil reference sphere, sampled on a 41 × 41 pupil grid | ray tracer |
 | Diffraction | Fraunhofer integral by radix-2 2-D FFT of a 4 × 4-supersampled pupil, zero-padded (Q = 4); one FFT per wavelength when aberrated | PSF, Zernike, MTF, seeing, telescope |
 | Colour | CIE 1931 2° colour-matching functions (Wyman–Sloan–Shirley fit) → linear sRGB → sRGB transfer curve | all spectral renders |

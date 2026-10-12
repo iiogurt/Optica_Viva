@@ -344,3 +344,48 @@ export function opd(lens, lambda, thetaDeg, px, py, ref, par) {
   const t = -b - Math.sqrt(disc); // intersection on the exit-pupil side of the sphere
   return (r.opl + t - ref.oplChief) / (lambda * 1e-6);
 }
+
+// ── Seidel (third-order) aberration sums, Welford's formulation ──────────────────────────
+// A paraxial marginal ray (y, u) from an axial object at infinity filling the pupil, and a
+// chief ray (ȳ, ū) at the maximum field through the pupil centre, give per surface
+//   S_I = −A² y Δ(u/n)     S_II = −A Ā y Δ(u/n)     S_III = −Ā² y Δ(u/n)
+//   S_IV = −H² c Δ(1/n)    S_V = (Ā/A)(S_III + S_IV)
+//   C_I = A y Δ(δn/n)      C_II = Ā y Δ(δn/n)
+// with A = n(u + yc), Ā = n(ū + ȳc), H = n(ūy − uȳ) and δn = n_F − n_C.
+// Aspheric surfaces add ΔS_I = 8G(n'−n)y⁴ with G = k c³/8 + a₄, and the stop-shift partners
+// ΔS_II = ΔS_I(ȳ/y), ΔS_III = ΔS_I(ȳ/y)², ΔS_V = ΔS_I(ȳ/y)³.
+// Wavefront coefficients at full field and aperture: W₀₄₀ = S_I/8, W₁₃₁ = S_II/2,
+// W₂₂₂ = S_III/2, W₂₂₀ = (S_III + S_IV)/4 (medial), W₃₁₁ = S_V/2 (all in lens units).
+export function seidel(lens, lambda = 587.56) {
+  const S = lens.surfaces, N = S.length, par = paraxial(lens, lambda);
+  const mb = (i) => (i === 0 ? 'air' : S[i - 1].glass);
+  let y = lens.epd / 2, u = 0;
+  const ub0 = Math.tan((lens.field * Math.PI) / 180);
+  let yb = -ub0 * par.zEP, ub = ub0;
+  const H = ub * y - u * yb; // object space, n = 1
+  const rows = [];
+  for (let i = 0; i < N; i++) {
+    const s = S[i], c = isFinite(s.R) ? 1 / s.R : 0;
+    const n = index(mb(i), lambda), n2 = index(s.glass, lambda);
+    const dn1 = index(mb(i), 486.13) - index(mb(i), 656.27), dn2 = index(s.glass, 486.13) - index(s.glass, 656.27);
+    const A = n * (u + y * c), Ab = n * (ub + yb * c);
+    const u2 = (n * u - y * (n2 - n) * c) / n2, ub2 = (n * ub - yb * (n2 - n) * c) / n2;
+    const dUn = u2 / n2 - u / n;
+    const SI = -A * A * y * dUn, SII = -A * Ab * y * dUn, SIII = -Ab * Ab * y * dUn;
+    const SIV = -H * H * c * (1 / n2 - 1 / n);
+    let SV = A !== 0 ? (Ab / A) * (SIII + SIV) : 0;
+    const CI = A * y * (dn2 / n2 - dn1 / n), CII = Ab * y * (dn2 / n2 - dn1 / n);
+    const row = { i, SI, SII, SIII, SIV, SV, CI, CII };
+    const G = ((s.k || 0) * c * c * c) / 8 + ((s.a && s.a[0]) || 0);
+    if (G) {
+      const dSI = 8 * G * (n2 - n) * y ** 4, q = yb / y;
+      row.SI += dSI; row.SII += dSI * q; row.SIII += dSI * q * q; row.SV += dSI * q * q * q;
+    }
+    rows.push(row);
+    if (i < N - 1) { y += S[i].t * u2; yb += S[i].t * ub2; }
+    u = u2; ub = ub2;
+  }
+  const total = {};
+  for (const k of ['SI', 'SII', 'SIII', 'SIV', 'SV', 'CI', 'CII']) total[k] = rows.reduce((a, r) => a + r[k], 0);
+  return { rows, total, H, uImage: u, nImage: index(S[N - 1].glass, lambda) };
+}
