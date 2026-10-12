@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [1.3.0] - 2026-10-12
 
+Lens-design milestone (PRs [#12](https://github.com/iiogurt/Optica_Viva/pull/12)–[#16](https://github.com/iiogurt/Optica_Viva/pull/16)): aspheric surfaces, a prescription editor with Zemax import and shareable designs, per-surface Seidel sums, through-field analysis and vignetted PSF pupils, each validated against exact ray tracing.
+
 ### Added
 - **Vignetted pupils in the diffraction PSF:** the ray tracer's wavefront PSF traces every pupil sample through the clear apertures; blocked rays carry no light, with an anti-aliased pupil edge. The OPD panel reports the transmitted fraction, and the Strehl ratio is referenced to the same vignetted pupil.
 - **Editable clear semi-diameters** (`Semi-Ø` in the prescription editor; blank = automatic). They are imported from Zemax `DIAM` and kept in JSON and shared links.
