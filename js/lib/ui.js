@@ -156,7 +156,7 @@ export async function copyLink(btn) {
   const url = location.href;
   try { await navigator.clipboard.writeText(url); }
   catch { const t = h('textarea', { style: { position: 'fixed', opacity: '0' } }, url); document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); }
-  const old = btn.textContent; btn.textContent = '✓ Link copied'; setTimeout(() => (btn.textContent = old), 1600);
+  const old = btn.textContent; btn.textContent = 'Link copied ✓'; setTimeout(() => (btn.textContent = old), 1600);
 }
 
 // Defer heavy computations so slider dragging stays fluid.
@@ -166,8 +166,11 @@ export function debounce(fn, ms = 60) {
 }
 
 // ── Canvas stage: responsive, hi-DPI, aspect-locked ──────────────────────────────────────
+export const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export function stage({ aspect = 16 / 9, draw, minH = 160, maxH = Infinity, label, cls = '' }) {
-  const canvas = h('canvas');
+  // canvases are images to assistive technology; the numeric results live in the readouts
+  const canvas = h('canvas', { role: 'img', 'aria-label': label || 'Chart' });
   const wrap = h('figure.stage' + (cls ? '.' + cls : ''), {}, canvas, label ? h('figcaption', {}, label) : null);
   const ctx = canvas.getContext('2d');
   const st = { canvas, ctx, el: wrap, w: 0, h: 0, dpr: 1, draw };
@@ -206,7 +209,7 @@ export function imageCanvas(w, hgt) {
 
 // Readout grid: rows = [[label, valueNode|string]]
 export function readouts(rows) {
-  return h('dl.readouts', {}, ...rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)]));
+  return h('dl.readouts', { role: 'group', 'aria-label': 'Results' }, ...rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)]));
 }
 
 // Section scaffold shared by all modules.

@@ -16,16 +16,17 @@
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
   <div class="app">
     <aside class="sidebar" id="sidebar">
       <a class="brand" href="#/">
         <span class="brand-mark"></span>
         <span class="brand-text"><b>Optica</b> Viva</span>
       </a>
-      <nav id="nav"></nav>
+      <nav id="nav" aria-label="Laboratories"></nav>
       <div class="sidebar-foot">Physically exact optics laboratory · all simulations computed live in your browser</div>
     </aside>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
     <main id="main" tabindex="-1"></main>
   </div>
 </body>
