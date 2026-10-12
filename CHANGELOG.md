@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Removed
+- Accidentally committed `scripts/__pycache__/`; Python bytecode is now ignored.
+
 ## [1.0.1] - 2026-10-12
 
 ### Added

@@ -12,3 +12,7 @@ npm-debug.log*
 # Local scratch / screenshots
 *.log
 /tmp/
+
+# Python
+__pycache__/
+*.pyc
