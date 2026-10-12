@@ -246,3 +246,16 @@ test('MTF across the field: diffraction-limited on axis, S = T on axis, astigmat
   near(rows[0].S[0], rows[0].T[0], 1e-6, 'on axis S = T');
   assert.ok(rows[2].T[0] - rows[2].S[0] > 0.3, 'Cooke at 10°: tangential ≫ sagittal (sagittal focus is far from the image plane)');
 });
+
+test('optimiser rediscovers Coddington\'s best-form singlet and improves the Cooke triplet', async () => {
+  const { optimise } = await import('../js/lib/optimise.js');
+  const L = { name: 's', epd: 10, field: 1, surfaces: [{ R: 103.4, t: 4, glass: 'N-BK7', stop: true }, { R: -103.4, t: 98, glass: 'air' }] };
+  const r = optimise(L, { efl: 100, eflWeight: 1, fields: [0], wavelengths: [587.56], rings: 4, iterations: 40 });
+  const [R1, R2] = [r.lens.surfaces[0].R, r.lens.surfaces[1].R];
+  near((R2 + R1) / (R2 - R1), 0.74, 0.03, 'shape factor q (third-order Coddington optimum 0.740 for n = 1.517)');
+  near(r.efl, 100, 0.01, 'focal length held');
+  assert.ok(r.history.at(-1) < r.history[0] / 10, 'merit reduced > 10×');
+  const c = optimise(LENSES.cooke, { iterations: 6 });
+  assert.ok(c.history.at(-1) < c.history[0], 'Cooke merit does not get worse');
+  near(c.efl, paraxial(LENSES.cooke).efl, 0.5, 'Cooke focal length roughly held');
+});

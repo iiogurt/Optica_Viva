@@ -565,6 +565,19 @@ export default function mount(root, meta) {
     } catch (e) { msg.innerHTML = '<b style="color:var(--warn)">Import failed:</b> ' + e.message; }
     fileIn.value = '';
   });
+  // Levenberg–Marquardt on all curvatures + image distance; EFL held at its current value;
+  // merit = RMS transverse ray error over fields 0, 0.7, 1 and F, d, C (runs in the worker)
+  const optJob = latest('optimise');
+  function runOptimiser(btn) {
+    const start = clone(LENSES[ctl.state.lens]);
+    btn.disabled = true; const label = btn.textContent; btn.textContent = 'Optimising…';
+    msg.textContent = 'Optimising curvatures and image distance, holding the focal length (this can take a few seconds)…';
+    optJob('optimiseLens', { lens: start, opts: { iterations: 30 } }).then((r) => {
+      const h = r.history;
+      applyCustom(r.lens, `Optimised in ${h.length - 1} iterations: RMS ray error ${(h[0] * 1000).toFixed(2)} → ${(h[h.length - 1] * 1000).toFixed(2)} µm, EFL ${r.efl.toFixed(3)} mm.`);
+    }).catch((e) => { msg.innerHTML = '<b style="color:var(--warn)">Optimisation failed:</b> ' + e.message; })
+      .finally(() => { btn.disabled = false; btn.textContent = label; });
+  }
   const download = () => {
     const a = h('a', { href: URL.createObjectURL(new Blob([lensToJSON(LENSES.custom)], { type: 'application/json' })), download: 'optica-viva-lens.json' });
     a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
@@ -582,6 +595,7 @@ export default function mount(root, meta) {
           N.surfaces.splice(j, 0, { R: Infinity, t: dt, glass: prev.glass });
           applyCustom(N, 'Added a plane surface before the last one: edit its radius, thickness and glass.');
         } }, '+ Add surface'),
+        h('button.btn.opt-btn', { type: 'button', onClick: (e) => runOptimiser(e.currentTarget) }, 'Optimise (damped least squares)'),
         h('button.btn', { type: 'button', onClick: () => fileIn.click() }, 'Import .zmx / .json'),
         h('button.btn', { type: 'button', onClick: download }, 'Export JSON'),
         fileIn),

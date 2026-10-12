@@ -220,7 +220,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P2 · M** **Seidel sums per surface** (S_I–S_V and chromatic C_I, C_II) as bar charts. This shows where each aberration originates.
 - [x] **P2 · M** **Through-field analysis**: sagittal and tangential field curves and real-ray distortion. *The PSF pupil is now vignetted by the clear apertures (editable Semi-Ø), and MTF vs field (S/T at 10 and 30 lp/mm) is plotted. Traced relative illumination remains open.*
 - [ ] **P2 · S** Fix the off-axis pupil anamorphosis in the OPD/PSF path (sample the real exit-pupil shape).
-- [ ] **P3 · L** **Optimiser**: damped least squares on a merit function (spot RMS, EFL target, F/C focus), demonstrated on the achromat.
+- [x] **P3 · L** **Optimiser**: damped least squares on a merit function (spot RMS, EFL target, F/C focus), demonstrated on the achromat.
 - [ ] **P3 · M** **Monte-Carlo tolerancing**: decenter, tilt and thickness perturbations, with a yield histogram.
 - [ ] **P3 · M** Glass catalogue expansion (Schott, Ohara, CDGM subsets) with a glass-map picker.
 
