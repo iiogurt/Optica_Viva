@@ -3,14 +3,13 @@ import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS, diag, pitchUm } from '../lib/sensors.js';
 import { besselJ1 } from '../lib/pupil.js';
 import { plot, logRange } from '../lib/plot.js';
+import { blurDiameter as blur, hyperfocal, dofLimits } from '../lib/optics.js';
 
 const LAMBDA = 0.00055; // mm
 const CARDS = [0.7, 1, 1.5, 2.2, 3.3, 5, 8, 12, 20, 35];
 // receding diagonal: near cards to the left, far cards toward the right of centre
 const cardAngle = (i) => (-9 + (i * 14) / (CARDS.length - 1)) * Math.PI / 180;
 
-// Thin-lens defocus blur diameter on the sensor (mm) for an object at d when focused at s.
-const blur = (f, N, s, d) => (f / N) * f * Math.abs(d - s) / (d * (s - f));
 const diskMTF = (x) => (Math.abs(x) < 1e-6 ? 1 : (2 * besselJ1(Math.PI * x)) / (Math.PI * x));
 
 // Draw `img` convolved with a uniform disk of radius r (px) — Vogel-spiral tap accumulation
@@ -85,10 +84,8 @@ export default function mount(root, meta) {
     const f = st.f, N = st.N, s = Math.max(st.s * 1000, f * 1.05);
     const d = diag(sen);
     const c = st.coc === 'pix' ? 2 * pitchUm(sen) / 1000 : d / +st.coc;
-    const H = (f * f) / (N * c) + f;
-    const Dn = (s * f * f) / (f * f + N * c * (s - f));
-    const den = f * f - N * c * (s - f);
-    const Df = den > 0 ? (s * f * f) / den : Infinity;
+    const H = hyperfocal(f, N, c);
+    const { near: Dn, far: Df } = dofLimits(f, N, c, s);
     const m = f / (s - f);
     const Nw = N * (1 + m);
     const airy = 2.44 * LAMBDA * Nw;

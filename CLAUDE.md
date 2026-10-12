@@ -17,19 +17,19 @@ Use the most precise model that runs interactively, and state every approximatio
 - The owner's machine is a Raspberry Pi 4, so keep heavy work debounced. Performance targets are in `ROADMAP.md`.
 
 ## Verify before releasing
-- `node --check` every JS file (the release script enforces this).
+- `npm run ci` = `npm run check` (syntax + Markdown links/anchors) + `npm test` (physics suite in `test/`) + `npm run smoke` (every page in headless Chrome). New physics needs a test.
 - Load the changed pages in headless Chromium: no console errors, and look at the visuals (`python3 scripts/screenshots.py <page>`, then view the image).
-- Check physics against known values. Add new checks to the README validation table (and to the test suite once v1.1 adds it).
+- Check physics against known values: add each to the README validation table and as an assertion in `test/physics.test.mjs`.
 
 ## Git & release workflow (mandatory for every change)
-- Remote: https://github.com/iiogurt/Optica_Viva. Branch: `main`. Repo-local identity: `iiogurt <188860570+iiogurt@users.noreply.github.com>` (never a personal email; the repo is public).
+- Remote: https://github.com/iiogurt/Optica_Viva. **Never commit to `main` directly.** Work on a branch (`feat/…`, `fix/…`, `docs/…`, `ci/…`, `chore/…`), push it, open a PR with `gh pr create`, wait for GitHub Actions CI (syntax & links, physics tests, browser smoke) to pass, then squash-merge. Only release commits made by `scripts/release.sh` land directly on `main`. Repo-local identity: `iiogurt <188860570+iiogurt@users.noreply.github.com>` (never a personal email; the repo is public).
 - **Conventional Commits** (`feat(scope):`, `fix:`, `docs:`, `chore:` …). End commit messages with the `Co-Authored-By` trailer for the model in use.
 - **Semantic Versioning**: new lab or feature → minor; fixes and docs → patch.
 - Every change updates:
-  - **CHANGELOG.md** in Keep a Changelog format: a `## [X.Y.Z] - YYYY-MM-DD` section plus compare links at the bottom;
+  - **CHANGELOG.md** in Keep a Changelog format: PRs add their entries under `## [Unreleased]`; a release renames it to `## [X.Y.Z] - YYYY-MM-DD` and adds the compare link;
   - **README.md** wherever it is affected (lab gallery, models, validation, structure);
   - **ROADMAP.md**: move shipped items to *Completed*; put new ideas in a milestone or the *Backlog*.
-- Release with `scripts/release.sh X.Y.Z "type(scope): message"`. It syntax-checks, bumps `package.json` and the README version, commits, tags `vX.Y.Z`, pushes, and creates the GitHub release from the CHANGELOG section.
+- Release from `main` after merging, with `scripts/release.sh X.Y.Z "type(scope): message"`. It runs checks and tests, bumps `package.json` and the README version, commits, tags `vX.Y.Z`, pushes, and creates the GitHub release from the CHANGELOG section.
 - Regenerate README screenshots (`docs/screenshots/*.webp`) when visuals change.
 
 ## Next work

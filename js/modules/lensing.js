@@ -1,15 +1,8 @@
 import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { angularDiameterDistance as DA, C_KMS as C } from '../lib/optics.js';
 
 const ARC = Math.PI / 180 / 3600;
-const C = 299792.458; // km/s
-// flat ΛCDM angular-diameter distance between z1 < z2 (Mpc)
-function DA(z1, z2, H0 = 70, Om = 0.3) {
-  const E = (z) => Math.sqrt(Om * (1 + z) ** 3 + 1 - Om);
-  const n = 400; let s = 0;
-  for (let i = 0; i < n; i++) { const z = z1 + ((i + 0.5) * (z2 - z1)) / n; s += 1 / E(z); }
-  return (C / H0) * s * ((z2 - z1) / n) / (1 + z2);
-}
 
 // deflection α(θ) in arcsec for a lens model; θ in arcsec
 function deflect(P, x, y) {

@@ -6,6 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- Physics test suite (`test/physics.test.mjs`, `npm test`, Node's built-in runner, no dependencies): 14 tests covering every row of the README validation table plus FFT round-trip/Parseval, Zernike orthonormality, spectral white balance, paraxial convergence and the sign of spherical aberration.
+- `scripts/check.mjs` (`npm run check`): syntax check of all modules and verification of every relative link, image and heading anchor in the Markdown files.
+- `scripts/smoke.sh` (`npm run smoke`): loads every page in headless Chrome and fails on uncaught errors or modules that fail to load.
+- GitHub Actions CI (`.github/workflows/ci.yml`): syntax and links, physics tests, and browser smoke test on every push and pull request.
+- `js/lib/optics.js`: thin-lens depth of field, tilted-lens (Scheimpflug) imaging and ΛCDM distances, extracted from the laboratories so they can be tested.
+
+### Changed
+- `scripts/release.sh` now also runs the physics test suite before releasing.
+
+### Fixed
+- cos⁴ falloff at the corner of a 28 mm full-frame lens (37.7°) is −1.35 EV, not −1.30 EV (README validation table and vignetting theory). Found by the new test suite.
+
 ## [1.0.3] - 2026-10-12
 
 ### Added

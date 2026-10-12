@@ -9,6 +9,7 @@
 Twenty interactive simulations, a physics primer and a catalogue of 148 phenomena.
 Everything is computed from first principles, live in your browser.
 
+[![CI](https://github.com/iiogurt/Optica_Viva/actions/workflows/ci.yml/badge.svg)](https://github.com/iiogurt/Optica_Viva/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/iiogurt/Optica_Viva?color=ffb547&label=release)](https://github.com/iiogurt/Optica_Viva/releases)
 [![Last commit](https://img.shields.io/github/last-commit/iiogurt/Optica_Viva?color=6ad7ff)](https://github.com/iiogurt/Optica_Viva/commits/main)
 ![No build step](https://img.shields.io/badge/build-none%20(static%20ES%20modules)-6be3a4)
@@ -466,8 +467,12 @@ Optica_Viva/
 │   └── modules/               One file per page (22)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
+├── test/physics.test.mjs      Physics validation suite (node --test)
+├── .github/workflows/ci.yml   CI: syntax & links, physics tests, browser smoke test
 ├── scripts/
-│   ├── release.sh             Syntax gate → version bump → tag → push → GitHub release
+│   ├── check.mjs              Syntax check + Markdown link/anchor check
+│   ├── smoke.sh               Loads every page in headless Chrome
+│   ├── release.sh             Checks & tests → version bump → tag → push → GitHub release
 │   └── screenshots.py         Regenerates docs/screenshots with headless Chromium
 ├── CHANGELOG.md               Keep a Changelog
 ├── ROADMAP.md                 Completed and planned milestones
@@ -479,7 +484,7 @@ Optica_Viva/
 
 ## ✅ Validation
 
-The numerical core was checked against published or analytically known values:
+The numerical core was checked against published or analytically known values. Every row below is an assertion in [`test/physics.test.mjs`](test/physics.test.mjs) and runs in CI on every push and pull request:
 
 | Quantity | Optica Viva | Reference |
 |---|---|---|
@@ -496,7 +501,7 @@ The numerical core was checked against published or analytically known values:
 | Tilt-lens hinge distance (65 mm, 8°) | 0.46704 m traced | f / sin α = 0.46704 m |
 | Angular-diameter distance, z = 0.3 | 919 Mpc | flat ΛCDM (H₀ = 70, Ω<sub>m</sub> = 0.3) ≈ 920 Mpc |
 | Hyperfocal, 50 mm f/2.8, c = 0.029 mm | 31 m | f²/(Nc) + f = 31.0 m |
-| cos⁴ at 37.7° (28 mm FF corner) | −1.30 EV | log₂ cos⁴θ = −1.30 EV |
+| cos⁴ at 37.7° (28 mm FF corner) | −1.35 EV | log₂ cos⁴θ = −1.351 EV |
 
 ---
 
@@ -547,7 +552,7 @@ Contributions are welcome: new laboratories, more lens prescriptions, validation
 
 1. **Fork** the repository and create a feature branch: `git checkout -b feat/polarisation-lab`.
 2. **Add a laboratory**: create `js/modules/<id>.js` exporting `mount(root, meta)`, register it in `MODULES` and `READY` in [`js/app.js`](js/app.js), and add catalogue links in [`js/lib/phenomena.js`](js/lib/phenomena.js).
-3. **Check** that every module parses (`for f in js/*.js js/lib/*.js js/modules/*.js; do node --check "$f"; done`) and look at the page in a browser.
+3. **Check** locally with `npm run ci`. This runs `npm run check` (syntax and Markdown links), `npm test` (physics suite) and `npm run smoke` (every page in headless Chrome). The same jobs run in GitHub Actions on your pull request and must pass before merging.
 4. **Document** your change under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md), and regenerate screenshots if the visuals changed: `python3 scripts/screenshots.py <page>`.
 5. **Commit** with [Conventional Commits](https://www.conventionalcommits.org/), e.g. `feat(polarisation): add Malus and Brewster lab`, then open a pull request.
 

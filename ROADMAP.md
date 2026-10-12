@@ -68,7 +68,7 @@ flowchart LR
 | Laboratories | 20 | +19 proposed (v1.5, v1.6) |
 | Catalogue entries | 148 | link every new lab; add polarisation and colour-science entries |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 0 | physics validation suite (v1.1) |
+| Automated tests | 14 physics tests + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | local / static | GitHub Pages with CI (v1.1) |
 
 ---
@@ -146,8 +146,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 *Goal: every user on every browser sees correct results, and every physics claim is guarded by a test.*
 
 - [ ] **P1 · M** Replace `ctx.filter` blur with an in-house **separable/disk blur** (summed-area table for the box approximation, or an exact disk via the FFT already in `fft.js`). Fixes Safari (A1) and makes the tilt-shift kernel a true disk.
-- [ ] **P1 · M** **Physics test suite** with `node --test` and no dependencies. Turn every row of the README validation table into an assertion: Sellmeier indices, EFLs, Fresnel/MgF₂ reflectance, Brewster, Airy encircled energy, Rayleigh dip, hinge rule, ΛCDM distances, hyperfocal distance, cos⁴.
-- [ ] **P1 · S** **GitHub Actions CI**: `node --check`, the test suite, Markdown link check, and a Mermaid parse check.
+- [x] **P1 · M** **Physics test suite** with `node --test` and no dependencies. Turn every row of the README validation table into an assertion: Sellmeier indices, EFLs, Fresnel/MgF₂ reflectance, Brewster, Airy encircled energy, Rayleigh dip, hinge rule, ΛCDM distances, hyperfocal distance, cos⁴.
+- [x] **P1 · S** **GitHub Actions CI**: `node --check`, the test suite, Markdown link check, and a headless-browser smoke test of every page. (A Mermaid parse check was dropped; it would need a browser bundle.)
 - [ ] **P1 · S** **GitHub Pages deployment** from `main`, with a live-demo badge in the README.
 - [ ] **P1 · S** **Choose a licence** (owner decision; MIT for code + CC BY 4.0 for text and images is a common pairing).
 - [ ] **P2 · M** **Mobile controls drawer**: a sticky bottom sheet with the controls next to the main canvas on screens < 860 px (A5).

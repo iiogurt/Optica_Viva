@@ -6,7 +6,10 @@ set -euo pipefail
 V="$1"; MSG="$2"
 cd "$(dirname "$0")/.."
 # syntax gate: every JS module must parse
-for f in js/*.js js/lib/*.js js/modules/*.js; do node --check "$f" || { echo "syntax error in $f" >&2; exit 1; }; done
+node scripts/check.mjs || { echo "checks failed" >&2; exit 1; }
+node --test test/ >/dev/null || { echo "physics tests failed (run npm test)" >&2; exit 1; }
+# releases are cut from main only
+[ "$(git branch --show-current)" = main ] || { echo "switch to main before releasing" >&2; exit 1; }
 grep -q "^## \[$V\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$V] section" >&2; exit 1; }
 sed -i -E "s/\"version\": \"[0-9.]+\"/\"version\": \"$V\"/" package.json
 sed -i -E "s/Version \*\*[0-9.]+\*\*/Version **$V**/" README.md

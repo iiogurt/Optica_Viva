@@ -1,5 +1,6 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { tiltedLens, tiltedImage, tiltedObject } from '../lib/optics.js';
 
 // ── toy town: houses (boxes) and trees (spheres) bucketed in a 12 m cell grid ──────────
 const CELL = 12, GX0 = -5, GX1 = 5, GZ0 = 0, GZ1 = 14;
@@ -92,21 +93,8 @@ export default function mount(root, meta) {
   const camH = 30, camPitch = (-30 * Math.PI) / 180; // town camera: 26 m up (a rooftop), looking 28° down
 
   // tilted-thin-lens imaging in camera coordinates (y up, z forward); lens axis tilted by α about x
-  function geom(st) {
-    const f = st.f / 1000, a = (st.alpha * Math.PI) / 180;
-    const nL = [0, Math.sin(a), Math.cos(a)]; // α > 0 tips the lens axis up: hinge above the lens (reverse tilt)
-    // sensor at z = −v; after tilting, the photographer refocuses so the sensor centre stays
-    // conjugate to distance s along the tilted axis: its distance to the lens plane, v·cos α, equals fs/(s−f)
-    const s = st.s, v = (f * s) / (s - f) / Math.cos(a);
-    return { f, a, nL, v, A: f / st.N };
-  }
-  function imageOf(G, p) {
-    const u = p[1] * G.nL[1] + p[2] * G.nL[2];
-    if (u <= G.f * 1.0001) return null;
-    const up = (G.f * u) / (u - G.f), m = -up / u;
-    const w = [p[0], p[1] - u * G.nL[1], p[2] - u * G.nL[2]];
-    return [m * w[0], -up * G.nL[1] + m * w[1], -up * G.nL[2] + m * w[2]];
-  }
+  const geom = (st) => tiltedLens(st.f / 1000, st.alpha, st.s, st.N);
+  const imageOf = tiltedImage;
 
   function renderTilt() {
     const st = ctl.state, G = geom(st);
@@ -193,13 +181,7 @@ export default function mount(root, meta) {
   }
 
   // plane of focus in the y–z (side) plane: image two sensor points back into object space
-  function objOf(G, q) { // inverse thin-lens mapping (same law, image ↔ object)
-    const up = -(q[1] * G.nL[1] + q[2] * G.nL[2]);
-    if (up <= G.f * 1.0001) return null;
-    const u = (G.f * up) / (up - G.f), m = -u / up;
-    const w = [0, q[1] + up * G.nL[1], q[2] + up * G.nL[2]];
-    return [0, u * G.nL[1] + m * w[1], u * G.nL[2] + m * w[2]];
-  }
+  const objOf = tiltedObject;
   function pofLine(G) {
     // sample close to the axis: at strong tilts the sensor edges are conjugate to points beyond infinity
     const p1 = objOf(G, [0, 0.0003, -G.v]), p2 = objOf(G, [0, -0.0003, -G.v]);
