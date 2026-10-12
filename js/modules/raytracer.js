@@ -1,6 +1,6 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
-import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, sag } from '../lib/raytrace.js';
+import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag } from '../lib/raytrace.js';
 import { GLASSES, abbe, index } from '../lib/glass.js';
 import { wavelengthCSS } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
@@ -191,10 +191,10 @@ export default function mount(root, meta) {
       const r = Math.max(m.sd[i], m.sd[i + 1]);
       const r1 = Math.min(m.sd[i], r), r2 = Math.min(m.sd[i + 1], r);
       ctx.beginPath();
-      for (let k = 0; k <= 40; k++) { const y = -r1 + (2 * r1 * k) / 40; const z = zv[i] + sag(s.R, y); k ? ctx.lineTo(X(z), Y(y)) : ctx.moveTo(X(z), Y(y)); }
-      ctx.lineTo(X(zv[i] + sag(s.R, r1)), Y(r)); // edge
-      for (let k = 0; k <= 40; k++) { const y = r2 - (2 * r2 * k) / 40; const z = zv[i + 1] + sag(s2.R, y); ctx.lineTo(X(z), Y(Math.abs(y) >= r2 - 1e-9 ? Math.sign(y) * r : y)); }
-      ctx.lineTo(X(zv[i] + sag(s.R, -r1)), Y(-r));
+      for (let k = 0; k <= 40; k++) { const y = -r1 + (2 * r1 * k) / 40; const z = zv[i] + surfaceSag(s, y); k ? ctx.lineTo(X(z), Y(y)) : ctx.moveTo(X(z), Y(y)); }
+      ctx.lineTo(X(zv[i] + surfaceSag(s, r1)), Y(r)); // edge
+      for (let k = 0; k <= 40; k++) { const y = r2 - (2 * r2 * k) / 40; const z = zv[i + 1] + surfaceSag(s2, y); ctx.lineTo(X(z), Y(Math.abs(y) >= r2 - 1e-9 ? Math.sign(y) * r : y)); }
+      ctx.lineTo(X(zv[i] + surfaceSag(s, -r1)), Y(-r));
       ctx.closePath();
       const flint = (GLASSES[s.glass]?.type || '').includes('flint');
       const g = ctx.createLinearGradient(0, Y(r), 0, Y(-r));
@@ -209,7 +209,7 @@ export default function mount(root, meta) {
     const si = L.surfaces.findIndex((s) => s.stop);
     const sr = m.pd.stopR;
     ctx.strokeStyle = '#ffb547'; ctx.lineWidth = 3;
-    const zs = X(zv[si] + sag(L.surfaces[si].R, sr));
+    const zs = X(zv[si] + surfaceSag(L.surfaces[si], sr));
     ctx.beginPath(); ctx.moveTo(zs, Y(sr)); ctx.lineTo(zs, Y(sr + yMax * 0.25)); ctx.moveTo(zs, Y(-sr)); ctx.lineTo(zs, Y(-sr - yMax * 0.25)); ctx.stroke();
     ctx.fillStyle = '#ffb547'; ctx.font = '600 10px Inter, sans-serif'; ctx.fillText('STOP', zs, Y(sr + yMax * 0.25) - 5);
     // rays

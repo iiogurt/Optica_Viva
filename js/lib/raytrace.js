@@ -25,6 +25,14 @@ export const LENSES = {
       { R: -51.5, t: 97.6, glass: 'air' },
     ],
   },
+  'plano-hyperbolic': {
+    name: 'Plano-aspheric singlet f/5 (N-BK7, hyperbolic k = −n², no spherical aberration)',
+    epd: 20, field: 3,
+    surfaces: [
+      { R: Infinity, t: 5, glass: 'N-BK7', stop: true },
+      { R: -51.68, k: -2.30068, t: 100, glass: 'air' },
+    ],
+  },
   'achromat': {
     name: 'Cemented achromatic doublet f/5 (N-BAK4 / N-SF5, f≈100 mm)',
     epd: 20, field: 3,
@@ -76,6 +84,50 @@ export function sag(R, r) {
   if (!isFinite(R)) return 0;
   const c = 1 / R, k = 1 - c * c * r * r;
   return k <= 0 ? R : (c * r * r) / (1 + Math.sqrt(k));
+}
+
+// ── Aspheric surfaces ───────────────────────────────────────────────────────────────────
+// Even asphere: z(r) = c r² / (1 + √(1 − (1+k) c² r²)) + a₄r⁴ + a₆r⁶ + a₈r⁸ + a₁₀r¹⁰,
+// with c = 1/R (0 for R = ∞), conic constant k (0 sphere, −1 paraboloid, < −1 hyperboloid)
+// and s.a = [a₄, a₆, a₈, a₁₀]. Returns NaN outside the conic's domain.
+export const isAspheric = (s) => !!(s.k || (s.a && s.a.some((v) => v)));
+export function surfaceSag(s, r) {
+  const c = isFinite(s.R) ? 1 / s.R : 0, k = s.k || 0, r2 = r * r;
+  const q = 1 - (1 + k) * c * c * r2;
+  if (q < 0) return NaN;
+  let z = (c * r2) / (1 + Math.sqrt(q)), rp = r2 * r2;
+  for (const ai of s.a || []) { z += ai * rp; rp *= r2; }
+  return z;
+}
+// dz/dr (analytic)
+function surfaceSlope(s, r) {
+  const c = isFinite(s.R) ? 1 / s.R : 0, k = s.k || 0;
+  const q = 1 - (1 + k) * c * c * r * r;
+  if (q <= 0) return NaN;
+  let d = (c * r) / Math.sqrt(q), pw = 4, rp = r * r * r;
+  for (const ai of s.a || []) { d += pw * ai * rp; pw += 2; rp *= r * r; }
+  return d;
+}
+// Intersection by Newton iteration on f(t) = z(t) − z₀ − sag(r(t)), starting at the vertex plane.
+function intersectAsphere(s, z0, p, d) {
+  let t = (z0 - p[2]) / d[2];
+  for (let it = 0; it < 40; it++) {
+    const x = p[0] + t * d[0], y = p[1] + t * d[1], z = p[2] + t * d[2], r = Math.hypot(x, y);
+    const zs = surfaceSag(s, r);
+    if (!isFinite(zs)) return null;
+    const f = z - z0 - zs;
+    const dr = r > 1e-12 ? (x * d[0] + y * d[1]) / r : 0;
+    const df = d[2] - surfaceSlope(s, r) * dr;
+    const dt = f / df;
+    t -= dt;
+    if (Math.abs(dt) < 1e-12) {
+      const P = [p[0] + t * d[0], p[1] + t * d[1], p[2] + t * d[2]], rr = Math.hypot(P[0], P[1]);
+      const m = surfaceSlope(s, rr), ux = rr > 1e-12 ? P[0] / rr : 0, uy = rr > 1e-12 ? P[1] / rr : 0;
+      const L = Math.hypot(m, 1);
+      return { t, p: P, nrm: [(m * ux) / L, (m * uy) / L, -1 / L] }; // normal points against propagation
+    }
+  }
+  return null;
 }
 function mediumBefore(lens, i) { return i === 0 ? 'air' : lens.surfaces[i - 1].glass; }
 
@@ -156,7 +208,11 @@ export function trace(lens, lambda, p0, d0, opts = {}) {
     const n1 = index(mediumBefore(lens, i), lambda), n2 = index(s.glass, lambda);
     const z0 = zv[i];
     let t, nrm;
-    if (!isFinite(s.R)) {
+    if (isAspheric(s)) {
+      const hit = intersectAsphere(s, z0, p, d);
+      if (!hit) return { ok: false, path, missed: i };
+      ({ t, p, nrm } = hit);
+    } else if (!isFinite(s.R)) {
       t = (z0 - p[2]) / d[2];
       if (!(t > -1e9)) return { ok: false, path };
       p = [p[0] + t * d[0], p[1] + t * d[1], z0];

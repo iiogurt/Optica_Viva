@@ -120,7 +120,7 @@ Every image below is a screenshot of the running app. Each one is a simulation r
 **Real-lens ray tracing** · `#/raytracer`<br>
 <img src="docs/screenshots/raytracer.webp" alt="Ray tracer: Cooke triplet with caustic, spot diagram, ray fan and diffraction PSF">
 
-Exact 3-D ray tracing through a plano-convex singlet (both orientations), a BK7/F2 achromat designed for this project, the Cooke triplet and the Double-Gauss. Includes real-ray aiming at the stop, a magnified caustic, spot diagram, ray fans, chromatic focal shift, best-focus search, and the **diffraction PSF of the traced wavefront** (OPD → FFT).
+Exact 3-D ray tracing through a plano-convex singlet (both orientations), an **aspheric** plano-hyperbolic singlet with zero spherical aberration, a BK7/F2 achromat designed for this project, the Cooke triplet and the Double-Gauss. Includes real-ray aiming at the stop, a magnified caustic, spot diagram, ray fans, chromatic focal shift, best-focus search, and the **diffraction PSF of the traced wavefront** (OPD → FFT).
 
 </td>
 <td width="50%" valign="top">
@@ -375,7 +375,7 @@ flowchart LR
 | Model | Implementation | Used by |
 |---|---|---|
 | Glass dispersion | Three-term Sellmeier with Schott catalogue coefficients (12 glasses) and Malitson (1965) for fused silica and CaF₂ | ray tracer, chromatic, flare |
-| Exact ray tracing | 3-D vector Snell refraction through spherical surfaces, clear-aperture vignetting, Newton ray aiming at the stop | ray tracer |
+| Exact ray tracing | 3-D vector Snell refraction through spherical and even-aspheric surfaces (conic + polynomial, Newton intersection), clear-aperture vignetting, Newton ray aiming at the stop | ray tracer |
 | First-order optics | y–nu paraxial matrices: EFL, BFD, entrance and exit pupils, Petzval sum | ray tracer, flare |
 | Wavefront | OPD against the exit-pupil reference sphere, sampled on a 41 × 41 pupil grid | ray tracer |
 | Diffraction | Fraunhofer integral by radix-2 2-D FFT of a 4 × 4-supersampled pupil, zero-padded (Q = 4); one FFT per wavelength when aberrated | PSF, Zernike, MTF, seeing, telescope |

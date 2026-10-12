@@ -201,7 +201,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 *Goal: the ray tracer becomes a credible teaching tool for lens design (A9, A10).*
 
-- [ ] **P1 · M** **Aspheric surfaces**: conic plus even polynomial sag, with exact intersection by Newton iteration.
+- [x] **P1 · M** **Aspheric surfaces**: conic plus even polynomial sag, with exact intersection by Newton iteration.
 - [ ] **P1 · M** **Prescription editor**: an editable table of surfaces (R, t, glass, semi-diameter, conic, stop) with validation and undo.
 - [ ] **P1 · M** **Prescription import/export**: JSON, simple `.len`, and a subset of Zemax `.zmx` (SURF, CURV, DISZ, GLAS, CONI, PARM). This follows the RayOptics and Open Optical Designer approach.
 - [ ] **P2 · M** **More classic designs**: Tessar, Petzval portrait, Biogon (symmetric wide), Distagon-type retrofocus, a telephoto, a Ritchey–Chrétien and a TMA telescope.

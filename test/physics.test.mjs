@@ -178,3 +178,23 @@ test('worker tasks reproduce the laboratories\' reference results', async () => 
   const z = TASKS.zernikeLab({ coeffs: { 8: 0.25 }, n: 128, Dpx: 32 }).result;
   near(z.rms, 0.25, 0.005, 'Zernike RMS equals the coma coefficient');
 });
+
+test('aspheres: hyperbolic surface (k = −n²) removes spherical aberration exactly', async () => {
+  const L = LENSES['plano-hyperbolic'], p = paraxial(L);
+  near(p.efl, 100, 1e-3, 'plano-hyperbolic EFL');
+  for (const py of [0.25, 0.5, 0.75, 1]) {
+    const a = aimRay(L, 587.56, 0, 0, py, p);
+    const r = trace(L, 587.56, a.p, a.d, { clip: false, zv: p.zv });
+    near(toPlane(r, p.zImage)[1] * 1000, 0, 0.01, `transverse error (µm) at pupil ${py}`);
+  }
+});
+
+test('aspheres: Newton intersection agrees with the closed-form sphere; k = −1 is a paraboloid', async () => {
+  const { surfaceSag } = await import('../js/lib/raytrace.js');
+  const sphere = { surfaces: [{ R: 40, t: 5, glass: 'N-BK7' }, { R: Infinity, t: 50, glass: 'air' }] };
+  const asph = { surfaces: [{ R: 40, a: [1e-30], t: 5, glass: 'N-BK7' }, { R: Infinity, t: 50, glass: 'air' }] };
+  const p0 = [0, 6, -10], d0 = [0, 0.05, Math.sqrt(1 - 0.0025)];
+  const a = trace(sphere, 550, p0, d0, { clip: false }), b = trace(asph, 550, p0, d0, { clip: false });
+  for (let i = 0; i < 3; i++) { near(b.p[i], a.p[i], 1e-9, 'exit point ' + i); near(b.d[i], a.d[i], 1e-12, 'exit direction ' + i); }
+  near(surfaceSag({ R: 50, k: -1 }, 7), (7 * 7) / (2 * 50), 1e-12, 'paraboloid sag r²/2R');
+});
