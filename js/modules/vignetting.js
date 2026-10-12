@@ -140,7 +140,7 @@ export default function mount(root, meta) {
 <h3>Natural vignetting: the cos⁴ law</h3>
 <p>For an object point at field angle \(\theta\), viewed through a thin lens with a pupil of area \(A_p\), four factors of \(\cos\theta\) appear. One comes from the pupil being seen obliquely (projected area \(A_p\cos\theta\)). Two come from the longer distance to the image point (\(1/r^2 \to \cos^2\theta/f^2\)). One comes from the oblique incidence on the sensor. Hence</p>
 \[E(\theta) = E_0\cos^4\theta.\]
-<p>At 37° (the corner of a 28 mm lens on full frame) this is already −1.3 EV. Real wide-angle lenses beat it through <em>pupil aberration</em>. In retrofocus designs, the entrance pupil grows and tilts towards the oblique bundle, giving an effective exponent nearer 2–3. The Russar and Biogon designs exploited this deliberately.</p>
+<p>At 37.7° (the corner of a 28 mm lens on full frame) this is already −1.35 EV. Real wide-angle lenses beat it through <em>pupil aberration</em>. In retrofocus designs, the entrance pupil grows and tilts towards the oblique bundle, giving an effective exponent nearer 2–3. The Russar and Biogon designs exploited this deliberately.</p>
 <h3>Mechanical (optical) vignetting</h3>
 <p>An oblique bundle passes through the stop but is clipped by the rims of the front and rear elements. Projected onto the pupil plane, these rims are circles displaced by \(d\tan\theta\) in opposite directions. The transmitted bundle is the intersection of three circles, so this page counts a 90×90 grid of pupil points. It is the cat's-eye bokeh shape, and it shrinks rapidly on stopping down, because the small stop moves inside the rims' shadow.</p>
 </div><div>
