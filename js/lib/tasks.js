@@ -8,6 +8,7 @@ import { paraxial, referenceSphere, opd, aimRay, trace } from './raytrace.js';
 import { optimise } from './optimise.js';
 import { monteCarlo } from './tolerance.js';
 import { ghostSystem, renderGhosts } from './ghosts.js';
+import { bokehKernels } from './bokeh.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -300,4 +301,10 @@ function flareGhosts(p) {
   return { result: r, transfer: [r.rgb.buffer] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts };
+// Bokeh kernels traced through a lens prescription (see js/lib/bokeh.js).
+function bokehTraced(p) {
+  const r = bokehKernels({ ...p, basis: spectralBasis(p.lambdas) });
+  return { result: r, transfer: r.kernels.map((k) => k.rgb.buffer) };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced };

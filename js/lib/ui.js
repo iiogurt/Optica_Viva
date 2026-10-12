@@ -91,7 +91,10 @@ export function controls(spec, onChange) {
   const state = {};
   const el = h('div.controls');
   const panel = ++panels;
-  const fire = rafThrottle(() => { writeUrlSoon(); onChange && onChange(state); });
+  // s.when(state) → false hides a control (e.g. options that only apply to one model)
+  const conditional = [];
+  const applyWhen = () => conditional.forEach(([row, when]) => { row.hidden = !when(state); });
+  const fire = rafThrottle(() => { applyWhen(); writeUrlSoon(); onChange && onChange(state); });
   const api = { el, state, set: {} };
   const params = hashParams();
   for (const [key, s] of Object.entries(spec)) {
@@ -142,8 +145,10 @@ export function controls(spec, onChange) {
       row = h('div.ctl', {}, s.label ? h('span.ctl-label', {}, s.label) : null, h('div.seg', {}, ...btns));
     }
     if (s.hint) row.title = s.hint;
+    if (s.when) conditional.push([row, s.when]);
     el.append(row);
   }
+  applyWhen();
   return api;
 }
 

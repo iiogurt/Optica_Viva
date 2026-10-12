@@ -1,9 +1,41 @@
 import { h, controls, stage, readouts, debounce, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
+import { LENSES, autoSemiDiameters, stopIndex } from '../lib/raytrace.js';
+import { linspace } from '../lib/color.js';
+import { latest } from '../lib/compute.js';
 
 const K = 112; // kernel resolution (px)
-const PALETTE = [[255, 196, 120], [255, 150, 90], [140, 200, 255], [255, 230, 190], [190, 160, 255]];
+const PALETTE = [[255, 196, 120], [255, 150, 90], [140, 200, 255], [255, 230, 190], [190, 160, 255], [255, 255, 255]];
+const LAMS = linspace(420, 680, 8);
+const GRID = [-1, 0, 1]; // traced kernels: 3 × 3 field positions (image heights ±16 mm, ±10.7 mm)
+
+// Colour kernel from the traced lens (linear RGB, K×K) → canvas tinted by the light's colour.
+function rgbKernelCanvas(k, tint, gain) {
+  const n = k.K, c = document.createElement('canvas'); c.width = c.height = n;
+  const g = c.getContext('2d'), im = g.createImageData(n, n);
+  for (let i = 0; i < n * n; i++) {
+    for (let ch = 0; ch < 3; ch++) im.data[i * 4 + ch] = Math.min(255, k.rgb[i * 3 + ch] * gain * tint[ch]);
+    im.data[i * 4 + 3] = 255;
+  }
+  g.putImageData(im, 0, 0);
+  return c;
+}
+// Luminance statistics of a traced kernel about its centroid: radius from the second moment
+// (uniform disk: <r²> = R²/2), mean luminance in the centre (r < 0.4 R) and on the rim (0.8–0.98 R).
+function kernelStats(k) {
+  const n = k.K, L = new Float64Array(n * n);
+  let s = 0, sx = 0, sy = 0, sr = 0;
+  for (let i = 0; i < n * n; i++) { L[i] = 0.2126 * k.rgb[i * 3] + 0.7152 * k.rgb[i * 3 + 1] + 0.0722 * k.rgb[i * 3 + 2]; s += L[i]; sx += L[i] * (i % n); sy += L[i] * Math.floor(i / n); }
+  const cx = sx / s, cy = sy / s;
+  for (let i = 0; i < n * n; i++) sr += L[i] * ((i % n - cx) ** 2 + (Math.floor(i / n) - cy) ** 2);
+  const R = Math.sqrt((2 * sr) / s), m = [0, 0], c = [0, 0];
+  for (let i = 0; i < n * n; i++) {
+    const r = Math.hypot(i % n - cx, Math.floor(i / n) - cy) / R;
+    if (r < 0.4) { m[0] += L[i]; c[0]++; } else if (r >= 0.8 && r < 0.98) { m[1] += L[i]; c[1]++; }
+  }
+  return { L, cx, cy, Rpx: R, Dmm: (2 * R * k.mmW) / n, centre: m[0] / c[0], rim: m[1] / c[1] };
+}
 
 // Build a defocus kernel by forward-splatting a dense pupil grid.
 // side = +1 behind the focal plane (background), −1 in front (foreground).
@@ -76,23 +108,29 @@ function kernelCanvas(k, rgb, gain = 1) {
 export default function mount(root, meta) {
   root.append(header({ ...meta, lede: 'An out-of-focus point of light is a projected image of the lens\'s own exit pupil. Its outline comes from the iris blades and the barrel\'s mechanical vignetting. Its inner brightness comes from residual spherical aberration and polishing errors on aspheric surfaces. Bokeh quality is therefore pupil geometry plus wavefront error, made visible.', domains: ['photo', 'video'] }));
 
+  const traced = (s) => s.model === 'traced', pheno = (s) => s.model !== 'traced';
   const ctl = controls({
+    model: { type: 'select', label: 'Model', value: 'traced', options: [['traced', 'Traced lens: real rays through a prescription'], ['pheno', 'Phenomenological: pupil + aberration sliders']] },
+    lens: { type: 'select', label: 'Lens', value: 'double-gauss', options: Object.entries(LENSES).map(([k, l]) => [k, l.name]), when: traced },
+    focus: { type: 'range', label: 'Focus distance', min: 300, max: 20000, log: true, value: 1500, fmt: (v) => (v / 1000).toFixed(2) + ' m', when: traced },
+    barrel: { type: 'range', label: 'Barrel clear apertures (cat\'s eye)', min: 0, max: 0.4, step: 0.01, value: 0.3, fmt: (v) => '−' + (v * 100).toFixed(0) + ' %', when: traced },
     blades: { type: 'range', label: 'Iris blades (0 = circular)', min: 0, max: 15, step: 1, value: 9, fmt: (v) => (v < 3 ? 'circular' : v) },
     round: { type: 'range', label: 'Blade roundness', min: 0, max: 1, step: 0.01, value: 0.55, fmt: (v) => (v * 100).toFixed(0) + ' %' },
     stop: { type: 'range', label: 'Stopped down from wide open', min: 0, max: 4, step: 0.05, value: 0.6, fmt: (v) => v.toFixed(1) + ' EV' },
-    vig: { type: 'range', label: 'Mechanical vignetting (cat\'s eye)', min: 0, max: 0.8, step: 0.01, value: 0.42 },
-    sa: { type: 'range', label: 'Spherical aberration (under ← → over)', min: -0.45, max: 0.45, step: 0.005, value: 0.2 },
-    ripple: { type: 'range', label: 'Asphere polishing ripple ("onion rings")', min: 0, max: 1, step: 0.01, value: 0 },
-    obs: { type: 'range', label: 'Central obstruction (mirror lens)', min: 0, max: 0.6, step: 0.01, value: 0 },
-    apod: { type: 'toggle', label: 'Apodisation filter (STF / smooth trans focus)', value: false },
-    blur: { type: 'range', label: 'Background blur size', min: 10, max: 120, step: 1, value: 64, unit: 'px' },
+    vig: { type: 'range', label: 'Mechanical vignetting (cat\'s eye)', min: 0, max: 0.8, step: 0.01, value: 0.42, when: pheno },
+    sa: { type: 'range', label: 'Spherical aberration (under ← → over)', min: -0.45, max: 0.45, step: 0.005, value: 0.2, when: pheno },
+    ripple: { type: 'range', label: 'Asphere polishing ripple ("onion rings")', min: 0, max: 1, step: 0.01, value: 0, when: pheno },
+    obs: { type: 'range', label: 'Central obstruction (mirror lens)', min: 0, max: 0.6, step: 0.01, value: 0, when: pheno },
+    apod: { type: 'toggle', label: 'Apodisation filter (STF / smooth trans focus)', value: false, when: pheno },
+    blur: { type: 'range', label: 'Background blur size', min: 10, max: 120, step: 1, value: 64, unit: 'px', when: pheno },
   }, () => recompute());
   const ro = h('div');
+  const note = h('div.note', { role: 'status' });
   const calc = liveCalc();
   const scene = stage({ aspect: 1.6, label: 'Night scene: background behind focus, a few lights in front', draw: drawScene, minH: 300 });
   const close = stage({ aspect: 4, label: 'Kernels: centre behind · centre in front · edge behind · corner behind', draw: drawClose, minH: 140 });
   const prof = stage({ aspect: 2.6, label: '', draw: drawProf, cls: 'plain', minH: 200 });
-  root.append(lab([scene.el, close.el, h('div.card', { style: { padding: '6px' } }, prof.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  root.append(lab([scene.el, note, close.el, h('div.card', { style: { padding: '6px' } }, prof.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   // deterministic set of lights
   let seed = 11; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
@@ -100,10 +138,63 @@ export default function mount(root, meta) {
   for (let i = 0; i < 70; i++) LIGHTS.push({ x: rnd(), y: 0.08 + 0.75 * rnd() ** 1.3, size: 0.6 + 0.6 * rnd(), col: Math.floor(rnd() * 5), side: 1, b: 0.6 + 0.4 * rnd() });
   for (let i = 0; i < 7; i++) LIGHTS.push({ x: rnd(), y: 0.7 + 0.28 * rnd(), size: 0.7 + 0.4 * rnd(), col: Math.floor(rnd() * 5), side: -1, b: 1 });
 
-  let KS = null;
+  let KS = null, TK = null;
   const grid = [-1, -0.5, 0, 0.5, 1];
+  const bokehJob = latest('bokeh'), sdCache = new Map();
+  let alive = true;
+  // Traced lens: 18 kernels (background at ∞, foreground at half the focus distance; 3 × 3 field
+  // positions) from the worker; brightness is physical within each side.
+  function recomputeTraced(st) {
+    const lens = LENSES[st.lens], si = stopIndex(lens);
+    if (!sdCache.has(st.lens)) sdCache.set(st.lens, autoSemiDiameters(lens));
+    const sd = sdCache.get(st.lens).map((v, k) => (k === si ? v : v * (1 - st.barrel)));
+    const fields = GRID.flatMap((fy) => GRID.map((fx) => [fx * 16, fy * 10.7]));
+    note.textContent = 'Tracing rays through the lens for 18 kernels…';
+    const t0 = performance.now();
+    bokehJob('bokehTraced', { lens, sd, lambdas: LAMS, focus: st.focus, near: st.focus / 2, stop: st.stop, blades: st.blades < 3 ? 0 : st.blades, round: st.round, fields, K, grid: 36 }).then((r) => {
+      if (!alive) return;
+      const ks = r.kernels.map((k) => ({ ...k, K, st: kernelStats({ ...k, K }) }));
+      const pick = (side, fx, fy) => ks.find((k) => k.side === side && k.field[0] === fx * 16 && k.field[1] === fy * 10.7);
+      const gain = {};
+      // display scale per side: the centre of the on-axis kernel at 60 % white
+      for (const side of ['bg', 'fg']) gain[side] = (0.6 * 255) / Math.max(1e-30, pick(side, 0, 0).st.centre);
+      ks.forEach((k) => { k.cv = PALETTE.map((c) => rgbKernelCanvas(k, c.map((v) => v / 255), gain[k.side])); });
+      TK = { r, ks, pick, st: { ...st }, ms: performance.now() - t0 };
+      updateTraced();
+      scene.redraw(); close.redraw(); prof.redraw();
+    }, (e) => { note.textContent = 'Ray tracing failed: ' + e.message; });
+  }
+  function updateTraced() {
+    const { r, pick, st, ms } = TK, lens = LENSES[st.lens];
+    const b0 = pick('bg', 0, 0), f0 = pick('fg', 0, 0), bc = pick('bg', 1, 1);
+    const f = r.efl, N = r.fnum, s = st.focus, cThin = (f * f) / (N * (s - f));
+    note.textContent = `Traced: 18 kernels × ${LAMS.length} wavelengths through the ${lens.name.split(' (')[0]} in ${(ms / 1000).toFixed(1)} s. Background lights at infinity, foreground lights at ${(s / 2000).toFixed(2)} m.`;
+    const rc = (k) => k.st.rim / k.st.centre;
+    const look = (q) => (q > 1.08 ? 'bright rim' : q < 0.92 ? 'soft edge, bright centre' : 'nearly uniform');
+    ro.replaceChildren(readouts([
+      ['Lens', lens.name.split(' (')[0]],
+      ['Working f-number', 'f/' + N.toFixed(1)],
+      ['Sensor shift from ∞ focus', (r.zs - r.zInf).toFixed(2) + ' mm'],
+      ['Background disk Ø (traced)', b0.st.Dmm.toFixed(2) + ' mm'],
+      ['Thin-lens prediction f²/(N(s−f))', cThin.toFixed(2) + ' mm'],
+      ['Background rim / centre', rc(b0).toFixed(2) + ' (' + look(rc(b0)) + ')'],
+      ['Foreground rim / centre', rc(f0).toFixed(2) + ' (' + look(rc(f0)) + ')'],
+      ['Corner kernel flux', ((bc.flux / b0.flux) * 100).toFixed(0) + ' % of centre'],
+    ]));
+    calc.set(String.raw`\begin{aligned}
+    c &= \frac{f^2}{N(s-f)} = \frac{${texNum(f, 3)}^2}{${texNum(N, 2)}\,(${texNum(s, 4)} - ${texNum(f, 3)})} = ${texNum(cThin, 3)}\ \text{mm}\\
+    \Delta z &= z_s - z_\infty = ${texNum(r.zs - r.zInf, 3)}\ \text{mm}\\
+    D_\text{traced} &= 2\sqrt{2\langle r^2\rangle} = ${texNum(b0.st.Dmm, 3)}\ \text{mm}\\
+    E(\mathbf x) &= \textstyle\sum_\triangle \Phi_\triangle/A_\triangle\ \ (\mathbf x\in\triangle)
+    \end{aligned}`);
+    const row = (k) => { const n = K, y = Math.round(k.st.cy), mx = Math.max(...k.st.L); return range(0, n - 1, n).map((x) => [(x - k.st.cx) / k.st.Rpx, k.st.L[y * n + x] / mx]); };
+    KS = { ...(KS || {}), prof: { b: row(b0), f: row(f0) } };
+  }
   const recompute = debounce(() => {
     const st = ctl.state;
+    if (st.model === 'traced') { recomputeTraced(st); return; }
+    TK = null;
+    note.textContent = 'Phenomenological model: the pupil outline and a cubic transverse aberration set by the sliders.';
     const P = { blades: st.blades < 3 ? 0 : st.blades, round: st.round, stop: st.stop, vig: st.vig, sa: st.sa, ripple: st.ripple, obs: st.obs, apod: st.apod, rot: Math.PI / 2 };
     const cache = new Map();
     const get = (side, fx, fy) => {
@@ -140,7 +231,20 @@ export default function mount(root, meta) {
     const bg = ctx.createLinearGradient(0, 0, 0, hh);
     bg.addColorStop(0, '#04050b'); bg.addColorStop(0.7, '#0d0a14'); bg.addColorStop(1, '#170e10');
     ctx.fillStyle = bg; ctx.fillRect(0, 0, w, hh);
-    if (!KS) return;
+    if (ctl.state.model === 'traced') {
+      if (!TK) return;
+      ctx.globalCompositeOperation = 'lighter';
+      for (const L of LIGHTS) {
+        const fx = (L.x - 0.5) * 2, fy = (0.5 - L.y) * 2;
+        const near = (v) => GRID.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
+        const k = TK.pick(L.side < 0 ? 'fg' : 'bg', near(fx), near(fy));
+        const D = (k.mmW * w) / 36; // the scene spans the 36 mm sensor width: kernels at physical size
+        ctx.globalAlpha = L.b;
+        ctx.drawImage(k.cv[L.col], L.x * w - D / 2, L.y * hh - D / 2, D, D);
+      }
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    }
+    if (ctl.state.model === 'traced' || !KS || !KS.get) { drawSubject(ctx, w, hh); return; }
     const st = KS.st, iris = Math.pow(2, -st.stop / 2);
     ctx.globalCompositeOperation = 'lighter';
     for (const L of LIGHTS) {
@@ -154,6 +258,9 @@ export default function mount(root, meta) {
       ctx.drawImage(cv[L.col], L.x * w - D / 2, L.y * hh - D / 2, D, D);
     }
     ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+    drawSubject(ctx, w, hh);
+  }
+  function drawSubject(ctx, w, hh) {
     // in-focus subject silhouette
     ctx.fillStyle = '#020203';
     ctx.beginPath(); ctx.ellipse(w * 0.5, hh * 0.62, w * 0.07, hh * 0.13, 0, 0, 7); ctx.fill();
@@ -162,9 +269,18 @@ export default function mount(root, meta) {
 
   function drawClose(ctx, w, hh) {
     ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
-    if (!KS) return;
-    const items = [[1, 0, 0], [-1, 0, 0], [1, 1, 0], [1, 1, 1]];
     const side = Math.min(hh - 26, w / 4 - 12);
+    if (ctl.state.model === 'traced') {
+      if (!TK) return;
+      // neutral white light, common scale: the relative sizes are physical
+      const ks = [TK.pick('bg', 0, 0), TK.pick('fg', 0, 0), TK.pick('bg', 1, 0), TK.pick('bg', 1, 1)], big = Math.max(...ks.map((k) => k.mmW));
+      ctx.globalCompositeOperation = 'lighter';
+      ks.forEach((k, i) => { const d = (side * k.mmW) / big; ctx.drawImage(k.cv[5], (w / 4) * i + (w / 4 - d) / 2, 22 + (side - d) / 2, d, d); });
+      ctx.globalCompositeOperation = 'source-over';
+      return;
+    }
+    if (!KS || !KS.get) return;
+    const items = [[1, 0, 0], [-1, 0, 0], [1, 1, 0], [1, 1, 1]];
     items.forEach(([s, fx, fy], i) => {
       const { cv } = KS.get(s, fx, fy);
       ctx.globalCompositeOperation = 'lighter';
@@ -203,8 +319,16 @@ export default function mount(root, meta) {
 <p>\(W_{020}\) changes sign on passing through focus, but \(W_{040}\) does not. Hence \(s\) flips sign. In an <em>under-corrected</em> lens the marginal rays focus closer to the lens than the paraxial ones. Behind focus they have already crossed and spread wider, so the background disk has a soft edge and bright centre, while the foreground disk gets a hard bright rim. Over-correction reverses the two and gives the "soap-bubble" backgrounds of the Meyer Trioplan. Many portrait lenses are deliberately left slightly under-corrected for creamy backgrounds; Nikon's Defocus-Control lenses let the photographer choose the sign. When \(1+3s\rho^2\) reaches zero, rays fold over and a caustic ring of very high intensity forms. The ray-splatting renderer captures this exactly, because it maps pupil samples forward instead of inverting \(r(\rho)\).</p>
 <h3>Onion rings and apodisation</h3>
 <p>Moulded or ground aspheric surfaces carry small periodic figure errors from the tool path. A ripple \(\delta W\propto\sin(k\rho^2)\) produces a slope error that modulates the ray density into concentric rings: "onion-ring" bokeh. An apodisation element, a radially graded neutral-density filter (Sony STF, Fujifilm APD), weights the pupil by \(T(\rho)\). The disk edge then fades smoothly, at the cost of about 1 stop of light (T-stop vs f-stop).</p>
-<h3>What the model omits</h3>
-<p>Diffraction adds Fresnel edge ringing, which is visible only for small disks. Longitudinal colour tints the rims magenta in front and green behind, and pupil aberrations slightly distort the disk shape. Optical design programs model all of these by tracing real rays through the full prescription. That is the <a href="#/raytracer">ray tracer</a>, applied to a defocused point.</p>
+<h3>Bokeh from the traced lens</h3>
+<p>The default model needs none of these sliders. It traces exact rays through the chosen prescription: background lights at infinity, foreground lights at half the focus distance, and the sensor placed at the real-ray image of the focus distance. A \(37\times37\) grid of rays per wavelength (8 wavelengths) is rasterised as triangles. Each triangle carries its share of the flux, \(\Phi_\triangle\), spread over its image area \(A_\triangle\). The irradiance \(E = \Phi_\triangle/A_\triangle\) therefore holds energy exactly, including caustics where triangles fold over. The iris polygon and every clear aperture are tested per pixel, which keeps outlines sharp. Every effect above then emerges from the lens itself:</p>
+<ul>
+<li>the lens's real spherical aberration sets the rim or soft edge, with the sign flipping between foreground and background;</li>
+<li>longitudinal colour (secondary spectrum) produces the classic <em>magenta foreground and green background</em> fringes of achromatised lenses, while a simple singlet shows violet behind focus and red in front;</li>
+<li>the barrel's clear apertures cut cat's eyes off axis, and coma shades them unevenly.</li>
+</ul>
+<p>Disks are drawn at their physical size on a 36 mm sensor, so the scaling \(c = f^2/(N(s-f))\) is visible directly: a 50 mm f/5 lens gives small disks, a 100 mm f/3 large ones. The traced diameter agrees with this thin-lens value to within a few per cent, and the flux of a stopped-down kernel equals \(\pi r_{EP}^2\) within 1 % (see the tests).</p>
+<h3>What both models omit</h3>
+<p>Diffraction adds Fresnel edge ringing, which is visible only for small disks (see <a href="#/psf">PSF</a>). Polishing ripples on the real lens surfaces and an apodisation filter are available only in the phenomenological model.</p>
 </div></div>`));
   root.append(references([
     'H. H. Nasse, "Depth of Field and Bokeh", Carl Zeiss Camera Lens Division (2010).',
@@ -212,5 +336,5 @@ export default function mount(root, meta) {
     'M. Hullin et al., "Polynomial optics: a construction kit for efficient ray-tracing of lens systems", Comput. Graph. Forum 31 (2012).',
     'S. Bhagavathula &amp; K. Thompson, "Bokeh: a review of the physics and aesthetics", Optics &amp; Photonics News (2020).',
   ]));
-  return () => [scene, close, prof].forEach((s) => s.destroy());
+  return () => { alive = false; [scene, close, prof].forEach((s) => s.destroy()); };
 }

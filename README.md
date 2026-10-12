@@ -223,9 +223,9 @@ Sellmeier dispersion, the Abbe diagram and the partial-dispersion normal line. T
 <td valign="top" colspan="2">
 
 **Bokeh** · `#/bokeh`<br>
-<img src="docs/screenshots/bokeh.webp" alt="Night scene with soap-bubble bokeh and cat's-eye kernels" width="70%">
+<img src="docs/screenshots/bokeh.webp" alt="Night scene with bokeh traced through a Double-Gauss lens, with green and magenta colour fringes" width="70%">
 
-Defocus kernels are built by splatting pupil rays through the iris polygon, cat's-eye vignetting, mirror-lens obstruction and apodisation. Spherical aberration flips sign between foreground and background: over-correction gives **soap-bubble** disks. Includes caustic folding and onion-ring ripple.
+**Traced from the real lens**: defocus kernels come from exact rays through the chosen prescription at 8 wavelengths, at their physical size. The lens's own spherical aberration gives soft-edged backgrounds and bright-rimmed foregrounds, and its secondary spectrum gives the classic **magenta foreground and green background** fringes. The clear apertures cut **cat's eyes** off axis. A phenomenological mode keeps sliders for over-correction (**soap-bubble** disks), mirror-lens obstruction, apodisation and onion-ring ripple.
 
 </td>
 </tr>
@@ -382,6 +382,7 @@ flowchart LR
 | Diffraction | Fraunhofer integral by radix-2 2-D FFT of a 4 × 4-supersampled pupil, zero-padded (Q = 4); one FFT per wavelength when aberrated | PSF, Zernike, MTF, seeing, telescope |
 | Colour | CIE 1931 2° colour-matching functions (Wyman–Sloan–Shirley fit) → linear sRGB → sRGB transfer curve | all spectral renders |
 | Thin films | Characteristic-matrix method, s and p polarisation, oblique incidence | flare |
+| Bokeh | Exact rays of the direct path from point sources (∞ and near) to the defocused sensor, same flux-conserving rasteriser | bokeh |
 | Lens flare | Exact ray tracing of all k(k−1)/2 two-reflection paths per wavelength, rasterised as flux-conserving triangles with a per-pixel aperture gauge; paraxial ghost matrices as the preview | flare |
 | Turbulence | von Kármán PSD, FFT screens plus 3-level subharmonics, frozen flow, bilinear-influence DM | seeing |
 | Sensor | Poisson photon statistics, two-stage read noise, PRNU, dark current, FWC, quantisation | noise, sampling |
@@ -435,7 +436,7 @@ flowchart TB
     LIB --> KATEX["vendor/katex"]
 ```
 
-Heavy FFT and ray work (PSF, Zernike and JWST phasing, MTF, coronagraph, the ray tracer's wavefront PSF and the real-ray flare ghosts) runs in a **module Web Worker** (`js/workers/compute.js`), so the page stays responsive: the longest main-thread freeze during a 5-wavelength JWST PSF dropped from about 1 s to 16 ms. `latest(channel)` drops superseded requests while you drag, and the PSF lab shows a 256² preview before the 512² render.
+Heavy FFT and ray work (PSF, Zernike and JWST phasing, MTF, coronagraph, the ray tracer's wavefront PSF, the real-ray flare ghosts and the traced bokeh kernels) runs in a **module Web Worker** (`js/workers/compute.js`), so the page stays responsive: the longest main-thread freeze during a 5-wavelength JWST PSF dropped from about 1 s to 16 ms. `latest(channel)` drops superseded requests while you drag, and the PSF lab shows a 256² preview before the 512² render.
 
 Each laboratory module exports a single `mount(root, meta)` function. It builds controls, canvases, live calculations and theory, and returns a cleanup function. The router calls that cleanup when you navigate away, to stop animations and disconnect `ResizeObserver`s.
 
@@ -473,6 +474,7 @@ Optica_Viva/
 │   │   ├── optimise.js        Damped-least-squares (Levenberg–Marquardt) lens optimiser
 │   │   ├── tolerance.js       Monte-Carlo tolerancing with refocus compensation
 │   │   ├── ghosts.js          Lens-flare ghosts: paraxial matrices and real-ray rasteriser
+│   │   ├── bokeh.js           Bokeh kernels traced through a prescription
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
@@ -525,6 +527,8 @@ The numerical core was checked against published or analytically known values. E
 | Angular-diameter distance, z = 0.3 | 919 Mpc | flat ΛCDM (H₀ = 70, Ω<sub>m</sub> = 0.3) ≈ 920 Mpc |
 | Hyperfocal, 50 mm f/2.8, c = 0.029 mm | 31 m | f²/(Nc) + f = 31.0 m |
 | cos⁴ at 37.7° (28 mm FF corner) | −1.35 EV | log₂ cos⁴θ = −1.351 EV |
+| Traced bokeh disk at 4 EV down: Ø and flux (3 lenses) | within 1 % and 0.5 % | paraxial 2 r<sub>EP</sub> Δz / f; π r<sub>EP</sub>² |
+| Traced bokeh colour fringes | singlet: violet behind, red in front; achromat: green behind, magenta in front | longitudinal colour and secondary spectrum |
 | Real-ray flare ghosts, Double-Gauss at f/18, 0.57° (4 paths) | position within 3 %, size within 2 %, flux within 3 % | y–nu ghost matrices: (B − AD/C)θ, \|A/C\| r<sub>stop</sub>, R<sub>i</sub>R<sub>j</sub> π(r<sub>stop</sub>/C)² |
 
 ---
@@ -537,7 +541,7 @@ Every page states its model's assumptions. The main simplifications are:
 |---|---|---|
 | Ray tracer (PSF) | Off-axis pupil treated as circular in normalised stop coordinates | Ignores the ≈ cos θ pupil anamorphosis |
 | Flare | Real-ray ghosts at 8 wavelengths on a 33 × 33 ray grid; diffraction at the iris only in the source's starburst | Ghost edges are geometric (no Fresnel ringing); ghosts below 10⁻⁶ of the source irradiance are skipped |
-| Bokeh | Geometric defocus kernels | No Fresnel edge ringing; LoCA rim tint omitted |
+| Bokeh | Geometric optics: traced kernels (or a phenomenological pupil model) | No Fresnel edge ringing; disks drawn on a 3 × 3 grid of field positions |
 | Depth of field, tilt-shift | Thin-lens model; Gaussian blur stack for tilt-shift | Blur magnitudes exact, kernel shape approximate in tilt-shift |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |
 | Seeing | Single frozen-flow layer; screens periodic over 8D | One seam per 8D of travel |

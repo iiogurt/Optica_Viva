@@ -7,6 +7,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Bokeh from the traced lens** (`js/lib/bokeh.js`), now the default model of the bokeh lab. Defocused point images are traced through any library prescription at 8 wavelengths: background lights at infinity, foreground lights at half the focus distance, and the sensor at the real-ray image of the focus distance. They use the flux-conserving triangle rasteriser, generalised to the direct path, point sources, fitted windows and rounded blades. The lens's own spherical aberration, secondary-spectrum fringes (magenta foreground, green background), cat's eyes from the clear apertures (new barrel slider) and coma emerge without parameters. Disks are drawn at physical size on a 36 mm sensor. The 18 kernels are computed in the worker. The phenomenological model remains as a second mode.
+- Tests (`test/bokeh.test.mjs`): a stopped-down disk matches the paraxial diameter within 1 % and conserves the pupil flux within 0.5 %; under-correction gives a soft background and a bright-rimmed foreground; the colour order of the rims matches longitudinal colour (singlet) and the secondary spectrum (achromat).
+- `controls()` options accept `when(state)` to show a control only for some settings.
+
+### Fixed
+- Ghost and bokeh rasteriser: pixel centres on a shared triangle edge were counted twice, which drew a faint line along the cell diagonals. Sub-pixel triangles were also under-weighted at aperture edges, losing up to 5 % of the flux on dense grids.
+
+### Added
 - **Real-ray lens-flare ghosts** (`js/lib/ghosts.js`), following the full method of Hullin et al. (2011). Exact rays are traced through every two-reflection path at 8 wavelengths, and the ray grid is rasterised as flux-conserving triangles. The iris polygon and every clear aperture are tested per pixel through an interpolated aperture gauge, so edges stay sharp. Reflectances use each ray's actual angle of incidence on the thin-film coating, and total internal reflection is included. The result shows aberrated, vignetted and cat's-eye ghosts with caustics. Ghost paths that would stay invisible are culled. It runs in the worker: a draft while the sun moves, then a refined image. The paraxial model is still available as an instant mode and serves as the preview while tracing.
 - Tests (`test/ghosts.test.mjs`): in the paraxial limit, traced ghosts match the y–nu ghost matrices in position (3 %), size (2 %) and flux (3 %); the ghost-path count is k(k−1)/2; coatings rank uncoated > MgF₂ > QHQ.
 - `npm run bench` times the ghost renderer: on a Raspberry Pi 4, about 0.7 s for a draft and 1.7 s for a refined Double-Gauss image.
