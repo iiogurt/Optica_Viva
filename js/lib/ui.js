@@ -81,6 +81,11 @@ function parseParam(s, raw) {
 }
 const serialise = (s, v) => (s.type === 'toggle' ? (v ? '1' : '0') : s.type === 'range' ? String(+(+v).toPrecision(6)) : String(v));
 
+// Extra (non-control) state in the URL, e.g. a custom lens: getter returns a string or null.
+export const readUrlParam = (key) => hashParams().get(key);
+export function bindUrlParam(key, getter) { urlKeys.set(key, getter); writeUrlSoon(); }
+export const syncUrl = () => writeUrlSoon();
+
 // spec: { key: {type:'range'|'select'|'toggle'|'seg', label, ...} } → {el, state}
 export function controls(spec, onChange) {
   const state = {};

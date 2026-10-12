@@ -258,3 +258,12 @@ canvas:focus-visible { outline-offset: -2px; }
   .ctl-sheet.open .chev { transform: rotate(180deg); }
   main { padding-bottom: 64px; }
 }
+
+/* Prescription editor */
+.rx-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
+.rx-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 10px; font-size: 13px; color: var(--fg-dim); }
+.rx-num { width: 92px; background: #0b0d15; color: var(--fg); border: 1px solid var(--line-2); border-radius: 7px; padding: 5px 7px; font: 12px var(--font-mono); }
+.rx-meta .rx-num { width: 70px; }
+.rx-table td { vertical-align: middle; }
+.rx-table select.rx-glass { width: 128px; padding: 5px 6px; }
+.rx-del { padding: 4px 9px; }

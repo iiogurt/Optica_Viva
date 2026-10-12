@@ -1,22 +1,13 @@
-import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, readUrlParam, bindUrlParam, syncUrl } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag } from '../lib/raytrace.js';
+import { parseZmx, lensToJSON, lensFromJSON, validateLens, encodeLens, decodeLens } from '../lib/lensio.js';
 import { GLASSES, abbe, index } from '../lib/glass.js';
 import { wavelengthCSS } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
 import { latest } from '../lib/compute.js';
 import { lut } from '../lib/color.js';
 
-// add the optimised BK7/F2 achromat (designed for this lab: SA-corrected, F = C focus)
-LENSES.achromat = {
-  name: 'Cemented achromat f/5, 100 mm (N-BK7 / F2)',
-  epd: 20, field: 3,
-  surfaces: [
-    { R: 44.444, t: 5, glass: 'N-BK7', stop: true },
-    { R: -42.447, t: 2.5, glass: 'F2' },
-    { R: -826.165, t: 95, glass: 'air' },
-  ],
-};
 
 const SPECTRA = {
   mono: [587.56],
@@ -27,6 +18,10 @@ const SPECTRA = {
 export default function mount(root, meta) {
   root.append(header({ ...meta, lede: 'Real lenses are traced ray by ray with the exact vector form of Snell\'s law, using glass dispersion from Sellmeier equations and real-ray aiming at the aperture stop. The same traced wavefront is then Fourier-transformed into the diffraction PSF. This is how lens-design software works, compressed into one page.', domains: ['photo', 'video', 'space'] }));
 
+  // the editable "custom" lens: restored from a shared URL (rx=…) or a copy of the Cooke triplet
+  const clone = (L) => lensFromJSON(lensToJSON(L));
+  if (!LENSES.custom) LENSES.custom = { ...clone(LENSES.cooke), name: 'Custom (prescription editor)' };
+  try { const rx = readUrlParam('rx'); if (rx) LENSES.custom = { ...decodeLens(rx), name: 'Custom (prescription editor)' }; } catch (e) { console.warn('ignoring invalid rx parameter', e); }
   const S = { lens: 'cooke' };
   const ctl = controls({
     lens: { type: 'select', label: 'Lens prescription', value: 'cooke', options: Object.entries(LENSES).map(([k, L]) => [k, L.name]) },
@@ -203,7 +198,7 @@ export default function mount(root, meta) {
       ctx.fillStyle = g; ctx.fill();
       ctx.strokeStyle = `rgba(${c},0.7)`; ctx.lineWidth = 1; ctx.stroke();
       ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText(s.glass, X((zv[i] + zv[i + 1]) / 2), Y(-r) + 14);
+      ctx.fillText(typeof s.glass === 'string' ? s.glass : s.glass.name, X((zv[i] + zv[i + 1]) / 2), Y(-r) + 14);
     }
     // aperture stop
     const si = L.surfaces.findIndex((s) => s.stop);
@@ -402,6 +397,97 @@ export default function mount(root, meta) {
     ctx.fillText(`PSF log₁₀ (4 decades)  ${field.toFixed(0)} µm field   Strehl ${d.strehl.toFixed(3)}`, x2, hh - 10);
     if (d.aliased) { ctx.fillStyle = '#ff6b6b'; ctx.fillText('⚠ wavefront slope exceeds sampling: geometric regime, trust the spot diagram', x2 - side * 0.4, 18); }
   }
+
+  // ── Prescription editor ───────────────────────────────────────────────────────────────
+  const GLASS_OPTIONS = ['air', ...Object.keys(GLASSES)]; // every catalogue glass, or the select would mis-display one
+  const msg = h('div.note', { role: 'status' });
+  const tableWrap = h('div', { style: { overflowX: 'auto' } });
+  const fileIn = h('input', { type: 'file', accept: '.zmx,.json,.txt', style: { display: 'none' } });
+  const numIn = (v, onSet, attrs = {}) => {
+    const el = h('input.rx-num', { type: 'text', inputmode: 'decimal', value: v, ...attrs });
+    el.addEventListener('change', () => onSet(el.value.trim()));
+    return el;
+  };
+  const parseR = (v) => (/^(inf|∞|infinity)$/i.test(v) ? Infinity : parseFloat(v));
+  const fmtR = (R) => (isFinite(R) ? String(+R.toPrecision(8)) : '∞');
+  function applyCustom(next, note = '') {
+    const errs = validateLens(next);
+    if (errs.length) { msg.innerHTML = '<b style="color:var(--warn)">Not applied:</b> ' + errs.join('; '); renderTable(); return false; }
+    LENSES.custom = { ...next, name: 'Custom (prescription editor)' };
+    delete LENSES.custom._sd;
+    msg.textContent = note || `Applied: ${next.surfaces.length} surfaces, EFL ${paraxial(LENSES.custom).efl.toFixed(3)} mm.`;
+    ctl.set.lens('custom');
+    renderTable(); update(); syncUrl();
+    return true;
+  }
+  function editSurface(i, field, raw) {
+    const L = clone(LENSES.custom), sf = L.surfaces[i];
+    if (field === 'R') sf.R = parseR(raw);
+    else if (field === 't') sf.t = parseFloat(raw);
+    else if (field === 'k') { const v = parseFloat(raw); if (v) sf.k = v; else delete sf.k; }
+    else if (field === 'a4' || field === 'a6') {
+      const a = sf.a ? sf.a.slice() : [0, 0, 0, 0]; a[field === 'a4' ? 0 : 1] = parseFloat(raw) || 0;
+      if (a.some((x) => x)) sf.a = a; else delete sf.a;
+    } else if (field === 'glass') sf.glass = raw;
+    else if (field === 'stop') L.surfaces.forEach((x, j) => { if (j === i) x.stop = true; else delete x.stop; });
+    applyCustom(L);
+  }
+  function renderTable() {
+    const L = LENSES.custom;
+    const rows = L.surfaces.map((sf, i) => h('tr', {},
+      h('td', {}, String(i + 1)),
+      h('td', {}, numIn(fmtR(sf.R), (v) => editSurface(i, 'R', v), { 'aria-label': `Surface ${i + 1} radius` })),
+      h('td', {}, numIn(sf.t, (v) => editSurface(i, 't', v), { 'aria-label': `Surface ${i + 1} thickness` })),
+      h('td', {}, typeof sf.glass === 'string'
+        ? (() => { const sel = h('select.rx-glass', { 'aria-label': `Surface ${i + 1} glass` }, ...GLASS_OPTIONS.map((g) => h('option', { value: g, selected: g === sf.glass }, g))); sel.addEventListener('change', () => editSurface(i, 'glass', sel.value)); return sel; })()
+        : h('span', { title: `model glass n_d = ${sf.glass.nd}, V_d = ${sf.glass.vd}` }, sf.glass.name + ' (model)')),
+      h('td', {}, numIn(sf.k || 0, (v) => editSurface(i, 'k', v), { 'aria-label': `Surface ${i + 1} conic` })),
+      h('td', {}, numIn(sf.a ? sf.a[0] : 0, (v) => editSurface(i, 'a4', v), { 'aria-label': `Surface ${i + 1} a4` })),
+      h('td', {}, numIn(sf.a ? sf.a[1] : 0, (v) => editSurface(i, 'a6', v), { 'aria-label': `Surface ${i + 1} a6` })),
+      h('td', {}, (() => { const r = h('input', { type: 'radio', name: 'rx-stop', checked: !!sf.stop, 'aria-label': `Surface ${i + 1} is the stop` }); r.addEventListener('change', () => editSurface(i, 'stop')); return r; })()),
+      h('td', {}, h('button.btn.rx-del', { type: 'button', title: 'Remove surface', 'aria-label': `Remove surface ${i + 1}`, disabled: L.surfaces.length <= 2, onClick: () => { const N = clone(L); const wasStop = N.surfaces[i].stop; N.surfaces.splice(i, 1); if (wasStop) N.surfaces[0].stop = true; applyCustom(N); } }, '✕')),
+    ));
+    const pupil = h('div.rx-meta', {},
+      h('label', {}, 'Entrance pupil Ø (mm) ', numIn(L.epd, (v) => { const N = clone(L); N.epd = parseFloat(v); applyCustom(N); }, { 'aria-label': 'Entrance pupil diameter' })),
+      h('label', {}, 'Max field (°) ', numIn(L.field, (v) => { const N = clone(L); N.field = parseFloat(v); applyCustom(N); }, { 'aria-label': 'Maximum field angle' })));
+    tableWrap.replaceChildren(pupil, h('table.eqtab.rx-table', {},
+      h('thead', {}, h('tr', {}, ...['#', 'Radius R', 'Thickness t', 'Glass after', 'Conic k', 'a₄ (r⁴)', 'a₆ (r⁶)', 'Stop', ''].map((t) => h('th', {}, t)))),
+      h('tbody', {}, ...rows)));
+  }
+  fileIn.addEventListener('change', async () => {
+    const f = fileIn.files[0]; if (!f) return;
+    const buf = new Uint8Array(await f.arrayBuffer());
+    // Zemax writes UTF-16LE with a BOM; plain files are UTF-8
+    const text = buf[0] === 0xff && buf[1] === 0xfe ? new TextDecoder('utf-16le').decode(buf) : new TextDecoder().decode(buf);
+    try {
+      const { lens, warnings } = /\.json$/i.test(f.name) || text.trim().startsWith('{') ? { lens: lensFromJSON(text), warnings: [] } : parseZmx(text);
+      applyCustom(lens, `Imported ${f.name}: ${lens.surfaces.length} surfaces, EFL ${paraxial(lens).efl.toFixed(3)} mm.` + (warnings.length ? ' Warnings: ' + warnings.join('; ') : ''));
+    } catch (e) { msg.innerHTML = '<b style="color:var(--warn)">Import failed:</b> ' + e.message; }
+    fileIn.value = '';
+  });
+  const download = () => {
+    const a = h('a', { href: URL.createObjectURL(new Blob([lensToJSON(LENSES.custom)], { type: 'application/json' })), download: 'optica-viva-lens.json' });
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  root.append(h('section.block', {}, h('h2', {}, 'Prescription editor'),
+    h('div.card', {},
+      h('p.note', {}, 'Edit the custom lens surface by surface (R = ∞ for a plane). Changes are traced immediately and travel in the page link, so a design can be shared. Import a Zemax .zmx (sequential STANDARD/EVENASPH) or an Optica Viva .json; unknown glasses are modelled from their n_d and V_d.'),
+      h('div.rx-actions', {},
+        h('button.btn', { type: 'button', onClick: () => applyCustom(clone(LENSES[ctl.state.lens]), `Copied ${LENSES[ctl.state.lens].name} into the editor.`) }, 'Edit a copy of the current lens'),
+        h('button.btn', { type: 'button', onClick: () => {
+          // split the medium in front of the last surface with a plane: the system is unchanged until edited
+          const N = clone(LENSES.custom), j = N.surfaces.length - 1, prev = N.surfaces[j - 1];
+          const dt = Math.min(1, prev.t / 2);
+          prev.t -= dt;
+          N.surfaces.splice(j, 0, { R: Infinity, t: dt, glass: prev.glass });
+          applyCustom(N, 'Added a plane surface before the last one: edit its radius, thickness and glass.');
+        } }, '+ Add surface'),
+        h('button.btn', { type: 'button', onClick: () => fileIn.click() }, 'Import .zmx / .json'),
+        h('button.btn', { type: 'button', onClick: download }, 'Export JSON'),
+        fileIn),
+      tableWrap, msg)));
+  bindUrlParam('rx', () => (ctl.state.lens === 'custom' ? encodeLens(LENSES.custom) : null));
+  renderTable();
 
   update();
 

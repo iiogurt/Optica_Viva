@@ -34,12 +34,14 @@ export const LENSES = {
     ],
   },
   'achromat': {
-    name: 'Cemented achromatic doublet f/5 (N-BAK4 / N-SF5, f≈100 mm)',
+    // designed for this project: N-BK7/F2 cemented doublet, f = 100 mm, spherical aberration
+    // corrected and F, C brought to a common paraxial focus (solved numerically)
+    name: 'Cemented achromat f/5, 100 mm (N-BK7 / F2)',
     epd: 20, field: 3,
     surfaces: [
-      { R: 62.75, t: 4.0, glass: 'N-BAK4', stop: true },
-      { R: -45.71, t: 2.5, glass: 'N-SF5' },
-      { R: -128.23, t: 97.0, glass: 'air' },
+      { R: 44.444, t: 5, glass: 'N-BK7', stop: true },
+      { R: -42.447, t: 2.5, glass: 'F2' },
+      { R: -826.165, t: 95, glass: 'air' },
     ],
   },
   'cooke': {

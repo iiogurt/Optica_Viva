@@ -120,7 +120,7 @@ Every image below is a screenshot of the running app. Each one is a simulation r
 **Real-lens ray tracing** · `#/raytracer`<br>
 <img src="docs/screenshots/raytracer.webp" alt="Ray tracer: Cooke triplet with caustic, spot diagram, ray fan and diffraction PSF">
 
-Exact 3-D ray tracing through a plano-convex singlet (both orientations), an **aspheric** plano-hyperbolic singlet with zero spherical aberration, a BK7/F2 achromat designed for this project, the Cooke triplet and the Double-Gauss. Includes real-ray aiming at the stop, a magnified caustic, spot diagram, ray fans, chromatic focal shift, best-focus search, and the **diffraction PSF of the traced wavefront** (OPD → FFT).
+Exact 3-D ray tracing through a plano-convex singlet (both orientations), an **aspheric** plano-hyperbolic singlet with zero spherical aberration, a BK7/F2 achromat designed for this project, the Cooke triplet and the Double-Gauss. Includes real-ray aiming at the stop, a magnified caustic, spot diagram, ray fans, chromatic focal shift, best-focus search, and the **diffraction PSF of the traced wavefront** (OPD → FFT). A **prescription editor** lets you modify any design surface by surface or import a Zemax `.zmx`; custom lenses are shareable by link.
 
 </td>
 <td width="50%" valign="top">
@@ -468,7 +468,8 @@ Optica_Viva/
 │   │   ├── compute.js         Worker API: run(task) and latest-only channels, main-thread fallback
 │   │   ├── color.js           CIE 1931 CMFs, sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
-│   │   ├── raytrace.js        Exact ray tracer, paraxial analysis, ray aiming, OPD
+│   │   ├── raytrace.js        Exact ray tracer (spheres + even aspheres), paraxial analysis, ray aiming, OPD
+│   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
