@@ -240,7 +240,7 @@ Defocus kernels are built by splatting pupil rays through the iris polygon, cat'
 **Flare, ghosts & coatings** · `#/flare`<br>
 <img src="docs/screenshots/flare.webp" alt="Sun flare with heptagonal ghosts and diffraction starburst">
 
-**Paraxial ghost tracing** of every two-reflection path through the real Double-Gauss and Cooke lenses, at 8 wavelengths. Coatings are solved by the transfer-matrix method (uncoated, MgF₂, QHQ and graded-index moth-eye). Drag the sun.
+**Real-ray ghost tracing** (Hullin et al.'s full method) of every two-reflection path through the real Double-Gauss and Cooke lenses, at 8 wavelengths: aberrated, vignetted ghosts with caustics, with angle-dependent coating reflectance and total internal reflection. Runs in the worker, with an instant paraxial preview while you drag. Coatings are solved by the transfer-matrix method (uncoated, MgF₂, QHQ and graded-index moth-eye). Drag the sun.
 
 </td>
 <td width="50%" valign="top">
@@ -382,7 +382,7 @@ flowchart LR
 | Diffraction | Fraunhofer integral by radix-2 2-D FFT of a 4 × 4-supersampled pupil, zero-padded (Q = 4); one FFT per wavelength when aberrated | PSF, Zernike, MTF, seeing, telescope |
 | Colour | CIE 1931 2° colour-matching functions (Wyman–Sloan–Shirley fit) → linear sRGB → sRGB transfer curve | all spectral renders |
 | Thin films | Characteristic-matrix method, s and p polarisation, oblique incidence | flare |
-| Lens flare | Paraxial ghost tracing of all k(k−1)/2 two-reflection paths, per wavelength | flare |
+| Lens flare | Exact ray tracing of all k(k−1)/2 two-reflection paths per wavelength, rasterised as flux-conserving triangles with a per-pixel aperture gauge; paraxial ghost matrices as the preview | flare |
 | Turbulence | von Kármán PSD, FFT screens plus 3-level subharmonics, frozen flow, bilinear-influence DM | seeing |
 | Sensor | Poisson photon statistics, two-stage read noise, PRNU, dark current, FWC, quantisation | noise, sampling |
 | Gravitational lensing | Thin-lens equation, SIE (Kormann et al. 1994) + shear, flat ΛCDM distances | lensing |
@@ -435,7 +435,7 @@ flowchart TB
     LIB --> KATEX["vendor/katex"]
 ```
 
-Heavy FFT work (PSF, Zernike and JWST phasing, MTF, coronagraph, and the ray tracer's wavefront PSF) runs in a **module Web Worker** (`js/workers/compute.js`), so the page stays responsive: the longest main-thread freeze during a 5-wavelength JWST PSF dropped from about 1 s to 16 ms. `latest(channel)` drops superseded requests while you drag, and the PSF lab shows a 256² preview before the 512² render.
+Heavy FFT and ray work (PSF, Zernike and JWST phasing, MTF, coronagraph, the ray tracer's wavefront PSF and the real-ray flare ghosts) runs in a **module Web Worker** (`js/workers/compute.js`), so the page stays responsive: the longest main-thread freeze during a 5-wavelength JWST PSF dropped from about 1 s to 16 ms. `latest(channel)` drops superseded requests while you drag, and the PSF lab shows a 256² preview before the 512² render.
 
 Each laboratory module exports a single `mount(root, meta)` function. It builds controls, canvases, live calculations and theory, and returns a cleanup function. The router calls that cleanup when you navigate away, to stop animations and disconnect `ResizeObserver`s.
 
@@ -472,6 +472,7 @@ Optica_Viva/
 │   │   ├── raytrace.js        Exact ray tracer (spheres + even aspheres), paraxial analysis, ray aiming, OPD
 │   │   ├── optimise.js        Damped-least-squares (Levenberg–Marquardt) lens optimiser
 │   │   ├── tolerance.js       Monte-Carlo tolerancing with refocus compensation
+│   │   ├── ghosts.js          Lens-flare ghosts: paraxial matrices and real-ray rasteriser
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
@@ -506,7 +507,7 @@ Optica_Viva/
 
 ## ✅ Validation
 
-The numerical core was checked against published or analytically known values. Every row below is an assertion in [`test/physics.test.mjs`](test/physics.test.mjs) and runs in CI on every push and pull request:
+The numerical core was checked against published or analytically known values. Every row below is an assertion in the test suite ([`test/`](test/)) and runs in CI on every push and pull request:
 
 | Quantity | Optica Viva | Reference |
 |---|---|---|
@@ -524,6 +525,7 @@ The numerical core was checked against published or analytically known values. E
 | Angular-diameter distance, z = 0.3 | 919 Mpc | flat ΛCDM (H₀ = 70, Ω<sub>m</sub> = 0.3) ≈ 920 Mpc |
 | Hyperfocal, 50 mm f/2.8, c = 0.029 mm | 31 m | f²/(Nc) + f = 31.0 m |
 | cos⁴ at 37.7° (28 mm FF corner) | −1.35 EV | log₂ cos⁴θ = −1.351 EV |
+| Real-ray flare ghosts, Double-Gauss at f/18, 0.57° (4 paths) | position within 3 %, size within 2 %, flux within 3 % | y–nu ghost matrices: (B − AD/C)θ, \|A/C\| r<sub>stop</sub>, R<sub>i</sub>R<sub>j</sub> π(r<sub>stop</sub>/C)² |
 
 ---
 
@@ -534,7 +536,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Lab | Approximation | Consequence |
 |---|---|---|
 | Ray tracer (PSF) | Off-axis pupil treated as circular in normalised stop coordinates | Ignores the ≈ cos θ pupil anamorphosis |
-| Flare | Paraxial ghost tracing (Hullin et al. 2011) | Ghost positions and sizes are first-order; no aberrated ghost shapes |
+| Flare | Real-ray ghosts at 8 wavelengths on a 33 × 33 ray grid; diffraction at the iris only in the source's starburst | Ghost edges are geometric (no Fresnel ringing); ghosts below 10⁻⁶ of the source irradiance are skipped |
 | Bokeh | Geometric defocus kernels | No Fresnel edge ringing; LoCA rim tint omitted |
 | Depth of field, tilt-shift | Thin-lens model; Gaussian blur stack for tilt-shift | Blur magnitudes exact, kernel shape approximate in tilt-shift |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |

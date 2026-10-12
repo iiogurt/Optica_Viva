@@ -7,6 +7,7 @@ import { fft2d } from './fft.js';
 import { paraxial, referenceSphere, opd, aimRay, trace } from './raytrace.js';
 import { optimise } from './optimise.js';
 import { monteCarlo } from './tolerance.js';
+import { ghostSystem, renderGhosts } from './ghosts.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -285,4 +286,18 @@ function optimiseLens(p) { return { result: optimise(p.lens, p.opts || {}), tran
 // Monte-Carlo tolerance analysis (see js/lib/tolerance.js).
 function tolerance(p) { return { result: monteCarlo(p.lens, p.tol, p.trials, p.seed), transfer: [] }; }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance };
+// Real-ray lens-flare ghosts (see js/lib/ghosts.js). The prepared system (coating tables)
+// is cached between calls, so dragging the source only re-traces.
+// p = { lens, sd, coat, blades, lambdas, theta: [tan θx, tan θy], W, grid, cull }
+let ghostCache = { key: '', sys: null };
+function flareGhosts(p) {
+  const key = JSON.stringify([p.lens, p.sd, p.coat, p.blades, p.lambdas]);
+  if (ghostCache.key !== key) {
+    const par = paraxial(p.lens, 587.56);
+    ghostCache = { key, sys: ghostSystem(p.lens, { lambdas: p.lambdas, coat: p.coat, sd: p.sd, stopR: par.stopR, blades: p.blades, zImg: par.zImage }) };
+  }
+  const r = renderGhosts(ghostCache.sys, { theta: p.theta, basis: spectralBasis(p.lambdas), W: p.W, grid: p.grid, cull: p.cull });
+  return { result: r, transfer: [r.rgb.buffer] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts };

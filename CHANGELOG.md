@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Real-ray lens-flare ghosts** (`js/lib/ghosts.js`), following the full method of Hullin et al. (2011). Exact rays are traced through every two-reflection path at 8 wavelengths, and the ray grid is rasterised as flux-conserving triangles. The iris polygon and every clear aperture are tested per pixel through an interpolated aperture gauge, so edges stay sharp. Reflectances use each ray's actual angle of incidence on the thin-film coating, and total internal reflection is included. The result shows aberrated, vignetted and cat's-eye ghosts with caustics. Ghost paths that would stay invisible are culled. It runs in the worker: a draft while the sun moves, then a refined image. The paraxial model is still available as an instant mode and serves as the preview while tracing.
+- Tests (`test/ghosts.test.mjs`): in the paraxial limit, traced ghosts match the y–nu ghost matrices in position (3 %), size (2 %) and flux (3 %); the ghost-path count is k(k−1)/2; coatings rank uncoated > MgF₂ > QHQ.
+- `npm run bench` times the ghost renderer: on a Raspberry Pi 4, about 0.7 s for a draft and 1.7 s for a refined Double-Gauss image.
+
+### Changed
+- Flare: in the real-ray model the veiling glare holds only the scatter term, because the traced image already contains the faint ghosts. Paraxial ghost matrices moved from the flare page to `js/lib/ghosts.js`.
+
 ## [1.4.0] - 2026-10-12
 
 Lens design II (PRs [#15](https://github.com/iiogurt/Optica_Viva/pull/15) follow-ups, [#18](https://github.com/iiogurt/Optica_Viva/pull/18)–[#20](https://github.com/iiogurt/Optica_Viva/pull/20)): MTF across the field, a damped-least-squares optimiser that rediscovers Coddington's best-form singlet, and Monte-Carlo tolerancing. The ray tracer now covers the core lens-design loop: analyse, optimise, tolerance.

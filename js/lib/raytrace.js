@@ -111,7 +111,7 @@ function surfaceSlope(s, r) {
   return d;
 }
 // Intersection by Newton iteration on f(t) = z(t) − z₀ − sag(r(t)), starting at the vertex plane.
-function intersectAsphere(s, z0, p, d) {
+export function intersectAsphere(s, z0, p, d) {
   let t = (z0 - p[2]) / d[2];
   for (let it = 0; it < 40; it++) {
     const x = p[0] + t * d[0], y = p[1] + t * d[1], z = p[2] + t * d[2], r = Math.hypot(x, y);
