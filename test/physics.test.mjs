@@ -259,3 +259,13 @@ test('optimiser rediscovers Coddington\'s best-form singlet and improves the Coo
   assert.ok(c.history.at(-1) < c.history[0], 'Cooke merit does not get worse');
   near(c.efl, paraxial(LENSES.cooke).efl, 0.5, 'Cooke focal length roughly held');
 });
+
+test('Monte-Carlo tolerancing: zero errors reproduce nominal; fast lenses are more sensitive', async () => {
+  const { monteCarlo } = await import('../js/lib/tolerance.js');
+  const zero = monteCarlo(LENSES.cooke, { radiusPct: 0, thicknessUm: 0, indexDelta: 0 }, 4, 1);
+  zero.scores.forEach((v) => near(v, zero.nominal, 1e-12, 'zero-tolerance trial'));
+  const tol = { radiusPct: 0.1, thicknessUm: 25, indexDelta: 3e-4 };
+  const c = monteCarlo(LENSES.cooke, tol, 12, 3), d = monteCarlo(LENSES['double-gauss'], tol, 12, 3);
+  assert.ok(c.p90 >= c.nominal && d.p90 >= d.nominal, 'errors never improve the 90th percentile below nominal');
+  assert.ok(d.p90 / d.nominal > c.p90 / c.nominal, `f/3 Double-Gauss (${(d.p90 / d.nominal).toFixed(2)}×) more sensitive than f/5 Cooke (${(c.p90 / c.nominal).toFixed(2)}×)`);
+});
