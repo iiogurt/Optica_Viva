@@ -1,6 +1,6 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, readUrlParam, bindUrlParam, syncUrl } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
-import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag, seidel } from '../lib/raytrace.js';
+import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag, seidel, fieldCurves } from '../lib/raytrace.js';
 import { parseZmx, lensToJSON, lensFromJSON, validateLens, encodeLens, decodeLens } from '../lib/lensio.js';
 import { GLASSES, abbe, index } from '../lib/glass.js';
 import { wavelengthCSS } from '../lib/color.js';
@@ -43,6 +43,7 @@ export default function mount(root, meta) {
   const spot = stage({ aspect: 1, label: 'Spot diagram', draw: drawSpot });
   const fan = stage({ aspect: 1, label: '', draw: drawFan, cls: 'plain' });
   const chroma = stage({ aspect: 1, label: '', draw: drawChroma, cls: 'plain' });
+  const fieldSt = stage({ aspect: 2.7, label: '', draw: drawField, cls: 'plain', minH: 230 });
   const seidSt = stage({ aspect: 2.7, label: '', draw: drawSeidel, cls: 'plain', minH: 230 });
   const psfStage = stage({ aspect: 2, label: 'Wavefront (OPD) · diffraction PSF from the traced rays', draw: drawPSF, minH: 220 });
 
@@ -50,6 +51,7 @@ export default function mount(root, meta) {
     layout.el, zoom.el,
     h('div.grid-3', {}, spot.el, fan.el, chroma.el),
     h('div.card', { style: { padding: '6px' } }, seidSt.el),
+    h('div.card', { style: { padding: '6px' } }, fieldSt.el),
     psfStage.el,
   ], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '12px' } }, bestBtn)), h('div.card', {}, ro), calc.el], true));
 
@@ -121,7 +123,8 @@ export default function mount(root, meta) {
     const chiefFull = (() => { const a = aimRay(lens, 587.56, base.field, 0, 0, pd); const r = trace(lens, 587.56, a.p, a.d, { clip: false, zv: pd.zv }); return toPlane(r, pd.zImage)[1]; })();
     const ideal = pd.efl * Math.tan(base.field * Math.PI / 180);
     const seid = seidel({ ...lens, field: base.field });
-    model = { base, lens, lambdas, sd, par, pd, zImg, theta, fans, spots, rms, geo, cx, cy, fanCurves, chromaCurve, distortion: (chiefFull - ideal) / ideal * 100, p0, seid };
+    const fcurves = fieldCurves({ ...lens, field: base.field });
+    model = { base, lens, lambdas, sd, par, pd, zImg, theta, fans, spots, rms, geo, cx, cy, fanCurves, chromaCurve, distortion: (chiefFull - ideal) / ideal * 100, p0, seid, fcurves };
   }
 
   function update() {
@@ -150,7 +153,7 @@ export default function mount(root, meta) {
     &r_\text{Airy} = 1.22\lambda N = ${texNum(airy, 3)}\ \mu\text{m}\\
     &\textstyle\sum \phi_k/(n_k n_k') = ${texNum(pd.petzval, 4)}\,\text{mm}^{-1}
     \end{aligned}`);
-    layout.redraw(); zoom.redraw(); spot.redraw(); fan.redraw(); chroma.redraw(); seidSt.redraw();
+    layout.redraw(); zoom.redraw(); spot.redraw(); fan.redraw(); chroma.redraw(); seidSt.redraw(); fieldSt.redraw();
     computePSF();
   }
 
@@ -332,6 +335,38 @@ export default function mount(root, meta) {
     });
     ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'right';
     ctx.fillText('— tangential   ┄ sagittal', w - 18, hh - 46);
+  }
+
+  // Astigmatic field curves (exact Coddington foci) with the third-order prediction, and distortion
+  function drawField(ctx, w, hh) {
+    if (!model) return;
+    const fc = model.fcurves, sd = model.seid, fmax = model.base.field;
+    const k = 1 / (2 * sd.nImage * sd.uImage ** 2);
+    const third = (th, a) => -(a * sd.total.SIII + sd.total.SIV) * k * (Math.tan((th * Math.PI) / 180) / Math.tan((fmax * Math.PI) / 180)) ** 2;
+    const ths = fc.map((r) => r.theta);
+    let zm = 0.01; fc.forEach((r) => (zm = Math.max(zm, Math.abs(r.zt), Math.abs(r.zs))));
+    zm *= 1.2;
+    const half = w / 2 - 6;
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, half, hh); ctx.clip();
+    plot(ctx, half, hh, {
+      title: 'Field curves: T and S focus vs field (mm from paraxial image)', x: { min: -zm, max: zm, label: 'focus shift Δz (mm)' }, y: { min: 0, max: fmax, label: 'field angle (°)' },
+      series: [
+        { data: fc.map((r) => [r.zt, r.theta]), color: '#6ad7ff', width: 2.2, label: 'tangential (exact)' },
+        { data: fc.map((r) => [r.zs, r.theta]), color: '#ffb547', width: 2.2, label: 'sagittal (exact)' },
+        { data: ths.map((t) => [third(t, 3), t]), color: 'rgba(106,215,255,0.55)', width: 1.2, dash: [4, 3], label: 'third order (Seidel)' },
+        { data: ths.map((t) => [third(t, 1), t]), color: 'rgba(255,181,71,0.55)', width: 1.2, dash: [4, 3] },
+      ],
+      vlines: [{ x: 0, color: 'rgba(255,255,255,0.3)', dash: [] }], legend: true,
+    });
+    ctx.restore();
+    ctx.save(); ctx.translate(half + 12, 0);
+    let dm = 0.05; fc.forEach((r) => (dm = Math.max(dm, Math.abs(r.dist))));
+    plot(ctx, half - 6, hh, {
+      title: 'Distortion vs field (real chief ray vs f·tanθ)', x: { min: -dm * 1.2, max: dm * 1.2, label: 'distortion (%)' }, y: { min: 0, max: fmax, label: 'field angle (°)' },
+      series: [{ data: fc.map((r) => [r.dist, r.theta]), color: '#c18cff', width: 2.2 }],
+      vlines: [{ x: 0, color: 'rgba(255,255,255,0.3)', dash: [] }],
+    });
+    ctx.restore();
   }
 
   // Seidel wavefront coefficients per surface (waves at 588 nm, full field and aperture)

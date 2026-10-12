@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Fixed
+- Smoke test flakiness: instead of a fixed 5 s wait, each laboratory is polled for results for up to 25 s, because worker-backed labs (MTF) could take longer on a cold CI runner. Browser start-up allows 40 s and retries once on a new port.
+
+### Added
+- **Through-field analysis** (`fieldCurves()`): exact tangential and sagittal (Coddington) foci from differential real rays, plus real-ray distortion, versus field angle. The ray tracer plots the field curves against the third-order Seidel prediction, alongside a distortion curve. A test confirms that exact foci match −(S_III+S_IV)/(2n′u′²) and −(3S_III+S_IV)/(2n′u′²) within 6 % at small field.
+
 ### Added
 - **Seidel aberration sums** (`seidel()` in `js/lib/raytrace.js`, Welford formulation): per-surface S_I–S_V and chromatic C_I, C_II from paraxial marginal and chief rays, including the conic/asphere surface term. The ray tracer shows them as per-surface wavefront coefficients (waves at 588 nm) with totals.
 - Tests: Seidel spherical aberration agrees with exact ray tracing within 2 % at small apertures (plano-convex in both orientations, Cooke triplet), S_IV/H² equals the Petzval sum, the bending ratio is ≈ 4, the hyperbolic singlet's S_I vanishes, and C_I predicts the F–C focus shift within 1 %.
