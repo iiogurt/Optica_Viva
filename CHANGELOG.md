@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-12
+
+### Added
+- `docs/screenshots/`: WebP screenshots of every laboratory and reference page.
+- `scripts/screenshots.py`: reproducible screenshot generator (local server + headless Chromium + Pillow crop).
+
+### Changed
+- README rewritten in GitHub style: banner, badges, table of contents, illustrated gallery of all 20 laboratories, Mermaid diagrams (page layers, model hierarchy, PSF pipeline, architecture, release flow), physical-model table, validation table, approximations, browser support, contributing guide and references.
+
 ## [1.0.0] - 2026-10-09
 
 All planned laboratories are complete; this release marks the first stable version.
@@ -214,7 +223,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.19.0...v1.0.0
 [0.19.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.17.0...v0.18.0
