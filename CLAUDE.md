@@ -22,14 +22,14 @@ Use the most precise model that runs interactively, and state every approximatio
 - Check physics against known values: add each to the README validation table and as an assertion in `test/physics.test.mjs`.
 
 ## Git & release workflow (mandatory for every change)
-- Remote: https://github.com/iiogurt/Optica_Viva. **Never commit to `main` directly.** Work on a branch (`feat/…`, `fix/…`, `docs/…`, `ci/…`, `chore/…`), push it, open a PR with `gh pr create`, wait for GitHub Actions CI (syntax & links, physics tests, browser smoke) to pass, then squash-merge. Only release commits made by `scripts/release.sh` land directly on `main`. Repo-local identity: `iiogurt <188860570+iiogurt@users.noreply.github.com>` (never a personal email; the repo is public).
+- Remote: https://github.com/iiogurt/Optica_Viva. **Never commit to `main` directly.** Work on a branch (`feat/…`, `fix/…`, `docs/…`, `ci/…`, `chore/…`), push it, open a PR with `gh pr create`, wait for GitHub Actions CI (syntax & links, physics tests, browser smoke) to pass, then squash-merge. **Nothing is pushed to `main` directly, not even release commits.** Branch protection requires a PR and green checks, including for admins. Repo-local identity: `iiogurt <188860570+iiogurt@users.noreply.github.com>` (never a personal email; the repo is public).
 - **Conventional Commits** (`feat(scope):`, `fix:`, `docs:`, `chore:` …). End commit messages with the `Co-Authored-By` trailer for the model in use.
 - **Semantic Versioning**: new lab or feature → minor; fixes and docs → patch.
 - Every change updates:
-  - **CHANGELOG.md** in Keep a Changelog format: PRs add their entries under `## [Unreleased]`; a release renames it to `## [X.Y.Z] - YYYY-MM-DD` and adds the compare link;
+  - **CHANGELOG.md** in Keep a Changelog format: PRs add their entries under `## [Unreleased]` (the release script dates them);
   - **README.md** wherever it is affected (lab gallery, models, validation, structure);
   - **ROADMAP.md**: move shipped items to *Completed*; put new ideas in a milestone or the *Backlog*.
-- Release from `main` after merging, with `scripts/release.sh X.Y.Z "type(scope): message"`. It runs checks and tests, bumps `package.json` and the README version, commits, tags `vX.Y.Z`, pushes, and creates the GitHub release from the CHANGELOG section.
+- Releases are two-phase. (1) `scripts/release.sh prepare X.Y.Z "type(scope): summary"` on an up-to-date `main`: runs checks and tests, creates `release/vX.Y.Z`, turns `[Unreleased]` into `[X.Y.Z] - date` (with compare links), bumps the versions, and opens a release PR. (2) After that PR merges with green CI: `scripts/release.sh publish X.Y.Z` tags the merge commit, pushes **only the tag**, and creates the GitHub release.
 - Regenerate README screenshots (`docs/screenshots/*.webp`) when visuals change.
 
 See also `CONTRIBUTING.md` (human-facing version of these rules) and the PR template checklist.

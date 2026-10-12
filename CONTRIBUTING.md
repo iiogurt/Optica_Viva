@@ -14,7 +14,7 @@ Thank you for helping. New laboratories, more lens prescriptions, validations ag
 ```mermaid
 flowchart LR
     A["branch<br/><sub>feat/… fix/… docs/…</sub>"] --> B["npm run ci"] --> C["PR to main"] --> D{"CI<br/>check · test · smoke"}
-    D -- green --> E["squash-merge"] --> F["release from main<br/><sub>scripts/release.sh</sub>"]
+    D -- green --> E["squash-merge"] --> F["release PR<br/><sub>release.sh prepare</sub>"] --> G["tag + GitHub release<br/><sub>release.sh publish</sub>"]
     D -- red --> A
 ```
 
@@ -26,7 +26,7 @@ flowchart LR
    - `npm run smoke`: every page in headless Chrome must load without errors, and a shared URL must restore its controls
 4. **Document** under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) (Keep a Changelog). Tick or add items in [ROADMAP.md](ROADMAP.md), and update the [README](README.md) where affected. Regenerate screenshots if visuals changed: `python3 scripts/screenshots.py <page>`.
 5. **Commit** with [Conventional Commits](https://www.conventionalcommits.org/), e.g. `feat(polarisation): add Malus and Brewster lab`. Open a pull request; the template has the checklist.
-6. **Releases** are cut by the maintainer from `main` with `scripts/release.sh X.Y.Z "type(scope): message"`, following [SemVer](https://semver.org/): a new lab or feature is a minor release, and fixes and docs are patch releases.
+6. **Releases** also go through a pull request. `scripts/release.sh prepare X.Y.Z "summary"` opens a `release/vX.Y.Z` PR that dates the changelog and bumps the versions. Once it is merged with green CI, `scripts/release.sh publish X.Y.Z` pushes only the tag and creates the GitHub release. Nothing is ever pushed to `main` directly. Versions follow [SemVer](https://semver.org/): a new lab or feature is a minor release, and fixes and docs are patch releases.
 
 ## Adding a laboratory
 

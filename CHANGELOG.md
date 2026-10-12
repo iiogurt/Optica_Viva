@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- **Releases go through pull requests.** `scripts/release.sh` is now two-phase: `prepare` opens a `release/vX.Y.Z` PR that dates the changelog and bumps the versions; `publish` runs after the merge and pushes only the tag and the GitHub release. Nothing is pushed to `main` directly.
+- Branch protection on `main` requires a pull request and applies to administrators too.
+
 ## [1.1.0] - 2026-10-12
 
 Robustness milestone: automated physics tests, CI on every pull request, a public live site, Safari support, shareable links, a mobile controls sheet and an accessibility pass. Development now happens on branches merged through pull requests ([#1](https://github.com/iiogurt/Optica_Viva/pull/1)–[#6](https://github.com/iiogurt/Optica_Viva/pull/6)).
