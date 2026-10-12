@@ -571,7 +571,7 @@ Completed and planned milestones are tracked in **[ROADMAP.md](ROADMAP.md)**, to
 | ✅ **v1.2** | Faster FFT, cached rasters, compute worker, real-time browser testing, PR-based releases |
 | ✅ **v1.3** | Aspheres, prescription editor and `.zmx` import, Seidel sums, field curves, vignetted PSF |
 | ✅ **v1.4** | MTF across the field, damped-least-squares optimiser, Monte-Carlo tolerancing |
-| **v1.5** | Real-ray ghosts, bokeh from the traced lens, spectral scene rendering, WebGPU |
+| ✅ **v1.5** | Real-ray flare ghosts, bokeh traced through the lens, exact disk blur, diffraction of small disks |
 | **v1.6–v1.7** | 19 proposed laboratories, e.g. polarisation, colour science, wavefront sensing, spectroscopy, interferometry |
 | **v2.0** | Guided tours, exercises, export, installable PWA |
 
