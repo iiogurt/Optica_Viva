@@ -7,7 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Fixed
-- Smoke test flakiness: instead of a fixed 5 s wait, each laboratory is polled for results for up to 25 s, because worker-backed labs (MTF) could take longer on a cold CI runner.
+- Smoke test flakiness: instead of a fixed 5 s wait, each laboratory is polled for results for up to 25 s, because worker-backed labs (MTF) could take longer on a cold CI runner. Browser start-up allows 40 s and retries once on a new port.
 
 ### Added
 - **Through-field analysis** (`fieldCurves()`): exact tangential and sagittal (Coddington) foci from differential real rays, plus real-ray distortion, versus field angle. The ray tracer plots the field curves against the third-order Seidel prediction, alongside a distortion curve. A test confirms that exact foci match −(S_III+S_IV)/(2n′u′²) and −(3S_III+S_IV)/(2n′u′²) within 6 % at small field.

@@ -14,16 +14,20 @@ export async function launch({ width = 1440, height = 1200 } = {}) {
   const exe = ['chromium', 'chromium-browser', 'google-chrome', 'google-chrome-stable']
     .find((b) => { try { execSync(`command -v ${b}`, { stdio: 'ignore', shell: '/bin/sh' }); return true; } catch { return false; } });
   if (!exe) throw new Error('no Chrome/Chromium on PATH');
-  const profile = mkdtempSync(join(tmpdir(), 'optica-cdp-'));
-  const port = 9300 + Math.floor(Math.random() * 600);
-  const proc = spawn(exe, ['--headless=new', '--no-sandbox', '--disable-gpu', '--hide-scrollbars', `--remote-debugging-port=${port}`,
-    `--user-data-dir=${profile}`, `--window-size=${width},${height}`, 'about:blank'], { stdio: 'ignore' });
-  let target;
-  for (let i = 0; i < 80 && !target; i++) {
-    await sleep(250);
-    try { target = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find((t) => t.type === 'page'); } catch {}
+  // start the browser; on slow or busy machines (CI) allow 40 s and retry once on a new port
+  let proc, profile, target;
+  for (let attempt = 0; attempt < 2 && !target; attempt++) {
+    profile = mkdtempSync(join(tmpdir(), 'optica-cdp-'));
+    const port = 9300 + Math.floor(Math.random() * 600);
+    proc = spawn(exe, ['--headless=new', '--no-sandbox', '--disable-gpu', '--hide-scrollbars', `--remote-debugging-port=${port}`,
+      `--user-data-dir=${profile}`, `--window-size=${width},${height}`, 'about:blank'], { stdio: 'ignore' });
+    for (let i = 0; i < 160 && !target; i++) {
+      await sleep(250);
+      try { target = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find((t) => t.type === 'page'); } catch {}
+    }
+    if (!target) { proc.kill(); try { rmSync(profile, { recursive: true, force: true }); } catch {} }
   }
-  if (!target) { proc.kill(); throw new Error('browser did not start'); }
+  if (!target) throw new Error('browser did not start (2 attempts)');
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((r, j) => { ws.addEventListener('open', r); ws.addEventListener('error', j); });
   let id = 0; const waiting = new Map(); let errors = [];
