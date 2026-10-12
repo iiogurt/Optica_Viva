@@ -1,0 +1,23 @@
+name: Feature or new laboratory
+description: Propose an improvement, a new phenomenon or a new laboratory
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should be added or improved?
+    validations: { required: true }
+  - type: dropdown
+    id: domain
+    attributes:
+      label: Domain
+      multiple: true
+      options: [Photography, Cinematography, Astronomy & space, Infrastructure / UX]
+  - type: textarea
+    id: physics
+    attributes:
+      label: Physics and references
+      description: Governing equations, models, and primary sources if known.
+  - type: markdown
+    attributes:
+      value: Check [ROADMAP.md](https://github.com/iiogurt/Optica_Viva/blob/main/ROADMAP.md) first. It may already be planned.

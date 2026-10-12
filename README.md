@@ -486,6 +486,8 @@ Optica_Viva/
 ├── CHANGELOG.md               Keep a Changelog
 ├── ROADMAP.md                 Completed and planned milestones
 ├── CLAUDE.md                  Project guide and workflow rules for AI-assisted sessions
+├── CONTRIBUTING.md            Workflow, adding a laboratory, style
+├── .github/ISSUE_TEMPLATE/    Bug, physics-error and feature templates
 └── package.json               Version and `npm start`
 ```
 
@@ -557,15 +559,9 @@ Completed and planned milestones are tracked in **[ROADMAP.md](ROADMAP.md)**, to
 
 ## 🤝 Contributing
 
-Contributions are welcome: new laboratories, more lens prescriptions, validations against measured data, translations, and performance work.
+Contributions are welcome: new laboratories, more lens prescriptions, validations against measured data, translations and performance work. See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the workflow (branches, PRs, CI, changelog), how to add a laboratory, and the style rules. Issues have templates for bugs, **physics or accuracy errors** and new laboratories.
 
-1. **Fork** the repository and create a feature branch: `git checkout -b feat/polarisation-lab`.
-2. **Add a laboratory**: create `js/modules/<id>.js` exporting `mount(root, meta)`, register it in `MODULES` and `READY` in [`js/app.js`](js/app.js), and add catalogue links in [`js/lib/phenomena.js`](js/lib/phenomena.js).
-3. **Check** locally with `npm run ci`. This runs `npm run check` (syntax and Markdown links), `npm test` (physics suite) and `npm run smoke` (every page in headless Chrome). The same jobs run in GitHub Actions on your pull request and must pass before merging.
-4. **Document** your change under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md), and regenerate screenshots if the visuals changed: `python3 scripts/screenshots.py <page>`.
-5. **Commit** with [Conventional Commits](https://www.conventionalcommits.org/), e.g. `feat(polarisation): add Malus and Brewster lab`, then open a pull request.
-
-Physics changes should cite a primary reference in the page's theory section and, where possible, add a row to the [validation table](#-validation).
+In short: branch from `main` → `npm run ci` → pull request → green CI (`check`, `test`, `smoke`) → squash-merge.
 
 ---
 

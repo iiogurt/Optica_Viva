@@ -50,6 +50,12 @@ function buildNav() {
   }
 }
 
+// Pre-filled GitHub issue for the error boundary (no personal data: page, URL state, error, browser).
+const issueUrl = (meta, e) => 'https://github.com/iiogurt/Optica_Viva/issues/new?' + new URLSearchParams({
+  labels: 'bug', title: `[${meta.id}] ${e.message}`.slice(0, 120),
+  body: `**Page:** ${location.href}\n**Browser:** ${navigator.userAgent}\n\n\`\`\`\n${(e.stack || e.message).slice(0, 1500)}\n\`\`\``,
+});
+
 let cleanup = null;
 let lastId = null;
 let token = 0;
@@ -75,7 +81,11 @@ async function route() {
     page.append(missing
       ? h('header.mod-head', {}, h('div.eyebrow', {}, meta.group), h('h1', {}, meta.title), h('p.lede', {}, meta.blurb || ''),
         h('div.callout', { style: { marginTop: '24px' } }, 'This laboratory is under construction and will arrive in an upcoming release. See CHANGELOG.md for progress.'))
-      : h('pre', { style: { color: 'var(--warn)', whiteSpace: 'pre-wrap' } }, 'Failed to load module: ' + e.message + '\n' + (e.stack || '')));
+      : h('div.card', { role: 'alert', style: { marginTop: '24px' } },
+        h('h2', { style: { marginTop: 0 } }, 'This laboratory failed to load'),
+        h('p.note', {}, 'Please report it so it can be fixed. The link below pre-fills the error details.'),
+        h('a', { href: issueUrl(meta, e), target: '_blank', rel: 'noopener' }, 'Report this issue on GitHub →'),
+        h('pre', { style: { color: 'var(--warn)', whiteSpace: 'pre-wrap', fontSize: '12px' } }, 'Failed to load module: ' + e.message + '\n' + (e.stack || ''))));
   }
   document.title = meta.id === 'home' ? 'Optica Viva' : `${meta.title} · Optica Viva`;
   if (meta.id !== lastId) window.scrollTo(0, 0);

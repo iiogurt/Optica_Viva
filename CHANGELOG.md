@@ -20,7 +20,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **Mobile controls sheet:** on screens ≤ 860 px each lab's controls card becomes a collapsible bottom sheet, shown while its lab is on screen, so sliders and results are visible together.
 - **Accessibility:** canvases are labelled images (`role="img"`), result panels are labelled groups, there is a skip-to-content link, visible `:focus-visible` outlines, `aria-current` in the navigation and `aria-expanded` on the menu and sheet buttons. The draggable sun (flare) and source galaxy (lensing) respond to the arrow keys. `prefers-reduced-motion` stops the hero animation, starts the seeing simulation paused and shows a single wheel frame.
 
+- `CONTRIBUTING.md` (workflow, adding a laboratory, style); issue templates for bugs, physics or accuracy errors and features; a pull-request checklist template.
+- Error boundary: a laboratory that fails to load shows a pre-filled "Report this issue on GitHub" link with the page URL, browser and stack trace.
+
 ### Changed
+- README contributing section now points to `CONTRIBUTING.md`.
 - Small labels have higher contrast (`--fg-faint` 0.32 → 0.5 alpha).
 - Range sliders carry an `aria-label`, and segmented buttons expose `aria-pressed`.
 - `scripts/release.sh` now also runs the physics test suite before releasing.
