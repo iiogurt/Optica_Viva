@@ -22,6 +22,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - `npm run bench` times the ghost renderer: on a Raspberry Pi 4, about 0.7 s for a draft and 1.7 s for a refined Double-Gauss image.
 
 ### Changed
+- ROADMAP, README and CLAUDE.md: the v1.5 milestone is complete; the spectral scene renderer and ghost-irradiance smoothing move to the Backlog.
 - Flare: in the real-ray model the veiling glare holds only the scatter term, because the traced image already contains the faint ghosts. Paraxial ghost matrices moved from the flare page to `js/lib/ghosts.js`.
 
 ## [1.4.0] - 2026-10-12

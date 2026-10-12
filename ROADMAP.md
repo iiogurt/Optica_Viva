@@ -51,11 +51,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"]
     end
     subgraph Next["Planned"]
         direction TB
-        N4["v1.5 rendering<br/>real-ray flare & bokeh"] --> N5["v1.6 photo/cine labs"] --> N6["v1.7 space labs"] --> N7["v2.0 learning platform"]
+        N5["v1.6 photo/cine labs"] --> N6["v1.7 space labs"] --> N7["v2.0 learning platform"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -75,6 +75,16 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.5.0 Higher-fidelity rendering</b> (2026-10-12, PRs #22–#25)</summary>
+
+- [x] Real-ray flare ghosts (Hullin 2011 full method): every two-reflection path at 8 wavelengths, flux-conserving triangles, per-pixel aperture gauge, angle-dependent coating reflectance and TIR, in the worker (#22)
+- [x] Bokeh traced through the real lens: SA rims, secondary-spectrum fringes, cat's eyes, physical disk size; rasteriser bias fixes (#23)
+- [x] Exact disk (pillbox) kernel in tilt-shift and depth of field (#24)
+- [x] Diffraction of small defocused disks, validated against sinc²(W₀₂₀/λ) (#25)
+
+</details>
+
+<details>
 <summary><b>v1.4.0 Lens design II</b> (2026-10-12, PRs #18–#20)</summary>
 
 - [x] MTF across the field (S/T at 10 and 30 lp/mm) from the traced, vignetted pupil, validated against the diffraction MTF (#18)
@@ -238,6 +248,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 *Goal: remove the remaining phenomenological shortcuts (A9).*
 
+✅ **Released as v1.5.0.** The two open P3 items (spectral scene renderer, smooth ghost irradiance) move to the Backlog.
+
 - [x] **P1 · L** **Real-ray ghost tracing** for flare: sample pupil rays through each two-reflection path, giving aberrated, vignetted ghosts (Hullin 2011 full method). *Includes angle-dependent coating reflectance, TIR, per-pixel aperture gauge and path culling; runs in the worker with draft and refined passes.*
 - [x] **P2 · L** **Bokeh from the traced lens**: defocus kernels built from real rays of the chosen prescription, including LoCA rims (magenta and green) and field-dependent cat's eyes. *Default bokeh model; 18 kernels in the worker; validated for size, flux, SA and colour order.*
 - [x] **P2 · M** **Diffraction-aware bokeh**: Fresnel edge ripples for small disks via the defocused-PSF FFT path. *Traced pupil + defocus, 5 wavelengths, compared with pure defocus; validated against sinc²(W₀₂₀/λ).*
@@ -290,6 +302,9 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 ## Backlog
 
 Ideas worth keeping but not yet scheduled:
+
+- *(from v1.5)* **Spectral scene renderer**: render a whole scene per wavelength through the PSF, the colour-matching functions and the sensor's spectral response.
+- *(from v1.5)* Smooth ghost irradiance (Hullin's vertex averaging) and Fresnel ringing at ghost edges.
 
 - Coherent imaging mode (laser/speckle) in the PSF lab.
 - Gravitational microlensing light curves and planetary anomalies.
