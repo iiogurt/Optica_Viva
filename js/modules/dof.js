@@ -4,7 +4,7 @@ import { SENSORS, diag, pitchUm } from '../lib/sensors.js';
 import { besselJ1 } from '../lib/pupil.js';
 import { plot, logRange } from '../lib/plot.js';
 import { blurDiameter as blur, hyperfocal, dofLimits } from '../lib/optics.js';
-import { blurredCanvas } from '../lib/blur.js';
+import { blurredCanvas, diskBlurredCanvas } from '../lib/blur.js';
 
 const LAMBDA = 0.00055; // mm
 const CARDS = [0.7, 1, 1.5, 2.2, 3.3, 5, 8, 12, 20, 35];
@@ -13,11 +13,18 @@ const cardAngle = (i) => (-9 + (i * 14) / (CARDS.length - 1)) * Math.PI / 180;
 
 const diskMTF = (x) => (Math.abs(x) < 1e-6 ? 1 : (2 * besselJ1(Math.PI * x)) / (Math.PI * x));
 
-// Draw `img` convolved with a uniform disk of radius r (px): Vogel-spiral taps accumulated on
-// an additive scratch layer (an exact average), softened by a small Gaussian between taps.
-// Blurring commutes with shifting and summing, so the source is blurred once up front.
+// Draw `img` convolved with a uniform disk of radius r (px). Up to ~1.2 Mpx (padded) the exact,
+// anti-aliased pillbox of js/lib/blur.js is used. Larger images (very near cards at long focal
+// lengths) fall back to Vogel-spiral taps accumulated on an additive scratch layer, softened by a
+// small Gaussian between taps; blurring commutes with shifting and summing, so the source is
+// blurred once up front.
 function diskBlit(ctx, img, x, y, r) {
   if (r < 0.6) { ctx.drawImage(img, x, y); return; }
+  if ((img.width + 2 * r) * (img.height + 2 * r) <= 1.2e6) {
+    const { canvas, pad } = diskBlurredCanvas(img, r);
+    ctx.drawImage(canvas, x - pad, y - pad);
+    return;
+  }
   const n = Math.min(72, Math.max(10, Math.round(r * 2.2)));
   const soft = Math.max(0, (r / Math.sqrt(n)) * 0.9);
   const { canvas: src, pad: sp } = blurredCanvas(img, soft > 0.4 ? soft : 0);
@@ -287,7 +294,7 @@ c(d) &= \frac{f}{N}\cdot\frac{f\,|d-s|}{d\,(s-f)}
 \[\nu_x = \frac{f}{ZP},\qquad \nu_y = \frac{f h_c}{Z^2 P}.\]
 <p>The pattern's contrast is multiplied by the exact optical transfer function of a uniform defocus disk of diameter \(c(Z)\), and by the diffraction MTF when that is enabled:</p>
 \[\mathrm{MTF}_\text{defocus}(\nu) = \frac{2J_1(\pi c\nu)}{\pi c\nu}.\]
-<p>This function goes <em>negative</em>, which is spurious resolution: contrast reversal in strongly defocused stripes. You can see it on the ground as rows of "phantom" tiles in counter-phase. The upright cards and the distant scenery are convolved with a uniform-disk kernel by stochastic Vogel-spiral sampling, so their blur is a true bokeh disk rather than a Gaussian.</p>
+<p>This function goes <em>negative</em>, which is spurious resolution: contrast reversal in strongly defocused stripes. You can see it on the ground as rows of "phantom" tiles in counter-phase. The upright cards and the distant scenery are convolved with an exact, anti-aliased uniform-disk (pillbox) kernel, so their blur is a true bokeh disk rather than a Gaussian.</p>
 <h3>Diffraction sets a floor</h3>
 <p>The Airy pattern has first-zero diameter \(2.44\lambda N_w\), with working f-number \(N_w = N(1+m)\). At f/16 that is 21 µm, close to the full-frame CoC. Stopping down therefore stops increasing perceived sharpness. Adding the two blurs in quadrature, as the dashed curve does, is a common heuristic. The rigorous approach is to multiply MTFs (see <a href="#/mtf">MTF</a>).</p>
 <div class="callout">Equivalence: keep the framing and change format, scaling \(f\) by the crop factor \(k\). Then \(c\) scales by \(1/k\), and the depth of field is the same only if \(N\) also scales by \(k\). That is why a phone at f/1.8 renders like a full-frame camera at about f/12 (see <a href="#/sensor">Sensor size</a>).</div>
