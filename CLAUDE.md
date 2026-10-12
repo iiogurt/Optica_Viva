@@ -35,4 +35,4 @@ Use the most precise model that runs interactively, and state every approximatio
 See also `CONTRIBUTING.md` (human-facing version of these rules) and the PR template checklist.
 
 ## Next work
-Pick from `ROADMAP.md`, starting with v1.1 (Safari-safe blur, physics test suite, CI, GitHub Pages, mobile controls, accessibility, shareable URLs). The licence is still undecided and is the owner's call.
+Pick from `ROADMAP.md`. v1.1 has shipped; next is v1.2 (performance: Web Workers, cached pupil rasters, progressive rendering, WebGPU). The licence is still undecided and is the owner's call.

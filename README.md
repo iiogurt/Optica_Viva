@@ -567,7 +567,7 @@ In short: branch from `main` → `npm run ci` → pull request → green CI (`ch
 
 ## 🏷 Versioning and releases
 
-Version **1.0.3** · [all releases](https://github.com/iiogurt/Optica_Viva/releases) · [changelog](CHANGELOG.md)
+Version **1.1.0** · [all releases](https://github.com/iiogurt/Optica_Viva/releases) · [changelog](CHANGELOG.md)
 
 The project follows [Semantic Versioning](https://semver.org/): a new laboratory or capability is a **minor** release, and fixes and documentation are **patch** releases. Releases are cut with one command:
 

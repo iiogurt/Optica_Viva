@@ -51,11 +51,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.1<br/>README · screenshots"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"]
     end
     subgraph Next["Planned"]
         direction TB
-        N1["v1.1 robustness<br/>tests · CI · Pages · Safari"] --> N2["v1.2 performance<br/>workers · WebGPU"] --> N3["v1.3 lens design<br/>aspheres · editor · import"]
+        N2["v1.2 performance<br/>workers · WebGPU"] --> N3["v1.3 lens design<br/>aspheres · editor · import"]
         N3 --> N4["v1.4 rendering<br/>real-ray flare & bokeh"] --> N5["v1.5 photo/cine labs"] --> N6["v1.6 space labs"] --> N7["v2.0 learning platform"]
     end
     Done --> Next
@@ -68,7 +68,7 @@ flowchart LR
 | Laboratories | 20 | +19 proposed (v1.5, v1.6) |
 | Catalogue entries | 148 | link every new lab; add polarisation and colour-science entries |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 14 physics tests + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 17 tests (physics + blur) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -76,6 +76,19 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.1.0 Robustness, testing & deployment</b> (2026-10-12, PRs #1–#6)</summary>
+
+- [x] Physics test suite (17 tests) + link checker + headless smoke test, run by GitHub Actions on every PR (#1)
+- [x] GitHub Pages deployment from `main`; `main` protected by required CI checks (#2)
+- [x] Safari-safe Gaussian blur replacing `ctx.filter` (#3)
+- [x] Shareable URL state and a "Copy link" button for every lab (#4)
+- [x] Mobile bottom-sheet controls and accessibility pass (#5)
+- [x] CONTRIBUTING.md, issue/PR templates, error boundary with a pre-filled issue link (#6)
+- [x] Bug found by the new tests: cos⁴ corner falloff corrected to −1.35 EV
+
+</details>
+
+<details>
 <summary><b>v1.0.x Stable release & documentation</b> (2026-10-09 → 2026-10-12)</summary>
 
 - [x] **v1.0.0** Catalogue of 148 phenomena in 13 groups, with search, domain filter and "only simulated" filter
@@ -142,6 +155,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 ## Planned milestones
 
 ### v1.1 Robustness, testing & deployment
+
+✅ **Released as v1.1.0** (see *Completed milestones*). Only the licence decision remains open; it is the owner's call.
 
 *Goal: every user on every browser sees correct results, and every physics claim is guarded by a test.*
 

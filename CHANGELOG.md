@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-12
+
+Robustness milestone: automated physics tests, CI on every pull request, a public live site, Safari support, shareable links, a mobile controls sheet and an accessibility pass. Development now happens on branches merged through pull requests ([#1](https://github.com/iiogurt/Optica_Viva/pull/1)–[#6](https://github.com/iiogurt/Optica_Viva/pull/6)).
+
 ### Added
 - Physics test suite (`test/physics.test.mjs`, `npm test`, Node's built-in runner, no dependencies): 14 tests covering every row of the README validation table plus FFT round-trip/Parseval, Zernike orthonormality, spectral white balance, paraxial convergence and the sign of spherical aberration.
 - `scripts/check.mjs` (`npm run check`): syntax check of all modules and verification of every relative link, image and heading anchor in the Markdown files.
@@ -267,7 +271,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.0...v1.0.1
