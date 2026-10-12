@@ -556,15 +556,17 @@ The heavier pages run 256²–512² FFTs or ray-cast hundreds of thousands of ra
 
 ## 🗺 Roadmap
 
-Completed and planned milestones are tracked in **[ROADMAP.md](ROADMAP.md)**, together with the October 2026 audit that motivates them. Next up:
+Completed and planned milestones are tracked in **[ROADMAP.md](ROADMAP.md)**, together with the October 2026 audit that motivates them:
 
 | Milestone | Focus |
 |---|---|
-| **v1.1** | Safari-safe blur, physics test suite, CI, GitHub Pages, mobile controls, accessibility, shareable URLs |
-| **v1.2** | Web Workers, cached rasters, progressive rendering, WebGPU compute |
-| **v1.3** | Aspheric surfaces, prescription editor and `.zmx` import, Seidel sums, through-field analysis |
-| **v1.4** | Real-ray ghosts, bokeh from the traced lens, spectral scene rendering |
-| **v1.5–v1.6** | 19 proposed laboratories, e.g. polarisation, colour science, wavefront sensing, spectroscopy, interferometry |
+| ✅ **v1.1** | Tests, CI, GitHub Pages, Safari-safe blur, shareable URLs, mobile controls, accessibility |
+| ✅ **v1.2** | Faster FFT, cached rasters, compute worker, real-time browser testing, PR-based releases |
+| ✅ **v1.3** | Aspheres, prescription editor and `.zmx` import, Seidel sums, field curves, vignetted PSF |
+| ✅ **v1.4** | MTF across the field, damped-least-squares optimiser, Monte-Carlo tolerancing |
+| **v1.5** | Real-ray ghosts, bokeh from the traced lens, spectral scene rendering, WebGPU |
+| **v1.6–v1.7** | 19 proposed laboratories, e.g. polarisation, colour science, wavefront sensing, spectroscopy, interferometry |
+| **v2.0** | Guided tours, exercises, export, installable PWA |
 
 ---
 

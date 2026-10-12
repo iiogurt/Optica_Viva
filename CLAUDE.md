@@ -36,4 +36,4 @@ Use the most precise model that runs interactively, and state every approximatio
 See also `CONTRIBUTING.md` (human-facing version of these rules) and the PR template checklist.
 
 ## Next work
-Pick from `ROADMAP.md`. v1.1–v1.3 have shipped. Open next: the remaining v1.3 items (more classic designs, optimiser, tolerancing, glass catalogue, MTF vs field), the v1.2 worker items, then v1.4 (real-ray flare and bokeh). The licence is still undecided and is the owner's call.
+Pick from `ROADMAP.md`. v1.1–v1.4 have shipped. Open next: v1.5 (higher-fidelity rendering: real-ray flare and bokeh, spectral scenes), the remaining lens-design items (classic designs, glass catalogue, decenter/tilt tolerancing) and the v1.2 worker items. Releases with new features are minor versions; ROADMAP milestone numbers follow the release numbers. The licence is still undecided and is the owner's call.

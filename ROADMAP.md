@@ -26,9 +26,9 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.1 Robustness, testing & deployment](#v11-robustness-testing--deployment)
   - [v1.2 Performance](#v12-performance)
   - [v1.3 Lens-design depth](#v13-lens-design-depth)
-  - [v1.4 Higher-fidelity rendering](#v14-higher-fidelity-rendering)
-  - [v1.5 New laboratories: photography & cinema](#v15-new-laboratories-photography--cinema)
-  - [v1.6 New laboratories: astronomy & space](#v16-new-laboratories-astronomy--space)
+  - [v1.5 Higher-fidelity rendering](#v15-higher-fidelity-rendering)
+  - [v1.6 New laboratories: photography & cinema](#v16-new-laboratories-photography--cinema)
+  - [v1.7 New laboratories: astronomy & space](#v17-new-laboratories-astronomy--space)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -51,11 +51,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"]
     end
     subgraph Next["Planned"]
         direction TB
-        N4["v1.4 rendering<br/>real-ray flare & bokeh"] --> N5["v1.5 photo/cine labs"] --> N6["v1.6 space labs"] --> N7["v2.0 learning platform"]
+        N4["v1.5 rendering<br/>real-ray flare & bokeh"] --> N5["v1.6 photo/cine labs"] --> N6["v1.7 space labs"] --> N7["v2.0 learning platform"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -75,6 +75,16 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.4.0 Lens design II</b> (2026-10-12, PRs #18–#20)</summary>
+
+- [x] MTF across the field (S/T at 10 and 30 lp/mm) from the traced, vignetted pupil, validated against the diffraction MTF (#18)
+- [x] Damped-least-squares optimiser; rediscovers Coddington's best-form singlet (q = 0.727 vs 0.740) (#19)
+- [x] Monte-Carlo tolerancing with refocus compensation and a yield histogram (#20)
+- [x] Robust real-time smoke test: polling for results, browser start-up retry (#15)
+
+</details>
+
+<details>
 <summary><b>v1.3.0 Lens-design depth</b> (2026-10-12, PRs #12–#16)</summary>
 
 - [x] Even-aspheric surfaces (conic + polynomial, Newton intersection) and an SA-free plano-hyperbolic singlet (#12)
@@ -194,7 +204,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 ### v1.2 Performance
 
-✅ **Released as v1.2.0.** The remaining worker paths are open below; WebGPU is deferred to v1.4.
+✅ **Released as v1.2.0.** The remaining worker paths are open below; WebGPU is deferred to v1.5.
 
 *Goal: fluid on a Raspberry Pi 4 and on mid-range phones (A4).*
 
@@ -203,13 +213,13 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [ ] **P2 · M** Worker for the remaining paths: the seeing animation (needs a frame-streaming protocol), and the projection, tilt-shift and perspective ray casters (row-band parallelism across several workers).
 - [x] **P1 · S** **Cache pupil rasters** per aperture and size; the JWST raster alone costs 184 ms on the Pi.
 - [x] **P2 · M** **Progressive rendering**: low-resolution preview while a slider is dragging, full resolution on release. *Done in the PSF lab (256² preview, then 512²); extend alongside the worker migration.*
-- [ ] **P2 · L** *(deferred to v1.4)* **WebGPU compute path** for FFTs, phase screens and per-pixel ray casting, with CPU fallback. WebGPU now ships in Chrome, Safari 26 and recent Firefox, but Android coverage is incomplete, so the fallback stays mandatory. *Deferred because it can't yet be verified: neither the reference Raspberry Pi 4 (headless Chromium) nor the GitHub-hosted CI runners expose a WebGPU adapter. The worker and the faster FFT already remove the main-thread freezes.*
+- [ ] **P2 · L** *(deferred to v1.5)* **WebGPU compute path** for FFTs, phase screens and per-pixel ray casting, with CPU fallback. WebGPU now ships in Chrome, Safari 26 and recent Firefox, but Android coverage is incomplete, so the fallback stays mandatory. *Deferred because it can't yet be verified: neither the reference Raspberry Pi 4 (headless Chromium) nor the GitHub-hosted CI runners expose a WebGPU adapter. The worker and the faster FFT already remove the main-thread freezes.*
 - [x] **P2 · M** **Faster FFT**: a cache-blocked transpose replaces strided column passes, 1.4× faster at 512² on the Pi. *A real-input FFT was dropped: nearly every PSF field is complex because of its phase, so the half-complex trick rarely applies.*
 - [x] **P3 · S** Performance report in CI: `npm run bench` publishes kernel timings to the run summary. *It is informational rather than a failing budget, because shared runners are too noisy for a 25 % threshold.*
 
 ### v1.3 Lens-design depth
 
-✅ **Released as v1.3.0.** The open items below (more designs, optimiser, tolerancing, glass catalogue, MTF vs field) continue as v1.3.x.
+✅ **Released as v1.3.0 and v1.4.0** (optimiser, tolerancing and MTF vs field shipped in v1.4.0). Still open: more classic designs and a larger glass catalogue.
 
 *Goal: the ray tracer becomes a credible teaching tool for lens design (A9, A10).*
 
@@ -224,7 +234,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P3 · M** **Monte-Carlo tolerancing**: radius, thickness and index perturbations with refocus compensation and a yield histogram. *Decenter and tilt need non-rotational tracing and remain open.*
 - [ ] **P3 · M** Glass catalogue expansion (Schott, Ohara, CDGM subsets) with a glass-map picker.
 
-### v1.4 Higher-fidelity rendering
+### v1.5 Higher-fidelity rendering
 
 *Goal: remove the remaining phenomenological shortcuts (A9).*
 
@@ -235,7 +245,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [ ] **P3 · L** **Spectral scene renderer**: render a whole scene per wavelength through the PSF, the colour-matching functions and the sensor's spectral response.
 - [ ] **P3 · M** Polychromatic ghosts with dispersion inside the paraxial and real-ray models.
 
-### v1.5 New laboratories: photography & cinema
+### v1.6 New laboratories: photography & cinema
 
 | Lab | Content | Priority · effort |
 |---|---|---|
@@ -250,7 +260,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | [ ] **Stabilisation & shake** | angular-jitter blur, reciprocal rule, IBIS/OIS correction residuals | P3 · S |
 | [ ] **Human eye** | schematic eye, pupil size vs acuity, Stiles–Crawford effect, why the CoC is d/1500 | P3 · M |
 
-### v1.6 New laboratories: astronomy & space
+### v1.7 New laboratories: astronomy & space
 
 | Lab | Content | Priority · effort |
 |---|---|---|
