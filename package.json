@@ -9,7 +9,8 @@
     "test": "node --test test/",
     "check": "node scripts/check.mjs",
     "smoke": "bash scripts/smoke.sh",
-    "ci": "npm run check && npm test && npm run smoke"
+    "ci": "npm run check && npm test && npm run smoke",
+    "bench": "node scripts/bench.mjs"
   },
   "repository": {
     "type": "git",

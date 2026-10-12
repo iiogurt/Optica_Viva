@@ -481,6 +481,7 @@ Optica_Viva/
 ├── scripts/
 │   ├── check.mjs              Syntax check + Markdown link/anchor check
 │   ├── smoke.sh               Loads every page in headless Chrome
+│   ├── bench.mjs              Kernel benchmarks (npm run bench)
 │   ├── release.sh             prepare: release PR (date changelog, bump) · publish: tag + GitHub release
 │   └── screenshots.py         Regenerates docs/screenshots with headless Chromium
 ├── CHANGELOG.md               Keep a Changelog

@@ -203,8 +203,20 @@ export function apertureFn(spec) {
 }
 
 // Rasterise an aperture onto an n×n grid whose pupil diameter spans `Dpx` pixels,
-// with ss×ss supersampling for anti-aliased (band-limited) edges.
+// with ss×ss supersampling for anti-aliased (band-limited) edges. Results are cached
+// (LRU, 16 entries): segmented pupils cost ~0.2 s each on a Raspberry Pi 4.
+// The returned array is shared, so treat it as read-only.
+const RASTER_CACHE = new Map();
 export function rasterAperture(spec, n, Dpx, ss = 4) {
+  const key = JSON.stringify(spec) + `|${n}|${Dpx}|${ss}`;
+  const hit = RASTER_CACHE.get(key);
+  if (hit) { RASTER_CACHE.delete(key); RASTER_CACHE.set(key, hit); return hit; }
+  const amp = rasterApertureUncached(spec, n, Dpx, ss);
+  RASTER_CACHE.set(key, amp);
+  if (RASTER_CACHE.size > 16) RASTER_CACHE.delete(RASTER_CACHE.keys().next().value);
+  return amp;
+}
+function rasterApertureUncached(spec, n, Dpx, ss) {
   const { R, inside } = apertureFn(spec);
   const amp = new Float64Array(n * n);
   const c = n / 2, scale = (2 * R) / Dpx;
