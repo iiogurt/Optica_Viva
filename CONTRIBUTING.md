@@ -24,7 +24,7 @@ flowchart LR
    - `npm run check`: syntax of every module, plus every relative link, image and heading anchor in the Markdown files
    - `npm test`: physics and blur test suites (`node --test`, no dependencies)
    - `npm run smoke`: every page in headless Chrome must load without errors, and a shared URL must restore its controls
-4. **Document** under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) (Keep a Changelog). Tick or add items in [ROADMAP.md](ROADMAP.md), and update the [README](README.md) where affected. Regenerate screenshots if visuals changed: `python3 scripts/screenshots.py <page>`.
+4. **Document** under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) (Keep a Changelog). Tick or add items in [ROADMAP.md](ROADMAP.md), and update the [README](README.md) where affected. Regenerate screenshots if visuals changed: `npm run screenshots -- <page>`.
 5. **Commit** with [Conventional Commits](https://www.conventionalcommits.org/), e.g. `feat(polarisation): add Malus and Brewster lab`. Open a pull request; the template has the checklist.
 6. **Releases** also go through a pull request. `scripts/release.sh prepare X.Y.Z "summary"` opens a `release/vX.Y.Z` PR that dates the changelog and bumps the versions. Once it is merged with green CI, `scripts/release.sh publish X.Y.Z` pushes only the tag and creates the GitHub release. Nothing is ever pushed to `main` directly. Versions follow [SemVer](https://semver.org/): a new lab or feature is a minor release, and fixes and docs are patch releases.
 
@@ -34,7 +34,7 @@ flowchart LR
 2. Register it in `MODULES` and `READY` in [`js/app.js`](js/app.js).
 3. Link it from the matching entries in [`js/lib/phenomena.js`](js/lib/phenomena.js).
 4. Put reusable physics in `js/lib/` (pure functions) and test it in `test/`.
-5. Add a crop entry in [`scripts/screenshots.py`](scripts/screenshots.py) and a gallery tile in the README.
+5. Add a crop entry in [`scripts/screenshots.mjs`](scripts/screenshots.mjs) and a gallery tile in the README.
 
 Controls created with `controls()` are automatically shareable through the URL, and on phones they slide into a bottom sheet; there is nothing extra to do.
 

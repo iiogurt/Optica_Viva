@@ -8,9 +8,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 - `scripts/bench.mjs` (`npm run bench`): kernel benchmarks as a Markdown table; a non-blocking CI job publishes them to the run summary.
+### Removed
+- `scripts/smoke.sh` and `scripts/screenshots.py` (replaced by the Node/CDP versions).
+
+### Added
 - Tests: the 2-D FFT is compared against a direct DFT, and the raster cache is covered.
 
+- **Compute worker:** heavy FFT work for the PSF, Zernike and MTF laboratories runs in a module Web Worker (`js/workers/compute.js`, `js/lib/tasks.js`, `js/lib/compute.js`), with a main-thread fallback. Measured in Chromium on a Raspberry Pi 4 with a 5-wavelength defocused JWST PSF (512²): the longest main-thread freeze drops from about 1040 ms to 16 ms. Only the newest request per laboratory resolves, so dragging never queues stale work.
+- **Progressive rendering** in the PSF lab: a 256² preview with the same field of view answers quickly, and the full 512² render follows once input settles.
+- `scripts/lib/browser.mjs`: a dependency-free real-time Chrome DevTools Protocol driver.
+
 ### Changed
+- **Smoke test and screenshots run in real time** (`scripts/smoke.mjs`, `scripts/screenshots.mjs` via CDP). Chromium's `--virtual-time-budget` does not advance Web Workers, so the old shell smoke test could not see worker results. The smoke test now also fails when a laboratory renders no results; this was verified by breaking a worker task. Screenshots no longer need Python or Pillow.
 - **Faster 2-D FFT:** row transforms, a cache-blocked transpose, row transforms, transpose back. On a Raspberry Pi 4 a 512² FFT drops from 88 ms to 66 ms (≈ 1.4×), with bit-identical results.
 - **Pupil rasters are cached** (LRU, 16 entries). Revisiting an aperture is instant; the JWST 512² raster costs 182 ms when cold.
 - **Releases go through pull requests.** `scripts/release.sh` is now two-phase: `prepare` opens a `release/vX.Y.Z` PR that dates the changelog and bumps the versions; `publish` runs after the merge and pushes only the tag and the GitHub release. Nothing is pushed to `main` directly.

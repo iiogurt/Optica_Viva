@@ -8,4 +8,4 @@
 - [ ] Theory text states assumptions and cites a primary reference
 - [ ] `CHANGELOG.md` updated under `## [Unreleased]`
 - [ ] `ROADMAP.md` items ticked or added; README updated if affected
-- [ ] Screenshots regenerated (`python3 scripts/screenshots.py <page>`) if visuals changed
+- [ ] Screenshots regenerated (`npm run screenshots -- <page>`) if visuals changed

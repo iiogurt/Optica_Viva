@@ -40,7 +40,10 @@ jobs:
     needs: [check]
     steps:
       - uses: actions/checkout@v4
-      - name: Load every page in headless Chrome
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Load every page in real-time headless Chrome
         run: npm run smoke
 
   bench:

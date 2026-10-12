@@ -1,7 +1,8 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
-import { rasterAperture, psf, zernikeWavefront, mtfDiffraction, airy } from '../lib/pupil.js';
+import { mtfDiffraction, airy } from '../lib/pupil.js';
 import { fft2d } from '../lib/fft.js';
+import { latest } from '../lib/compute.js';
 import { cmf } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
 
@@ -45,30 +46,8 @@ export default function mount(root, meta) {
     return { re, im };
   })();
 
-  // Optics OTF (radial) from the pupil: PSF by FFT, then OTF = FFT(PSF), take the x cut.
+  // Optics OTF (radial): computed in the worker (tasks.otfCurves): pupil → PSF → FFT → OTF.
   const n = 256, Dpx = 64, Q = n / Dpx;
-  const amp = rasterAperture({ type: 'circle' }, n, Dpx, 4);
-  function opticsOTF(def, sa) {
-    // W in waves: defocus P-V  W020 ρ², spherical W040 ρ⁴ (Seidel form)
-    const W = new Float64Array(n * n);
-    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-      const r2 = ((x - n / 2) ** 2 + (y - n / 2) ** 2) / (Dpx / 2) ** 2;
-      if (r2 <= 1.05) W[y * n + x] = def * r2 + sa * r2 * r2;
-    }
-    const { I } = psf(amp, W, n, 1);
-    const re = new Float64Array(n * n), im = new Float64Array(n * n);
-    // undo fftshift so the PSF peak sits at index 0 (keeps OTF phase linear-free)
-    const hn = n / 2;
-    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) re[((y + hn) % n) * n + ((x + hn) % n)] = I[y * n + x];
-    fft2d(re, im, n);
-    const out = []; // ν̂ = k/(n/Q) up to 1
-    for (let k = 0; k <= n / Q; k++) {
-      const a = re[k], b = im[k], c = re[k * n], d = im[k * n];
-      // rotationally symmetric aberrations → symmetric PSF → real (signed) OTF
-      out.push([k / (n / Q), (a + c) / 2 / re[0]]);
-    }
-    return out;
-  }
   const interp = (curve, x) => {
     if (x >= 1) return 0;
     const t = x * (curve.length - 1), i = Math.floor(t), f = t - i;
@@ -76,13 +55,20 @@ export default function mount(root, meta) {
   };
 
   let M = null;
+  const job = latest('mtf');
   const recompute = debounce(() => {
     const st = ctl.state;
+    // the optics OTF needs one pupil → PSF → OTF pass per wavelength: run them in the worker
+    const lams0 = st.lam === 'white' ? range(420, 680, 14) : [+st.lam];
+    job('otfCurves', { pairs: lams0.map((l) => [st.defocus * 550 / l, st.sa * 550 / l]), n, Dpx })
+      .then((cs) => finish(st, lams0, cs)).catch(console.error);
+  }, 50);
+  function finish(st, lamsIn, cs) {
     const lams = st.lam === 'white' ? range(420, 680, 14) : [+st.lam];
     const wts = lams.map((l) => (st.lam === 'white' ? cmf(l)[1] : 1));
     const wsum = wts.reduce((a, b) => a + b, 0);
     // aberrations specified in waves at 550 nm → scale by 550/λ per wavelength
-    const curves = lams.map((l) => ({ l, c: opticsOTF(st.defocus * 550 / l, st.sa * 550 / l) }));
+    const curves = lams.map((l, i) => ({ l, c: cs[i] }));
     const N = st.N, p = st.p / 1000; // mm
     const nuC = (l) => 1 / ((l / 1e6) * N); // cycles/mm
     const optics = (nu) => curves.reduce((s, { l, c }, i) => s + wts[i] * interp(c, nu / nuC(l)), 0) / wsum;
@@ -115,7 +101,7 @@ export default function mount(root, meta) {
     \end{aligned}`);
     filterStar();
     chart.redraw(); two.redraw();
-  }, 50);
+  }
 
   let starOpt = null, starSmp = null;
   function filterStar() {

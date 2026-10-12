@@ -109,7 +109,7 @@ KaTeX is vendored in `vendor/katex/`, so the app runs **fully offline**. Web fon
 
 ## 🔬 The laboratories
 
-Every image below is a screenshot of the running app. Each one is a simulation result, not an illustration. Regenerate them with [`scripts/screenshots.py`](scripts/screenshots.py).
+Every image below is a screenshot of the running app. Each one is a simulation result, not an illustration. Regenerate them with [`scripts/screenshots.mjs`](scripts/screenshots.mjs).
 
 ### Geometric optics
 
@@ -434,6 +434,8 @@ flowchart TB
     LIB --> KATEX["vendor/katex"]
 ```
 
+Heavy FFT work (the PSF, Zernike and MTF labs) runs in a **module Web Worker** (`js/workers/compute.js`), so the page stays responsive: the longest main-thread freeze during a 5-wavelength JWST PSF dropped from about 1 s to 16 ms. `latest(channel)` drops superseded requests while you drag, and the PSF lab shows a 256² preview before the 512² render.
+
 Each laboratory module exports a single `mount(root, meta)` function. It builds controls, canvases, live calculations and theory, and returns a cleanup function. The router calls that cleanup when you navigate away, to stop animations and disconnect `ResizeObserver`s.
 
 ```js
@@ -462,6 +464,8 @@ Optica_Viva/
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── blur.js            Safari-safe Gaussian blur (3 box passes, premultiplied alpha)
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
+│   │   ├── tasks.js           Heavy pure computations (PSF, Zernike, OTF) for the worker
+│   │   ├── compute.js         Worker API: run(task) and latest-only channels, main-thread fallback
 │   │   ├── color.js           CIE 1931 CMFs, sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── raytrace.js        Exact ray tracer, paraxial analysis, ray aiming, OPD
@@ -471,6 +475,7 @@ Optica_Viva/
 │   │   ├── phenomena.js       Catalogue data (148 entries)
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
+│   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
 │   └── modules/               One file per page (22)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
@@ -480,10 +485,11 @@ Optica_Viva/
 │   └── pages.yml              Deploys main to GitHub Pages
 ├── scripts/
 │   ├── check.mjs              Syntax check + Markdown link/anchor check
-│   ├── smoke.sh               Loads every page in headless Chrome
+│   ├── smoke.mjs              Every page in real-time headless Chrome; labs must render results
 │   ├── bench.mjs              Kernel benchmarks (npm run bench)
 │   ├── release.sh             prepare: release PR (date changelog, bump) · publish: tag + GitHub release
-│   └── screenshots.py         Regenerates docs/screenshots with headless Chromium
+│   ├── screenshots.mjs        Regenerates docs/screenshots (CDP, WebP)
+│   └── lib/browser.mjs        Dependency-free Chrome DevTools Protocol driver
 ├── CHANGELOG.md               Keep a Changelog
 ├── ROADMAP.md                 Completed and planned milestones
 ├── CLAUDE.md                  Project guide and workflow rules for AI-assisted sessions
