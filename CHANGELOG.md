@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Lens optimiser** (`js/lib/optimise.js`): damped least squares (Levenberg–Marquardt) on surface curvatures and the image distance, with a merit of real-ray transverse errors over fields 0, 0.7, 1 and the F, d, C wavelengths, plus a focal-length target. An **Optimise** button in the prescription editor runs it in the worker.
+- Test: starting from an equiconvex singlet, the optimiser rediscovers Coddington's best-form bending (q = 0.727 against the third-order 0.740) at exactly f = 100 mm; it also never worsens the Cooke triplet.
+
+### Added
 - **MTF across the field** in the ray tracer: sagittal and tangential MTF at 10 and 30 lp/mm vs image height (the curves lens makers publish), from the OTF of the traced, vignetted pupil at 7 field positions, computed in the worker. Diffraction-limit references are drawn.
 - Test: a near-perfect f/20 aspheric lens reproduces the analytic diffraction MTF within 1.5 %; S = T on axis; off-axis astigmatism splits them.
 
