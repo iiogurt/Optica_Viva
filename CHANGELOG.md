@@ -15,10 +15,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - `main` is protected: pull requests must pass the three CI checks before merging.
 - `js/lib/optics.js`: thin-lens depth of field, tilted-lens (Scheimpflug) imaging and ΛCDM distances, extracted from the laboratories so they can be tested.
 
+- **Shareable links:** every control in every laboratory mirrors its non-default value into the URL (`#/psf?preset=jwst&band=nir`). Opening such a link restores the exact configuration. Each page header has a **🔗 Copy link** button.
+
 ### Changed
+- Range sliders carry an `aria-label`, and segmented buttons expose `aria-pressed`.
 - `scripts/release.sh` now also runs the physics test suite before releasing.
 
 ### Fixed
+- Preset-driven labs (PSF, Zernike, perspective) now take their initial preset from the restored state, so the first slider move after opening a link no longer re-applies the preset.
 - **Safari:** depth-of-field, bokeh-softening and tilt-shift blurs no longer depend on `CanvasRenderingContext2D.filter`, which Safari ships disabled. The new `js/lib/blur.js` is an O(1)-per-pixel Gaussian (three box passes, premultiplied alpha), tested in `test/blur.test.mjs`. In the depth-of-field lab the source is blurred once instead of once per kernel tap, which is equivalent because blurring commutes with shifting and summing, and faster.
 - cos⁴ falloff at the corner of a 28 mm full-frame lens (37.7°) is −1.35 EV, not −1.30 EV (README validation table and vignetting theory). Found by the new test suite.
 

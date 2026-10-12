@@ -22,4 +22,12 @@ for id in $PAGES; do
     echo "✓ $id"
   fi
 done
+# shareable state: a URL with parameters must restore the controls
+out=$(timeout 120 "$BROWSER" --headless=new --no-sandbox --disable-gpu --virtual-time-budget=6000 --dump-dom \
+      "http://127.0.0.1:$PORT/#/psf?preset=hubble&band=white" 2>/dev/null)
+if grep -q 'value="hubble" selected' <<<"$out" && grep -qE 'aria-pressed="true"[^>]*>White|class="on"[^>]*>White' <<<"$out"; then
+  echo "✓ URL state restores controls"
+else
+  echo "✗ URL state did not restore controls"; status=1
+fi
 exit $status

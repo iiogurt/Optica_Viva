@@ -152,7 +152,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [ ] **P1 · S** **Choose a licence** (owner decision; MIT for code + CC BY 4.0 for text and images is a common pairing).
 - [ ] **P2 · M** **Mobile controls drawer**: a sticky bottom sheet with the controls next to the main canvas on screens < 860 px (A5).
 - [ ] **P2 · M** **Accessibility**: `role="img"` and live `aria-label` summaries for canvases (e.g. "Strehl 0.44, spot RMS 21 µm"), visible focus styles, `prefers-reduced-motion` to pause animations, contrast audit (A6).
-- [ ] **P2 · S** **Shareable state**: serialise controls to the URL hash (`#/psf?preset=jwst&band=nir`) plus a "copy link" button (A7).
+- [x] **P2 · S** **Shareable state**: serialise controls to the URL hash (`#/psf?preset=jwst&band=nir`) plus a "copy link" button (A7).
 - [ ] **P3 · S** Per-module error boundary with a "report issue" link, and an issue template with a "physics error" label.
 - [ ] **P3 · S** `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` split out of the README.
 

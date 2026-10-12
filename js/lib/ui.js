@@ -58,15 +58,44 @@ export const texNum = (v, d = 3) => {
 };
 
 // ── Controls ─────────────────────────────────────────────────────────────────────────────
+// ── Shareable state: every control mirrors its non-default value into the URL hash ─────
+// (#/psf?preset=jwst&band=nir). The router calls resetUrlState() before mounting a page.
+let urlKeys = new Map(), panels = 0;
+export function resetUrlState() { urlKeys = new Map(); panels = 0; }
+const hashParams = () => new URLSearchParams(location.hash.split('?')[1] || '');
+function writeUrl() {
+  const p = new URLSearchParams();
+  for (const [k, get] of urlKeys) { const v = get(); if (v != null) p.set(k, v); }
+  const base = location.hash.split('?')[0] || '#/';
+  history.replaceState(null, '', base + (p.toString() ? '?' + p : ''));
+}
+const writeUrlSoon = rafThrottle(writeUrl);
+function parseParam(s, raw) {
+  if (raw == null) return undefined;
+  if (s.type === 'range') { const v = +raw; return isFinite(v) ? Math.min(s.max, Math.max(s.min, v)) : undefined; }
+  if (s.type === 'toggle') return raw === '1';
+  const ok = s.options.some((o) => String(Array.isArray(o) ? o[0] : o) === raw);
+  if (!ok) return undefined;
+  const opt = s.options.find((o) => String(Array.isArray(o) ? o[0] : o) === raw);
+  return Array.isArray(opt) ? opt[0] : opt;
+}
+const serialise = (s, v) => (s.type === 'toggle' ? (v ? '1' : '0') : s.type === 'range' ? String(+(+v).toPrecision(6)) : String(v));
+
 // spec: { key: {type:'range'|'select'|'toggle'|'seg', label, ...} } → {el, state}
 export function controls(spec, onChange) {
   const state = {};
   const el = h('div.controls');
-  const fire = rafThrottle(() => onChange && onChange(state));
+  const panel = ++panels;
+  const fire = rafThrottle(() => { writeUrlSoon(); onChange && onChange(state); });
   const api = { el, state, set: {} };
+  const params = hashParams();
   for (const [key, s] of Object.entries(spec)) {
     if (s.type === 'heading') { el.append(h('div.ctl-heading', {}, s.label)); continue; }
-    state[key] = s.value;
+    // URL key: plain, or prefixed when a second control panel on the page reuses the name
+    const uk = urlKeys.has(key) ? `p${panel}.${key}` : key;
+    const fromUrl = parseParam(s, params.get(uk));
+    state[key] = fromUrl !== undefined ? fromUrl : s.value;
+    urlKeys.set(uk, () => (serialise(s, state[key]) === serialise(s, s.value) ? null : serialise(s, state[key])));
     let row;
     if (s.type === 'range') {
       const toPos = (v) => (s.log ? Math.log(v / s.min) / Math.log(s.max / s.min) : (v - s.min) / (s.max - s.min));
@@ -76,35 +105,35 @@ export function controls(spec, onChange) {
         if (s.log) v = +v.toPrecision(3);
         return v;
       };
-      const input = h('input', { type: 'range', min: 0, max: 1000, step: 1, value: Math.round(toPos(s.value) * 1000) });
+      const input = h('input', { type: 'range', min: 0, max: 1000, step: 1, value: Math.round(toPos(state[key]) * 1000), 'aria-label': s.label });
       const out = h('output');
       const show = () => { out.textContent = (s.fmt ? s.fmt(state[key]) : fmt(state[key])) + (s.unit ? ' ' + s.unit : ''); };
       input.addEventListener('input', () => { state[key] = fromPos(+input.value / 1000); show(); fire(); });
-      api.set[key] = (v) => { state[key] = v; input.value = Math.round(toPos(v) * 1000); show(); };
+      api.set[key] = (v) => { state[key] = v; input.value = Math.round(toPos(v) * 1000); show(); writeUrlSoon(); };
       show();
       row = h('label.ctl.ctl-range', {}, h('span.ctl-label', {}, s.label, out), input);
     } else if (s.type === 'select') {
       const sel = h('select', {}, ...s.options.map((o) => {
         const [v, t] = Array.isArray(o) ? o : [o, o];
-        return h('option', { value: v, selected: v === s.value }, t);
+        return h('option', { value: v, selected: v === state[key] }, t);
       }));
       sel.addEventListener('change', () => { state[key] = sel.value; fire(); });
-      api.set[key] = (v) => { state[key] = v; sel.value = v; };
+      api.set[key] = (v) => { state[key] = v; sel.value = v; writeUrlSoon(); };
       row = h('label.ctl', {}, h('span.ctl-label', {}, s.label), sel);
     } else if (s.type === 'toggle') {
-      const cb = h('input', { type: 'checkbox', checked: !!s.value });
+      const cb = h('input', { type: 'checkbox', checked: !!state[key] });
       cb.addEventListener('change', () => { state[key] = cb.checked; fire(); });
-      api.set[key] = (v) => { state[key] = v; cb.checked = v; };
+      api.set[key] = (v) => { state[key] = v; cb.checked = v; writeUrlSoon(); };
       row = h('label.ctl.ctl-toggle', {}, cb, h('span.switch'), h('span.ctl-label', {}, s.label));
     } else if (s.type === 'seg') {
       const btns = s.options.map((o) => {
         const [v, t] = Array.isArray(o) ? o : [o, o];
-        const b = h('button', { type: 'button', class: v === s.value ? 'on' : '' }, t);
-        b.addEventListener('click', () => { state[key] = v; btns.forEach((x) => x.classList.remove('on')); b.classList.add('on'); fire(); });
+        const b = h('button', { type: 'button', class: v === state[key] ? 'on' : '', 'aria-pressed': String(v === state[key]) }, t);
+        b.addEventListener('click', () => { state[key] = v; btns.forEach((x) => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); }); b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); fire(); });
         b.dataset.v = v;
         return b;
       });
-      api.set[key] = (v) => { state[key] = v; btns.forEach((x) => x.classList.toggle('on', x.dataset.v == v)); };
+      api.set[key] = (v) => { state[key] = v; btns.forEach((x) => { x.classList.toggle('on', x.dataset.v == v); x.setAttribute('aria-pressed', String(x.dataset.v == v)); }); writeUrlSoon(); };
       row = h('div.ctl', {}, s.label ? h('span.ctl-label', {}, s.label) : null, h('div.seg', {}, ...btns));
     }
     if (s.hint) row.title = s.hint;
@@ -120,6 +149,14 @@ export function rafThrottle(fn) {
     pending = true;
     requestAnimationFrame(() => { pending = false; fn(...a); });
   };
+}
+
+// Copy the current URL (with its state) to the clipboard.
+export async function copyLink(btn) {
+  const url = location.href;
+  try { await navigator.clipboard.writeText(url); }
+  catch { const t = h('textarea', { style: { position: 'fixed', opacity: '0' } }, url); document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); }
+  const old = btn.textContent; btn.textContent = '✓ Link copied'; setTimeout(() => (btn.textContent = old), 1600);
 }
 
 // Defer heavy computations so slider dragging stays fluid.

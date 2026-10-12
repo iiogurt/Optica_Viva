@@ -37,7 +37,7 @@ export default function mount(root, meta) {
     lastPreset = ctl.state.preset;
     recompute();
   });
-  let lastPreset = 'mix';
+  let lastPreset = ctl.state.preset;
   const ro = h('div');
   const calc = liveCalc();
 
