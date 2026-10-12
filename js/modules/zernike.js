@@ -1,6 +1,6 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
-import { rasterAperture, psf, zernike, zernikeWavefront, rmsWavefront, ZERNIKE_NAMES, segmentMap, pupilCoords } from '../lib/pupil.js';
+import { rasterAperture, ZERNIKE_NAMES } from '../lib/pupil.js';
 import { lut } from '../lib/color.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
@@ -169,41 +169,21 @@ export default function mount(root, meta) {
   root.append(segSection);
 
   const nS = 512, DS = 128;
-  const segAmp = rasterAperture({ type: 'jwst' }, nS, DS, 3);
-  const SM = segmentMap('jwst', nS, DS);
-  const { rho: _r, th: _t } = pupilCoords(nS, DS);
   let SD = null;
+  // the JWST raster, segment map and two 512² FFTs per update run in the compute worker
+  const segJob = latest('phasing');
   const recomputeSeg = debounce(() => {
-    const st = segCtl.state;
-    let seed = st.seed * 9301 + 49297;
-    const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280 - 0.5; };
-    const gauss = () => { let s = 0; for (let i = 0; i < 6; i++) s += rnd(); return s * Math.SQRT2; };
-    // per-segment piston (µm OPD) and tip/tilt (µm across segment radius)
-    // deployed tilts were arcminutes; they are compressed to ±1.2 λ per segment radius so the 18
-    // spots stay inside the FFT field (wavefront slope < 0.5 cycle/pixel, no wrap-around)
-    const P = { raw: [0.5, 1.2 * st.lam], stack: [2.0, 0.05], coarse: [0.12, 0.02], fine: [0.012, 0.004] }[st.stage];
-    const seg = SM.centers.map(() => ({ p: gauss() * P[0], tx: gauss() * P[1], ty: gauss() * P[1] }));
-    const W = new Float64Array(nS * nS);
-    const c = nS / 2;
-    for (let j = 0; j < nS; j++) for (let i = 0; i < nS; i++) {
-      const k = j * nS + i, s = SM.idx[k];
-      if (s < 0 || !segAmp[k]) continue;
-      const x = (i - c) / (DS / 2), y = -(j - c) / (DS / 2);
-      const dx = (x - SM.centers[s][0]) / SM.segRadius, dy = (y - SM.centers[s][1]) / SM.segRadius;
-      W[k] = seg[s].p + seg[s].tx * dx + seg[s].ty * dy;
-    }
-    const I = psf(segAmp, W, nS, st.lam).I;
-    const I0 = psf(segAmp, null, nS, st.lam).peak;
-    let mx = 0; for (let k = 0; k < nS * nS; k++) mx = Math.max(mx, I[k]);
-    const rmsP = Math.sqrt(seg.reduce((a, s) => a + s.p * s.p, 0) / seg.length);
-    SD = { W, I, mx, strehl: mx / I0, rmsP, st: { ...st } };
-    segRo.replaceChildren(readouts([
-      ['Segment piston RMS', (rmsP * 1000).toFixed(0) + ' nm'],
-      ['Piston RMS in waves', (rmsP / st.lam).toFixed(3) + ' λ'],
-      ['Peak / perfect (Strehl)', SD.strehl.toFixed(3)],
-      ['JWST requirement', 'S ≥ 0.8 at 2 µm (≈ 150 nm WFE)'],
-    ]));
-    segPupil.redraw(); segPsf.redraw();
+    const st = { ...segCtl.state };
+    segJob('segPhasing', { st, nS, DS }).then((r) => {
+      SD = { ...r, st };
+      segRo.replaceChildren(readouts([
+        ['Segment piston RMS', (r.rmsP * 1000).toFixed(0) + ' nm'],
+        ['Piston RMS in waves', (r.rmsP / st.lam).toFixed(3) + ' λ'],
+        ['Peak / perfect (Strehl)', r.strehl.toFixed(3)],
+        ['JWST requirement', 'S ≥ 0.8 at 2 µm (≈ 150 nm WFE)'],
+      ]));
+      segPupil.redraw(); segPsf.redraw();
+    }).catch(console.error);
   }, 40);
 
   function drawSeg(ctx, w, hh, kind) {
@@ -212,12 +192,12 @@ export default function mount(root, meta) {
     const side = Math.min(w, hh) - 16;
     if (kind === 'pupil') {
       const crop = DS + 4, off = (nS - crop) / 2, ic = imageCanvas(crop, crop);
-      let wm = 1e-6; for (let k = 0; k < nS * nS; k++) if (segAmp[k]) wm = Math.max(wm, Math.abs(SD.W[k]));
+      let wm = 1e-6; for (let k = 0; k < nS * nS; k++) if (SD.amp[k]) wm = Math.max(wm, Math.abs(SD.W[k]));
       for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
         const k = (y + off) * nS + x + off, o = (y * crop + x) * 4;
-        if (!segAmp[k]) continue;
+        if (!SD.amp[k]) continue;
         const t = Math.round((SD.W[k] / wm * 0.5 + 0.5) * 255) * 3;
-        ic.data[o] = DIV[t] * segAmp[k]; ic.data[o + 1] = DIV[t + 1] * segAmp[k]; ic.data[o + 2] = DIV[t + 2] * segAmp[k]; ic.data[o + 3] = 255;
+        ic.data[o] = DIV[t] * SD.amp[k]; ic.data[o + 1] = DIV[t + 1] * SD.amp[k]; ic.data[o + 2] = DIV[t + 2] * SD.amp[k]; ic.data[o + 3] = 255;
       }
       ic.put(); ctx.imageSmoothingEnabled = false;
       ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);

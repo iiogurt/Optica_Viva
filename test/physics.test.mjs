@@ -162,3 +162,19 @@ test('pupil rasters are cached and shared', () => {
   assert.equal(a, b, 'same spec returns the cached array');
   assert.notEqual(a, rasterAperture({ type: 'polygon', blades: 8, curvature: 0.2 }, 64, 32, 2), 'different spec → new raster');
 });
+
+test('worker tasks reproduce the laboratories\' reference results', async () => {
+  const { TASKS } = await import('../js/lib/tasks.js');
+  const coro = TASKS.coronagraph({ st: { pupil: 'clear', mask: 4, lyot: 0.8, sep: 12, con: 1e-5, wfe: 2, lam: 1.6 }, n: 256, Dp: 64 }).result;
+  near(coro.throughput, 0.409, 0.002, 'Lyot coronagraph planet throughput');
+  assert.ok(coro.starAt < coro.directAt / 10, 'coronagraph suppresses starlight at the planet > 10×');
+  const seg = TASKS.segPhasing({ st: { stage: 'stack', seed: 3, lam: 2 }, nS: 512, DS: 128 }).result;
+  near(seg.rmsP * 1000, 2517, 1, 'stacked-segment piston RMS (nm)');
+  near(seg.strehl, 0.217, 0.002, 'stacked-segment Strehl');
+  const L = { ...LENSES.cooke }, p = paraxial(L);
+  const lp = TASKS.lensPSF({ lens: L, theta: 14, zImg: p.zImage, N: p.efl / L.epd }).result;
+  near(lp.pvW, 3.30, 0.01, 'Cooke 14° OPD P-V (waves)');
+  near(lp.strehl, 0.061, 0.002, 'Cooke 14° Strehl');
+  const z = TASKS.zernikeLab({ coeffs: { 8: 0.25 }, n: 128, Dpx: 32 }).result;
+  near(z.rms, 0.25, 0.005, 'Zernike RMS equals the coma coefficient');
+});

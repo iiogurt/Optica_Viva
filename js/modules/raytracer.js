@@ -1,10 +1,10 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
-import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, sag, referenceSphere, opd } from '../lib/raytrace.js';
+import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, sag } from '../lib/raytrace.js';
 import { GLASSES, abbe, index } from '../lib/glass.js';
 import { wavelengthCSS } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
-import { psf, rasterAperture } from '../lib/pupil.js';
+import { latest } from '../lib/compute.js';
 import { lut } from '../lib/color.js';
 
 // add the optimised BK7/F2 achromat (designed for this lab: SA-corrected, F = C focus)
@@ -355,45 +355,12 @@ export default function mount(root, meta) {
 
   // Diffraction PSF from the traced OPD (Huygens/Fraunhofer).
   let psfData = null;
+  // 41×41 aimed rays for the OPD grid plus two 256² FFTs run in the compute worker
+  const psfJob = latest('lensPSF');
   const computePSF = debounce(() => {
     const m = model; if (!m) return;
-    const lam = 587.56;
-    const par = m.par[lam];
-    const ref = referenceSphere(m.lens, lam, m.theta, m.zImg, par);
-    if (!ref) { psfData = null; psfStage.redraw(); return; }
-    const G = 41, grid = new Float64Array(G * G).fill(NaN);
-    for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) {
-      const px = -1 + (2 * i) / (G - 1), py = 1 - (2 * j) / (G - 1);
-      if (px * px + py * py > 1.0001) continue;
-      const v = opd(m.lens, lam, m.theta, px, py, ref, par);
-      if (v != null) grid[j * G + i] = v;
-    }
-    // remove piston; RMS
-    let s = 0, s2 = 0, c = 0, maxStep = 0;
-    for (let k = 0; k < G * G; k++) if (!isNaN(grid[k])) { s += grid[k]; s2 += grid[k] ** 2; c++; }
-    const mean = s / c, rmsW = Math.sqrt(s2 / c - mean * mean);
-    for (let k = 0; k < G * G; k++) if (!isNaN(grid[k])) grid[k] -= mean;
-    const n = 256, Dpx = 128;
-    const amp = rasterAperture({ type: 'circle' }, n, Dpx, 3);
-    const W = new Float64Array(n * n);
-    let pv = [Infinity, -Infinity];
-    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-      const k = y * n + x; if (!amp[k]) continue;
-      const u = ((x - n / 2) / (Dpx / 2) + 1) / 2 * (G - 1), v = ((y - n / 2) / (Dpx / 2) + 1) / 2 * (G - 1);
-      const i0 = Math.max(0, Math.min(G - 2, Math.floor(u))), j0 = Math.max(0, Math.min(G - 2, Math.floor(v)));
-      const fx = Math.min(1, Math.max(0, u - i0)), fy = Math.min(1, Math.max(0, v - j0));
-      const q = [grid[j0 * G + i0], grid[j0 * G + i0 + 1], grid[(j0 + 1) * G + i0], grid[(j0 + 1) * G + i0 + 1]];
-      const ok = q.map((t) => !isNaN(t));
-      let val;
-      if (ok.every(Boolean)) val = (q[0] * (1 - fx) + q[1] * fx) * (1 - fy) + (q[2] * (1 - fx) + q[3] * fx) * fy;
-      else { const v2 = q.filter((t, i) => ok[i]); val = v2.length ? v2.reduce((a, b) => a + b) / v2.length : 0; }
-      W[k] = val * lam / 1000; // µm of OPD
-      pv = [Math.min(pv[0], W[k]), Math.max(pv[1], W[k])];
-      if (x > 0 && amp[k - 1]) maxStep = Math.max(maxStep, Math.abs(W[k] - W[k - 1]) / (lam / 1000));
-    }
-    const P = psf(amp, W, n, lam / 1000), P0 = psf(amp, null, n, lam / 1000);
-    psfData = { I: P.I, n, Wmap: W, amp, rmsW, pvW: (pv[1] - pv[0]) / (lam / 1000), strehl: P.peak / P0.peak, aliased: maxStep > 0.5, N: m.pd.efl / m.lens.epd, lam };
-    psfStage.redraw();
+    psfJob('lensPSF', { lens: m.lens, theta: m.theta, zImg: m.zImg, N: m.pd.efl / m.lens.epd })
+      .then((r) => { psfData = r; psfStage.redraw(); }).catch(console.error);
   }, 120);
 
   const infer = lut('inferno'), div = lut('diverging');

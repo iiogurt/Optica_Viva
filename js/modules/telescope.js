@@ -3,6 +3,7 @@ import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { rasterAperture, zernike } from '../lib/pupil.js';
 import { fft2d } from '../lib/fft.js';
 import { lut } from '../lib/color.js';
+import { latest } from '../lib/compute.js';
 import { plot, logRange } from '../lib/plot.js';
 
 const SCOPES = [
@@ -96,59 +97,19 @@ export default function mount(root, meta) {
 
   const n = 256, Dp = 64, Q = n / Dp;
   let C = null;
+  // 12 FFTs per update (star and planet, with and without the coronagraph) run in the worker
+  const job = latest('coronagraph');
   const runCoro = debounce(() => {
-    const st = ctl.state;
-    const amp = rasterAperture(st.pupil === 'clear' ? { type: 'circle' } : { type: 'circle', obstruction: 0.25, spiders: 4, spiderWidth: 0.02, rotation: 45 }, n, Dp, 4);
-    // fixed random low-order aberration pattern, scaled to the requested RMS
-    let sd = 12345; const rnd = () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647 - 0.5; };
-    const coeffs = []; for (let j = 4; j <= 22; j++) coeffs.push([j, rnd() / Math.pow(j, 0.6)]);
-    const norm = Math.sqrt(coeffs.reduce((a, [, c]) => a + c * c, 0));
-    const W = new Float64Array(n * n); // waves
-    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-      const k = y * n + x; if (!amp[k]) continue;
-      const xn = (x - n / 2) / (Dp / 2), yn = -(y - n / 2) / (Dp / 2), r = Math.hypot(xn, yn), t = Math.atan2(yn, xn);
-      let v = 0; for (const [j, c] of coeffs) v += c * zernike(j, Math.min(1, r), t);
-      W[k] = (v / norm) * (st.wfe / 1000) / st.lam;
-    }
-    const lyot = rasterAperture({ type: 'circle', obstruction: st.pupil === 'clear' ? 0 : 0.25 / st.lyot * 1.15, spiders: st.pupil === 'clear' ? 0 : 4, spiderWidth: 0.04, rotation: 45 }, n, Dp * st.lyot, 4);
-    const maskR = st.mask * Q; // px
-    const propagate = (tilt, withCoro) => {
-      const re = new Float64Array(n * n), im = new Float64Array(n * n);
-      for (let k = 0; k < n * n; k++) if (amp[k]) { const x = (k % n) - n / 2; const ph = 2 * Math.PI * (W[k] + (tilt * x) / Dp); re[k] = amp[k] * Math.cos(ph); im[k] = amp[k] * Math.sin(ph); }
-      fft2d(re, im, n); // focal plane (unshifted: DC at 0)
-      const focal = withCoro ? null : null;
-      if (withCoro) {
-        for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-          const fx = x < n / 2 ? x : x - n, fy = y < n / 2 ? y : y - n;
-          if (Math.hypot(fx, fy) < maskR) { re[y * n + x] = 0; im[y * n + x] = 0; }
-        }
-        fft2d(re, im, n, true); // Lyot plane
-        var lyotPlane = new Float64Array(n * n); for (let k = 0; k < n * n; k++) lyotPlane[k] = Math.hypot(re[k], im[k]);
-        for (let k = 0; k < n * n; k++) { re[k] *= lyot[k]; im[k] *= lyot[k]; }
-        fft2d(re, im, n);
-      }
-      const I = new Float64Array(n * n), hn = n / 2;
-      for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) I[((y + hn) % n) * n + ((x + hn) % n)] = re[y * n + x] ** 2 + im[y * n + x] ** 2;
-      return { I, lyotPlane, focal };
-    };
-    const star = propagate(0, false), starC = propagate(0, true), pl = propagate(st.sep, false), plC = propagate(st.sep, true);
-    let peak = 0; for (let k = 0; k < n * n; k++) peak = Math.max(peak, star.I[k]);
-    const dI = new Float64Array(n * n), cI = new Float64Array(n * n);
-    for (let k = 0; k < n * n; k++) { dI[k] = (star.I[k] + st.con * pl.I[k]) / peak; cI[k] = (starC.I[k] + st.con * plC.I[k]) / peak; }
-    // radial contrast profiles (azimuthal mean of the star alone)
-    const bins = 120, rmax = 30, pd = new Float64Array(bins), pc = new Float64Array(bins), cnt = new Float64Array(bins);
-    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const r = Math.hypot(x - n / 2, y - n / 2) / Q, b = Math.floor((r / rmax) * bins); if (b < bins) { pd[b] += star.I[y * n + x] / peak; pc[b] += starC.I[y * n + x] / peak; cnt[b]++; } }
-    let plPeak = 0, plPeakC = 0; for (let k = 0; k < n * n; k++) { plPeak = Math.max(plPeak, pl.I[k]); plPeakC = Math.max(plPeakC, plC.I[k]); }
-    const throughput = plPeakC / plPeak;
-    const px = Math.round(n / 2 + st.sep * Q), py = n / 2;
-    let starAt = 0; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) starAt = Math.max(starAt, starC.I[(py + dy) * n + px + dx] / peak);
-    let lyotIn = 0, lyotTot = 0; for (let k = 0; k < n * n; k++) { lyotTot += amp[k]; lyotIn += amp[k] * lyot[k]; }
-    C = { dI, cI, lyotPlane: starC.lyotPlane, amp, lyot, maskR, st: { ...st }, prof: Array.from({ length: bins }, (_, i) => [((i + 0.5) / bins) * rmax, cnt[i] ? pd[i] / cnt[i] : NaN, cnt[i] ? pc[i] / cnt[i] : NaN]), throughput, starAt };
-    const snrRatio = (st.con * throughput * plPeak / peak) / Math.max(starAt, 1e-14);
+    const st = { ...ctl.state };
+    job('coronagraph', { st, n, Dp }).then((r) => presentCoro(st, r)).catch(console.error);
+  }, 50);
+  function presentCoro(st, r) {
+    const { throughput, starAt, snrRatio } = r;
+    C = { ...r, st };
     ro.replaceChildren(readouts([
       ['Inner working angle ≈ mask radius', st.mask.toFixed(1) + ' λ/D = ' + fmt((st.mask * st.lam * 1e-6 / 6.5) * 206265 * 1000, 3) + ' mas (JWST)'],
       ['Planet throughput (peak)', (throughput * 100).toFixed(1) + ' %'],
-      ['Starlight at planet, direct', (pd[Math.floor((st.sep / rmax) * bins)] / cnt[Math.floor((st.sep / rmax) * bins)]).toExponential(1)],
+      ['Starlight at planet, direct', r.directAt.toExponential(1)],
       ['Starlight at planet, coronagraph', starAt.toExponential(1)],
       ['Planet / residual starlight', snrRatio.toExponential(1)],
       ['Planet detectable?', snrRatio > 1 ? 'yes, above the speckle floor' : 'no, buried in speckles'],
@@ -162,7 +123,7 @@ export default function mount(root, meta) {
     C = 10^{-10} &\Rightarrow h \approx ${texNum(h0 * 1000, 3)}\ \text{pm}
     \end{aligned}`);
     [direct, coro, planes, prof].forEach((s) => s.redraw());
-  }, 50);
+  }
 
   const INF = lut('inferno');
   function toImg(data, crop, dec, floor = 0) {
