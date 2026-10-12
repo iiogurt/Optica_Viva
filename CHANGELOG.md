@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-12
+
 ### Added
 - **Diffraction-aware bokeh**: a *Small disks* panel in the traced bokeh mode. It computes the FFT PSF of the lens's traced, vignetted pupil with the sensor moved to a chosen defocus W₀₂₀ (worker task `defocusPSF`), at 550 nm and averaged over 450–650 nm, next to the aberration-free pure-defocus profile and the geometric disk. Test: the on-axis intensity follows sinc²(W₀₂₀/λ) (dark at 1 and 2 waves), and the PSF approaches the geometric disk at large defocus.
 - **Exact disk (pillbox) blur** in `js/lib/blur.js`: per-row prefix sums with anti-aliased span ends, normalised by the discrete kernel weight, premultiplied alpha, and a downsampled path above r = 8 px that keeps the cost near r ≈ 4. Tilt-shift now blends a stack of disk-blurred images instead of Gaussians (similar speed), and depth of field uses the exact disk for every image up to 1.2 Mpx. Tests: unit sum, plateau 1/(πr²), RMS radius r/√2 within 2.5 % on both paths; a uniform image is unchanged.
@@ -367,7 +369,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.1.0...v1.2.0
