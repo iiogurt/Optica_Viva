@@ -51,12 +51,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"]
     end
     subgraph Next["Planned"]
         direction TB
-        N3["v1.3 lens design<br/>aspheres · editor · import"]
-        N3 --> N4["v1.4 rendering<br/>real-ray flare & bokeh"] --> N5["v1.5 photo/cine labs"] --> N6["v1.6 space labs"] --> N7["v2.0 learning platform"]
+        N4["v1.4 rendering<br/>real-ray flare & bokeh"] --> N5["v1.5 photo/cine labs"] --> N6["v1.6 space labs"] --> N7["v2.0 learning platform"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -76,6 +75,17 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.3.0 Lens-design depth</b> (2026-10-12, PRs #12–#16)</summary>
+
+- [x] Even-aspheric surfaces (conic + polynomial, Newton intersection) and an SA-free plano-hyperbolic singlet (#12)
+- [x] Prescription editor, Zemax `.zmx` / JSON import-export, model glasses, shareable custom lenses; library achromat fixed (#13)
+- [x] Per-surface Seidel sums S_I–S_V, C_I, C_II, validated against exact rays and the Petzval sum (#14)
+- [x] Through-field analysis: exact Coddington field curves vs third order, real-ray distortion; smoke test made robust to slow CI (#15)
+- [x] Vignetted PSF pupils and editable clear semi-diameters (#16)
+
+</details>
+
+<details>
 <summary><b>v1.2.0 Performance</b> (2026-10-12, PRs #7–#10)</summary>
 
 - [x] Releases go through pull requests; `main` requires a PR and green checks, also for admins (#7)
@@ -198,6 +208,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P3 · S** Performance report in CI: `npm run bench` publishes kernel timings to the run summary. *It is informational rather than a failing budget, because shared runners are too noisy for a 25 % threshold.*
 
 ### v1.3 Lens-design depth
+
+✅ **Released as v1.3.0.** The open items below (more designs, optimiser, tolerancing, glass catalogue, MTF vs field) continue as v1.3.x.
 
 *Goal: the ray tracer becomes a credible teaching tool for lens design (A9, A10).*
 
