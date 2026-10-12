@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-12
+
+### Added
+- `ROADMAP.md`: completed milestones (v0.1–v1.0.x), an audit of v1.0.1 (Safari canvas-filter gap, main-thread performance measured on a Raspberry Pi 4, mobile control placement, accessibility, missing tests/CI/deployment/licence), and planned milestones v1.1–v2.0 with priorities, effort estimates, 19 proposed laboratories and cited research notes.
+
+### Changed
+- README: roadmap section and links. Corrected the browser-support note: Safari ships canvas `filter` disabled in all current versions, not only older ones.
+
 ### Removed
 - Accidentally committed `scripts/__pycache__/`; Python bytecode is now ignored.
 
@@ -226,7 +234,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.19.0...v1.0.0
 [0.19.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.18.0...v0.19.0

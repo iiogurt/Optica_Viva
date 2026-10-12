@@ -17,7 +17,7 @@ Everything is computed from first principles, live in your browser.
 [![Conventional Commits](https://img.shields.io/badge/commits-conventional-ff9cc0)](https://www.conventionalcommits.org/)
 [![Keep a Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-9aa1b5)](CHANGELOG.md)
 
-[Quick start](#-quick-start) · [Laboratories](#-the-laboratories) · [Physics](#-physical-models) · [Architecture](#-architecture) · [Accuracy](#-validation) · [Contributing](#-contributing)
+[Quick start](#-quick-start) · [Laboratories](#-the-laboratories) · [Physics](#-physical-models) · [Architecture](#-architecture) · [Accuracy](#-validation) · [Roadmap](ROADMAP.md) · [Contributing](#-contributing)
 
 </div>
 
@@ -39,6 +39,7 @@ Everything is computed from first principles, live in your browser.
 - [Validation](#-validation)
 - [Approximations and limits](#-approximations-and-limits)
 - [Browser support and performance](#-browser-support-and-performance)
+- [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
 - [Versioning and releases](#-versioning-and-releases)
 - [References](#-references)
@@ -469,6 +470,7 @@ Optica_Viva/
 │   ├── release.sh             Syntax gate → version bump → tag → push → GitHub release
 │   └── screenshots.py         Regenerates docs/screenshots with headless Chromium
 ├── CHANGELOG.md               Keep a Changelog
+├── ROADMAP.md                 Completed and planned milestones
 └── package.json               Version and `npm start`
 ```
 
@@ -518,9 +520,23 @@ Every page states its model's assumptions. The main simplifications are:
 | | Chrome / Edge | Firefox | Safari |
 |---|---|---|---|
 | All laboratories | ✅ | ✅ | ✅ |
-| `ctx.filter` blur (DoF, tilt-shift) | ✅ | ✅ | ⚠️ older versions lack it: blur falls back to sharp rendering |
+| `ctx.filter` blur (DoF, tilt-shift, bokeh softening) | ✅ | ✅ | ⚠️ disabled by default in Safari (≤ 26.5): those blurs render sharp until the in-house blur lands in [v1.1](ROADMAP.md#v11-robustness-testing--deployment) |
 
 The heavier pages run 256²–512² FFTs or ray-cast hundreds of thousands of rays per update: seeing (animated), coronagraph, tilt-shift, PSF and projection. They are fluid on a modern desktop and noticeably slower on low-power devices such as a Raspberry Pi. Computations are debounced while you drag sliders.
+
+---
+
+## 🗺 Roadmap
+
+Completed and planned milestones are tracked in **[ROADMAP.md](ROADMAP.md)**, together with the October 2026 audit that motivates them. Next up:
+
+| Milestone | Focus |
+|---|---|
+| **v1.1** | Safari-safe blur, physics test suite, CI, GitHub Pages, mobile controls, accessibility, shareable URLs |
+| **v1.2** | Web Workers, cached rasters, progressive rendering, WebGPU compute |
+| **v1.3** | Aspheric surfaces, prescription editor and `.zmx` import, Seidel sums, through-field analysis |
+| **v1.4** | Real-ray ghosts, bokeh from the traced lens, spectral scene rendering |
+| **v1.5–v1.6** | 19 proposed laboratories, e.g. polarisation, colour science, wavefront sensing, spectroscopy, interferometry |
 
 ---
 
@@ -540,7 +556,7 @@ Physics changes should cite a primary reference in the page's theory section and
 
 ## 🏷 Versioning and releases
 
-Version **1.0.1** · [all releases](https://github.com/iiogurt/Optica_Viva/releases) · [changelog](CHANGELOG.md)
+Version **1.0.2** · [all releases](https://github.com/iiogurt/Optica_Viva/releases) · [changelog](CHANGELOG.md)
 
 The project follows [Semantic Versioning](https://semver.org/): a new laboratory or capability is a **minor** release, and fixes and documentation are **patch** releases. Releases are cut with one command:
 
