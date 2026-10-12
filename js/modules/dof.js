@@ -4,6 +4,7 @@ import { SENSORS, diag, pitchUm } from '../lib/sensors.js';
 import { besselJ1 } from '../lib/pupil.js';
 import { plot, logRange } from '../lib/plot.js';
 import { blurDiameter as blur, hyperfocal, dofLimits } from '../lib/optics.js';
+import { blurredCanvas } from '../lib/blur.js';
 
 const LAMBDA = 0.00055; // mm
 const CARDS = [0.7, 1, 1.5, 2.2, 3.3, 5, 8, 12, 20, 35];
@@ -12,24 +13,25 @@ const cardAngle = (i) => (-9 + (i * 14) / (CARDS.length - 1)) * Math.PI / 180;
 
 const diskMTF = (x) => (Math.abs(x) < 1e-6 ? 1 : (2 * besselJ1(Math.PI * x)) / (Math.PI * x));
 
-// Draw `img` convolved with a uniform disk of radius r (px) — Vogel-spiral tap accumulation
-// on an additive scratch layer (exact average), softened by a small Gaussian between taps.
+// Draw `img` convolved with a uniform disk of radius r (px): Vogel-spiral taps accumulated on
+// an additive scratch layer (an exact average), softened by a small Gaussian between taps.
+// Blurring commutes with shifting and summing, so the source is blurred once up front.
 function diskBlit(ctx, img, x, y, r) {
   if (r < 0.6) { ctx.drawImage(img, x, y); return; }
   const n = Math.min(72, Math.max(10, Math.round(r * 2.2)));
+  const soft = Math.max(0, (r / Math.sqrt(n)) * 0.9);
+  const { canvas: src, pad: sp } = blurredCanvas(img, soft > 0.4 ? soft : 0);
   const pad = Math.ceil(r + 4);
   const tmp = document.createElement('canvas');
-  tmp.width = img.width + 2 * pad; tmp.height = img.height + 2 * pad;
+  tmp.width = src.width + 2 * pad; tmp.height = src.height + 2 * pad;
   const t = tmp.getContext('2d');
   t.globalCompositeOperation = 'lighter';
   t.globalAlpha = 1 / n;
-  const soft = Math.max(0, (r / Math.sqrt(n)) * 0.9);
-  if (soft > 0.4) t.filter = `blur(${soft.toFixed(2)}px)`;
   for (let i = 0; i < n; i++) {
     const rho = r * Math.sqrt((i + 0.5) / n), ph = i * 2.399963229728653;
-    t.drawImage(img, pad + rho * Math.cos(ph), pad + rho * Math.sin(ph));
+    t.drawImage(src, pad + rho * Math.cos(ph), pad + rho * Math.sin(ph));
   }
-  ctx.drawImage(tmp, x - pad, y - pad);
+  ctx.drawImage(tmp, x - pad - sp, y - pad - sp);
 }
 
 function cardImage(wpx, hpx, label, subject) {

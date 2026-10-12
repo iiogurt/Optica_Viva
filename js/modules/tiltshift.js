@@ -1,6 +1,7 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { tiltedLens, tiltedImage, tiltedObject } from '../lib/optics.js';
+import { gaussianBlurRGBA } from '../lib/blur.js';
 
 // ── toy town: houses (boxes) and trees (spheres) bucketed in a 12 m cell grid ──────────
 const CELL = 12, GX0 = -5, GX1 = 5, GZ0 = 0, GZ1 = 14;
@@ -124,11 +125,8 @@ export default function mount(root, meta) {
     const src = imageCanvas(W, H);
     for (let k = 0; k < W * H; k++) { src.data[k * 4] = base[k * 3]; src.data[k * 4 + 1] = base[k * 3 + 1]; src.data[k * 4 + 2] = base[k * 3 + 2]; src.data[k * 4 + 3] = 255; }
     src.put();
-    const stack = levels.map((r) => {
-      const c = document.createElement('canvas'); c.width = W; c.height = H;
-      const g = c.getContext('2d'); if (r > 0) g.filter = `blur(${(r / 2).toFixed(2)}px)`;
-      g.drawImage(src.c, 0, 0); return g.getImageData(0, 0, W, H).data;
-    });
+    const srcData = src.cx.getImageData(0, 0, W, H).data;
+    const stack = levels.map((r) => gaussianBlurRGBA(srcData, W, H, r / 2));
     const out = imageCanvas(W, H);
     for (let k = 0; k < W * H; k++) {
       const b = blur[k]; let li = 0; while (li < levels.length - 2 && levels[li + 1] < b) li++;
