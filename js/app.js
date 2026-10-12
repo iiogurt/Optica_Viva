@@ -1,5 +1,5 @@
 // Optica Viva — router and module registry.
-import { h } from './lib/ui.js';
+import { h, resetUrlState } from './lib/ui.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
 export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'telescope', 'lensing', 'sampling', 'noise', 'motion', 'vignetting', 'perspective', 'tiltshift', 'catalogue']);
@@ -50,6 +50,7 @@ function buildNav() {
 }
 
 let cleanup = null;
+let lastId = null;
 let token = 0;
 async function route() {
   const id = (location.hash.replace(/^#\/?/, '').split('?')[0]) || 'home';
@@ -59,6 +60,7 @@ async function route() {
   const my = ++token;
   if (cleanup) { try { cleanup(); } catch (e) { console.error(e); } cleanup = null; }
   main.innerHTML = '';
+  resetUrlState();
   const page = h('div.page');
   main.append(page);
   try {
@@ -74,7 +76,8 @@ async function route() {
       : h('pre', { style: { color: 'var(--warn)', whiteSpace: 'pre-wrap' } }, 'Failed to load module: ' + e.message + '\n' + (e.stack || '')));
   }
   document.title = meta.id === 'home' ? 'Optica Viva' : `${meta.title} · Optica Viva`;
-  window.scrollTo(0, 0);
+  if (meta.id !== lastId) window.scrollTo(0, 0);
+  lastId = meta.id;
 }
 
 buildNav();

@@ -225,3 +225,7 @@ button.btn:hover { border-color: var(--accent); }
 .eqtab td:first-child { font-family: var(--font-sans); }
 .eqtab td i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 8px; }
 .eqtab tr.sel td { background: rgba(255, 181, 71, 0.08); color: #fff; }
+
+/* Share button */
+.tag.share { background: transparent; cursor: pointer; color: var(--fg); border-color: var(--line-2); }
+.tag.share:hover { border-color: var(--accent); color: var(--accent); }

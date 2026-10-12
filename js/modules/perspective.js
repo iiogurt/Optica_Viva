@@ -64,7 +64,7 @@ export default function mount(root, meta) {
     lastPreset = ctl.state.preset;
     update();
   });
-  let lastPreset = 'mustache';
+  let lastPreset = ctl.state.preset;
   const ro = h('div');
   const calc = liveCalc();
   const view = stage({ aspect: 1.5, label: 'Camera view (36 × 24 mm sensor)', draw: drawView, minH: 260 });

@@ -1,5 +1,5 @@
 // Page scaffolding shared by every module.
-import { h, prose, section } from './ui.js';
+import { h, prose, section, copyLink } from './ui.js';
 
 const TAG = { photo: 'Photography', video: 'Cinematography', space: 'Astronomy & space' };
 
@@ -8,7 +8,8 @@ export function header(meta) {
     h('div.eyebrow', {}, meta.group),
     h('h1', {}, meta.title),
     h('p.lede', {}, meta.lede || ''),
-    h('div.tags', {}, ...(meta.domains || []).map((d) => h('span.tag.' + d, {}, TAG[d] || d))),
+    h('div.tags', {}, ...(meta.domains || []).map((d) => h('span.tag.' + d, {}, TAG[d] || d)),
+      h('button.tag.share', { type: 'button', title: 'Copy a link to this page with the current settings', onClick: (e) => copyLink(e.currentTarget) }, '🔗 Copy link')),
   );
 }
 

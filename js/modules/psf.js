@@ -38,7 +38,7 @@ export default function mount(root, meta) {
     zoom: { type: 'range', label: 'Zoom', min: 1, max: 6, step: 0.05, value: 1.6, fmt: (v) => v.toFixed(1) + '×' },
     N: { type: 'range', label: 'Camera f-number (for µm scale)', min: 1, max: 32, log: true, value: 8, fmt: (v) => 'f/' + v.toPrecision(2) },
   }, (s) => { if (s.preset !== lastPreset && PRESETS[s.preset].spec.blades) { ctl.set.blades(PRESETS[s.preset].spec.blades); ctl.set.curvature(PRESETS[s.preset].spec.curvature); } lastPreset = s.preset; recompute(); });
-  let lastPreset = 'jwst';
+  let lastPreset = ctl.state.preset;
   const ro = h('div');
   const calc = liveCalc();
 
