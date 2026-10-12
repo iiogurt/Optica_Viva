@@ -61,7 +61,8 @@ export default function mount(root, meta) {
     const p0 = paraxial(base);
     const lens = { ...base, epd: base.epd / S.fnum };
     const lambdas = SPECTRA[S.spectrum];
-    const sd = base._sd || (base._sd = autoSemiDiameters(base));
+    // clear semi-diameters: given per surface (s.sd), otherwise automatic from full-field rays
+    const sd = base._sd || (base._sd = autoSemiDiameters(base).map((v, i) => base.surfaces[i].sd || v));
     const par = {};
     for (const l of new Set([...lambdas, 587.56, 486.13, 656.27])) par[l] = paraxial(lens, l);
     const pd = par[587.56];
@@ -420,7 +421,7 @@ export default function mount(root, meta) {
   const psfJob = latest('lensPSF');
   const computePSF = debounce(() => {
     const m = model; if (!m) return;
-    psfJob('lensPSF', { lens: m.lens, theta: m.theta, zImg: m.zImg, N: m.pd.efl / m.lens.epd })
+    psfJob('lensPSF', { lens: m.lens, sd: m.sd, theta: m.theta, zImg: m.zImg, N: m.pd.efl / m.lens.epd })
       .then((r) => { psfData = r; psfStage.redraw(); }).catch(console.error);
   }, 120);
 
@@ -458,7 +459,7 @@ export default function mount(root, meta) {
     const x2 = (3 * w) / 4 - side / 2;
     ctx.drawImage(ip.c, x2, y1, side, side);
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
-    ctx.fillText(`OPD  P-V ${d.pvW.toFixed(2)} λ   RMS ${d.rmsW.toFixed(3)} λ   (±${(wmax / (d.lam / 1000)).toFixed(2)} λ)`, x1, hh - 10);
+    ctx.fillText(`OPD  P-V ${d.pvW.toFixed(2)} λ   RMS ${d.rmsW.toFixed(3)} λ${d.transmitted < 0.995 ? `   pupil ${(d.transmitted * 100).toFixed(0)} % (vignetted)` : `   (±${(wmax / (d.lam / 1000)).toFixed(2)} λ)`}`, x1, hh - 10);
     const field = crop * d.lam / 1000 * d.N / 2; // µm across crop (Q = 2)
     ctx.fillText(`PSF log₁₀ (4 decades)  ${field.toFixed(0)} µm field   Strehl ${d.strehl.toFixed(3)}`, x2, hh - 10);
     if (d.aliased) { ctx.fillStyle = '#ff6b6b'; ctx.fillText('⚠ wavefront slope exceeds sampling: geometric regime, trust the spot diagram', x2 - side * 0.4, 18); }
@@ -494,7 +495,8 @@ export default function mount(root, meta) {
     else if (field === 'a4' || field === 'a6') {
       const a = sf.a ? sf.a.slice() : [0, 0, 0, 0]; a[field === 'a4' ? 0 : 1] = parseFloat(raw) || 0;
       if (a.some((x) => x)) sf.a = a; else delete sf.a;
-    } else if (field === 'glass') sf.glass = raw;
+    } else if (field === 'sd') { const v = parseFloat(raw); if (v > 0) sf.sd = v; else delete sf.sd; }
+    else if (field === 'glass') sf.glass = raw;
     else if (field === 'stop') L.surfaces.forEach((x, j) => { if (j === i) x.stop = true; else delete x.stop; });
     applyCustom(L);
   }
@@ -507,6 +509,7 @@ export default function mount(root, meta) {
       h('td', {}, typeof sf.glass === 'string'
         ? (() => { const sel = h('select.rx-glass', { 'aria-label': `Surface ${i + 1} glass` }, ...GLASS_OPTIONS.map((g) => h('option', { value: g, selected: g === sf.glass }, g))); sel.addEventListener('change', () => editSurface(i, 'glass', sel.value)); return sel; })()
         : h('span', { title: `model glass n_d = ${sf.glass.nd}, V_d = ${sf.glass.vd}` }, sf.glass.name + ' (model)')),
+      h('td', {}, numIn(sf.sd || '', (v) => editSurface(i, 'sd', v), { 'aria-label': `Surface ${i + 1} clear semi-diameter`, placeholder: 'auto' })),
       h('td', {}, numIn(sf.k || 0, (v) => editSurface(i, 'k', v), { 'aria-label': `Surface ${i + 1} conic` })),
       h('td', {}, numIn(sf.a ? sf.a[0] : 0, (v) => editSurface(i, 'a4', v), { 'aria-label': `Surface ${i + 1} a4` })),
       h('td', {}, numIn(sf.a ? sf.a[1] : 0, (v) => editSurface(i, 'a6', v), { 'aria-label': `Surface ${i + 1} a6` })),
@@ -517,7 +520,7 @@ export default function mount(root, meta) {
       h('label', {}, 'Entrance pupil Ø (mm) ', numIn(L.epd, (v) => { const N = clone(L); N.epd = parseFloat(v); applyCustom(N); }, { 'aria-label': 'Entrance pupil diameter' })),
       h('label', {}, 'Max field (°) ', numIn(L.field, (v) => { const N = clone(L); N.field = parseFloat(v); applyCustom(N); }, { 'aria-label': 'Maximum field angle' })));
     tableWrap.replaceChildren(pupil, h('table.eqtab.rx-table', {},
-      h('thead', {}, h('tr', {}, ...['#', 'Radius R', 'Thickness t', 'Glass after', 'Conic k', 'a₄ (r⁴)', 'a₆ (r⁶)', 'Stop', ''].map((t) => h('th', {}, t)))),
+      h('thead', {}, h('tr', {}, ...['#', 'Radius R', 'Thickness t', 'Glass after', 'Semi-Ø', 'Conic k', 'a₄ (r⁴)', 'a₆ (r⁶)', 'Stop', ''].map((t) => h('th', {}, t)))),
       h('tbody', {}, ...rows)));
   }
   fileIn.addEventListener('change', async () => {
@@ -537,7 +540,7 @@ export default function mount(root, meta) {
   };
   root.append(h('section.block', {}, h('h2', {}, 'Prescription editor'),
     h('div.card', {},
-      h('p.note', {}, 'Edit the custom lens surface by surface (R = ∞ for a plane). Changes are traced immediately and travel in the page link, so a design can be shared. Import a Zemax .zmx (sequential STANDARD/EVENASPH) or an Optica Viva .json; unknown glasses are modelled from their n_d and V_d.'),
+      h('p.note', {}, 'Edit the custom lens surface by surface (R = ∞ for a plane; leave Semi-Ø empty for automatic clear apertures, or set it to vignette oblique beams). Changes are traced immediately and travel in the page link, so a design can be shared. Import a Zemax .zmx (sequential STANDARD/EVENASPH) or an Optica Viva .json; unknown glasses are modelled from their n_d and V_d.'),
       h('div.rx-actions', {},
         h('button.btn', { type: 'button', onClick: () => applyCustom(clone(LENSES[ctl.state.lens]), `Copied ${LENSES[ctl.state.lens].name} into the editor.`) }, 'Edit a copy of the current lens'),
         h('button.btn', { type: 'button', onClick: () => {

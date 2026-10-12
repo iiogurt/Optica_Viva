@@ -47,6 +47,7 @@ export function parseZmx(text) {
     if (!/^(STANDARD|EVENASPH)$/.test(s.type)) warnings.push(`surface ${i + 1}: type ${s.type} treated as STANDARD`);
     const out = { R: s.curv ? 1 / s.curv : Infinity, t: isFinite(s.t) ? s.t : 0, glass: s.glass };
     if (s.k) out.k = s.k;
+    if (s.sd > 0) out.sd = s.sd; // Zemax DIAM is a semi-diameter
     // EVENASPH PARM n multiplies r^(2n); our a[] starts at r⁴ (PARM 1, the r² term, is folded away)
     if (s.type === 'EVENASPH') {
       if (s.parm[1]) warnings.push(`surface ${i + 1}: r² aspheric term ignored`);
@@ -68,6 +69,7 @@ export function lensToJSON(lens) {
     const o = { R: isFinite(s.R) ? +s.R.toPrecision(10) : 'inf', t: s.t, glass: s.glass };
     if (s.k) o.k = s.k;
     if (s.a && s.a.some((v) => v)) o.a = s.a;
+    if (s.sd > 0) o.sd = s.sd;
     if (s.stop) o.stop = true;
     return o;
   });
@@ -87,6 +89,7 @@ export function validateLens(lens) {
   lens.surfaces.forEach((s, i) => {
     if (s.R === 0 || Number.isNaN(s.R)) errs.push(`surface ${i + 1}: radius must be non-zero (use inf for a plane)`);
     if (!(s.t >= 0)) errs.push(`surface ${i + 1}: thickness must be ≥ 0`);
+    if (s.sd !== undefined && !(s.sd > 0)) errs.push(`surface ${i + 1}: semi-diameter must be positive`);
     if (typeof s.glass === 'string' && s.glass !== 'air' && !GLASSES[s.glass]) errs.push(`surface ${i + 1}: unknown glass ${s.glass}`);
   });
   if (lens.surfaces.filter((s) => s.stop).length !== 1) errs.push('exactly one surface must be the stop');

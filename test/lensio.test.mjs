@@ -57,3 +57,18 @@ test('every glass used by a built-in lens exists in the catalogue (editor menus 
     if (typeof s.glass === 'string' && s.glass !== 'air') assert.ok(GLASSES[s.glass], `${L.name}: ${s.glass}`);
   }
 });
+
+test('clear semi-diameters: Zemax DIAM import, JSON round trip, and vignetting of the PSF pupil', async () => {
+  const { lens } = parseZmx(readFileSync(new URL('./fixtures/cooke.zmx', import.meta.url), 'utf8'));
+  assert.equal(lens.surfaces[0].sd, 10, 'DIAM 10 → semi-diameter 10');
+  assert.equal(lensFromJSON(lensToJSON(lens)).surfaces[0].sd, 10, 'JSON keeps sd');
+  const { TASKS } = await import('../js/lib/tasks.js');
+  const { autoSemiDiameters } = await import('../js/lib/raytrace.js');
+  const L = { ...LENSES['double-gauss'] }, p = paraxial(L), sd = autoSemiDiameters(L);
+  const tight = sd.map((v, i) => (i === 0 || i === 10 ? v * 0.8 : v));
+  const run = (s, th) => TASKS.lensPSF({ lens: L, sd: s, theta: th, zImg: p.zImage, N: p.efl / L.epd }).result;
+  assert.equal(run(sd, 14).transmitted, 1, 'designed apertures pass the full field');
+  assert.equal(run(tight, 0).transmitted, 1, 'tight rims leave the axial beam alone');
+  const v = run(tight, 14).transmitted;
+  assert.ok(v > 0.5 && v < 0.85, `tight rims vignette the 14° beam (${v})`);
+});
