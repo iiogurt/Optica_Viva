@@ -1,0 +1,26 @@
+name: Physics or accuracy error
+description: A formula, number, derivation or model is wrong or misleading
+labels: [physics]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page / link (with settings)
+    validations: { required: true }
+  - type: textarea
+    id: claim
+    attributes:
+      label: What does the app show or state?
+    validations: { required: true }
+  - type: textarea
+    id: correct
+    attributes:
+      label: What is correct, and why?
+      description: Give the expected value or derivation.
+    validations: { required: true }
+  - type: textarea
+    id: reference
+    attributes:
+      label: Reference
+      description: Textbook, paper or catalogue that supports the correction.
+    validations: { required: true }

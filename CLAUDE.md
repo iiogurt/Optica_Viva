@@ -32,5 +32,7 @@ Use the most precise model that runs interactively, and state every approximatio
 - Release from `main` after merging, with `scripts/release.sh X.Y.Z "type(scope): message"`. It runs checks and tests, bumps `package.json` and the README version, commits, tags `vX.Y.Z`, pushes, and creates the GitHub release from the CHANGELOG section.
 - Regenerate README screenshots (`docs/screenshots/*.webp`) when visuals change.
 
+See also `CONTRIBUTING.md` (human-facing version of these rules) and the PR template checklist.
+
 ## Next work
 Pick from `ROADMAP.md`, starting with v1.1 (Safari-safe blur, physics test suite, CI, GitHub Pages, mobile controls, accessibility, shareable URLs). The licence is still undecided and is the owner's call.
