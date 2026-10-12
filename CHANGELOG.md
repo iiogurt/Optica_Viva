@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Aspheric surfaces** in the exact ray tracer: conic constant `k` plus even polynomial terms `a = [a₄, a₆, a₈, a₁₀]`. Rays are intersected by Newton iteration on z − sag(r) = 0, with the analytic sag slope for the surface normal; spheres keep their closed-form path.
+- **Plano-aspheric singlet** prescription (N-BK7, hyperbolic surface k = −n²). It focuses a collimated beam with zero spherical aberration: worst zone error 0.0005 µm against 457 µm for the spherical singlet of the same power, leaving only chromatic defocus.
+- Tests: the hyperbolic singlet is free of spherical aberration, the Newton path matches the closed-form sphere, and k = −1 gives an exact paraboloid.
+
 ## [1.2.0] - 2026-10-12
 
 Performance milestone (PRs [#7](https://github.com/iiogurt/Optica_Viva/pull/7)–[#10](https://github.com/iiogurt/Optica_Viva/pull/10)): a faster FFT, cached rasters, a compute worker that keeps the UI responsive on a Raspberry Pi 4, real-time browser testing, and releases that go through pull requests.
