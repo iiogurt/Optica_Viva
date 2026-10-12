@@ -389,3 +389,26 @@ export function seidel(lens, lambda = 587.56) {
   for (const k of ['SI', 'SII', 'SIII', 'SIV', 'SV', 'CI', 'CII']) total[k] = rows.reduce((a, r) => a + r[k], 0);
   return { rows, total, H, uImage: u, nImage: index(S[N - 1].glass, lambda) };
 }
+
+// ── Through-field analysis ──────────────────────────────────────────────────────────────
+// Tangential and sagittal foci from differential real rays about the chief ray (the
+// Coddington foci, found by exact tracing), and real-ray distortion, versus field angle.
+// Returns rows { theta, zt, zs, dist } with zt, zs relative to the paraxial image plane (mm,
+// measured along z) and dist in % relative to f·tanθ.
+export function fieldCurves(lens, lambda = 587.56, n = 13, delta = 0.02) {
+  const par = paraxial(lens, lambda), zv = par.zv, out = [];
+  const go = (th, px, py) => { const a = aimRay(lens, lambda, th, px, py, par); if (!a) return null; const r = trace(lens, lambda, a.p, a.d, { clip: false, zv }); return r.ok ? r : null; };
+  for (let k = 0; k < n; k++) {
+    const th = (lens.field * k) / (n - 1);
+    const c = go(th, 0, 0), t1 = go(th, 0, delta), t2 = go(th, 0, -delta), s1 = go(th, delta, 0);
+    if (!c || !t1 || !t2 || !s1) continue;
+    // tangential: where the ±δ meridional rays cross each other (y–z plane)
+    const ty1 = t1.d[1] / t1.d[2], ty2 = t2.d[1] / t2.d[2];
+    const zt = (t2.p[1] - ty2 * t2.p[2] - t1.p[1] + ty1 * t1.p[2]) / (ty1 - ty2);
+    // sagittal: where the +δ sagittal ray returns to the meridional plane (x = 0)
+    const zs = s1.p[2] - s1.p[0] * (s1.d[2] / s1.d[0]);
+    const yImg = toPlane(c, par.zImage)[1], ideal = par.efl * Math.tan((th * Math.PI) / 180);
+    out.push({ theta: th, zt: zt - par.zImage, zs: zs - par.zImage, dist: th > 0 ? ((yImg - ideal) / ideal) * 100 : 0 });
+  }
+  return out;
+}

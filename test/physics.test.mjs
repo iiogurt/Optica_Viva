@@ -224,3 +224,13 @@ test('chromatic Seidel sum C_I predicts the F–C focus shift', async () => {
   assert.ok(Math.abs(pred(single) - shift(single)) < 0.01 * Math.abs(shift(single)), 'singlet within 1 %');
   assert.ok(Math.abs(pred(LENSES.achromat)) < 1e-3 * Math.abs(shift(single)), 'achromat ≈ 0');
 });
+
+test('exact Coddington field foci match third-order (Seidel) predictions at small field', async () => {
+  const { seidel, fieldCurves } = await import('../js/lib/raytrace.js');
+  for (const key of ['cooke', 'double-gauss', 'plano-convex']) {
+    const L = { ...LENSES[key], field: 2, epd: LENSES[key].epd / 4 }, fc = fieldCurves(L, 587.56, 3), r = fc[fc.length - 1], s = seidel(L);
+    const k = -1 / (2 * s.nImage * s.uImage ** 2);
+    near(r.zs, (s.total.SIII + s.total.SIV) * k, 0.05 * Math.abs(r.zs) + 1e-5, `${key} sagittal focus`);
+    near(r.zt, (3 * s.total.SIII + s.total.SIV) * k, 0.06 * Math.abs(r.zt) + 5e-5, `${key} tangential focus`);
+  }
+});

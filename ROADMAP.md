@@ -206,7 +206,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P1 · M** **Prescription import/export**: JSON, simple `.len`, and a subset of Zemax `.zmx` (SURF, CURV, DISZ, GLAS, CONI, PARM). This follows the RayOptics and Open Optical Designer approach.
 - [ ] **P2 · M** **More classic designs**: Tessar, Petzval portrait, Biogon (symmetric wide), Distagon-type retrofocus, a telephoto, a Ritchey–Chrétien and a TMA telescope.
 - [x] **P2 · M** **Seidel sums per surface** (S_I–S_V and chromatic C_I, C_II) as bar charts. This shows where each aberration originates.
-- [ ] **P2 · M** **Through-field analysis**: sagittal and tangential field curves, real-ray distortion, MTF vs field, relative illumination from traced clear apertures.
+- [x] **P2 · M** **Through-field analysis**: sagittal and tangential field curves and real-ray distortion. *MTF vs field and traced relative illumination remain open, as does vignetting of the PSF pupil.*
 - [ ] **P2 · S** Fix the off-axis pupil anamorphosis in the OPD/PSF path (sample the real exit-pupil shape).
 - [ ] **P3 · L** **Optimiser**: damped least squares on a merit function (spot RMS, EFL target, F/C focus), demonstrated on the achromat.
 - [ ] **P3 · M** **Monte-Carlo tolerancing**: decenter, tilt and thickness perturbations, with a yield histogram.
