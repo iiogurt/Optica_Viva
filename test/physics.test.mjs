@@ -234,3 +234,15 @@ test('exact Coddington field foci match third-order (Seidel) predictions at smal
     near(r.zt, (3 * s.total.SIII + s.total.SIV) * k, 0.06 * Math.abs(r.zt) + 5e-5, `${key} tangential focus`);
   }
 });
+
+test('MTF across the field: diffraction-limited on axis, S = T on axis, astigmatism splits them off axis', async () => {
+  const { TASKS } = await import('../js/lib/tasks.js');
+  const { autoSemiDiameters } = await import('../js/lib/raytrace.js');
+  const L = { ...LENSES['plano-hyperbolic'], epd: 5, field: 0.5 }, p = paraxial(L), N = p.efl / L.epd, nuc = 1 / (587.56e-6 * N);
+  const r = TASKS.lensMTF({ lens: L, sd: autoSemiDiameters(L), zImg: p.zImage, N, efl: p.efl, freqs: [0.25 * nuc, 0.5 * nuc], fields: 2 }).result.rows[0];
+  near(r.S[0], mtfDiffraction(0.25), 0.015, 'MTF at ¼ cut-off'); near(r.S[1], mtfDiffraction(0.5), 0.015, 'MTF at ½ cut-off');
+  const C = { ...LENSES.cooke }, pc = paraxial(C);
+  const rows = TASKS.lensMTF({ lens: C, sd: autoSemiDiameters(C), zImg: pc.zImage, N: pc.efl / C.epd, efl: pc.efl, freqs: [30], fields: 5 }).result.rows;
+  near(rows[0].S[0], rows[0].T[0], 1e-6, 'on axis S = T');
+  assert.ok(rows[2].T[0] - rows[2].S[0] > 0.3, 'Cooke at 10°: tangential ≫ sagittal (sagittal focus is far from the image plane)');
+});

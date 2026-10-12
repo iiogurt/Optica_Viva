@@ -120,7 +120,7 @@ Every image below is a screenshot of the running app. Each one is a simulation r
 **Real-lens ray tracing** · `#/raytracer`<br>
 <img src="docs/screenshots/raytracer.webp" alt="Ray tracer: Cooke triplet with caustic, spot diagram, ray fan and diffraction PSF">
 
-Exact 3-D ray tracing through a plano-convex singlet (both orientations), an **aspheric** plano-hyperbolic singlet with zero spherical aberration, a BK7/F2 achromat designed for this project, the Cooke triplet and the Double-Gauss. Includes real-ray aiming at the stop, a magnified caustic, spot diagram, ray fans, chromatic focal shift, best-focus search, and the **diffraction PSF of the traced wavefront** (OPD → FFT). A **prescription editor** lets you modify any design surface by surface or import a Zemax `.zmx`; custom lenses are shareable by link.
+Exact 3-D ray tracing through a plano-convex singlet (both orientations), an **aspheric** plano-hyperbolic singlet with zero spherical aberration, a BK7/F2 achromat designed for this project, the Cooke triplet and the Double-Gauss. Includes real-ray aiming at the stop, a magnified caustic, spot diagram, ray fans, chromatic focal shift, best-focus search, and the **diffraction PSF of the traced wavefront** (OPD → FFT). Seidel sums per surface, exact field curves and **MTF across the field** show where image quality is won and lost. A **prescription editor** lets you modify any design surface by surface or import a Zemax `.zmx`; custom lenses are shareable by link.
 
 </td>
 <td width="50%" valign="top">
