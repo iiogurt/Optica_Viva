@@ -464,7 +464,7 @@ Optica_Viva/
 │   ├── app.js                 Laboratory registry, hash router, navigation
 │   ├── lib/                   Numerical core (pure functions, no DOM unless noted)
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
-│   │   ├── blur.js            Safari-safe Gaussian blur (3 box passes, premultiplied alpha)
+│   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
 │   │   ├── tasks.js           Heavy pure computations (PSF, Zernike, OTF) for the worker
 │   │   ├── compute.js         Worker API: run(task) and latest-only channels, main-thread fallback
@@ -542,7 +542,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Ray tracer (PSF) | Off-axis pupil treated as circular in normalised stop coordinates | Ignores the ≈ cos θ pupil anamorphosis |
 | Flare | Real-ray ghosts at 8 wavelengths on a 33 × 33 ray grid; diffraction at the iris only in the source's starburst | Ghost edges are geometric (no Fresnel ringing); ghosts below 10⁻⁶ of the source irradiance are skipped |
 | Bokeh | Geometric optics: traced kernels (or a phenomenological pupil model) | No Fresnel edge ringing; disks drawn on a 3 × 3 grid of field positions |
-| Depth of field, tilt-shift | Thin-lens model; Gaussian blur stack for tilt-shift | Blur magnitudes exact, kernel shape approximate in tilt-shift |
+| Depth of field, tilt-shift | Thin-lens model; exact disk kernels, blended between 11 radii in tilt-shift | Blur radius interpolated between stack levels in tilt-shift; disks above r = 8 px blurred at reduced resolution (edge softer by ≤ r/4 px) |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |
 | Seeing | Single frozen-flow layer; screens periodic over 8D | One seam per 8D of travel |
 | Coronagraph | Monochromatic, idealised hard-edged masks | Classic Lyot contrast (~10⁻⁶) rather than state-of-the-art designs |
@@ -554,7 +554,7 @@ Every page states its model's assumptions. The main simplifications are:
 | | Chrome / Edge | Firefox | Safari |
 |---|---|---|---|
 | All laboratories | ✅ | ✅ | ✅ |
-| Blur in DoF and tilt-shift (in-house Gaussian, no `ctx.filter`) | ✅ | ✅ | ✅ |
+| Blur in DoF and tilt-shift (in-house disk kernel, no `ctx.filter`) | ✅ | ✅ | ✅ |
 
 The heavier pages run 256²–512² FFTs or ray-cast hundreds of thousands of rays per update: seeing (animated), coronagraph, tilt-shift, PSF and projection. They are fluid on a modern desktop and noticeably slower on low-power devices such as a Raspberry Pi. Computations are debounced while you drag sliders.
 

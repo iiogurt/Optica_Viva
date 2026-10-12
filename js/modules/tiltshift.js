@@ -1,7 +1,7 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { tiltedLens, tiltedImage, tiltedObject } from '../lib/optics.js';
-import { gaussianBlurRGBA } from '../lib/blur.js';
+import { diskBlurRGBA } from '../lib/blur.js';
 
 // ── toy town: houses (boxes) and trees (spheres) bucketed in a 12 m cell grid ──────────
 const CELL = 12, GX0 = -5, GX1 = 5, GZ0 = 0, GZ1 = 14;
@@ -120,13 +120,14 @@ export default function mount(root, meta) {
       blur[k] = Math.min(24, px);
       if (px < minB) minB = px;
     }
-    // blur stack (Gaussian σ ≈ r/2 approximates the uniform disk's second moment), per-pixel blend
+    // blur stack of exact uniform-disk (pillbox) kernels, blended per pixel between the two
+    // levels that bracket its defocus radius
     const levels = [0, 0.7, 1.5, 2.5, 3.8, 5.5, 8, 11, 15, 19, 24];
     const src = imageCanvas(W, H);
     for (let k = 0; k < W * H; k++) { src.data[k * 4] = base[k * 3]; src.data[k * 4 + 1] = base[k * 3 + 1]; src.data[k * 4 + 2] = base[k * 3 + 2]; src.data[k * 4 + 3] = 255; }
     src.put();
     const srcData = src.cx.getImageData(0, 0, W, H).data;
-    const stack = levels.map((r) => gaussianBlurRGBA(srcData, W, H, r / 2));
+    const stack = levels.map((r) => diskBlurRGBA(srcData, W, H, r));
     const out = imageCanvas(W, H);
     for (let k = 0; k < W * H; k++) {
       const b = blur[k]; let li = 0; while (li < levels.length - 2 && levels[li + 1] < b) li++;
@@ -255,7 +256,7 @@ export default function mount(root, meta) {
 <p>from the lens. Refocusing rotates the plane of focus about this hinge, and changing the tilt moves the hinge. Landscape photographers tilt forward so the plane of focus lies along the ground from the near flowers to the horizon, even at f/8.</p>
 </div><div>
 <h3>The DoF wedge</h3>
-<p>The near and far depth-of-field limits are the conjugates of planes parallel to the sensor at \(\pm Nc\). They too pass through the hinge line, so depth of field becomes a wedge opening away from the camera, drawn shaded green in the side view. Reverse tilt sets the plane of focus nearly perpendicular to the ground. Only a narrow band of a receding scene stays sharp. Because we associate such shallow depth of field with close-up photographs of small objects, the brain reads the scene as a <em>miniature</em>. The render computes each pixel's true defocus through the tilted lens, then blends a stack of blurred images.</p>
+<p>The near and far depth-of-field limits are the conjugates of planes parallel to the sensor at \(\pm Nc\). They too pass through the hinge line, so depth of field becomes a wedge opening away from the camera, drawn shaded green in the side view. Reverse tilt sets the plane of focus nearly perpendicular to the ground. Only a narrow band of a receding scene stays sharp. Because we associate such shallow depth of field with close-up photographs of small objects, the brain reads the scene as a <em>miniature</em>. The render computes each pixel's true defocus through the tilted lens, then blends a stack of images blurred with exact uniform-disk (pillbox) kernels, the geometric defocus PSF.</p>
 <h3>Shift and keystoning</h3>
 <p>Pointing a camera upward tilts the sensor relative to a building façade. Its verticals then converge to a vanishing point, the keystone effect. Keeping the camera level keeps the sensor parallel to the façade, so verticals stay parallel. A <strong>shift</strong> lens then slides the sensor window up inside a larger image circle (around 60–80 mm for full-frame shift lenses) to include the top of the building. Raising the shift slider here at zero pitch frames the façade without any convergence. Architectural photography, and every view camera since the 19th century, depends on this.</p>
 </div></div>`));
