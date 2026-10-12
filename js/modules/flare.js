@@ -1,6 +1,8 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
-import { LENSES, paraxial, vertices, stopIndex } from '../lib/raytrace.js';
+import { LENSES, paraxial, autoSemiDiameters } from '../lib/raytrace.js';
+import { paraxialGhosts } from '../lib/ghosts.js';
+import { run } from '../lib/compute.js';
 import { index } from '../lib/glass.js';
 import { fresnel, stackReflectance, COATINGS } from '../lib/thinfilm.js';
 import { spectralBasis, linspace, cmf, xyzToLinearRGB, gamutClip, oetf } from '../lib/color.js';
@@ -9,37 +11,6 @@ import { plot, range } from '../lib/plot.js';
 
 const LAMS = linspace(420, 680, 8);
 const BASIS = spectralBasis(LAMS);
-
-// Paraxial ghost tracing. State (y, w = n·u); media are signed (negative after an odd number of reflections).
-function ghostMatrices(lens, lam, zImg) {
-  const S = lens.surfaces, N = S.length;
-  const m = (k) => (k < 0 ? 1 : index(S[k].glass, lam)); // medium after surface k
-  const c = (k) => (isFinite(S[k].R) ? 1 / S[k].R : 0);
-  const zv = vertices(lens), si = stopIndex(lens);
-  const mul = (A, B) => [A[0] * B[0] + A[1] * B[2], A[0] * B[1] + A[1] * B[3], A[2] * B[0] + A[3] * B[2], A[2] * B[1] + A[3] * B[3]];
-  const T = (t, n) => [1, t / n, 0, 1];
-  const Rf = (p) => [1, 0, -p, 1];
-  const out = [];
-  for (let j = 1; j < N; j++) for (let i = 0; i < j; i++) {
-    let M = [1, 0, 0, 1], stopM = null;
-    const atStop = (k) => { if (k === si && !stopM) stopM = M.slice(); };
-    // forward to surface j
-    for (let k = 0; k < j; k++) { atStop(k); M = mul(Rf((m(k) - m(k - 1)) * c(k)), M); M = mul(T(S[k].t, m(k)), M); }
-    atStop(j);
-    M = mul(Rf(-2 * m(j - 1) * c(j)), M); // reflect at j, travelling in medium m(j−1)
-    // backward to surface i
-    for (let k = j - 1; k > i; k--) { M = mul(T(S[k].t, m(k)), M); atStop(k); M = mul(Rf((m(k) - m(k - 1)) * c(k)), M); }
-    M = mul(T(S[i].t, m(i)), M);
-    atStop(i);
-    M = mul(Rf(2 * m(i) * c(i)), M); // reflect at i, travelling backward in medium m(i)
-    // forward to the image plane
-    for (let k = i + 1; k < N; k++) { M = mul(T(S[k - 1].t, m(k - 1)), M); atStop(k); M = mul(Rf((m(k) - m(k - 1)) * c(k)), M); }
-    M = mul(T(zImg - zv[N - 1], 1), M);
-    if (!stopM) continue;
-    out.push({ i, j, M, stopM });
-  }
-  return out;
-}
 
 // Residual reflection colour of a coating (under an equal-energy illuminant, normalised).
 function coatingColour(layers, ns, th) {
@@ -54,6 +25,7 @@ export default function mount(root, meta) {
   root.append(header({ ...meta, lede: 'Every glass–air surface reflects a few per cent of the light that reaches it. Light reflected twice inside a lens travels on toward the sensor as a defocused, displaced image of the aperture: a ghost. Coatings suppress those reflections by thin-film interference, and the iris edges diffract the light source itself into a star. Drag the sun across the frame.', domains: ['photo', 'video', 'space'] }));
 
   const ctl = controls({
+    model: { type: 'select', label: 'Ghost model', value: 'rays', options: [['rays', 'Real rays: exact trace of every ghost path'], ['paraxial', 'Paraxial: instant, ignores aberrations and vignetting']] },
     lens: { type: 'select', label: 'Lens', value: 'double-gauss', options: [['double-gauss', 'Double-Gauss 100 mm (11 surfaces)'], ['cooke', 'Cooke triplet 50 mm (6 surfaces)']] },
     coat: { type: 'select', label: 'Coating on every glass–air surface', value: 'mgf2', options: Object.entries(COATINGS).map(([k, c]) => [k, c.name]) },
     stopdown: { type: 'range', label: 'Stop down', min: 1, max: 6, log: true, value: 2, fmt: (v) => '×' + v.toFixed(2) + ' N' },
@@ -62,25 +34,72 @@ export default function mount(root, meta) {
     angle: { type: 'range', label: 'Incidence angle for coating plots', min: 0, max: 60, step: 1, value: 0, unit: '°' },
   }, () => recompute());
   const ro = h('div');
+  const rayNote = h('div.note', { role: 'status' });
   const calc = liveCalc();
   const view = stage({ aspect: 1.5, label: 'Drag the sun', draw: drawView, minH: 300 });
   const rplot = stage({ aspect: 1.5, label: '', draw: drawR, cls: 'plain' });
   const fplot = stage({ aspect: 1.5, label: '', draw: drawFresnel, cls: 'plain' });
-  root.append(lab([view.el, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, rplot.el), h('div.card', { style: { padding: '6px' } }, fplot.el))], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  root.append(lab([view.el, rayNote, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, rplot.el), h('div.card', { style: { padding: '6px' } }, fplot.el))], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   let sun = [0.68, 0.3];
-  const move = (e) => { const r = view.canvas.getBoundingClientRect(); sun = [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; view.redraw(); };
+  const move = (e) => { const r = view.canvas.getBoundingClientRect(); sun = [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; view.redraw(); requestRays(true); };
   let dragging = false;
   view.canvas.tabIndex = 0;
   view.canvas.setAttribute('aria-label', 'Lens flare render. Arrow keys move the sun.');
   view.canvas.addEventListener('keydown', (e) => {
     const d = { ArrowLeft: [-0.02, 0], ArrowRight: [0.02, 0], ArrowUp: [0, -0.02], ArrowDown: [0, 0.02] }[e.key];
     if (!d) return;
-    e.preventDefault(); sun = [Math.min(1, Math.max(0, sun[0] + d[0])), Math.min(1, Math.max(0, sun[1] + d[1]))]; view.redraw();
+    e.preventDefault(); sun = [Math.min(1, Math.max(0, sun[0] + d[0])), Math.min(1, Math.max(0, sun[1] + d[1]))]; view.redraw(); requestRays(true);
   });
   view.canvas.addEventListener('pointerdown', (e) => { dragging = true; view.canvas.setPointerCapture(e.pointerId); move(e); });
   view.canvas.addEventListener('pointermove', (e) => dragging && move(e));
-  view.canvas.addEventListener('pointerup', () => (dragging = false));
+  view.canvas.addEventListener('pointerup', () => { dragging = false; requestRays(false); });
+
+  // Real-ray ghosts are traced in the worker: a draft (coarse grid) while the sun moves, then a
+  // refined image. One job at a time; only the newest request waits, so dragging never queues.
+  let rays = null, want = null, busy = false, alive = true, lastKey = '', toned = null;
+  const sdCache = new Map();
+  const setKey = () => G && JSON.stringify([G.st.lens, G.st.coat, G.st.stopdown, G.st.blades]);
+  function requestRays(draft) {
+    if (!G || G.st.model !== 'rays') return;
+    const key = setKey() + JSON.stringify(sun) + (draft ? 'd' : 'f');
+    if (key === lastKey || (rays && rays.set === setKey() && rays.sun + '' === sun + '' && (draft || !rays.draft))) return;
+    lastKey = key;
+    const th = [((sun[0] - 0.5) * 36) / G.par.efl, ((0.5 - sun[1]) * 24) / G.par.efl];
+    want = { set: setKey(), sun: sun.slice(), draft, args: { lens: G.lens, sd: G.sd, coat: G.st.coat, blades: G.st.blades, lambdas: LAMS, theta: th, W: draft ? 240 : 360, grid: draft ? 16 : 32, cull: 1e-6 } };
+    if (!busy) pump();
+  }
+  function pump() {
+    const job = want;
+    want = null;
+    if (!job || !alive) return;
+    busy = true;
+    rayNote.textContent = 'Tracing real rays through every ghost path…';
+    const t0 = performance.now();
+    run('flareGhosts', job.args).then((r) => {
+      busy = false;
+      if (!alive) return;
+      rays = { ...r, set: job.set, sun: job.sun, draft: job.draft, ms: performance.now() - t0 };
+      toned = null;
+      view.redraw();
+      if (want) pump();
+      else if (job.draft && !dragging) requestRays(false);
+      if (!busy) rayNote.textContent = `Real-ray ghosts (${rays.draft ? 'draft' : 'refined'}): ${rays.stats.paths} visible paths × ${LAMS.length} wavelengths, ${(rays.stats.rays / 1000).toFixed(0)} k rays, ${rays.stats.culled} paths too faint to show, ${(rays.ms / 1000).toFixed(1)} s.`;
+    }, (e) => { busy = false; rayNote.textContent = 'Ghost tracing failed: ' + e.message; });
+  }
+  // ghost image × gain, added to the display values like the paraxial ghosts' alpha (same
+  // calibration in both models); cached per gain
+  function rayImage(gain) {
+    if (toned && toned.gain === gain) return toned.c;
+    const { W, H, rgb } = rays, img = imageCanvas(W, H);
+    for (let q = 0; q < W * H; q++) {
+      for (let c = 0; c < 3; c++) img.data[q * 4 + c] = Math.min(1, rgb[q * 3 + c] * gain) * 255;
+      img.data[q * 4 + 3] = 255;
+    }
+    img.put();
+    toned = { gain, c: img.c };
+    return img.c;
+  }
 
   let G = null;
   const recompute = debounce(() => {
@@ -99,7 +118,7 @@ export default function mount(root, meta) {
     const ghosts = [];
     LAMS.forEach((l, li) => {
       const pl = paraxial(lens, l);
-      for (const g of ghostMatrices(lens, l, par.zImage)) {
+      for (const g of paraxialGhosts(lens, l, par.zImage)) {
         const R = Rsurf[g.i][li] * Rsurf[g.j][li];
         if (R < 1e-9) continue;
         const [A, B] = g.M, [C, D] = g.stopM;
@@ -130,7 +149,10 @@ export default function mount(root, meta) {
       star.data[q * 4 + 3] = 255;
     }
     star.put();
-    G = { lens, par, ghosts, rEP, st: { ...st }, Rsurf, T, totalGhost, brightest, star: star.c };
+    if (!sdCache.has(st.lens)) sdCache.set(st.lens, autoSemiDiameters(base));
+    G = { lens, par, ghosts, rEP, st: { ...st }, Rsurf, T, totalGhost, brightest, star: star.c, sd: sdCache.get(st.lens) };
+    if (st.model === 'rays') requestRays(true);
+    else rayNote.textContent = 'Paraxial ghosts: each is a uniformly lit, scaled image of the iris, with no aberrations or vignetting.';
     const nGlassAir = Rsurf.filter((r) => r[3] > 0).length;
     ro.replaceChildren(readouts([
       ['Reflecting surfaces k', String(nGlassAir)],
@@ -170,15 +192,21 @@ export default function mount(root, meta) {
     const th = [ys[0] / G.par.efl, ys[1] / G.par.efl]; // paraxial field angle (rad)
     // calibration: an MgF₂-coated ghost (R_iR_j ≈ 1.6e-4) as large as the entrance pupil → ≈10 % at 4.5 EV
     const gain = Math.pow(2, st.ev) * 28;
-    // veiling glare: scattered + ghost energy spread broadly
-    const veil = Math.min(0.45, G.totalGhost * gain * 0.08 + 0.015 * Math.pow(2, st.ev - 6));
+    // ghosts: the traced image when it matches the current settings and sun, else the paraxial preview
+    const fresh = st.model === 'rays' && rays && rays.set === setKey() && rays.sun[0] === sun[0] && rays.sun[1] === sun[1];
+    // veiling glare: scatter, plus (paraxial only) the ghost energy of the many faint ghosts it
+    // omits; the traced image already contains every ghost, so adding it would count it twice
+    const veil = Math.min(0.45, (fresh ? 0 : G.totalGhost * gain * 0.08) + 0.015 * Math.pow(2, st.ev - 6));
     const vg = ctx.createRadialGradient(sun[0] * w, sun[1] * hh, 0, sun[0] * w, sun[1] * hh, Math.max(w, hh));
     vg.addColorStop(0, `rgba(255,220,180,${veil})`); vg.addColorStop(1, `rgba(255,220,180,${veil * 0.25})`);
     ctx.globalCompositeOperation = 'lighter';
     ctx.fillStyle = vg; ctx.fillRect(0, 0, w, hh);
-    // ghosts
+    if (fresh) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(rayImage(gain), 0, 0, w, hh);
+    }
     const sector = (2 * Math.PI) / st.blades;
-    for (const g of G.ghosts) {
+    if (!fresh) for (const g of G.ghosts) {
       const gx = cx + g.k * th[0] * mmpx, gy = cy - g.k * th[1] * mmpx;
       const rpx = Math.max(1.2, g.rho * mmpx);
       const E = g.R * (G.rEP / Math.max(g.rho, 1.2 / mmpx)) ** 2 * gain / LAMS.length;
@@ -242,7 +270,9 @@ export default function mount(root, meta) {
 <h3>Ghost images</h3>
 <p>A lens with \(k\) reflecting surfaces has \(k(k-1)/2\) paths with exactly two reflections. Each one forms an image of the bright source, usually far out of focus. Paraxially, each path is just another \(2\times2\) system matrix. A reflection is a refraction into the medium \(-n\), with power \(\phi = -2nc\). Writing the ghost system's matrix from the entrance pupil to the sensor as \(\begin{psmallmatrix}A&B\\C'&D'\end{psmallmatrix}\), and the map from the entrance pupil to its pass through the stop as \(y_s = Cy + D\theta\), the ghost of a source at field angle \(\theta\) is</p>
 \[\mathbf y_g = \left(B - \tfrac{AD}{C}\right)\theta,\qquad \rho_g = \left|\tfrac{A}{C}\right|r_\text{stop}.\]
-<p>It is a scaled, possibly inverted, image of the iris polygon, centred on the line through the source and the image centre. Its irradiance relative to the source flux is \(R_iR_j\,(r_{EP}/\rho_g)^2\). Ghosts that happen to focus near the sensor (\(\rho_g\to0\)) become intense points, the most objectionable kind. The method is that of Hullin et al. (2011), evaluated separately at 8 wavelengths, so dispersion gives the ghosts their coloured fringes.</p>
+<p>It is a scaled, possibly inverted, image of the iris polygon, centred on the line through the source and the image centre. Its irradiance relative to the source flux is \(R_iR_j\,(r_{EP}/\rho_g)^2\). Ghosts that happen to focus near the sensor (\(\rho_g\to0\)) become intense points, the most objectionable kind. This paraxial model is the instant preview.</p>
+<h3>Real-ray ghosts</h3>
+<p>The default model traces exact rays (vector Snell's law and the law of reflection \(\mathbf d' = \mathbf d + 2\cos\theta_i\,\hat{\mathbf n}\)) through every path at 8 wavelengths, following Hullin et al.'s full method. A coarse grid on the entrance plane finds the bundle that survives each path. A fine grid of \(33\times33\) rays is then rasterised as triangles, and each triangle carries the flux \(R_iR_j\,E_\text{src}\,\Delta A\cos\theta\) spread over its image area. Irradiance therefore rises where the ghost is compressed (caustics) and falls where it is stretched. The iris polygon and every clear aperture are checked per pixel through an interpolated aperture gauge \(g = \max_k r_k/r_{\max,k}\), so ghost edges stay sharp. A ghost path can cross the stop three times, and each crossing clips it. Each reflectance is the coating's thin-film \(R(\theta,\lambda)\) at the ray's actual angle, and becomes 1 beyond the critical angle (total internal reflection). In the paraxial limit the traced ghosts reproduce the matrix model's position, size and flux within 2–3 % (see the test suite). Off axis they show what it leaves out: vignetting by the barrel, cat's-eye clipping, comatic smear and non-uniform irradiance. Paths whose estimated peak would stay below 10⁻⁶ of the source irradiance are skipped. Because the traced image contains every faint ghost, only the scatter part of the veiling glare is added on top.</p>
 </div><div>
 <h3>Anti-reflection coatings: the characteristic matrix</h3>
 <p>A layer of index \(n_j\) and thickness \(d_j\) has the characteristic matrix</p>
@@ -258,5 +288,5 @@ export default function mount(root, meta) {
     'E. Hecht, <i>Optics</i>, 5th ed. (2017), §4.6: Fresnel equations.',
     'S. Lee &amp; E. Eisemann, "Practical real-time lens-flare rendering", Comput. Graph. Forum 32(4) (2013).',
   ]));
-  return () => [view, rplot, fplot].forEach((s) => s.destroy());
+  return () => { alive = false; [view, rplot, fplot].forEach((s) => s.destroy()); };
 }
