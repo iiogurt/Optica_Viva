@@ -471,6 +471,7 @@ Optica_Viva/
 │   └── screenshots.py         Regenerates docs/screenshots with headless Chromium
 ├── CHANGELOG.md               Keep a Changelog
 ├── ROADMAP.md                 Completed and planned milestones
+├── CLAUDE.md                  Project guide and workflow rules for AI-assisted sessions
 └── package.json               Version and `npm start`
 ```
 
@@ -556,7 +557,7 @@ Physics changes should cite a primary reference in the page's theory section and
 
 ## 🏷 Versioning and releases
 
-Version **1.0.2** · [all releases](https://github.com/iiogurt/Optica_Viva/releases) · [changelog](CHANGELOG.md)
+Version **1.0.3** · [all releases](https://github.com/iiogurt/Optica_Viva/releases) · [changelog](CHANGELOG.md)
 
 The project follows [Semantic Versioning](https://semver.org/): a new laboratory or capability is a **minor** release, and fixes and documentation are **patch** releases. Releases are cut with one command:
 

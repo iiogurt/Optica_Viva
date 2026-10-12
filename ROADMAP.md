@@ -83,6 +83,7 @@ flowchart LR
 - [x] **v1.0.1** GitHub-style README: banner, badges, gallery of all labs, Mermaid diagrams, validation table, contributing guide
 - [x] **v1.0.1** `scripts/screenshots.py` for reproducible WebP screenshots
 - [x] **v1.0.2** This roadmap, with audit findings and planned milestones
+- [x] **v1.0.3** `CLAUDE.md` project guide for consistent future sessions
 
 </details>
 

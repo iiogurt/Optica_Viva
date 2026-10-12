@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-10-12
+
+### Added
+- `CLAUDE.md`: concise project guide (purpose, tech constraints, verification, git/SemVer/changelog/roadmap workflow) so new sessions continue consistently.
+
 ## [1.0.2] - 2026-10-12
 
 ### Added
@@ -234,7 +239,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/iiogurt/Optica_Viva/compare/v0.19.0...v1.0.0
