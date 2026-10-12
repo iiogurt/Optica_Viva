@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-12
+
 ### Added
 - **Vignetted pupils in the diffraction PSF:** the ray tracer's wavefront PSF traces every pupil sample through the clear apertures; blocked rays carry no light, with an anti-aliased pupil edge. The OPD panel reports the transmitted fraction, and the Strehl ratio is referenced to the same vignetted pupil.
 - **Editable clear semi-diameters** (`Semi-Ø` in the prescription editor; blank = automatic). They are imported from Zemax `DIAM` and kept in JSON and shared links.
@@ -325,7 +327,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/iiogurt/Optica_Viva/compare/v1.0.2...v1.0.3
