@@ -69,7 +69,7 @@ flowchart LR
 | Catalogue entries | 148 | link every new lab; add polarisation and colour-science entries |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
 | Automated tests | 14 physics tests + link check + browser smoke test in CI | more coverage per new lab |
-| Deployment | local / static | GitHub Pages with CI (v1.1) |
+| Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
 
@@ -148,7 +148,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [ ] **P1 · M** Replace `ctx.filter` blur with an in-house **separable/disk blur** (summed-area table for the box approximation, or an exact disk via the FFT already in `fft.js`). Fixes Safari (A1) and makes the tilt-shift kernel a true disk.
 - [x] **P1 · M** **Physics test suite** with `node --test` and no dependencies. Turn every row of the README validation table into an assertion: Sellmeier indices, EFLs, Fresnel/MgF₂ reflectance, Brewster, Airy encircled energy, Rayleigh dip, hinge rule, ΛCDM distances, hyperfocal distance, cos⁴.
 - [x] **P1 · S** **GitHub Actions CI**: `node --check`, the test suite, Markdown link check, and a headless-browser smoke test of every page. (A Mermaid parse check was dropped; it would need a browser bundle.)
-- [ ] **P1 · S** **GitHub Pages deployment** from `main`, with a live-demo badge in the README.
+- [x] **P1 · S** **GitHub Pages deployment** from `main`, with a live-demo badge in the README. Live at <https://iiogurt.github.io/Optica_Viva/>; `main` is protected by required CI checks.
 - [ ] **P1 · S** **Choose a licence** (owner decision; MIT for code + CC BY 4.0 for text and images is a common pairing).
 - [ ] **P2 · M** **Mobile controls drawer**: a sticky bottom sheet with the controls next to the main canvas on screens < 860 px (A5).
 - [ ] **P2 · M** **Accessibility**: `role="img"` and live `aria-label` summaries for canvases (e.g. "Strehl 0.44, spot RMS 21 µm"), visible focus styles, `prefers-reduced-motion` to pause animations, contrast audit (A6).

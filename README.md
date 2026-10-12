@@ -9,6 +9,7 @@
 Twenty interactive simulations, a physics primer and a catalogue of 148 phenomena.
 Everything is computed from first principles, live in your browser.
 
+[![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
 [![CI](https://github.com/iiogurt/Optica_Viva/actions/workflows/ci.yml/badge.svg)](https://github.com/iiogurt/Optica_Viva/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/iiogurt/Optica_Viva?color=ffb547&label=release)](https://github.com/iiogurt/Optica_Viva/releases)
 [![Last commit](https://img.shields.io/github/last-commit/iiogurt/Optica_Viva?color=6ad7ff)](https://github.com/iiogurt/Optica_Viva/commits/main)
@@ -18,7 +19,7 @@ Everything is computed from first principles, live in your browser.
 [![Conventional Commits](https://img.shields.io/badge/commits-conventional-ff9cc0)](https://www.conventionalcommits.org/)
 [![Keep a Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-9aa1b5)](CHANGELOG.md)
 
-[Quick start](#-quick-start) · [Laboratories](#-the-laboratories) · [Physics](#-physical-models) · [Architecture](#-architecture) · [Accuracy](#-validation) · [Roadmap](ROADMAP.md) · [Contributing](#-contributing)
+**[▶ Open the live demo](https://iiogurt.github.io/Optica_Viva/)** · [Quick start](#-quick-start) · [Laboratories](#-the-laboratories) · [Physics](#-physical-models) · [Architecture](#-architecture) · [Accuracy](#-validation) · [Roadmap](ROADMAP.md) · [Contributing](#-contributing)
 
 </div>
 
@@ -75,7 +76,9 @@ It covers three domains (📷 photography, 🎬 cinematography and 🔭 astronom
 
 ## 🚀 Quick start
 
-Optica Viva is plain HTML, CSS and ES modules. There is **no build step and nothing to install**. ES modules must be served over HTTP, so start any static server in the project folder:
+**No install needed:** open the live demo at **<https://iiogurt.github.io/Optica_Viva/>**. It is deployed automatically from `main` by GitHub Actions.
+
+To run it locally: Optica Viva is plain HTML, CSS and ES modules. There is **no build step and nothing to install**. ES modules must be served over HTTP, so start any static server in the project folder:
 
 ```bash
 git clone https://github.com/iiogurt/Optica_Viva.git
@@ -468,7 +471,9 @@ Optica_Viva/
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/physics.test.mjs      Physics validation suite (node --test)
-├── .github/workflows/ci.yml   CI: syntax & links, physics tests, browser smoke test
+├── .github/workflows/
+│   ├── ci.yml                 CI: syntax & links, physics tests, browser smoke test
+│   └── pages.yml              Deploys main to GitHub Pages
 ├── scripts/
 │   ├── check.mjs              Syntax check + Markdown link/anchor check
 │   ├── smoke.sh               Loads every page in headless Chrome
