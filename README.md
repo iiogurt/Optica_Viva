@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Twenty interactive simulations, a physics primer and a catalogue of 148 phenomena.
+Twenty-two interactive simulations, a physics primer and a catalogue of 149 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -169,12 +169,20 @@ Exact tilted-thin-lens imaging, verified against the hinge rule J = f/sin α. Ea
 </td>
 </tr>
 <tr>
-<td valign="top" colspan="2">
+<td valign="top">
 
 **Vignetting & relative illumination** · `#/vignetting`<br>
-<img src="docs/screenshots/vignetting.webp" alt="Flat field with third-stop contours and falloff components" width="70%">
+<img src="docs/screenshots/vignetting.webp" alt="Flat field with third-stop contours and falloff components">
 
 Three independent causes, each computed: natural falloff cosⁿθ; mechanical vignetting from the **exact three-circle overlap** of the pupil and the barrel rims; and pixel vignetting from chief-ray angle against microlens acceptance.
+
+</td>
+<td valign="top">
+
+**Macro & magnification** · `#/macro`<br>
+<img src="docs/screenshots/macro.webp" alt="Tilted ruler at 1:1 with a 100 % crop of diffraction-limited bar targets, side view and blur curves">
+
+Close-up optics with **pupil magnification**: effective f-number N(1 + m/m<sub>p</sub>), bellows factor, extension and working distance for symmetric, macro, retrofocus, **reversed** and telephoto lenses. A tilted steel ruler is rendered through each pixel's chief ray with exact per-point defocus and Airy-width diffraction, in full frame and as a **100 % crop of bar targets**. The page finds the **optimum aperture** where defocus and diffraction blur balance, and simulates **focus stacking**.
 
 </td>
 </tr>
@@ -330,9 +338,9 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 <td width="50%" valign="top">
 
 **Catalogue of phenomena** · `#/catalogue`<br>
-<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 148 optical phenomena">
+<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 149 optical phenomena">
 
-**148 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
+**149 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
 
 </td>
 </tr>
@@ -488,16 +496,17 @@ Optica_Viva/
 │   │   ├── tolerance.js       Monte-Carlo tolerancing with refocus compensation
 │   │   ├── ghosts.js          Lens-flare ghosts: paraxial matrices and real-ray rasteriser
 │   │   ├── bokeh.js           Bokeh kernels traced through a prescription
+│   │   ├── macro.js           Close-up optics (pupil magnification, exact defocus, optimum aperture), ruler renderer
 │   │   ├── polar.js           Stokes/Mueller algebra, Fresnel in Mueller form, Rayleigh sky, polarised lake renderer
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (148 entries)
+│   │   ├── phenomena.js       Catalogue data (149 entries)
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (23)
+│   └── modules/               One file per page (24)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -552,6 +561,8 @@ The numerical core was checked against published or analytically known values. E
 | Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |
 | Disk in diametral compression: centre stresses, force balance | σ<sub>x</sub> = 2P/(πDt), σ<sub>y</sub> = −6P/(πDt); ∫σ<sub>y</sub>t dx = −P | Frocht (1948); free boundary |
 | Walk-off: quartz at 45°, calcite maximum | 5.875 µm/mm, 6.26° at tan θ = n<sub>e</sub>/n<sub>o</sub> | (n<sub>e</sub>² − n<sub>o</sub>²)/(2n<sub>o</sub>n<sub>e</sub>) |
+| Close-up: symmetric lens at 1 : 1 | f/8 → f/16 (−2 EV), object–image 4f | N(1 + m/m<sub>p</sub>); thin-lens conjugates |
+| Macro depth of field, 100 mm at 1 : 1, f/8 | exact two-sided blur search within 1 % of the formula | 2N<sub>w</sub>c/m² |
 
 ---
 
@@ -567,6 +578,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Depth of field, tilt-shift | Thin-lens model; exact disk kernels, blended between 11 radii in tilt-shift | Blur radius interpolated between stack levels in tilt-shift; disks above r = 8 px blurred at reduced resolution (edge softer by ≤ r/4 px) |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |
 | Seeing | Single frozen-flow layer; screens periodic over 8D | One seam per 8D of travel |
+| Macro | Unit focusing by extension (no floating elements); diffraction as a Gaussian with the Airy core's width at 550 nm; perfectly aligned focus stack | Internal-focus macro lenses change f and m<sub>p</sub> with distance; no Airy rings in the crop |
 | Polarisation | Single Rayleigh scattering in a flat atmosphere (peak DoP set by a slider); specular water with sine-wave ripples; grey pebbles; no aerosols or ozone. Photoelasticity: plane stress, dispersion-free retardation | No neutral points (Arago, Babinet), no sun aureole; underwater light scattering ignored; no colour dispersion of the isochromatics |
 | Coronagraph | Monochromatic, idealised hard-edged masks | Classic Lyot contrast (~10⁻⁶) rather than state-of-the-art designs |
 
