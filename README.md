@@ -294,7 +294,7 @@ Row-timed propeller rendering with exposure integration, comparing rolling and g
 **Colour science** · `#/colour`<br>
 <img src="docs/screenshots/colour.webp" alt="Spectrum of a phosphor LED, test colour samples under reference and LED, colour rendering indices" width="70%">
 
-Colorimetry from **CIE tables** (1931 observer, D-series, A, FL, HP and the CIE 15:2018 **LED** illuminants): tristimulus values, correlated colour temperature and **Duv** by search along the Planckian locus. The page computes the **CIE 13.3 colour rendering index** R1–R14 and Ra, reproducing the CIE's own values for the FL series, and shows the 14 test colours side by side under the reference and the test source with Bradford adaptation. It is clear why phosphor LEDs fail **R9**.
+Colorimetry from **CIE tables** (1931 observer, D-series, A, FL, HP and the CIE 15:2018 **LED** illuminants): tristimulus values, correlated colour temperature and **Duv** by search along the Planckian locus. The page computes the **CIE 13.3 colour rendering index** R1–R14 and Ra, reproducing the CIE's own values for the FL series, and shows the 14 test colours side by side under the reference and the test source with Bradford adaptation. It is clear why phosphor LEDs fail **R9**. A camera section models **spectral sensitivities** (typical CMOS, narrow-band, broad, Luther–Ives ideal), **white balance** and a white-preserving **colour matrix** fitted by least squares, with CIEDE2000 errors per patch. A **metamerism** demo builds a metamer that matches exactly in daylight and splits under other lamps and for the camera.
 
 </td>
 </tr>
@@ -409,7 +409,7 @@ flowchart LR
 | Wavefront | OPD against the exit-pupil reference sphere, sampled on a 41 × 41 pupil grid | ray tracer |
 | Diffraction | Fraunhofer integral by radix-2 2-D FFT of a 4 × 4-supersampled pupil, zero-padded (Q = 4); one FFT per wavelength when aberrated | PSF, Zernike, MTF, seeing, telescope |
 | Colour | CIE 1931 2° colour-matching functions (Wyman–Sloan–Shirley fit) → linear sRGB → sRGB transfer curve | all spectral renders |
-| Colorimetry | Tabulated CIE data at 5 nm (1931 observer, S₀/S₁/S₂, A, FL, HP, LED); CCT by golden-section search in (u, v); CIE 13.3 CRI; Bradford adaptation; CIEDE2000 | colour |
+| Colorimetry | Tabulated CIE data at 5 nm (1931 observer, S₀/S₁/S₂, A, FL, HP, LED); CCT by golden-section search in (u, v); CIE 13.3 CRI; Bradford adaptation; CIEDE2000; camera raw → WB → constrained least-squares 3×3 matrix; metameric blacks by projection | colour |
 | Thin films | Characteristic-matrix method, s and p polarisation, oblique incidence | flare |
 | Polarisation | Stokes vectors and Mueller matrices (diattenuators, retarders, frame rotations); Fresnel reflection and transmission in Mueller form | polarisation |
 | Birefringence | Stress-optic law with the Hertz/Frocht disk stress field, white-light interference colours from 61 wavelengths; extraordinary-ray walk-off in uniaxial crystals | polarisation |
@@ -579,6 +579,8 @@ The numerical core was checked against published or analytically known values. E
 | CCT of illuminant A; D65 chromaticity | 2856 K; (0.3127, 0.3290) | CIE 15:2018 |
 | Colour rendering index Ra of CIE FL1, FL2, FL4, FL7, FL8, FL10, FL11, FL12 | 75.8, 64.2, 51.4, 90.2, 95.5, 81.0, 82.8, 83.1 | CIE 13.3 tables: 76, 64, 51, 90, 95, 81, 83, 83 |
 | CIEDE2000, Sharma test pairs 1, 3, 7, 17 | 2.0425, 1.0000, 2.3669, 27.1492 | Sharma, Wu & Dalal (2005), same |
+| Luther–Ives camera (sensitivities = x̄ȳz̄), matrix fitted under A | ΔE₀₀ < 10⁻⁴ on all 24 patches | colorimetric by construction |
+| Constructed metamer of TCS13 (skin) | ΔE₀₀ = 0 in D65; > 5 under FL11 | metameric black ⟂ S x̄, S ȳ, S z̄ |
 
 ---
 
@@ -594,6 +596,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Depth of field, tilt-shift | Thin-lens model; exact disk kernels, blended between 11 radii in tilt-shift | Blur radius interpolated between stack levels in tilt-shift; disks above r = 8 px blurred at reduced resolution (edge softer by ≤ r/4 px) |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |
 | Seeing | Single frozen-flow layer; screens periodic over 8D | One seam per 8D of travel |
+| Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
 | Macro | Unit focusing by extension (no floating elements); diffraction as a Gaussian with the Airy core's width at 550 nm; perfectly aligned focus stack | Internal-focus macro lenses change f and m<sub>p</sub> with distance; no Airy rings in the crop |
 | Polarisation | Single Rayleigh scattering in a flat atmosphere (peak DoP set by a slider); specular water with sine-wave ripples; grey pebbles; no aerosols or ozone. Photoelasticity: plane stress, dispersion-free retardation | No neutral points (Arago, Babinet), no sun aureole; underwater light scattering ignored; no colour dispersion of the isochromatics |
 | Coronagraph | Monochromatic, idealised hard-edged masks | Classic Lyot contrast (~10⁻⁶) rather than state-of-the-art designs |

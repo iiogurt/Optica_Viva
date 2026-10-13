@@ -3,7 +3,7 @@ import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
 import { oetf, wavelengthCSS } from '../lib/color.js';
 import { ILLUMINANTS, TCS, CMF } from '../lib/colordata.js';
-import { LAMBDA, xyz, chromaticity, uv1960, blackbody, daylight, cri, sampleSRGB, planck } from '../lib/colorsci.js';
+import { LAMBDA, xyz, chromaticity, uv1960, blackbody, daylight, cri, sampleSRGB, planck, CAMERAS, EXTRA_PATCHES, cameraColour, wbGains, lutherResidual, metamer, xyzToSRGB, lab as cielab, adapt, deltaE00, D65_XYZ } from '../lib/colorsci.js';
 
 const css = (rgb) => `rgb(${rgb.map((v) => Math.round(255 * oetf(Math.min(1, Math.max(0, v))))).join(',')})`;
 const TCS_NAMES = ['Light greyish red', 'Dark greyish yellow', 'Strong yellow green', 'Moderate yellowish green', 'Light bluish green', 'Light blue', 'Light violet', 'Light reddish purple', 'Strong red (R9)', 'Strong yellow', 'Strong green', 'Strong blue', 'Light yellowish pink (skin)', 'Moderate olive green (leaf)'];
@@ -155,6 +155,109 @@ export default function mount(root, meta) {
     ctx.textAlign = 'left'; ctx.fillText('dashed: Duv = ±0.01, ±0.02', X(u0) + 6, Y(v0) - 6);
   }
 
+  // ── camera colour: sensitivities, white balance and the colour matrix ──
+  const SCENES = { D65: 'CIE D65 daylight', A: 'CIE A (tungsten)', FL11: 'CIE FL11 (tri-band fluorescent)', 'LED-B3': 'CIE LED-B3 (phosphor white)', 'LED-RGB1': 'CIE LED-RGB1 (RGB mix)', HP1: 'CIE HP1 (sodium)' };
+  const spdOf = (k) => (k === 'D65' ? daylight(6504) : ILLUMINANTS[k].spd);
+  const PATCHES = [...TCS.map((r, i) => ({ name: `TCS${String(i + 1).padStart(2, '0')} ${TCS_NAMES[i]}`, r })), ...EXTRA_PATCHES];
+  const sec2 = h('section.block', {}, h('h2', {}, 'Camera colour: spectral sensitivities, white balance and the colour matrix'));
+  const cctl = controls({
+    cam: { type: 'select', label: 'Sensor', value: 'cmos', options: Object.entries(CAMERAS).map(([k, c]) => [k, c.name]) },
+    ill: { type: 'select', label: 'Scene illuminant', value: 'A', options: Object.entries(SCENES) },
+    wb: { type: 'seg', label: 'White balance', value: 'auto', options: [['auto', 'Auto (grey card)'], ['day', 'Daylight preset'], ['tung', 'Tungsten preset']] },
+    mat: { type: 'seg', label: 'Colour matrix fitted under', value: 'scene', options: [['scene', 'This illuminant'], ['d65', 'Daylight only']] },
+  }, () => updateCam());
+  const cro = h('div');
+  const ccalc = liveCalc();
+  const sensView = stage({ aspect: 2.2, label: '', draw: drawSens, cls: 'plain', minH: 200 });
+  const chart = h('div.card', { style: { padding: '12px' } });
+  sec2.append(lab([h('div.card', { style: { padding: '6px' } }, sensView.el), chart], [h('div.card', {}, cctl.el), h('div.card', {}, cro), ccalc.el]));
+  root.append(sec2);
+  let K = null;
+  function updateCam() {
+    const st = cctl.state, sens = CAMERAS[st.cam].sens, spd = spdOf(st.ill);
+    const gains = st.wb === 'auto' ? undefined : wbGains(st.wb === 'day' ? daylight(6504) : ILLUMINANTS.A.spd, sens);
+    const matrix = st.mat === 'd65' ? cameraColour({ sens, spd: daylight(6504), patches: PATCHES.map((p) => p.r) }).M : undefined;
+    const r = cameraColour({ sens, spd, gains, matrix, patches: PATCHES.map((p) => p.r) });
+    K = { st, sens, r, luther: lutherResidual(sens) };
+    cro.replaceChildren(readouts([
+      ['White-balance gains R, G, B', r.gains.map((g) => g.toFixed(2)).join(', ')],
+      ['Mean colour error ΔE₀₀', r.mean.toFixed(2)],
+      ['Worst patch ΔE₀₀', `${r.max.toFixed(1)} (${PATCHES[r.dE.indexOf(r.max)].name.replace(/^TCS\d+ /, '')})`],
+      ['Luther–Ives residual', (100 * K.luther).toFixed(1) + ' %'],
+    ]));
+    const M = r.M, f = (v) => texNum(v / 100, 3);
+    ccalc.set(String.raw`\begin{aligned}
+    \mathbf{XYZ} &= \mathbf M\,\mathrm{diag}(g_R, g_G, g_B)\,\mathbf{RGB}_\text{raw}\\
+    \mathbf M &= \begin{pmatrix}${f(M[0][0])}&${f(M[0][1])}&${f(M[0][2])}\\ ${f(M[1][0])}&${f(M[1][1])}&${f(M[1][2])}\\ ${f(M[2][0])}&${f(M[2][1])}&${f(M[2][2])}\end{pmatrix}\\
+    \overline{\Delta E_{00}} &= ${texNum(r.mean, 3)}
+    \end{aligned}`);
+    chart.replaceChildren(
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--fg-dim)', marginBottom: '6px' } }, h('span', {}, 'Left: what an observer adapted to the scene sees · right: the camera after white balance and matrix'), h('span', {}, 'ΔE₀₀ per patch')),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '6px' } }, ...PATCHES.map((p, i) => h('div', { title: `${p.name}: ΔE00 = ${r.dE[i].toFixed(2)}`, style: { borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' } },
+        h('div', { style: { display: 'flex', height: '40px' } }, h('div', { style: { flex: 1, background: css(xyzToSRGB(r.truth[i])) } }), h('div', { style: { flex: 1, background: css(xyzToSRGB(r.cam[i])) } })),
+        h('div', { style: { fontSize: '10.5px', padding: '3px 4px', fontFamily: '"JetBrains Mono", monospace', color: r.dE[i] > 5 ? 'var(--warn)' : 'var(--fg-dim)' } }, r.dE[i].toFixed(1))))),
+    );
+    sensView.redraw();
+  }
+  function drawSens(ctx, w, hh) {
+    if (!K) return;
+    const mx = Math.max(...K.sens.flat()), cm = Math.max(...CMF.flat());
+    plot(ctx, w, hh, {
+      title: `Spectral sensitivities: ${CAMERAS[K.st.cam].name}`, x: { min: 380, max: 780, label: 'wavelength (nm)' }, y: { min: 0, max: 1.1, label: 'relative sensitivity' },
+      series: [
+        ...['x̄', 'ȳ', 'z̄'].map((n, c) => ({ data: LAMBDA.map((l, i) => [l, CMF[c][i] / cm]), color: 'rgba(255,255,255,0.35)', width: 1, dash: [4, 3], label: c === 0 ? 'CIE x̄ ȳ z̄ (eye)' : undefined })),
+        ...K.sens.map((s, c) => ({ data: LAMBDA.map((l, i) => [l, s[i] / mx]), color: ['#ff6b6b', '#6be3a4', '#6ad7ff'][c], width: 2.2, label: ['R', 'G', 'B'][c] })),
+      ],
+      legend: true, legendX: w - 190, legendY: 34,
+    });
+  }
+
+  // ── metamerism ──
+  const sec3 = h('section.block', {}, h('h2', {}, 'Metamerism: same colour, different spectra'));
+  const mctl = controls({
+    base: { type: 'select', label: 'Original sample', value: '12', options: PATCHES.map((p, i) => [String(i), p.name]) },
+    strength: { type: 'range', label: 'Metameric black added', min: 0, max: 1, step: 0.01, value: 1, fmt: (v) => (v * 100).toFixed(0) + ' %' },
+    other: { type: 'select', label: 'Compare under', value: 'FL11', options: Object.entries(SCENES).filter(([k]) => k !== 'D65') },
+  }, () => updateMeta());
+  const mro = h('div');
+  const mspec = stage({ aspect: 2.2, label: '', draw: drawMeta, cls: 'plain', minH: 200 });
+  const mpair = h('div.card', { style: { padding: '12px' } });
+  sec3.append(lab([h('div.card', { style: { padding: '6px' } }, mspec.el), mpair], [h('div.card', {}, mctl.el), h('div.card', {}, mro)]));
+  root.append(sec3);
+  let MM = null;
+  const observed = (r, spd) => { const W = xyz(spd), k = 100 / W[1]; return adapt(xyz(spd.map((s, i) => s * r[i])).map((q) => q * k), W.map((q) => q * k), D65_XYZ); };
+  function updateMeta() {
+    const st = mctl.state, r1 = PATCHES[+st.base].r, D65 = daylight(6504), r2 = metamer(r1, D65, st.strength), other = spdOf(st.other);
+    const sens = CAMERAS.cmos.sens;
+    const camOf = (spd) => { const c = cameraColour({ sens, spd, patches: [...PATCHES.map((p) => p.r), r1, r2] }); const n = c.cam.length; return [c.cam[n - 2], c.cam[n - 1]]; };
+    const pairs = [
+      ['Eye, daylight D65', observed(r1, D65), observed(r2, D65)],
+      ['Eye, ' + SCENES[st.other], observed(r1, other), observed(r2, other)],
+      ['Camera (CMOS model), D65', ...camOf(D65)],
+      ['Camera, ' + SCENES[st.other], ...camOf(other)],
+    ].map(([n, a, b]) => ({ n, a, b, dE: deltaE00(cielab(a), cielab(b)) }));
+    MM = { r1, r2 };
+    mro.replaceChildren(readouts(pairs.map((p) => [p.n, 'ΔE₀₀ ' + p.dE.toFixed(2)])));
+    mpair.replaceChildren(
+      h('div', { style: { fontSize: '12px', color: 'var(--fg-dim)', marginBottom: '6px' } }, 'Each pair: original (left) and its metamer (right). They are built to match exactly for the CIE observer in daylight.'),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' } }, ...pairs.map((p) => h('div', {},
+        h('div', { style: { display: 'flex', height: '56px', borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' } }, h('div', { style: { flex: 1, background: css(xyzToSRGB(p.a)) } }), h('div', { style: { flex: 1, background: css(xyzToSRGB(p.b)) } })),
+        h('div', { style: { fontSize: '11px', marginTop: '4px', color: 'var(--fg-dim)' } }, p.n),
+        h('div', { style: { fontSize: '11px', fontFamily: '"JetBrains Mono", monospace', color: p.dE > 2 ? 'var(--warn)' : 'var(--fg-dim)' } }, 'ΔE₀₀ ' + p.dE.toFixed(2))))),
+    );
+    mspec.redraw();
+  }
+  function drawMeta(ctx, w, hh) {
+    if (!MM) return;
+    plot(ctx, w, hh, {
+      title: 'Reflectance spectra', x: { min: 380, max: 780, label: 'wavelength (nm)' }, y: { min: 0, max: 1, label: 'reflectance' },
+      series: [{ data: LAMBDA.map((l, i) => [l, MM.r1[i]]), color: '#ffffff', width: 2, label: 'original' }, { data: LAMBDA.map((l, i) => [l, MM.r2[i]]), color: '#ffb547', width: 2, label: 'metamer' }],
+      legend: true, legendX: w - 160, legendY: 34,
+    });
+  }
+
+  updateCam();
+  updateMeta();
   update();
 
   root.append(theory('Spectra, colour temperature and colour rendering', String.raw`
@@ -172,13 +275,28 @@ export default function mount(root, meta) {
 <p>Ra averages only eight pastel samples, so a lamp can score in the 80s while rendering saturated red (R9) or skin (R13) poorly. That is the classic weakness of blue-pumped phosphor LEDs, which lack deep red. Film and video lighting is therefore specified with R9, with the TM-30 fidelity and gamut indices, or with the camera-based TLCI (EBU Tech 3355), which replaces the eye with a model camera. This page computes CRI exactly as published. It reproduces the CIE's own values for the FL series: FL2 64, FL7 90 and FL11 83.</p>
 <p>The swatches show each sample as an observer adapted to the lamp would see it, transformed to the sRGB display by a Bradford adaptation. Differences between the two halves are what the indices measure.</p>
 </div></div>`));
+  root.append(theory('How a camera sees colour', String.raw`
+<div class="theory-cols"><div>
+<h3>Spectral sensitivities and the Luther–Ives condition</h3>
+<p>A camera pixel integrates \(\int S(\lambda)R(\lambda)s_c(\lambda)\,d\lambda\) with its own sensitivity \(s_c\), not the eye's \(\bar x, \bar y, \bar z\). A camera is colorimetric (it matches the eye for <em>every</em> spectrum) only if its sensitivities are a linear combination of the colour-matching functions: the <em>Luther–Ives condition</em>. No real colour filter array satisfies it. The residual here is the fraction of the CMFs that no combination of the camera's curves can reproduce. Narrow filters give saturated colours but large errors. Broad, overlapping filters collect more light but need a strong matrix, which amplifies noise.</p>
+<h3>White balance and the colour matrix</h3>
+<p>Raw RGB is first scaled by diagonal <em>white-balance</em> gains that make a grey card neutral, a von Kries adaptation in camera space. A 3×3 matrix then maps the balanced RGB to XYZ. It is fitted here by least squares over 24 reflectances, under the constraint that white maps exactly to white:</p>
+\[\min_{\mathbf M}\sum_k\lVert\mathbf M\,\mathbf c_k - \mathbf t_k\rVert^2\quad\text{s.t.}\quad\mathbf M\,\mathbf c_\text{white} = \mathbf t_\text{white},\]
+<p>with targets \(\mathbf t_k\) the colours an observer adapted to the scene would see (Bradford to D65). Errors are CIEDE2000. A matrix fitted under daylight and reused under tungsten, which is what a single camera profile does, degrades even for the ideal Luther camera, because diagonal scaling in camera space is not the eye's adaptation. Raw converters therefore interpolate between two matrices calibrated under A and D65.</p>
+</div><div>
+<h3>Metamerism</h3>
+<p>Adding to a reflectance any spectrum \(b(\lambda)\) orthogonal to \(S\bar x\), \(S\bar y\) and \(S\bar z\) (a <em>metameric black</em>) leaves its tristimulus values unchanged under \(S\). The page builds one by projecting a smooth wave out of those three directions, then adds as much as keeps the reflectance between 0.01 and 0.99. The pair matches exactly in daylight for the CIE observer. It separates under another lamp (<em>illuminant metamerism</em>) and for a camera whose sensitivities differ from the eye's (<em>observer</em> or <em>camera metamerism</em>). This is why a costume can match on set and clash on screen, and why the colour of a car's bumper and its painted body are checked under several lights.</p>
+<p>The camera models are representative Gaussian filter shapes with an IR-cut filter, not measurements of a specific product. The extra patches are smooth synthetic reflectances.</p>
+</div></div>`));
   root.append(references([
     'CIE 13.3-1995, <em>Method of measuring and specifying colour rendering properties of light sources</em>; CIE 15:2018, <em>Colorimetry</em>, 4th ed. (CIE, Vienna). Tables via the colour-science project (BSD-3-Clause).',
     'G. Wyszecki &amp; W. S. Stiles, <em>Color Science</em>, 2nd ed., Wiley (1982): CCT, daylight basis functions, U*V*W*.',
     'D. B. Judd, D. L. MacAdam &amp; G. Wyszecki, “Spectral distribution of typical daylight as a function of correlated color temperature”, <em>J. Opt. Soc. Am.</em> 54, 1031 (1964).',
+    'R. Luther, “Aus dem Gebiet der Farbreizmetrik”, <em>Z. Tech. Phys.</em> 8, 540 (1927); H. E. Ives, “The transformation of color-mixture equations from one system to another”, <em>J. Franklin Inst.</em> 180, 673 (1915).',
+    'G. D. Finlayson &amp; M. S. Drew, “Constrained least-squares regression in color spaces”, <em>J. Electron. Imaging</em> 6, 484 (1997): white-point-preserving colour correction.',
     'G. Sharma, W. Wu &amp; E. N. Dalal, “The CIEDE2000 color-difference formula: implementation notes, supplementary test data, and mathematical observations”, <em>Color Res. Appl.</em> 30, 21 (2005).',
     'ANSI/IES TM-30-20, <em>Method for evaluating light source color rendition</em>; EBU Tech 3355, <em>Method for the assessment of the colorimetric properties of luminaires: the Television Lighting Consistency Index (TLCI-2012)</em>.',
   ]));
 
-  return () => [spdView, bars, diagram].forEach((s) => s.destroy());
+  return () => [spdView, bars, diagram, sensView, mspec].forEach((s) => s.destroy());
 }

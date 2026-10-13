@@ -67,7 +67,7 @@ flowchart LR
 | Laboratories | 23 | +16 proposed (v1.6, v1.7) |
 | Catalogue entries | 150 | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 62 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 64 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -264,7 +264,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 |---|---|---|
 | [x] **Polarisation** | Malus's law, wave plates, Brewster reflections, polariser on water, sky polarisation map (Rayleigh), Stokes-vector scene render, birefringent OLPF, stress birefringence (photoelasticity). *Shipped in PRs #28–#29.* | P1 · M |
 | [x] **Macro & magnification** | bellows factor, effective f-number, diffraction at N(1+m), focus stacking, working distance. *Pupil magnification, chief-ray ruler render with a 1:1 crop, optimum aperture (PR #30).* | P1 · M |
-| [~] **Colour science** | ✅ CIE colorimetry, CCT/Duv, CRI (R1–R14) of CIE LED/FL sources (PR #31) · ⬜ sensor spectral sensitivities, white balance, metamerism, colour-matrix fitting, TLCI | P1 · L |
+| [x] **Colour science** | CIE colorimetry, CCT/Duv, CRI (R1–R14) of CIE LED/FL sources, sensor spectral sensitivities, white balance, colour-matrix fitting, metamerism (PRs #31–#32). *TLCI and TM-30 moved to the Backlog.* | P1 · L |
 | [ ] **Panorama & parallax** | entrance pupil as the no-parallax point, stitching errors vs rotation centre | P2 · M |
 | [ ] **Anamorphic & cinema lenses** | squeeze factor, oval bokeh, horizontal streak flare, focus breathing metrics, T-stops | P2 · L |
 | [ ] **Filters & HDR** | ND and graduated ND, exposure fusion, bracketing, dynamic-range stacking | P2 · M |
@@ -306,6 +306,7 @@ Ideas worth keeping but not yet scheduled:
 - *(from v1.5)* **Spectral scene renderer**: render a whole scene per wavelength through the PSF, the colour-matching functions and the sensor's spectral response.
 - *(from v1.5)* Smooth ghost irradiance (Hullin's vertex averaging) and Fresnel ringing at ghost edges.
 
+- *(from v1.6 colour science)* TLCI-2012 (EBU camera model) and ANSI/IES TM-30 fidelity and gamut indices (99 colour evaluation samples).
 - Coherent imaging mode (laser/speckle) in the PSF lab.
 - Gravitational microlensing light curves and planetary anomalies.
 - Zoom-lens animation, showing group motion and parfocality.

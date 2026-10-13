@@ -7,6 +7,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Colour science laboratory**, part 2.
+  - **Camera colour.** Four sensor models (typical CMOS Bayer, narrow-band, broad, Luther–Ives ideal), each with an IR cut. Raw response under any CIE illuminant, grey-card or preset white balance, and a 3×3 colour matrix fitted by least squares with exact white preservation (Finlayson & Drew), either for the scene or reused from daylight. CIEDE2000 errors on 24 patches (the 14 CIE samples plus 10 smooth synthetic reflectances), and the Luther–Ives residual.
+  - **Metamerism.** A metameric black is projected out of S x̄, S ȳ, S z̄ and added to any patch. The pair matches in daylight and separates under another lamp and for the camera.
+- Tests: the Luther camera is exact, narrow filters are worse than the CMOS model, the matrix preserves white, a daylight white balance under tungsten gives a cast, and a metamer matches in D65 but not under FL11.
 - **Colour science laboratory**, part 1 (`#/colour`, `js/lib/colorsci.js`, `js/lib/colordata.js`).
   - **CIE tables at 5 nm**, generated from the colour-science datasets (BSD-3-Clause): 1931 2° observer, daylight basis S₀/S₁/S₂, illuminant A, FL1–FL12 (8 of them), HP1, and the CIE 15:2018 LED series B1–B5, BH1, RGB1, V1, V2.
   - **Calculations:** correlated colour temperature and Duv by golden-section search along the Planckian locus; the exact **CIE 13.3 colour rendering index** (R1–R14, Ra) with black-body or daylight references; Bradford adaptation; CIELAB; **CIEDE2000**.
