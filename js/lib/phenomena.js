@@ -135,6 +135,7 @@ export const GROUPS = [
     intro: 'Turning photons into numbers: discrete in space, time and charge.',
     items: [
       ['Nyquist sampling & aliasing', 'sampling', 'pvs', 'Detail above half the sampling rate folds back to lower frequencies.', r`f_a=|f-kf_s|,\ \nu_N=\frac{1}{2p}`],
+      ['LED-wall moiré & refresh banding', 'vp', 'v', 'Virtual-production walls alias against photosites when their grid is sharp, and band when the exposure is not a whole number of PWM periods.', r`\nu_w=\frac{1}{mp},\ t_\text{exp}=\frac{k}{f_\text{PWM}}`],
       ['Moiré', 'sampling', 'pv', '2-D aliasing of fine periodic patterns into large false patterns.', r`\mathbf k_\text{moiré}=\mathbf k-\mathbf G`],
       ['Bayer CFA & false colour', 'sampling', 'pv', 'Red and blue are sampled at half rate, so luminance detail aliases into colour.', r`\nu_{N,R/B}=\frac{1}{4p}`],
       ['Optical low-pass filter', 'sampling', 'pv', 'Birefringent plates blur by one pixel to suppress aliasing.', r`\mathrm{MTF}=|\cos\pi d\nu|`],

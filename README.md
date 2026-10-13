@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Thirty-one interactive simulations, a physics primer and a catalogue of 161 phenomena.
+Thirty-two interactive simulations, a physics primer and a catalogue of 162 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -359,6 +359,16 @@ Film as a **Boolean model** of randomly placed silver-halide grains with a log-n
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Virtual production** · `#/vp`<br>
+<img src="docs/screenshots/vp.webp" alt="Camera view of an LED wall behind an actor and the grid contrast against camera distance" width="70%">
+
+**LED-wall moiré**: the wall's pixel grid imaged at ν = 1/(mp), filtered by the defocus disk, the lens's diffraction MTF, the photosite aperture and an optional OLPF, then aliased by the sensor, with a safe distance and a rendered camera view. **PWM refresh banding**: the exact band amplitude of a rolling shutter vs shutter angle and genlock phase.
+
+</td>
+</tr>
 </table>
 
 ### Astronomy & space
@@ -427,9 +437,9 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 <td width="50%" valign="top">
 
 **Catalogue of phenomena** · `#/catalogue`<br>
-<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 161 optical phenomena">
+<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 162 optical phenomena">
 
-**161 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
+**162 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
 
 </td>
 </tr>
@@ -584,6 +594,7 @@ Optica_Viva/
 │   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
 │   │   ├── shake.js           Hand-held shake model, type-2 stabiliser servo with gyro random walk, Monte-Carlo sharpness
 │   │   ├── spectro.js         Gratings, blaze, prisms, resolving power, line lists, instrument profile
+│   │   ├── virtual.js         LED-wall moiré (grid frequency, MTFs, aliasing) and PWM refresh banding
 │   │   ├── wfs.js             Shack–Hartmann sensor, modal reconstructor, Noll residuals, closed AO loop
 │   │   ├── tasks.js           Heavy pure computations (PSF, Zernike, OTF) for the worker
 │   │   ├── compute.js         Worker API: run(task) and latest-only channels, main-thread fallback
@@ -605,11 +616,11 @@ Optica_Viva/
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (161 entries)
+│   │   ├── phenomena.js       Catalogue data (162 entries)
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (33)
+│   └── modules/               One file per page (34)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -664,6 +675,8 @@ The numerical core was checked against published or analytically known values. E
 | Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |
 | Disk in diametral compression: centre stresses, force balance | σ<sub>x</sub> = 2P/(πDt), σ<sub>y</sub> = −6P/(πDt); ∫σ<sub>y</sub>t dx = −P | Frocht (1948); free boundary |
 | Walk-off: quartz at 45°, calcite maximum | 5.875 µm/mm, 6.26° at tan θ = n<sub>e</sub>/n<sub>o</sub> | (n<sub>e</sub>² − n<sub>o</sub>²)/(2n<sub>o</sub>n<sub>e</sub>) |
+| Defocus disk MTF first zero | πbν = 3.8317 | first zero of J₁ |
+| PWM banding at a whole number of periods | 0 (row simulation matches the formula within 3 %) | exact integration |
 | Simulated emulsion: mean density and granularity | within 5 % / 20 % of the Boolean model; σ√A constant | Nutting and Selwyn laws |
 | Film speed vs grain size | 4× grain area → 4× speed | photon-catch scaling |
 | Le Grand eye power (d line) | 59.94 D | 59.94 D (Le Grand & El Hage) |
@@ -713,6 +726,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
+| Virtual production | Fundamental and low harmonics of a separable LED grid; single-pulse PWM, no scan multiplexing | Real walls add multiplexing and colour sub-pixel structure |
 | Film | Representative B&W emulsion (layers of opaque grains, threshold of 2 photons); no development chemistry or dye clouds | Granularity values illustrative (≈ 3× real films) |
 | Eye | Paraxial schematic eye with homogeneous media; population-typical aberrations; monochromatic 555 nm MTF | Individual eyes and the gradient-index lens differ |
 | Shake | Angular motion only (no translation or roll); model spectra rather than measured CIPA waveforms | Gains are representative of, not certified to, CIPA DC-011 |
