@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- ROADMAP, README and CLAUDE.md: the v1.9 milestone is complete with all seven astronomy and space laboratories.
+
 ### Added
 - **Field-dependent PSF laboratory** (`#/fieldpsf`, `js/lib/fieldpsf.js`). It computes Seidel sums through the two mirrors of Cassegrain, Ritchey–Chrétien and Dall–Kirkham telescopes (Welford's surface formulas with n′ = −n, spherical and conic parts kept apart), set up from first-order data (Hubble-like 2.4 m f/24, or a 0.4 m f/8 RC). FFT PSFs are computed on a 5 × 5 field grid in the worker, with the pupil resampled where the wavefront is too steep to sample. The page shows an RMS wavefront map over the field and RMS vs field for the three designs, with a flat detector or one on the medial surface. Errors: primary conic, secondary despace, decentre and tilt. Misalignment follows nodal aberration theory: field-constant coma, binodal astigmatism with the nodes marked, and the coma-free point. A button sets Hubble's 1990 primary (K₁ = −1.0139). The catalogue gains *Field-dependent PSF*, *Misalignment & nodal aberrations* and *Hubble's spherical aberration*.
 - Tests (`test/fieldpsf.test.mjs`): Schroeder's RC conics cancel S_I and S_II and give Hubble's K₁ = −1.0023, K₂ = −1.497; Cassegrain coma equals a paraboloid's; two-mirror Petzval sum; despace sensitivity m² + 1; Hubble's 2.2 µm edge error and W₀₄₀ = twice it; a decentred RC secondary gives constant coma and two symmetric astigmatic nodes; FFT Strehl agrees with Maréchal to 3 %.
