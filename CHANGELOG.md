@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- Tests (`test/random.test.mjs`): uniform and normal moments, no serial correlation (variance of sums of 20 normals, lag-1 autocorrelation), and Poisson mean = variance.
 - **Astrophotography stacking laboratory** (`#/stacking`, `js/lib/stacking.js`). It applies the CCD equation for N sub-exposures (object, sky, dark current, read noise). Sky brightness comes from the Bortle class through a V-band photon zero point, and the sky-limited sub length is t = σ²/(0.1 F_sky). A spiral galaxy with stars is rendered as one sub vs the stack (same stretch), with SNR curves vs sub length for four sky classes and vs total time. The catalogue gains *Image stacking (√N)*, and *Sky background & light pollution* links here. The random numbers use mulberry32: a plain LCG feeding Box–Muller left correlations that biased Monte-Carlo sums by 4 %.
 - Tests (`test/stacking.test.mjs`): Monte-Carlo stack SNR and image noise match the CCD equation; σ_r² = 0.1 F_s t at the sky-limited length; 4× the time gives 2× the SNR; Bortle 4 vs 8 gives × 10^(0.2Δμ).
 - **Lucky imaging laboratory** (`#/lucky`, `js/lib/lucky.js`). Short exposures are cut by a pupil from a frozen-flow phase screen, with tip-tilt-removed variance and FFT PSF per frame, ranked by Strehl. The page shows the best and worst frames, the long exposure, shift-and-add of all frames and the lucky selection, a Strehl histogram, and the simulated probability of a lucky frame against Fried's formula. Computed in the worker, with the probability curve cached. *Lucky imaging & speckle interferometry* in the catalogue now links here.
@@ -26,6 +27,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   - **Catalogue:** two new entries.
 - Tests (`test/interferometry.test.mjs`): the Betelgeuse diameter and null, summed fringes vs |2J₁(x)/x|, an east–west baseline from the pole tracing a circle of radius B/λ, the EHT resolution ≈ 25 µas, the dirty-beam normalisation, and CLEAN recovering a binary's flux ratio.
 - `scripts/worktree.sh`: one git worktree per branch. `new <type>/<name>` creates the branch from a freshly fetched `origin/main`, without an upstream, in `../Optica-Viva.worktrees/`. `finish` checks that the PR was merged, then removes the worktree and local branch, prunes and fast-forwards `main`. CONTRIBUTING.md and CLAUDE.md now describe this workflow.
+
+### Changed
+- All simulations now draw their random numbers from one seeded generator, `js/lib/random.js` (mulberry32 uniforms, Box–Muller normals, Poisson). This replaces ten local copies of a 32-bit LCG whose consecutive outputs, fed to Box–Muller, were correlated: sums of 20 deviates came out about 8 % too high in variance. That affected the phase screens (seeing, AO, lucky imaging), sensor noise, HDR brackets, camera shake, film grain, detector ramps and tolerancing. Random realisations on those pages change; all physics tests pass unchanged.
 
 ### Fixed
 - `scripts/worktree.sh` runs from the main checkout (so `finish` works when called from inside the worktree it removes) and tolerates GitHub deleting the merged branch first.

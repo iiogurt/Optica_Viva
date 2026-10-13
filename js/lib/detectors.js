@@ -1,14 +1,9 @@
 // Detector physics for space astronomy: up-the-ramp sampling of infrared arrays with cosmic-ray
 // jump detection, inter-pixel capacitance (IPC), charge-transfer inefficiency (CTI) in radiation-
 // damaged CCDs, and image persistence. Charges in electrons, times in seconds.
+import { makeRng } from './random.js';
 
-export function rng(seed) {
-  let s = seed >>> 0;
-  const u = () => { s = (s * 1664525 + 1013904223) >>> 0; return (s + 0.5) / 4294967296; };
-  const g = () => Math.sqrt(-2 * Math.log(u())) * Math.cos(2 * Math.PI * u());
-  const poisson = (mu) => { if (mu > 30) return Math.max(0, Math.round(mu + Math.sqrt(mu) * g())); const L = Math.exp(-mu); let k = 0, p = 1; do { k++; p *= u(); } while (p > L); return k - 1; };
-  return { u, g, poisson };
-}
+export function rng(seed) { return makeRng(seed); }
 
 // ── Up the ramp ─────────────────────────────────────────────────────────────────────────────
 // N non-destructive reads at t_i = i·dt (i = 1…N) of a pixel collecting f e⁻/s, read noise σ,

@@ -1,13 +1,10 @@
 // High dynamic range: a procedural high-contrast scene, neutral-density and graduated filters,
 // a photon-transfer camera model, exposure bracketing merged into radiance with inverse-variance
 // weights, global tone mapping, and exposure fusion (Mertens et al. 2007) with Laplacian pyramids.
+import { makeRng } from './random.js';
 
 // Seeded Gaussian deviates.
-export function gauss(seed) {
-  let s = seed >>> 0;
-  const u = () => { s = (s * 1664525 + 1013904223) >>> 0; return (s + 0.5) / 4294967296; };
-  return () => Math.sqrt(-2 * Math.log(u())) * Math.cos(2 * Math.PI * u());
-}
+export function gauss(seed) { return makeRng(seed).g; }
 
 // Scene radiance (linear RGB, arbitrary units: the dark foreground ≈ 1, the sky near the sun
 // ≈ 10³, the sun's disk ≈ 10⁵): a sunset over hills with a lit window in the foreground.

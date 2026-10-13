@@ -2,6 +2,7 @@
 // refractive indices; every trial is refocused (image distance as compensator) and scored by
 // the RMS real-ray error over fields and wavelengths (same merit as the optimiser).
 import { residuals } from './optimise.js';
+import { uniform } from './random.js';
 
 const rms = (r) => Math.sqrt(r.reduce((s, v) => s + v * v, 0) / r.length);
 function gaussian(rnd) { let u = 0, v = 0; while (u === 0) u = rnd(); v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
@@ -17,8 +18,7 @@ export function refocus(lens, cfg, range = 0.5) {
 
 // tol = { radiusPct, thicknessUm, indexDelta } (1σ, Gaussian); trials; seed
 export function monteCarlo(lens, tol, trials = 60, seed = 1) {
-  let s = seed >>> 0 || 1;
-  const rnd = () => { s = (s * 1664525 + 1013904223) >>> 0; return (s + 0.5) / 4294967296; };
+  const rnd = uniform(seed >>> 0 || 1);
   const cfg = { efl: 0, eflWeight: 0, fields: [0, 0.7, 1], wavelengths: [486.13, 587.56, 656.27], rings: 2 };
   const nominal = refocus(lens, cfg);
   const scores = [];

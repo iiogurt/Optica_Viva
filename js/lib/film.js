@@ -3,10 +3,8 @@
 // when it absorbs at least `hits` photons (Poisson with mean H·πr²·q). Developed grains are
 // opaque discs, so each layer transmits the uncovered fraction (Boolean model) and the optical
 // density follows Nutting's law D = 0.434 N a at low coverage.
-export function rng(seed) {
-  let s = seed >>> 0;
-  return () => { s = (s * 1664525 + 1013904223) >>> 0; return (s + 0.5) / 4294967296; };
-}
+import { uniform } from './random.js';
+export function rng(seed) { return uniform(seed); }
 const poissonCDF = (mu, k) => { let t = Math.exp(-mu), s = t; for (let i = 1; i < k; i++) { t *= mu / i; s += t; } return s; };
 
 // Probability that a grain of radius r (µm) is developable at exposure H (photons/µm²).
