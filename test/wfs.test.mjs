@@ -64,3 +64,15 @@ test('closed AO loop converges to near its error budget', () => {
   assert.ok(res < 0.6 * turb, `residual ${res} vs turbulence ${turb}`);
   assert.ok(res > 0.8 * fit && res < 1.6 * fit, `residual ${res} vs fitting error ${fit}`);
 });
+
+test('pyramid sensor: null at zero, geometric arcsine law when modulated, saturation without', async () => {
+  const { pyramidWFS, pyramidGeometric } = await import('../js/lib/wfs.js');
+  const Np = 32, tilt = (a) => { const p = new Float64Array(Np * Np); for (let y = 0; y < Np; y++) for (let x = 0; x < Np; x++) p[y * Np + x] = (2 * Math.PI * a * (x - 16)) / Np; return p; };
+  const z = pyramidWFS(tilt(0), { rmod: 3 });
+  near(z.mx, 0, 1e-9, 'no signal without aberration');
+  for (const a of [0.5, 1.5]) near(pyramidWFS(tilt(a), { rmod: 3 }).mx / pyramidGeometric(a, 3), 1, 0.15, `modulated response at ${a} λ/D (geometric optics is an approximation)`);
+  const un = pyramidWFS(tilt(0.1), { rmod: 0 }).mx, mod = pyramidWFS(tilt(0.1), { rmod: 3 }).mx;
+  assert.ok(un > 8 * mod, `unmodulated sensitivity gain: ${un / mod}`);
+  assert.ok(pyramidWFS(tilt(2), { rmod: 0 }).mx > 0.9, 'unmodulated pyramid saturates beyond ~1 λ/D');
+  assert.ok(Math.abs(pyramidWFS(tilt(0.5), { rmod: 3 }).my) < 1e-6, 'an x tilt gives no y signal');
+});

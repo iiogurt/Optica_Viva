@@ -315,3 +315,53 @@ export function createLoop({ Np = 120, NS = 512, D = 8, lamWFS = 600, Npsf = 256
   }
   return { configure, run };
 }
+
+// ── Pyramid wavefront sensor ────────────────────────────────────────────────────────────────
+// The pupil field (Np px across, in an N × N grid) is focused by an FFT onto the tip of a
+// four-sided glass pyramid, whose phase 2π·sh·(|k_x| + |k_y|)/N deflects each quadrant of the
+// focal plane by ±sh pixels, and re-imaged by an inverse FFT into four pupil images. Circular
+// modulation of radius rmod (λ/D) averages K tilted copies. phase: Float64Array(Np²) in rad.
+// Returns the detector image, the slope maps Sx, Sy over the pupil, and their pupil means.
+export function pyramidWFS(phase, { Np = 32, N = 128, sh = 24, rmod = 0, K = 0 } = {}) {
+  const R = Np / 2, c = N / 2, steps = rmod > 0 ? Math.max(8, K || 4 * Math.ceil((2 * Math.PI * rmod) / 4)) : 1; // multiple of 4: symmetric ring
+  const img = new Float64Array(N * N), re = new Float64Array(N * N), im = new Float64Array(N * N);
+  const mask = new Float64Array(N * N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const kx = x < N / 2 ? x : x - N, ky = y < N / 2 ? y : y - N;
+    mask[y * N + x] = (2 * Math.PI * sh * (Math.abs(kx) + Math.abs(ky))) / N;
+  }
+  const inside = new Uint8Array(Np * Np);
+  for (let y = 0; y < Np; y++) for (let x = 0; x < Np; x++) inside[y * Np + x] = Math.hypot(x + 0.5 - R, y + 0.5 - R) <= R ? 1 : 0;
+  for (let k = 0; k < steps; k++) {
+    const t = (2 * Math.PI * k) / steps, ax = rmod * Math.cos(t), ay = rmod * Math.sin(t);
+    re.fill(0); im.fill(0);
+    for (let y = 0; y < Np; y++) for (let x = 0; x < Np; x++) {
+      if (!inside[y * Np + x]) continue;
+      const ph = phase[y * Np + x] + (2 * Math.PI * (ax * (x - R) + ay * (y - R))) / Np, q = (y + c - R) * N + x + c - R;
+      re[q] = Math.cos(ph); im[q] = Math.sin(ph);
+    }
+    fft2d(re, im, N, false);
+    for (let q = 0; q < N * N; q++) { const cm = Math.cos(mask[q]), sm = Math.sin(mask[q]), a = re[q], b = im[q]; re[q] = a * cm - b * sm; im[q] = a * sm + b * cm; }
+    fft2d(re, im, N, true);
+    for (let q = 0; q < N * N; q++) img[q] += (re[q] * re[q] + im[q] * im[q]) / steps;
+  }
+  // four pupil images centred at (c ± sh, c ± sh), periodic
+  const quad = (qx, qy, x, y) => img[(((c + qy * sh + y - R) % N + N) % N) * N + (((c + qx * sh + x - R) % N + N) % N)];
+  const Sx = new Float64Array(Np * Np), Sy = new Float64Array(Np * Np);
+  let tot = 0, n = 0;
+  for (let y = 0; y < Np; y++) for (let x = 0; x < Np; x++) if (inside[y * Np + x]) { tot += quad(1, 1, x, y) + quad(-1, 1, x, y) + quad(1, -1, x, y) + quad(-1, -1, x, y); n++; }
+  const mean = tot / n;
+  let mx = 0, my = 0;
+  for (let y = 0; y < Np; y++) for (let x = 0; x < Np; x++) {
+    if (!inside[y * Np + x]) continue;
+    const a = quad(1, 1, x, y), b = quad(-1, 1, x, y), cc = quad(1, -1, x, y), d = quad(-1, -1, x, y), p = y * Np + x;
+    // signs chosen so that a positive tilt along x (y) gives a positive Sx (Sy)
+    Sx[p] = (b + d - a - cc) / mean; Sy[p] = (cc + d - a - b) / mean;
+    mx += Sx[p]; my += Sy[p];
+  }
+  return { img, Sx, Sy, mx: mx / n, my: my / n, inside, steps };
+}
+
+// Geometric-optics response of a modulated pyramid to a tilt θ (λ/D) with modulation radius R:
+// S = (2/π) asin(θ/R) inside the modulation circle, ±1 outside.
+export const pyramidGeometric = (theta, R) => (Math.abs(theta) >= R ? Math.sign(theta) : (2 / Math.PI) * Math.asin(theta / R));

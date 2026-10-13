@@ -336,7 +336,7 @@ Inverse ray-shooting through point-mass, SIS and **SIE + shear** lenses. Critica
 **Wavefront sensing & AO loop** · `#/wfs`<br>
 <img src="docs/screenshots/wfs.webp" alt="Shack–Hartmann spots, corrected PSF, turbulence, mirror and residual maps, AO error versus time">
 
-A **diffraction model of the Shack–Hartmann sensor**: one FFT spot per lenslet, photon and read noise, thresholded centroids and an interaction matrix calibrated through the sensor. A **least-squares Zernike reconstructor** drives a modal deformable mirror with an **integrator** against frozen-flow turbulence on an 8 m telescope. Plots show the residual against an analytic **error budget** (Noll fitting, Greenwood temporal, propagated noise), the modal rejection and short- and long-exposure PSFs. It runs in the compute worker.
+A **diffraction model of the Shack–Hartmann sensor**: one FFT spot per lenslet, photon and read noise, thresholded centroids and an interaction matrix calibrated through the sensor. A **least-squares Zernike reconstructor** drives a modal deformable mirror with an **integrator** against frozen-flow turbulence on an 8 m telescope. Plots show the residual against an analytic **error budget** (Noll fitting, Greenwood temporal, propagated noise), the modal rejection and short- and long-exposure PSFs. It runs in the compute worker. A **pyramid sensor** section (FFT through a four-faced pyramid, with circular modulation) shows the four pupil images, the slope maps and the response curve against the geometric arcsine law.
 
 </td>
 </tr>
@@ -426,7 +426,7 @@ flowchart LR
 | Bokeh | Exact rays of the direct path from point sources (∞ and near) to the defocused sensor, same flux-conserving rasteriser | bokeh |
 | Lens flare | Exact ray tracing of all k(k−1)/2 two-reflection paths per wavelength, rasterised as flux-conserving triangles with a per-pixel aperture gauge; paraxial ghost matrices as the preview | flare |
 | Turbulence | von Kármán PSD, FFT screens plus 3-level subharmonics, frozen flow, bilinear-influence DM | seeing, wfs |
-| Adaptive optics | Shack–Hartmann spots by FFT per lenslet (photon + read noise, thresholded windowed centroids, calibrated gains); regularised least-squares Zernike reconstructor; integrator with one frame of delay; Noll/Greenwood/noise-propagation budget | wfs |
+| Adaptive optics | Shack–Hartmann spots by FFT per lenslet (photon + read noise, thresholded windowed centroids, calibrated gains); regularised least-squares Zernike reconstructor; integrator with one frame of delay; Noll/Greenwood/noise-propagation budget; pyramid sensor by focal-plane FFT with a four-face phase mask and circular modulation | wfs |
 | Sensor | Poisson photon statistics, two-stage read noise, PRNU, dark current, FWC, quantisation | noise, sampling |
 | Gravitational lensing | Thin-lens equation, SIE (Kormann et al. 1994) + shear, flat ΛCDM distances | lensing |
 
@@ -596,6 +596,7 @@ The numerical core was checked against published or analytically known values. E
 | Zernike fitting error after 21 modes, D/r₀ = 10 (24 phase screens) | within 15 % of Noll | Δ₂₁ = 0.0208 (D/r₀)^5/3 rad² (Noll 1976) |
 | Shack–Hartmann reconstruction of Z₄, Z₇, Z₁₁, Z₂₂ | coefficients within 4 %, cross-talk < 6 % | input mode |
 | Closed AO loop (10 × 10 lenslets, 35 modes, bright star) | residual within 0.8–1.6 × the Noll fitting error | σ<sub>fit</sub> = √Δ₃₆ (D/r₀)^5/6 |
+| Modulated pyramid sensor (R = 3 λ/D), tilts 0.5 and 1.5 λ/D | within 15 % of (2/π) asin(θ/R); zero signal at zero tilt | geometric optics (Ragazzoni 1996) |
 
 ---
 

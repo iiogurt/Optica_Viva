@@ -2,8 +2,8 @@ import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion } from
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
-import { run } from '../lib/compute.js';
-import { nollResidual } from '../lib/wfs.js';
+import { run, latest } from '../lib/compute.js';
+import { nollResidual, pyramidGeometric } from '../lib/wfs.js';
 
 const NP = 120, D = 8, DX = D / NP, NPSF = 256; // 8 m telescope, 120 px pupil, WFS at 600 nm (see js/lib/wfs.js)
 const DIV = lut('diverging'), INF = lut('inferno');
@@ -173,6 +173,84 @@ export default function mount(root, meta) {
     }
   }
 
+  // ── pyramid wavefront sensor ──
+  const sec2 = h('section.block', {}, h('h2', {}, 'The pyramid wavefront sensor'));
+  const pctl = controls({
+    mode: { type: 'seg', label: 'Aberration', value: 'tilt', options: [['tilt', 'Tilt'], ['4', 'Defocus'], ['6', 'Astigmatism'], ['8', 'Coma'], ['turb', 'Turbulence']] },
+    amp: { type: 'range', label: 'Amplitude (tilt in λ/D, otherwise rad RMS)', min: 0, max: 4, step: 0.05, value: 0.5 },
+    rmod: { type: 'range', label: 'Modulation radius', min: 0, max: 6, step: 0.25, value: 3, unit: 'λ/D' },
+  }, () => updatePyr());
+  const pro = h('div');
+  const pyrImg = stage({ aspect: 1, label: 'Detector: four pupil images behind the pyramid', draw: drawPyrImg, minH: 220 });
+  const pyrMaps = stage({ aspect: 1, label: 'Input phase and the slope signals Sx, Sy (common scale)', draw: drawPyrMaps, minH: 220 });
+  const pyrCurve = stage({ aspect: 2.4, label: '', draw: drawPyrCurve, cls: 'plain', minH: 210 });
+  sec2.append(lab([h('div.grid-2', {}, pyrImg.el, pyrMaps.el), h('div.card', { style: { padding: '6px' } }, pyrCurve.el)], [h('div.card', {}, pctl.el), h('div.card', {}, pro)]));
+  root.append(sec2);
+  const pyrJob = latest('pyramid'), curveJob = latest('pyramidCurve');
+  let P = null, Pc = null, curveKey = '';
+  function updatePyr() {
+    const st = pctl.state;
+    pyrJob('pyramid', { mode: st.mode, amp: st.amp, rmod: st.rmod }).then((r) => {
+      if (!alive) return;
+      P = { st: { ...st }, ...r };
+      pyrReadout();
+      [pyrImg, pyrMaps].forEach((x) => x.redraw());
+    });
+    if (String(st.rmod) !== curveKey) {
+      curveKey = String(st.rmod); Pc = null; pyrCurve.redraw();
+      curveJob('pyramid', { mode: 'tilt', amp: 0, rmod: st.rmod, curve: true }).then((r) => { if (!alive) return; Pc = { rmod: st.rmod, curve: r.curve }; pyrCurve.redraw(); pyrReadout(); });
+    }
+  }
+  function pyrReadout() {
+    if (!P) return;
+    const st = P.st, r = P;
+    pro.replaceChildren(readouts([
+        ['Modulation steps averaged', String(r.steps)],
+        ['Mean signal ⟨Sx⟩, ⟨Sy⟩', `${r.mx.toFixed(3)}, ${r.my.toFixed(3)}`],
+        ['Geometric prediction for this tilt', st.mode === 'tilt' && st.rmod > 0 ? pyramidGeometric(st.amp, st.rmod).toFixed(3) : '—'],
+        ['Optical gain near zero (per λ/D)', Pc ? (Pc.curve[1][1] / Pc.curve[1][0]).toFixed(3) + (st.rmod > 0 ? ` (geometric 2/πR = ${(2 / (Math.PI * st.rmod)).toFixed(3)})` : '') : '…'],
+      ]));
+  }
+  function drawPyrImg(ctx, w, hh) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
+    if (!P) return;
+    const N = 128, ic = imageCanvas(N, N);
+    let mx = 1e-12; for (let q = 0; q < N * N; q++) mx = Math.max(mx, P.img[q]);
+    for (let q = 0; q < N * N; q++) { const t = Math.round(255 * Math.sqrt(P.img[q] / mx)) * 3, o = q * 4; ic.data[o] = INF[t]; ic.data[o + 1] = INF[t + 1]; ic.data[o + 2] = INF[t + 2]; ic.data[o + 3] = 255; }
+    ic.put();
+    const sz = Math.min(w, hh) - 8; ctx.imageSmoothingEnabled = false; ctx.drawImage(ic.c, (w - sz) / 2, (hh - sz) / 2, sz, sz);
+  }
+  function drawPyrMaps(ctx, w, hh) {
+    ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
+    if (!P) return;
+    const Np = 32, sz = Math.min(w / 2, hh / 2) - 10;
+    const amax = (m) => { let a = 1e-9; for (let q = 0; q < Np * Np; q++) if (P.inside[q]) a = Math.max(a, Math.abs(m[q])); return a; };
+    const sm = Math.max(amax(P.Sx), amax(P.Sy));
+    [[P.phase, amax(P.phase), 'phase'], [P.Sx, sm, 'Sx'], [P.Sy, sm, 'Sy']].forEach(([m, sc, name], i) => {
+      const ic = imageCanvas(Np, Np);
+      for (let q = 0; q < Np * Np; q++) {
+        const o = q * 4; if (!P.inside[q]) { ic.data[o + 3] = 0; continue; }
+        const t = Math.round((Math.max(-1, Math.min(1, m[q] / sc)) * 0.5 + 0.5) * 255) * 3;
+        ic.data[o] = DIV[t]; ic.data[o + 1] = DIV[t + 1]; ic.data[o + 2] = DIV[t + 2]; ic.data[o + 3] = 255;
+      }
+      ic.put();
+      const x = i === 0 ? (w - sz) / 2 : i === 1 ? w / 4 - sz / 2 : (3 * w) / 4 - sz / 2, y = i === 0 ? 24 : hh / 2 + 18;
+      ctx.imageSmoothingEnabled = false; ctx.drawImage(ic.c, x, y, sz, sz);
+      ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left'; ctx.fillText(name + (i ? ` (±${sm.toFixed(2)})` : ''), i === 0 ? x - 46 : x + 2, i === 0 ? y + sz / 2 : y - 2);
+    });
+  }
+  function drawPyrCurve(ctx, w, hh) {
+    const R = pctl.state.rmod, th = Array.from({ length: 91 }, (_, i) => (i / 90) * 4.5);
+    const series = [];
+    if (R > 0) series.push({ data: th.map((t) => [t, pyramidGeometric(t, R)]), color: '#6ad7ff', width: 1.6, dash: [5, 3], label: `geometric optics, R = ${R} λ/D` });
+    if (Pc) series.push({ data: Pc.curve, color: '#ffb547', width: 2.4, label: 'diffraction model (FFT)' });
+    plot(ctx, w, hh, {
+      title: Pc ? 'Pyramid response to a tilt' : 'Pyramid response to a tilt (computing…)', x: { min: 0, max: 4.5, label: 'tilt (λ/D)' }, y: { min: 0, max: 1.05, label: '⟨Sx⟩' },
+      series, vlines: P && P.st.mode === 'tilt' ? [{ x: P.st.amp, color: 'rgba(255,255,255,0.4)' }] : [], legend: true, legendX: w - 280, legendY: hh - 96,
+    });
+  }
+  updatePyr();
+
   configure();
 
   root.append(theory('Sensing and correcting the wavefront', String.raw`
@@ -190,6 +268,8 @@ export default function mount(root, meta) {
 <p>The mirror cannot move instantly, and the sensor sees only what is left after the mirror: the residual. A discrete integrator</p>
 \[\mathbf c_{k+1} = \mathbf c_k + g\,\mathbf R\,\mathbf s_k\]
 <p>drives the residual towards zero. A low gain averages noise but follows the turbulence slowly. A high gain follows fast turbulence but passes noise and becomes unstable near \(g = 2\) (less with extra delay). The rejection bandwidth is roughly \(f_{3\,\text{dB}}\approx g f_s/2\pi\). Turbulence evolves at the Greenwood frequency \(f_G = 0.427\,v/r_0\), so the temporal error is \((f_G/f_{3\,\text{dB}})^{5/3}\) rad². The modal plot shows the result: low orders, which carry most of the turbulence, are suppressed by orders of magnitude, while modes beyond \(J\) are untouched.</p>
+<h3>The pyramid sensor</h3>
+<p>A four-sided glass pyramid at the focus splits the star's image into four beams, and a lens re-images the pupil four times (Ragazzoni 1996). A wavefront slope moves light from one face to another, so the normalised differences of the four pupil images, \(S_x = (I_2+I_4-I_1-I_3)/\bar I\) and similarly \(S_y\), are slope signals at the full pupil resolution. Without modulation the sensor is extremely sensitive but saturates within about one λ/D. Circling the image on the pyramid tip with radius \(R\) linearises it, and geometric optics predicts \(S = (2/\pi)\arcsin(\theta/R)\). The FFT model reproduces that curve, along with the extra sensitivity of the diffraction regime that makes pyramid sensors the choice of the ELTs.</p>
 <h3>Why AO works in the infrared</h3>
 <p>The residual is an optical path difference in nanometres, almost the same at every wavelength, but the Strehl ratio \(e^{-(2\pi\sigma/\lambda)^2}\) depends on it relative to \(\lambda\). The same 150 nm residual gives a Strehl of 0.6 in K band and almost nothing in R band. Also \(r_0\propto\lambda^{6/5}\). Large telescopes therefore do their adaptive-optics science at 1–2.5 µm and sense the wavefront in visible light.</p>
 <p>The turbulence is one von Kármán layer with a 25 m outer scale, which removes much of the tip-tilt power of pure Kolmogorov turbulence (\(1.03(D/r_0)^{5/3}\)) on an 8 m pupil, hence the modest open-loop RMS. Not modelled here: aliasing filters (the error from unseen high orders folding into the slopes is present in the simulation but not in the budget), mirror influence functions (the mirror is modal), detector pixels per lenslet (each spot is sampled at λ/(3d)), multiple turbulent layers and anisoplanatism.</p>
@@ -200,7 +280,8 @@ export default function mount(root, meta) {
     'R. J. Noll, “Zernike polynomials and atmospheric turbulence”, <em>J. Opt. Soc. Am.</em> 66, 207 (1976).',
     'D. P. Greenwood, “Bandwidth specification for adaptive optics systems”, <em>J. Opt. Soc. Am.</em> 67, 390 (1977).',
     'W. H. Southwell, “Wave-front estimation from wave-front slope measurements”, <em>J. Opt. Soc. Am.</em> 70, 998 (1980).',
+    'R. Ragazzoni, “Pupil plane wavefront sensing with an oscillating prism”, <em>J. Mod. Opt.</em> 43, 289 (1996); O. Fauvarque et al., “General formalism for Fourier-based wave front sensing”, <em>Optica</em> 3, 1440 (2016).',
   ]));
 
-  return () => { alive = false; cancelAnimationFrame(raf); [shView, psfView, phView, series, modal].forEach((x) => x.destroy()); };
+  return () => { alive = false; cancelAnimationFrame(raf); [shView, psfView, phView, series, modal, pyrImg, pyrMaps, pyrCurve].forEach((x) => x.destroy()); };
 }
