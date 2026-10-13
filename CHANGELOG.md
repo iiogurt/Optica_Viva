@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-10-13
+
+Seven new laboratories for astronomy and space (PRs [#55](https://github.com/iiogurt/Optica_Viva/pull/55)–[#64](https://github.com/iiogurt/Optica_Viva/pull/64)): **Interferometry & aperture synthesis**, **Detector physics in space**, **Atmospheric dispersion & ADC**, **Lucky imaging**, **Astrophotography stacking**, **Starshade** and **Field-dependent PSF**. Each is validated against known results: the van Cittert–Zernike visibility of a uniform disk, the exact variance of up-the-ramp slopes, Edlén's air index, Fried's lucky-frame probability, the CCD equation, the Poisson–Arago spot and Babinet's principle, and Hubble's as-built Ritchey–Chrétien conics and its 1990 conic error. All simulations now share one seeded random-number generator. 39 interactive simulations, 172 catalogue entries and 129 tests.
+
 ### Changed
 - ROADMAP, README and CLAUDE.md: the v1.9 milestone is complete with all seven astronomy and space laboratories.
 
@@ -498,7 +502,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.0...v1.6.1
