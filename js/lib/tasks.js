@@ -10,6 +10,7 @@ import { monteCarlo } from './tolerance.js';
 import { ghostSystem, renderGhosts } from './ghosts.js';
 import { bokehKernels } from './bokeh.js';
 import { renderLake } from './polar.js';
+import { renderRuler } from './macro.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -349,4 +350,10 @@ function polarLake(p) {
   return { result: r, transfer: [r.rgb.buffer] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake };
+// Macro lab: the tilted ruler in a full-frame view and (optionally) a 1:1 pixel crop.
+function macroRuler(p) {
+  const full = renderRuler(p.full), crop = p.crop ? renderRuler(p.crop) : null;
+  return { result: { full, crop }, transfer: [full.img.buffer, ...(crop ? [crop.img.buffer] : [])] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler };

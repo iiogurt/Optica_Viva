@@ -2,7 +2,7 @@
 import { h, resetUrlState } from './lib/ui.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'telescope', 'lensing', 'sampling', 'noise', 'motion', 'vignetting', 'perspective', 'tiltshift', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'telescope', 'lensing', 'sampling', 'noise', 'motion', 'vignetting', 'perspective', 'tiltshift', 'macro', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -15,6 +15,7 @@ export const MODULES = [
   { id: 'projection', group: 'Geometric optics', title: 'Fisheye vs rectilinear', c: '#ffd27a', blurb: 'Five projection mappings rendered by inverse ray-casting, with Tissot indicatrices showing local distortion.' },
   { id: 'perspective', group: 'Geometric optics', title: 'Perspective & distortion', c: '#ffd27a', blurb: 'Why perspective depends only on position. Dolly zoom, compression, and Brown–Conrady lens distortion.' },
   { id: 'tiltshift', group: 'Geometric optics', title: 'Tilt–shift & Scheimpflug', c: '#ffd27a', blurb: 'Plane-of-focus geometry, the hinge rule, the depth-of-field wedge, a miniature-effect render and keystone correction.' },
+  { id: 'macro', group: 'Geometric optics', title: 'Macro & magnification', c: '#ffd27a', blurb: 'Bellows factor and pupil magnification, depth of field in microns, the diffraction-limited optimum aperture and focus stacking on a tilted ruler.' },
   { id: 'vignetting', group: 'Geometric optics', title: 'Vignetting & relative illumination', c: '#ffd27a', blurb: 'cos⁴ law, mechanical (optical) vignetting by pupil overlap, and pixel acceptance angle.' },
 
   { id: 'psf', group: 'Wave optics', title: 'Diffraction & the PSF', c: '#6ad7ff', blurb: 'Fraunhofer diffraction by FFT: Airy disks, aperture-blade starbursts and polychromatic PSFs of Hubble, JWST and the ELT.' },
