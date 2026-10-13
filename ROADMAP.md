@@ -66,10 +66,10 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 27 | +12 proposed (v1.8, v1.9) |
-| Catalogue entries | 156 | link every new lab |
+| Laboratories | 28 | +11 proposed (v1.8, v1.9) |
+| Catalogue entries | 158 | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 82 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 86 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -303,7 +303,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 |---|---|---|
 | [x] **Panorama & parallax** | entrance pupil as the no-parallax point, stitching errors vs rotation centre. *Ray-cast stitch, pupil vs nodal point table (PR #43).* | P2 · M |
 | [x] **Anamorphic & cinema lenses** | squeeze factor, oval bokeh, horizontal streak flare, focus breathing metrics, T-stops (PR #44) | P2 · L |
-| [ ] **Filters & HDR** | ND and graduated ND, exposure fusion, bracketing, dynamic-range stacking | P2 · M |
+| [x] **Filters & HDR** | ND and graduated ND, exposure fusion, bracketing, dynamic-range stacking (PR #45) | P2 · M |
 | [ ] **Film & grain** | characteristic (H&D) curve, reciprocity failure, grain vs photon noise | P3 · M |
 | [ ] **Virtual production** | LED-wall moiré vs camera MTF and pixel pitch, scan-line/refresh interactions with rolling shutter | P3 · M |
 | [ ] **Stabilisation & shake** | angular-jitter blur, reciprocal rule, IBIS/OIS correction residuals | P3 · S |

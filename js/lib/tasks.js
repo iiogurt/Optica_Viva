@@ -13,6 +13,7 @@ import { renderLake } from './polar.js';
 import { renderRuler } from './macro.js';
 import { createLoop, pyramidWFS } from './wfs.js';
 import { renderPanorama } from './panorama.js';
+import { hdrPipeline } from './hdr.js';
 import { phaseScreen } from './turbulence.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
@@ -403,4 +404,10 @@ function panorama(p) {
   return { result: r, transfer: [r.rgb.buffer] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama };
+// HDR lab pipeline: bracket, merge, tone map and exposure fusion (see js/lib/hdr.js).
+function hdr(p) {
+  const r = hdrPipeline(p);
+  return { result: r, transfer: [r.shot.buffer, r.merged.buffer, ...(r.fused ? [r.fused.buffer] : [])] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr };
