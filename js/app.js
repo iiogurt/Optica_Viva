@@ -2,7 +2,7 @@
 import { h, resetUrlState } from './lib/ui.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'wfs', 'spectro', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'wfs', 'spectro', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -36,6 +36,7 @@ export const MODULES = [
   { id: 'motion', group: 'Light, sensor & time', title: 'Rolling shutter & time', c: '#c18cff', blurb: 'Rolling-shutter distortion, shutter angle, the wagon-wheel effect and flicker banding.' },
   { id: 'shake', group: 'Light, sensor & time', title: 'Camera shake & stabilisation', c: '#c18cff', blurb: 'Hand-held angular motion, the reciprocal rule as a probability, and what a gyro-driven stabiliser can and cannot remove.' },
   { id: 'film', group: 'Light, sensor & time', title: 'Film & grain', c: '#c18cff', blurb: 'Silver-halide grains as threshold photon counters: the H&D curve, grain vs speed, Selwyn granularity, DQE and reciprocity failure.' },
+  { id: 'vp', group: 'Light, sensor & time', title: 'Virtual production', c: '#c18cff', blurb: 'LED-wall moiré from pixel pitch, defocus and photosite sampling, and PWM refresh banding with a rolling shutter.' },
 
   { id: 'seeing', group: 'Astronomy & space', title: 'Atmospheric seeing & AO', c: '#8fd8ff', blurb: 'Kolmogorov phase screens, Fried parameter, speckle and long-exposure PSFs, and adaptive-optics correction.' },
   { id: 'wfs', group: 'Astronomy & space', title: 'Wavefront sensing & AO loop', c: '#8fd8ff', blurb: 'A diffraction Shack–Hartmann sensor with photon and read noise, least-squares modal reconstruction and a closed adaptive-optics loop with its error budget.' },

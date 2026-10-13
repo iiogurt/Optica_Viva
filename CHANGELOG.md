@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Virtual production laboratory** (`#/vp`, `js/lib/virtual.js`).
+  - **Moiré:** the LED-wall grid on the sensor at ν = 1/(m p), with grid modulation from the emitter fill factor and the defocus disk MTF 2J₁(πbν)/(πbν). The lens diffraction MTF, the photosite aperture and an optional OLPF are also applied, followed by aliasing at the sensor's sampling frequency.
+  - **Distance:** a contrast-vs-distance curve with the aliased region and the nearest moiré-safe distance, plus a camera-pixel rendering of the wall behind an actor (labelled contrast stretch).
+  - **Refresh banding:** exact PWM banding for a rolling shutter vs shutter angle, duty, readout time and genlock phase.
+  - **Catalogue:** *LED-wall moiré & refresh banding* is a new entry.
+- Tests (`test/vp.test.mjs`): ν = Z/(f p), aliasing, the square-wave fundamental 4/π, the disk-MTF zero at 3.8317 with contrast reversal, focus on the wall raising moiré more than 10×, and zero banding for whole PWM periods with the row simulation matching the formula.
 - **Film & grain laboratory** (`#/film`, `js/lib/film.js`). The emulsion is a Boolean model: layers of Poisson-placed silver-halide grains with a truncated log-normal size distribution, each developed after a few absorbed photons (Poisson tail).
   - **Characteristic curve:** a rendered step wedge of developed grains, and the H&D curve from Nutting's law.
   - **Grain:** granularity vs ISO, and the exact Selwyn granularity from the overlap integral ∫(e^{K(h)} − 1)d²h.
