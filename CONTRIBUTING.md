@@ -13,12 +13,12 @@ Thank you for helping. New laboratories, more lens prescriptions, validations ag
 
 ```mermaid
 flowchart LR
-    A["branch<br/><sub>feat/… fix/… docs/…</sub>"] --> B["npm run ci"] --> C["PR to main"] --> D{"CI<br/>check · test · smoke"}
-    D -- green --> E["squash-merge"] --> F["release PR<br/><sub>release.sh prepare</sub>"] --> G["tag + GitHub release<br/><sub>release.sh publish</sub>"]
+    A["worktree + branch<br/><sub>scripts/worktree.sh new feat/…</sub>"] --> B["npm run ci"] --> C["PR to main"] --> D{"CI<br/>check · test · smoke"}
+    D -- green --> E["squash-merge<br/><sub>worktree.sh finish</sub>"] --> F["release PR<br/><sub>release.sh prepare</sub>"] --> G["tag + GitHub release<br/><sub>release.sh publish</sub>"]
     D -- red --> A
 ```
 
-1. **Branch** from `main`: `feat/<topic>`, `fix/<topic>`, `docs/…`, `ci/…` or `chore/…`. `main` is protected; changes land only through pull requests with green CI.
+1. **Branch in a worktree** from the latest `origin/main`: `scripts/worktree.sh new feat/<topic>` (types: `feat`, `fix`, `docs`, `ci`, `chore`, `refactor`, `test`, `perf`). The branch gets its own working directory in `../Optica-Viva.worktrees/`, so several changes can be in progress without stashing, and the main checkout always stays on a clean `main`. Keep one topic per branch and pull request, and rebase on `origin/main` if it moves. `main` is protected; changes land only through pull requests with green CI.
 2. **Develop** with `npm start` (serves on <http://localhost:8000>).
 3. **Check locally** with `npm run ci`:
    - `npm run check`: syntax of every module, plus every relative link, image and heading anchor in the Markdown files
@@ -26,7 +26,8 @@ flowchart LR
    - `npm run smoke`: every page in headless Chrome must load without errors, and a shared URL must restore its controls
 4. **Document** under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) (Keep a Changelog). Tick or add items in [ROADMAP.md](ROADMAP.md), and update the [README](README.md) where affected. Regenerate screenshots if visuals changed: `npm run screenshots -- <page>`.
 5. **Commit** with [Conventional Commits](https://www.conventionalcommits.org/), e.g. `feat(polarisation): add Malus and Brewster lab`. Open a pull request; the template has the checklist.
-6. **Releases** also go through a pull request. `scripts/release.sh prepare X.Y.Z "summary"` opens a `release/vX.Y.Z` PR that dates the changelog and bumps the versions. Once it is merged with green CI, `scripts/release.sh publish X.Y.Z` pushes only the tag and creates the GitHub release. Nothing is ever pushed to `main` directly. Versions follow [SemVer](https://semver.org/): a new lab or feature is a minor release, and fixes and docs are patch releases.
+6. **Merge and clean up**: squash-merge with `gh pr merge --squash --delete-branch`, then `scripts/worktree.sh finish feat/<topic>`. It checks that the pull request was merged, removes the worktree and the local branch, prunes deleted remote branches and fast-forwards `main`.
+7. **Releases** also go through a pull request. `scripts/release.sh prepare X.Y.Z "summary"` opens a `release/vX.Y.Z` PR that dates the changelog and bumps the versions. Once it is merged with green CI, `scripts/release.sh publish X.Y.Z` pushes only the tag and creates the GitHub release. Nothing is ever pushed to `main` directly. Versions follow [SemVer](https://semver.org/): a new lab or feature is a minor release, and fixes and docs are patch releases.
 
 ## Adding a laboratory
 

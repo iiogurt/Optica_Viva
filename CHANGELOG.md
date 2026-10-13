@@ -6,9 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- `scripts/worktree.sh`: one git worktree per branch. `new <type>/<name>` creates the branch from a freshly fetched `origin/main`, without an upstream, in `../Optica-Viva.worktrees/`. `finish` checks that the PR was merged, then removes the worktree and local branch, prunes and fast-forwards `main`. CONTRIBUTING.md and CLAUDE.md now describe this workflow.
+
+### Fixed
+- CHANGELOG: the v1.8.0 summary named "Noll-style analytic checks", which belong to v1.7.0.
+
 ## [1.8.0] - 2026-10-13
 
-Seven new laboratories for photography and cinema (PRs [#43](https://github.com/iiogurt/Optica_Viva/pull/43)–[#50](https://github.com/iiogurt/Optica_Viva/pull/50)): **Panorama & parallax**, **Anamorphic & cinema lenses**, **Filters & HDR**, **Camera shake & stabilisation**, **The human eye**, **Film & grain** and **Virtual production**. Each pairs a simulation from first principles with validation against theory or measurement: Noll-style analytic checks, Thibos's chromatic eye, Selwyn's law, Campbell & Gubisch's optimum pupil, CIPA-like stabilisation gains. 32 laboratories and 99 tests.
+Seven new laboratories for photography and cinema (PRs [#43](https://github.com/iiogurt/Optica_Viva/pull/43)–[#50](https://github.com/iiogurt/Optica_Viva/pull/50)): **Panorama & parallax**, **Anamorphic & cinema lenses**, **Filters & HDR**, **Camera shake & stabilisation**, **The human eye**, **Film & grain** and **Virtual production**. Each pairs a simulation from first principles with validation against theory or measurement: exact geometric and statistical checks, Thibos's chromatic eye, Selwyn's law, Campbell & Gubisch's optimum pupil, CIPA-like stabilisation gains. 32 laboratories and 99 tests.
 
 ### Added
 - **Virtual production laboratory** (`#/vp`, `js/lib/virtual.js`).
