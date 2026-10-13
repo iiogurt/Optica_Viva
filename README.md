@@ -346,7 +346,7 @@ A **diffraction model of the Shack–Hartmann sensor**: one FFT spot per lenslet
 **Spectroscopy** · `#/spectro`<br>
 <img src="docs/screenshots/spectro.webp" alt="Solar spectrum on a detector with Fraunhofer lines, zoom on the sodium D doublet and blaze efficiency curves" width="70%">
 
-**Prisms and gratings** side by side: the grating equation in a Littrow mount, **blaze** efficiency per order, the **resolving power** R = mN or R = b|dn/dλ|, and overlapping orders on the detector, with or without an order-sorting filter. Spectra of the **Sun** (Fraunhofer lines and telluric bands) and of Hg, Ne, H and Na lamps are convolved with the diffraction-limited instrument profile, and a zoom shows when the sodium D or mercury yellow doublets are resolved.
+**Prisms and gratings** side by side: the grating equation in a Littrow mount, **blaze** efficiency per order, the **resolving power** R = mN or R = b|dn/dλ|, and overlapping orders on the detector, with or without an order-sorting filter. Spectra of the **Sun** (Fraunhofer lines and telluric bands) and of Hg, Ne, H and Na lamps are convolved with the diffraction-limited instrument profile, and a zoom shows when the sodium D or mercury yellow doublets are resolved. An **astronomical échelle spectrograph** section renders the **échellogram** of the Sun (an R2 or R4 échelle cross-dispersed by a prism on a 4k × 4k detector). It computes the **slit-limited resolving power** 2 tan θ<sub>B</sub> D<sub>col</sub>/(φ D<sub>tel</sub>) and the slit losses for a seeing disk.
 
 </td>
 </tr>
@@ -611,6 +611,8 @@ The numerical core was checked against published or analytically known values. E
 | Modulated pyramid sensor (R = 3 λ/D), tilts 0.5 and 1.5 λ/D | within 15 % of (2/π) asin(θ/R); zero signal at zero tilt | geometric optics (Ragazzoni 1996) |
 | Two equal lines at the Rayleigh separation λ/R | dip 0.8106 | 8/π² = 0.8106 |
 | Grating blaze (Littrow, 600 l/mm, λ_B = 500 nm) | η = 1 at 500 nm (m = 1) and 250 nm (m = 2) | scalar blaze condition |
+| Slit-limited R: R4 échelle, 200 mm beam, 1″ slit, 8.2 m telescope | 40 247 | UVES design value ≈ 40 000 (Dekker et al. 2000) |
+| Slit transmission, slit width = seeing FWHM | 0.761 | erf(√ln 2) = 0.7610 |
 
 ---
 
@@ -626,7 +628,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Depth of field, tilt-shift | Thin-lens model; exact disk kernels, blended between 11 radii in tilt-shift | Blur radius interpolated between stack levels in tilt-shift; disks above r = 8 px blurred at reduced resolution (edge softer by ≤ r/4 px) |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |
 | Seeing | Single frozen-flow layer; screens periodic over 8D | One seam per 8D of travel |
-| Spectroscopy | Diffraction-limited instrument profile (no slit yet), scalar blaze theory, illustrative line strengths | No Wood anomalies or polarisation; absolute line depths illustrative |
+| Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
 | Macro | Unit focusing by extension (no floating elements); diffraction as a Gaussian with the Airy core's width at 550 nm; perfectly aligned focus stack | Internal-focus macro lenses change f and m<sub>p</sub> with distance; no Airy rings in the crop |

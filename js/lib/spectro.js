@@ -89,3 +89,45 @@ export function observe(src, lams, R) {
   }
   return out;
 }
+
+// ── Astronomical spectrographs ──────────────────────────────────────────────────────────────
+const ARCSEC = Math.PI / 648000;
+// Slit-limited resolving power of a Littrow spectrograph: the slit (width φ on the sky) imaged
+// through a telescope of diameter D onto a collimated beam of diameter D_col,
+// R = 2 tan θ_B · D_col / (φ D). (Schroeder 2000, eq. 13.2.6)
+export const slitR = (thB, DcolMm, slitArcsec, Dm) => (2 * Math.tan(thB) * DcolMm * 1e-3) / (slitArcsec * ARCSEC * Dm);
+// Combined resolving power when slit width and diffraction both broaden the line (quadrature).
+export const combinedR = (Rs, Rd) => 1 / Math.sqrt(1 / Rs ** 2 + 1 / Rd ** 2);
+// Fraction of a Gaussian seeing disk (FWHM) passing a long slit of width φ, centred.
+export function slitThroughput(slit, fwhm) {
+  const x = (slit / fwhm) * Math.sqrt(Math.log(2));
+  // erf by Abramowitz & Stegun 7.1.26 (|ε| < 1.5 × 10⁻⁷)
+  const t = 1 / (1 + 0.3275911 * x), y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+  return y;
+}
+
+// Solar spectrum at resolving power R in closed form: each Gaussian line broadened in
+// quadrature by λ/R with its equivalent width conserved (used for the echellogram).
+export function sunAt(lam, R) {
+  const S = SOURCES.sun, x = lam * 1e-9, p = 1 / (x ** 5 * (Math.exp(1.4388e-2 / (x * S.T)) - 1)), p0 = 1 / ((500e-9) ** 5 * (Math.exp(1.4388e-2 / (500e-9 * S.T)) - 1));
+  let tau = 1;
+  for (const [c, depth, fw] of S.lines) {
+    const inst = (c / R) * 0.886, fe = Math.hypot(fw, inst), d = Math.min(0.99, (depth * fw) / fe), s = fe / 2.3548;
+    if (Math.abs(lam - c) < 6 * s) tau *= 1 - d * Math.exp(-0.5 * ((lam - c) / s) ** 2);
+  }
+  return (p / p0) * tau;
+}
+
+// Echelle + prism cross-disperser: positions (mm on the detector) of wavelength λ in order m.
+// x along the order from the Littrow direction, y across orders from the prism deviation.
+// o = { rho (lines/mm), thB (rad), fcam (mm), glass, apex (rad), lamRef (nm) }
+export function echellePosition(o, m, lam) {
+  const beta = diffractionAngle(m, lam, o.rho, o.thB);
+  if (!Number.isFinite(beta)) return null;
+  return [o.fcam * Math.tan(beta - o.thB), o.fcam * (prismDeviation(o.glass, lam, o.apex) - prismDeviation(o.glass, o.lamRef, o.apex))];
+}
+// Orders whose blaze wavelength 2 d sin θ_B / m lies within [l0, l1].
+export function echelleOrders(rho, thB, l0, l1) {
+  const k = (2e6 * Math.sin(thB)) / rho;
+  return { mMin: Math.ceil(k / l1), mMax: Math.floor(k / l0), lamB: (m) => k / m };
+}
