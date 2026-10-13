@@ -20,6 +20,7 @@ import { filmLab } from './film.js';
 import { aperturePipeline } from './interferometry.js';
 import { luckySim } from './lucky.js';
 import { phaseScreen } from './turbulence.js';
+import { shadowLab } from './starshade.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -452,4 +453,12 @@ function lucky(p) {
   return { result: out, transfer: [out.long.buffer, out.tt.buffer, out.lucky.buffer, out.best.buffer, out.worst.buffer] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky };
+// Starshade shadow: radial profiles at a few wavelengths, an opaque disk of the same size for
+// comparison, and the aperture-averaged suppression across a spectrum (see js/lib/starshade.js).
+function starshade(p) {
+  const main = shadowLab(p), spec = shadowLab({ ...p, lams: p.specLams, nr: 2 });
+  const disk = shadowLab({ ...p, kind: 'disk', R: p.a + p.b, lams: [p.lamC], nr: p.nr });
+  return { result: { rhos: main.rhos, prof: main.prof, supp: main.supp, specSupp: spec.supp, disk: disk.prof[0], diskSupp: disk.supp[0] }, transfer: [] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade };
