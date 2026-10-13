@@ -8,8 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [1.6.0] - 2026-10-13
 
-### Changed
-- ROADMAP, README and CLAUDE.md: the v1.6 milestone is complete with its three P1 laboratories. The remaining photography and cinema laboratories move to a new v1.8 milestone after the v1.7 astronomy laboratories.
+New laboratories for photography and cinema (PRs [#28](https://github.com/iiogurt/Optica_Viva/pull/28)–[#33](https://github.com/iiogurt/Optica_Viva/pull/33)). **Polarisation** renders a lake per pixel in Stokes vectors under a Rayleigh sky, behind a rotating polariser, and adds photoelasticity and the birefringent OLPF. **Macro & magnification** covers pupil magnification, the diffraction-limited optimum aperture and focus stacking on a ray-cast ruler. **Colour science** computes CIE colorimetry, the CIE 13.3 colour rendering index of real LED and fluorescent spectra, camera colour pipelines and metamerism. 23 laboratories and 64 tests.
 
 ### Added
 - **Colour science laboratory**, part 2.
@@ -30,6 +29,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **Birefringent optical low-pass filter** in the polarisation lab: extraordinary-ray walk-off for quartz, lithium niobate and calcite vs the optic-axis angle, a section view of the plate, the plate thickness that makes the spot separation equal the pixel pitch, and the four-spot pattern on Bayer pixels. The catalogue's *Birefringence* and *Stress birefringence* entries now link here.
 - Tests: Hertz disk centre stresses, force balance, free boundary and the calibration formula N = 8P/(πDf_σ). Michel-Lévy colours (dark at 0, first-order white, magenta sensitive tint). Walk-off maximum at tan θ = nₑ/nₒ, quartz 5.875 µm/mm at 45°, calcite 6.26°.
 - Tests (`test/polar.test.mjs`): Malus's law and the three-polariser 1/8, λ/4 and λ/2 plates, Brewster angles and Fresnel values, Rayleigh optical depth and polarisation, the thin-slab limit, and the renderer's centre pixel against an explicit Mueller chain. A vertical polariser extinguishes a Brewster-angle reflection.
+
+### Changed
+- ROADMAP, README and CLAUDE.md: the v1.6 milestone is complete with its three P1 laboratories. The remaining photography and cinema laboratories move to a new v1.8 milestone after the v1.7 astronomy laboratories.
 
 ## [1.5.0] - 2026-10-12
 
