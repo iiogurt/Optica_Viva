@@ -29,6 +29,7 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.5 Higher-fidelity rendering](#v15-higher-fidelity-rendering)
   - [v1.6 New laboratories: photography & cinema](#v16-new-laboratories-photography--cinema)
   - [v1.7 New laboratories: astronomy & space](#v17-new-laboratories-astronomy--space)
+  - [v1.8 New laboratories: photography & cinema II](#v18-new-laboratories-photography--cinema-ii)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -51,11 +52,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"]
     end
     subgraph Next["Planned"]
         direction TB
-        N5["v1.6 photo/cine labs"] --> N6["v1.7 space labs"] --> N7["v2.0 learning platform"]
+        N6["v1.7 space labs"] --> N8["v1.8 photo/cine labs II"] --> N7["v2.0 learning platform"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -64,7 +65,7 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 23 | +16 proposed (v1.6, v1.7) |
+| Laboratories | 23 | +16 proposed (v1.7, v1.8) |
 | Catalogue entries | 150 | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
 | Automated tests | 64 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour) + link check + browser smoke test in CI | more coverage per new lab |
@@ -75,6 +76,15 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.6.0 New laboratories: photography &amp; cinema I</b> (2026-10-13, PRs #28–#32)</summary>
+
+- [x] Polarisation: Stokes-vector lake scene with a Rayleigh sky and a rotating polariser, Malus and wave plates, photoelasticity, birefringent OLPF (#28, #29)
+- [x] Macro & magnification: pupil magnification, effective f-number, chief-ray ruler render with a 1:1 crop, optimum aperture, focus stacking (#30)
+- [x] Colour science: CIE colorimetry, CCT/Duv, CIE 13.3 CRI, camera sensitivities, white balance, colour matrix, metamerism (#31, #32)
+
+</details>
+
+<details>
 <summary><b>v1.5.0 Higher-fidelity rendering</b> (2026-10-12, PRs #22–#25)</summary>
 
 - [x] Real-ray flare ghosts (Hullin 2011 full method): every two-reflection path at 8 wavelengths, flux-conserving triangles, per-pixel aperture gauge, angle-dependent coating reflectance and TIR, in the worker (#22)
@@ -260,18 +270,13 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 ### v1.6 New laboratories: photography & cinema
 
+✅ **Released as v1.6.0** with the three P1 laboratories. The P2 and P3 laboratories move to v1.8.
+
 | Lab | Content | Priority · effort |
 |---|---|---|
 | [x] **Polarisation** | Malus's law, wave plates, Brewster reflections, polariser on water, sky polarisation map (Rayleigh), Stokes-vector scene render, birefringent OLPF, stress birefringence (photoelasticity). *Shipped in PRs #28–#29.* | P1 · M |
 | [x] **Macro & magnification** | bellows factor, effective f-number, diffraction at N(1+m), focus stacking, working distance. *Pupil magnification, chief-ray ruler render with a 1:1 crop, optimum aperture (PR #30).* | P1 · M |
 | [x] **Colour science** | CIE colorimetry, CCT/Duv, CRI (R1–R14) of CIE LED/FL sources, sensor spectral sensitivities, white balance, colour-matrix fitting, metamerism (PRs #31–#32). *TLCI and TM-30 moved to the Backlog.* | P1 · L |
-| [ ] **Panorama & parallax** | entrance pupil as the no-parallax point, stitching errors vs rotation centre | P2 · M |
-| [ ] **Anamorphic & cinema lenses** | squeeze factor, oval bokeh, horizontal streak flare, focus breathing metrics, T-stops | P2 · L |
-| [ ] **Filters & HDR** | ND and graduated ND, exposure fusion, bracketing, dynamic-range stacking | P2 · M |
-| [ ] **Film & grain** | characteristic (H&D) curve, reciprocity failure, grain vs photon noise | P3 · M |
-| [ ] **Virtual production** | LED-wall moiré vs camera MTF and pixel pitch, scan-line/refresh interactions with rolling shutter | P3 · M |
-| [ ] **Stabilisation & shake** | angular-jitter blur, reciprocal rule, IBIS/OIS correction residuals | P3 · S |
-| [ ] **Human eye** | schematic eye, pupil size vs acuity, Stiles–Crawford effect, why the CoC is d/1500 | P3 · M |
 
 ### v1.7 New laboratories: astronomy & space
 
@@ -286,6 +291,18 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | [ ] **Astrophotography stacking** | SNR ∝ √N, sky-limited vs read-limited sub-exposures, light pollution | P3 · M |
 | [ ] **Atmospheric dispersion & ADC** | elongated stellar images vs zenith angle; Risley-prism corrector | P3 · S |
 | [ ] **Lucky imaging** | frame selection by Strehl from the seeing simulator | P3 · S |
+
+### v1.8 New laboratories: photography & cinema II
+
+| Lab | Content | Priority · effort |
+|---|---|---|
+| [ ] **Panorama & parallax** | entrance pupil as the no-parallax point, stitching errors vs rotation centre | P2 · M |
+| [ ] **Anamorphic & cinema lenses** | squeeze factor, oval bokeh, horizontal streak flare, focus breathing metrics, T-stops | P2 · L |
+| [ ] **Filters & HDR** | ND and graduated ND, exposure fusion, bracketing, dynamic-range stacking | P2 · M |
+| [ ] **Film & grain** | characteristic (H&D) curve, reciprocity failure, grain vs photon noise | P3 · M |
+| [ ] **Virtual production** | LED-wall moiré vs camera MTF and pixel pitch, scan-line/refresh interactions with rolling shutter | P3 · M |
+| [ ] **Stabilisation & shake** | angular-jitter blur, reciprocal rule, IBIS/OIS correction residuals | P3 · S |
+| [ ] **Human eye** | schematic eye, pupil size vs acuity, Stiles–Crawford effect, why the CoC is d/1500 | P3 · M |
 
 ### v2.0 Learning platform
 
@@ -324,5 +341,5 @@ Short notes from the October 2026 review that inform priorities above.
 - **WebGPU availability.** WebGPU with compute shaders ships by default in Chromium, in Safari from the 2025 (26.x) releases, and in Firefox on Windows and Apple Silicon. Android coverage is still incomplete, so a CPU/WebGL fallback remains necessary. Sources: [Khronos WebGL & WebGPU update (2026)](https://www.khronos.org/developers/linkto/webgl-and-webgpu-sigg26), [WebGPU adoption overview 2026](https://enterno.io/en/s/research-webgpu-adoption-browsers-2026).
 - **Canvas `filter` in Safari.** It is still disabled by default through Safari 26.5, and the OffscreenCanvas variant is unimplemented. This motivates the in-house blur in v1.1. Sources: [caniuse: CanvasRenderingContext2D.filter](https://caniuse.com/mdn-api_canvasrenderingcontext2d_filter), [MDN: CanvasRenderingContext2D.filter](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter), [WebKit bug 275436](https://bugs.webkit.org/show_bug.cgi?id=275436).
 - **Lens-file interoperability.** Open-source projects show the realistic scope. Open Optical Designer (browser, conics, `.len` import) and RayOptics (Python, `.zmx`/CODE V `.seq` import) suggest starting with a `.zmx` subset plus JSON. Sources: [open-optical-designer](https://github.com/alexbock/open-optical-designer), [RayOptics documentation](https://ray-optics.readthedocs.io/), [RayOptics Thorlabs .zmx import example](https://ray-optics.readthedocs.io/en/latest/examples/ThorlabsLensImport/ThorlabsLensImport.html), [Cherry (browser tabletop optics)](https://github.com/kmdouglass/cherry).
-- **Field-dependent telescope PSFs.** STScI's STPSF (formerly WebbPSF) models JWST field dependence from a CODE V model plus measured wavefronts, with per-instrument coefficients. This is the reference for the v1.6 field-dependent PSF lab. Sources: [STPSF multifield model](https://stpsf.readthedocs.io/en/stable/field_dependence/multifield_documentation.html), [STPSF for Roman](https://roman-docs.stsci.edu/simulation-tools/stpsf-space-telescope-point-spread-functions-for-roman).
+- **Field-dependent telescope PSFs.** STScI's STPSF (formerly WebbPSF) models JWST field dependence from a CODE V model plus measured wavefronts, with per-instrument coefficients. This is the reference for the v1.7 field-dependent PSF lab. Sources: [STPSF multifield model](https://stpsf.readthedocs.io/en/stable/field_dependence/multifield_documentation.html), [STPSF for Roman](https://roman-docs.stsci.edu/simulation-tools/stpsf-space-telescope-point-spread-functions-for-roman).
 - **Local performance baseline** (Raspberry Pi 4, Node 20, this repo): 2-D FFT 256² 17 ms, 512² 88 ms; 512² mono PSF 103 ms; JWST 512² pupil raster 184 ms; 1000 aimed Cooke rays 35 ms. Re-measure after v1.2.
