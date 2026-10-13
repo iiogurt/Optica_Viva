@@ -2,7 +2,7 @@
 import { h, resetUrlState } from './lib/ui.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'telescope', 'lensing', 'sampling', 'noise', 'motion', 'vignetting', 'perspective', 'tiltshift', 'macro', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'telescope', 'lensing', 'sampling', 'noise', 'colour', 'motion', 'vignetting', 'perspective', 'tiltshift', 'macro', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -28,6 +28,7 @@ export const MODULES = [
   { id: 'flare', group: 'Light, sensor & time', title: 'Flare, ghosts & coatings', c: '#c18cff', blurb: 'Paraxial ghost tracing, Fresnel equations, thin-film coatings by the transfer-matrix method, and diffraction starbursts.' },
   { id: 'sampling', group: 'Light, sensor & time', title: 'Aliasing, moiré & Bayer', c: '#c18cff', blurb: 'Pixel sampling, optical low-pass filters and demosaicing false colour on a zone plate.' },
   { id: 'noise', group: 'Light, sensor & time', title: 'Noise & exposure', c: '#c18cff', blurb: 'Photon transfer: shot, read and dark noise, full-well capacity, dynamic range and ISO, with simulated frames.' },
+  { id: 'colour', group: 'Light, sensor & time', title: 'Colour science', c: '#c18cff', blurb: 'Spectra to colour: CIE colorimetry, correlated colour temperature, the colour rendering index of LEDs and fluorescents, computed from CIE tables.' },
   { id: 'motion', group: 'Light, sensor & time', title: 'Rolling shutter & time', c: '#c18cff', blurb: 'Rolling-shutter distortion, shutter angle, the wagon-wheel effect and flicker banding.' },
 
   { id: 'seeing', group: 'Astronomy & space', title: 'Atmospheric seeing & AO', c: '#8fd8ff', blurb: 'Kolmogorov phase screens, Fried parameter, speckle and long-exposure PSFs, and adaptive-optics correction.' },

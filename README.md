@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Twenty-two interactive simulations, a physics primer and a catalogue of 149 phenomena.
+Twenty-three interactive simulations, a physics primer and a catalogue of 150 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -288,6 +288,16 @@ Row-timed propeller rendering with exposure integration, comparing rolling and g
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Colour science** · `#/colour`<br>
+<img src="docs/screenshots/colour.webp" alt="Spectrum of a phosphor LED, test colour samples under reference and LED, colour rendering indices" width="70%">
+
+Colorimetry from **CIE tables** (1931 observer, D-series, A, FL, HP and the CIE 15:2018 **LED** illuminants): tristimulus values, correlated colour temperature and **Duv** by search along the Planckian locus. The page computes the **CIE 13.3 colour rendering index** R1–R14 and Ra, reproducing the CIE's own values for the FL series, and shows the 14 test colours side by side under the reference and the test source with Bradford adaptation. It is clear why phosphor LEDs fail **R9**.
+
+</td>
+</tr>
 </table>
 
 ### Astronomy & space
@@ -338,9 +348,9 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 <td width="50%" valign="top">
 
 **Catalogue of phenomena** · `#/catalogue`<br>
-<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 149 optical phenomena">
+<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 150 optical phenomena">
 
-**149 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
+**150 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
 
 </td>
 </tr>
@@ -399,6 +409,7 @@ flowchart LR
 | Wavefront | OPD against the exit-pupil reference sphere, sampled on a 41 × 41 pupil grid | ray tracer |
 | Diffraction | Fraunhofer integral by radix-2 2-D FFT of a 4 × 4-supersampled pupil, zero-padded (Q = 4); one FFT per wavelength when aberrated | PSF, Zernike, MTF, seeing, telescope |
 | Colour | CIE 1931 2° colour-matching functions (Wyman–Sloan–Shirley fit) → linear sRGB → sRGB transfer curve | all spectral renders |
+| Colorimetry | Tabulated CIE data at 5 nm (1931 observer, S₀/S₁/S₂, A, FL, HP, LED); CCT by golden-section search in (u, v); CIE 13.3 CRI; Bradford adaptation; CIEDE2000 | colour |
 | Thin films | Characteristic-matrix method, s and p polarisation, oblique incidence | flare |
 | Polarisation | Stokes vectors and Mueller matrices (diattenuators, retarders, frame rotations); Fresnel reflection and transmission in Mueller form | polarisation |
 | Birefringence | Stress-optic law with the Hertz/Frocht disk stress field, white-light interference colours from 61 wavelengths; extraordinary-ray walk-off in uniaxial crystals | polarisation |
@@ -489,6 +500,8 @@ Optica_Viva/
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
 │   │   ├── tasks.js           Heavy pure computations (PSF, Zernike, OTF) for the worker
 │   │   ├── compute.js         Worker API: run(task) and latest-only channels, main-thread fallback
+│   │   ├── colordata.js       CIE tables at 5 nm: 1931 observer, daylight basis, illuminants, CRI test colours
+│   │   ├── colorsci.js        CCT/Duv, CIE 13.3 CRI, Bradford adaptation, CIELAB, CIEDE2000
 │   │   ├── color.js           CIE 1931 CMFs, sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── raytrace.js        Exact ray tracer (spheres + even aspheres), paraxial analysis, ray aiming, OPD
@@ -502,11 +515,11 @@ Optica_Viva/
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (149 entries)
+│   │   ├── phenomena.js       Catalogue data (150 entries)
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (24)
+│   └── modules/               One file per page (25)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -563,6 +576,9 @@ The numerical core was checked against published or analytically known values. E
 | Walk-off: quartz at 45°, calcite maximum | 5.875 µm/mm, 6.26° at tan θ = n<sub>e</sub>/n<sub>o</sub> | (n<sub>e</sub>² − n<sub>o</sub>²)/(2n<sub>o</sub>n<sub>e</sub>) |
 | Close-up: symmetric lens at 1 : 1 | f/8 → f/16 (−2 EV), object–image 4f | N(1 + m/m<sub>p</sub>); thin-lens conjugates |
 | Macro depth of field, 100 mm at 1 : 1, f/8 | exact two-sided blur search within 1 % of the formula | 2N<sub>w</sub>c/m² |
+| CCT of illuminant A; D65 chromaticity | 2856 K; (0.3127, 0.3290) | CIE 15:2018 |
+| Colour rendering index Ra of CIE FL1, FL2, FL4, FL7, FL8, FL10, FL11, FL12 | 75.8, 64.2, 51.4, 90.2, 95.5, 81.0, 82.8, 83.1 | CIE 13.3 tables: 76, 64, 51, 90, 95, 81, 83, 83 |
+| CIEDE2000, Sharma test pairs 1, 3, 7, 17 | 2.0425, 1.0000, 2.3669, 27.1492 | Sharma, Wu & Dalal (2005), same |
 
 ---
 
