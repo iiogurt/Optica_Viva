@@ -2,12 +2,9 @@
 // Ornstein–Uhlenbeck angular velocity (drift, RMS σ_ω, correlation time τ) plus physiological
 // tremor (a narrow band near 10 Hz). A stabiliser servo follows the motion below its bandwidth
 // f_c and adds gyro noise. Angles in rad, times in s.
+import { makeRng } from './random.js';
 
-export function rng(seed) {
-  let s = seed >>> 0;
-  const u = () => { s = (s * 1664525 + 1013904223) >>> 0; return (s + 0.5) / 4294967296; };
-  return { u, g: () => Math.sqrt(-2 * Math.log(u())) * Math.cos(2 * Math.PI * u()) };
-}
+export function rng(seed) { const r = makeRng(seed); return { u: r.u, g: r.g }; }
 
 // Angular trajectory θ(t) for one axis, sampled at dt over duration T.
 // o = { sigma (rad/s RMS drift velocity), tau (s), tremor (rad/s RMS), ftrem (Hz) }

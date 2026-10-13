@@ -657,6 +657,7 @@ Optica_Viva/
 │   │   ├── colorsci.js        CCT/Duv, CIE 13.3 CRI, Bradford adaptation, CIELAB, CIEDE2000
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
+│   │   ├── random.js          Seeded random numbers for every simulation (mulberry32, Box–Muller, Poisson)
 │   │   ├── raytrace.js        Exact ray tracer (spheres + even aspheres), paraxial analysis, ray aiming, OPD
 │   │   ├── optimise.js        Damped-least-squares (Levenberg–Marquardt) lens optimiser
 │   │   ├── tolerance.js       Monte-Carlo tolerancing with refocus compensation

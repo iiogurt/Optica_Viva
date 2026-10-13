@@ -1,24 +1,14 @@
 import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS, pitchUm } from '../lib/sensors.js';
+import { makeRng as sharedRng } from '../lib/random.js';
 import { plot, logRange } from '../lib/plot.js';
 
 const PHOTONS_PER_LUXS_UM2 = 1.2e4; // broadband daylight, 400–700 nm
 const K_METER = 12.5, T_LENS = 0.9;
 
-// Poisson sampler (Knuth for small means, Gaussian approximation above 40)
-function makeRng(seed) {
-  let s = seed >>> 0;
-  const u = () => { s = (s * 1664525 + 1013904223) >>> 0; return (s + 0.5) / 4294967296; };
-  const gauss = () => Math.sqrt(-2 * Math.log(u())) * Math.cos(2 * Math.PI * u());
-  const poisson = (l) => {
-    if (l > 40) return Math.max(0, Math.round(l + Math.sqrt(l) * gauss()));
-    const L = Math.exp(-l); let k = 0, p = 1;
-    do { k++; p *= u(); } while (p > L);
-    return k - 1;
-  };
-  return { u, gauss, poisson };
-}
+// Uniform, Gaussian and Poisson deviates from the shared seeded stream (js/lib/random.js)
+function makeRng(seed) { const r = sharedRng(seed); return { u: r.u, gauss: r.g, poisson: r.poisson }; }
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, lede: 'Light arrives as photons, and photons arrive at random. Every pixel value is therefore a random variable whose spread is set by physics (shot noise) and by electronics (read noise, dark current, gain). Exposure sets the photon count, and ISO only decides where the analogue amplifier puts the clipping point. Here the full chain is simulated pixel by pixel.', domains: ['photo', 'video', 'space'] }));

@@ -14,6 +14,7 @@ Use the most precise model that runs interactively, and state every approximatio
 - `js/app.js`: lab registry (`MODULES`) and `READY` set. `js/lib/`: numerical core (fft, color, glass, raytrace, pupil, thinfilm, sensors, phenomena, plot, ui, page). `js/modules/<id>.js`: one page each, exporting `mount(root, meta)` that returns a cleanup function.
 - New lab: create the module, register it in `MODULES` and `READY`, link it from `js/lib/phenomena.js`, add a screenshot entry in `scripts/screenshots.mjs`.
 - Style: match the surrounding code; dark design system in `css/style.css`. Theory text goes in `String.raw` templates with `\( \)` / `\[ \]` math (never `$`). Never put a `//` comment inside a one-line `{ … }` block.
+- Randomness: use the seeded generators in `js/lib/random.js` (`uniform`, `makeRng`); never write a local LCG (consecutive LCG outputs fed to Box–Muller are correlated).
 - The owner's machine is a Raspberry Pi 4. Put heavy pure computations in `js/lib/tasks.js` and call them via `latest(channel)` from `js/lib/compute.js` (module worker, main-thread fallback). Performance targets are in `ROADMAP.md`; `npm run bench` measures the kernels.
 - Browser automation must use real time (`scripts/lib/browser.mjs`, CDP). Chromium's `--virtual-time-budget` never advances Web Workers.
 

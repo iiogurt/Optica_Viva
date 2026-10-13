@@ -1,5 +1,6 @@
 // Astrophotography stacking: the CCD equation for a sum of N sub-exposures, sky brightness from
 // light pollution, and the sub-exposure length beyond which read noise stops mattering.
+import { makeRng } from './random.js';
 // Photon zero point: a V = 0 source delivers ≈ 1.0 × 10⁶ photons s⁻¹ cm⁻² in a 100 nm band.
 export const ZP = 1.0e6;
 // Bortle class → typical zenith sky brightness in V (mag/arcsec²).
@@ -18,13 +19,8 @@ export function stackSNR(Fo, Fs, Fd, sigma, t, N) {
 // σ_r² = ε F_s t  →  t = σ_r²/(ε F_s)  (ε = 0.1 ↔ ≈ 5 % in noise).
 export const skyLimitedSub = (Fs, sigma, eps = 0.1) => (sigma * sigma) / (eps * Fs);
 
-// Gaussian deviates for the image simulation: mulberry32 uniforms (a plain 32-bit LCG feeding
-// Box–Muller with consecutive outputs leaves correlations that bias sums of many draws).
-export function rng(seed) {
-  let a = seed >>> 0;
-  const u = () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return (((t ^ (t >>> 14)) >>> 0) + 0.5) / 4294967296; };
-  return () => Math.sqrt(-2 * Math.log(u())) * Math.cos(2 * Math.PI * u());
-}
+// Gaussian deviates for the image simulation (see js/lib/random.js).
+export function rng(seed) { return makeRng(seed).g; }
 // A faint galaxy (exponential disk, central μ₀, scale length h arcsec, inclination) plus stars,
 // rendered as an object-rate map (e⁻/s/pixel) for the given optics.
 export function galaxyRate(W, H, p, D, q, mu0, hArc) {

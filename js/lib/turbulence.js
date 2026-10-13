@@ -1,12 +1,9 @@
 // Atmospheric turbulence: seeded Gaussian random numbers and von Kármán phase screens.
 import { fft2d } from './fft.js';
+import { makeRng } from './random.js';
 
-// Gaussian random numbers (Box–Muller) from a seeded generator
-export function rng(seed) {
-  let s = seed >>> 0;
-  const u = () => { s = (s * 1664525 + 1013904223) >>> 0; return (s + 0.5) / 4294967296; };
-  return () => Math.sqrt(-2 * Math.log(u())) * Math.cos(2 * Math.PI * u());
-}
+// Gaussian random numbers from a seeded stream (see js/lib/random.js)
+export function rng(seed) { return makeRng(seed).g; }
 
 // von Kármán phase screen (radians at 500 nm), FFT method + 3 levels of subharmonics
 // (Lane, Glindemann & Dainty 1992; Schmidt 2010, ft_sh_phase_screen).

@@ -5,6 +5,7 @@
 import { fft2d } from './fft.js';
 import { noll } from './pupil.js';
 import { phaseScreen } from './turbulence.js';
+import { uniform } from './random.js';
 
 const nextPow2 = (v) => { let p = 1; while (p < v) p <<= 1; return p; };
 
@@ -238,8 +239,7 @@ export function createLoop({ Np = 120, NS = 512, D = 8, lamWFS = 600, Npsf = 256
   const dx = D / Np, base = phaseScreen(NS, dx, 0.1, 25, seed);
   let sys = null, sysKey = '', noiseKey = '', noiseVar = 0, st = null, kScr = 1;
   let shift = 0, t = 0, steps = 0, cmd = null, dm = new Float64Array(Np * Np), long = null, longN = 0, hist = [];
-  let s = 987654321;
-  const rand = () => { s = (s * 1664525 + 1013904223) >>> 0; return (s + 0.5) / 4294967296; };
+  const rand = uniform(987654321);
   const turbulence = () => {
     const out = new Float64Array(Np * Np), s0 = Math.floor(shift), f = shift - s0;
     for (let y = 0; y < Np; y++) for (let x = 0; x < Np; x++) {

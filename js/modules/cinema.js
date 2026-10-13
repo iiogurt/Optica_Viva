@@ -3,6 +3,7 @@ import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { plot, logRange } from '../lib/plot.js';
 import { oetf } from '../lib/color.js';
 import { COATINGS } from '../lib/thinfilm.js';
+import { uniform } from '../lib/random.js';
 import { anamorphicAspect, streakColour, angleOfView, breathing, surfaceReflectance, transmission, tStop } from '../lib/cinema.js';
 
 const D2R = Math.PI / 180;
@@ -26,7 +27,7 @@ export default function mount(root, meta) {
   const view = stage({ aspect: 2.39, label: '2.39 : 1 frame, 50 mm lens on an 18.7 mm-high gate, subject in focus', draw: drawScene, minH: 200 });
   root.append(lab([view.el], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
-  const F = 50, GATE_H = 18.66, rnd = (() => { let s = 11; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; })();
+  const F = 50, GATE_H = 18.66, rnd = uniform(11);
   const LIGHTS = Array.from({ length: 70 }, () => ({ x: rnd() * 2 - 1, y: rnd() * 0.75 - 0.15, b: 0.3 + rnd() * 0.7, hue: rnd() }));
   let A = null;
   function update() {
