@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - `scripts/worktree.sh`: one git worktree per branch. `new <type>/<name>` creates the branch from a freshly fetched `origin/main`, without an upstream, in `../Optica-Viva.worktrees/`. `finish` checks that the PR was merged, then removes the worktree and local branch, prunes and fast-forwards `main`. CONTRIBUTING.md and CLAUDE.md now describe this workflow.
 
 ### Fixed
+- `scripts/worktree.sh` runs from the main checkout (so `finish` works when called from inside the worktree it removes) and tolerates GitHub deleting the merged branch first.
 - `scripts/worktree.sh finish` also deletes a merged branch left on the remote: `gh pr merge --delete-branch` skips it when the branch is checked out in a worktree. The repository now deletes merged head branches automatically (GitHub setting).
 - CHANGELOG: the v1.8.0 summary named "Noll-style analytic checks", which belong to v1.7.0.
 
