@@ -45,6 +45,10 @@ finish)
   git -C "$ROOT" worktree prune
   if [ "$(git -C "$ROOT" branch --show-current)" = main ] && [ -z "$(git -C "$ROOT" status --porcelain)" ]; then git -C "$ROOT" merge -q --ff-only origin/main; fi
   echo "finished $BR; main at $(git -C "$ROOT" rev-parse --short HEAD)"
+  # the repository is public: the merge commit GitHub created must carry only noreply addresses
+  for e in $(git -C "$ROOT" log -1 --format='%ae %ce' origin/main); do
+    case "$e" in *@users.noreply.github.com|noreply@github.com) ;; *) echo "warning: origin/main's last commit records the email $e; enable 'Keep my email addresses private' on GitHub" >&2 ;; esac
+  done
   ;;
 list) git -C "$ROOT" worktree list ;;
 *) echo "usage: $0 new|finish <type>/<name> | list" >&2; exit 1 ;;
