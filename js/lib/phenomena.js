@@ -58,13 +58,16 @@ export const GROUPS = [
       ['Spherochromatism', 'raytracer', 'p', 'Spherical aberration that differs by wavelength; coloured halos around highlights.', r`W_{040}(\lambda)`],
       ['Purple fringing', 'chromatic', 'p', 'Violet halos at high-contrast edges from LoCA at short wavelengths plus sensor blooming and microlens leakage.', r`\Delta f(\lambda<450\,\text{nm})`],
       ['Atmospheric dispersion', 'seeing', 's', 'Air refracts blue more than red; stars become spectra near the horizon. Corrected by ADC prisms.', r`R(\lambda)\approx(n(\lambda)-1)\tan z`],
-      ['Rainbows, prisms & halos', null, 'p', 'Dispersion in droplets and ice crystals; minimum deviation sets the 42° rainbow and 22° halo.', r`D_\text{min}=2\arcsin\left(n\sin\tfrac A2\right)-A`],
+      ['Rainbows, prisms & halos', 'spectro', 'p', 'Dispersion in droplets and ice crystals; minimum deviation sets the 42° rainbow and 22° halo.', r`D_\text{min}=2\arcsin\left(n\sin\tfrac A2\right)-A`],
     ],
   },
   {
     title: 'Diffraction and wave optics',
     intro: 'The wave nature of light: the ultimate limit on sharpness and the source of stars, rings and speckle.',
     items: [
+      ['Diffraction gratings & resolving power', 'spectro', 's', 'Grooves diffract each wavelength into its own direction; N grooves in order m resolve λ/(mN).', r`m\lambda=d(\sin\alpha+\sin\beta),\ R=mN`],
+      ['Blaze & order overlap', 'spectro', 's', 'Tilted facets concentrate light in one order; λ in order 1 lands where λ/2 does in order 2.', r`\Delta\lambda_\text{FSR}=\lambda/m`],
+      ['Prism spectroscopy', 'spectro', 'ps', 'Glass dispersion separates wavelengths; resolving power set by the base length.', r`R=b\left|\frac{dn}{d\lambda}\right|`],
       ['Airy disk', 'psf', 'pvs', 'Fraunhofer pattern of a circular pupil; sets the diffraction limit.', r`I(v)=\left[\frac{2J_1(v)}{v}\right]^2,\ r_1=1.22\lambda N`],
       ['Rayleigh, Sparrow & Dawes limits', 'mtf', 'ps', 'Conventional two-point resolution criteria.', r`\theta_R=1.22\frac{\lambda}{D},\ \theta_S=0.947\frac{\lambda}{D}`],
       ['Diffraction-limited aperture', 'sensor', 'p', 'The f-number beyond which the Airy disk outgrows the pixels.', r`N_\text{DLA}\approx\frac{p}{1.22\lambda}`],

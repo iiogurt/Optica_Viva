@@ -65,10 +65,10 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 24 | +15 proposed (v1.7, v1.8) |
-| Catalogue entries | 152 | link every new lab |
+| Laboratories | 25 | +14 proposed (v1.7, v1.8) |
+| Catalogue entries | 155 | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 70 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 74 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -283,7 +283,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | Lab | Content | Priority · effort |
 |---|---|---|
 | [x] **Wavefront sensing** | Shack–Hartmann spots → slopes → reconstructed wavefront; closed-loop AO with noise and an error budget; pyramid sensor with modulation (PRs #37–#38) | P1 · L |
-| [ ] **Spectroscopy** | prisms vs gratings, resolving power R = mN, blaze, slit and IFU spectrographs, order overlap | P1 · L |
+| [~] **Spectroscopy** | ✅ prisms vs gratings, resolving power R = mN, blaze, order overlap (PR #39) · ⬜ slit-limited and IFU spectrographs, echelle | P1 · L |
 | [ ] **Interferometry & aperture synthesis** | Young fringes → visibility; u-v coverage of VLTI/EHT-like arrays; dirty beam and CLEAN | P2 · L |
 | [ ] **Field-dependent PSF** | JWST/Roman-style PSF variation across an instrument field (after the STPSF multifield model) | P2 · M |
 | [ ] **Detector physics (space)** | inter-pixel capacitance, persistence, cosmic-ray rejection by up-the-ramp fitting, CTI from radiation damage | P2 · M |

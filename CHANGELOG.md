@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Spectroscopy laboratory** (`#/spectro`, `js/lib/spectro.js`). It compares prisms (60° apex, six glasses, R = b|dn/dλ| from Sellmeier) with diffraction gratings in a Littrow mount at the first-order blaze (grating equation, scalar blaze envelope per order, R = mN, angular dispersion, free spectral range). The detector strip has a colour row and a silicon-signal row that also shows UV and IR light from overlapping orders, with an optional order-sorting filter. Sources: the Sun (5778 K continuum, Fraunhofer and telluric lines) and Hg, Ne, H and Na lamps. A zoom plot convolves the spectrum with the sinc² instrument profile, and further plots show blaze efficiency per order or prism R vs wavelength. The catalogue gains three entries (gratings, blaze & orders, prism spectroscopy), and *Rainbows, prisms & halos* links here.
+- Tests (`test/spectro.test.mjs`): Littrow blaze in orders 1 and 2, the grating round trip and order overlap, R = mN, the Rayleigh dip 8/π², the sodium doublet resolved at R = 3000 but not 400, prism dispersion against the F–C mean, and solar line depth vs R.
 - **Pyramid wavefront sensor** in the AO lab. The pupil field is focused by an FFT onto a four-faced pyramid phase mask and re-imaged into four pupils, with circular modulation (a symmetric ring of tilted copies). The page shows the slope signals Sx and Sy for tilt, defocus, astigmatism, coma or turbulence, and the tilt response curve (computed in the worker) against the geometric law (2/π) asin(θ/R) with the optical gain. Test: zero signal without aberration, the arcsine law within 15 % when modulated, more than 8× higher sensitivity and saturation without modulation, and no cross-talk between axes.
 - **Wavefront sensing & AO loop laboratory** (`#/wfs`, `js/lib/wfs.js`).
   - **Sensor:** a diffraction model of the Shack–Hartmann sensor (one zero-padded FFT spot per lenslet) with photon (Poisson) and read noise, thresholded centre-of-gravity centroids in a peak-centred window, and per-lenslet centroid gains calibrated through the sensor with two small tilts.
@@ -16,6 +18,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Tests (`test/wfs.test.mjs`): calibrated slopes equal the mean gradient; Z₄–Z₂₂ are recovered within 4 %; the Zernike fitting error after 21 modes matches Noll's Δ₂₁ within 15 % over 24 phase screens; centroid variance scales as 1/N_ph; the closed loop converges to its fitting error.
 
 ### Changed
+- Colour: `cmf()` now interpolates the tabulated CIE 1931 2° observer (5 nm) instead of the Wyman–Sloan–Shirley analytic fit, and `wavelengthRGB` takes its hue from 380–720 nm only. Deep red and infrared wavelengths previously rendered yellow-green or teal.
 - The von Kármán phase-screen generator moved from the seeing page to `js/lib/turbulence.js`, shared with the AO lab.
 
 ## [1.6.1] - 2026-10-13
