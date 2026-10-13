@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Thirty-three interactive simulations, a physics primer and a catalogue of 164 phenomena.
+Thirty-four interactive simulations, a physics primer and a catalogue of 166 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -430,6 +430,16 @@ A **diffraction model of the Shack–Hartmann sensor**: one FFT spot per lenslet
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Detector physics in space** · `#/detectors`<br>
+<img src="docs/screenshots/detectors.webp" alt="Up-the-ramp reads with a cosmic-ray jump and the CDS, least-squares and jump-aware fits; slope noise vs number of reads" width="70%">
+
+**Up-the-ramp sampling** of infrared arrays: CDS vs least-squares slopes with the exact correlated-noise variance, and **cosmic-ray jump detection**. Also **inter-pixel capacitance** (charge conserved, variance hidden, gain biased), **charge-transfer inefficiency** trails in a radiation-damaged CCD, and **persistence**.
+
+</td>
+</tr>
 </table>
 
 ### Reference pages
@@ -447,9 +457,9 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 <td width="50%" valign="top">
 
 **Catalogue of phenomena** · `#/catalogue`<br>
-<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 164 optical phenomena">
+<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 166 optical phenomena">
 
-**164 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
+**166 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
 
 </td>
 </tr>
@@ -597,6 +607,7 @@ Optica_Viva/
 ├── js/
 │   ├── app.js                 Laboratory registry, hash router, navigation
 │   ├── lib/                   Numerical core (pure functions, no DOM unless noted)
+│   │   ├── detectors.js       Up-the-ramp slopes and jump detection, IPC, CTI trails, persistence
 │   │   ├── eye.js             Le Grand schematic eye, ocular chromatic aberration, retinal MTF vs pupil, CoC from acuity
 │   │   ├── film.js            Boolean-model emulsion: development probability, H&D curve, Selwyn granularity, DQE, reciprocity
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
@@ -628,11 +639,11 @@ Optica_Viva/
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (164 entries)
+│   │   ├── phenomena.js       Catalogue data (166 entries)
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (35)
+│   └── modules/               One file per page (36)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -688,6 +699,9 @@ The numerical core was checked against published or analytically known values. E
 | Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |
 | Disk in diametral compression: centre stresses, force balance | σ<sub>x</sub> = 2P/(πDt), σ<sub>y</sub> = −6P/(πDt); ∫σ<sub>y</sub>t dx = −P | Frocht (1948); free boundary |
 | Walk-off: quartz at 45°, calcite maximum | 5.875 µm/mm, 6.26° at tan θ = n<sub>e</sub>/n<sub>o</sub> | (n<sub>e</sub>² − n<sub>o</sub>²)/(2n<sub>o</sub>n<sub>e</sub>) |
+| Up-the-ramp slope variance, LS and CDS (5000 simulated ramps) | within 6 % of the exact formulas | correlated read + shot noise |
+| IPC flat-field variance factor (α = 2 %) | 0.848 | (1 − 4α)² + 4α² = 0.848 |
+| CTI: core after 1500 transfers at ε = 2·10⁻⁵ | (1 − ε)ⁿ, charge conserved in the trail | trap model |
 | Betelgeuse from the 3.07 m visibility null at 575 nm | 47.1 mas | Michelson & Pease (1921): 47 mas |
 | Fringe visibility of a 20 mas disk (numerical sum over the disk) | equals \|2J₁(x)/x\| within 0.002 | van Cittert–Zernike |
 | CLEAN of a 1 : 0.6 binary | recovered flux ratio within 0.06 | input model |
@@ -742,6 +756,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
+| Detectors | One trap species with exponential release (real CTI depends on signal level); illustrative persistence law | Flux dependence of CTI and detector-specific persistence not modelled |
 | Interferometry | Noise-free, perfectly calibrated visibilities on a 128² grid; Högbom CLEAN only | No atmospheric phase, closure quantities or regularised imaging |
 | Virtual production | Fundamental and low harmonics of a separable LED grid; single-pulse PWM, no scan multiplexing | Real walls add multiplexing and colour sub-pixel structure |
 | Film | Representative B&W emulsion (layers of opaque grains, threshold of 2 photons); no development chemistry or dye clouds | Granularity values illustrative (≈ 3× real films) |

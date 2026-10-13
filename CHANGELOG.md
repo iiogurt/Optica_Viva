@@ -7,6 +7,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Detector physics in space laboratory** (`#/detectors`, `js/lib/detectors.js`). It covers:
+  - **Up-the-ramp sampling:** Poisson accumulation, read noise and an optional cosmic ray. The page compares CDS, least-squares and jump-detecting segment fits, and plots slope noise against the number of reads with the exact correlated-noise variance.
+  - **Inter-pixel capacitance:** the coupling kernel, its variance factor and the resulting gain bias.
+  - **Charge-transfer inefficiency:** trap-and-release trails behind stars in a CCD column readout.
+  - **Persistence:** decay curves.
+  - **Catalogue:** *Charge-transfer inefficiency* and *Inter-pixel capacitance* are new entries, and *Cosmic rays & persistence* links here.
+- Tests (`test/detectors.test.mjs`): Monte-Carlo LS and CDS slope variances match the exact formulas, and the read-noise term equals 12σ²/(N(N²−1)Δt²); jump detection is unbiased; IPC conserves charge and has the predicted variance factor; CTI keeps (1−ε)ⁿ in the core and conserves charge.
 - **Interferometry & aperture synthesis laboratory** (`#/interferometry`, `js/lib/interferometry.js`).
   - **Michelson stellar interferometer:** fringes of a uniform disk summed numerically over the star, against the van Cittert–Zernike visibility |2J₁(x)/x|, with the first null at 1.22 λ/θ (the Betelgeuse case).
   - **Aperture synthesis:** Earth-rotation u-v coverage for a VLA-like Y, the four VLTI Unit Telescopes and the 2017 EHT, the last with geocentric stations and 15° elevation limits. Visibilities are gridded with uniform or natural weighting to give the dirty beam and image, followed by Högbom CLEAN with restoring beam. Sky models: black-hole ring, binary, core + jet, disk. Runs in the worker (`aperture` task).

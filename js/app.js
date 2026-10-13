@@ -2,7 +2,7 @@
 import { h, resetUrlState } from './lib/ui.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'wfs', 'spectro', 'interferometry', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'wfs', 'spectro', 'interferometry', 'detectors', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -42,6 +42,7 @@ export const MODULES = [
   { id: 'wfs', group: 'Astronomy & space', title: 'Wavefront sensing & AO loop', c: '#8fd8ff', blurb: 'A diffraction Shack–Hartmann sensor with photon and read noise, least-squares modal reconstruction and a closed adaptive-optics loop with its error budget.' },
   { id: 'spectro', group: 'Astronomy & space', title: 'Spectroscopy', c: '#8fd8ff', blurb: 'Prisms and gratings, resolving power R = mN, blaze and overlapping orders, and the spectra of the Sun and of laboratory lamps.' },
   { id: 'interferometry', group: 'Astronomy & space', title: 'Interferometry & aperture synthesis', c: '#8fd8ff', blurb: "Michelson's stellar interferometer and van Cittert–Zernike, Earth-rotation u-v coverage of the VLA, VLTI and EHT, dirty beams and CLEAN." },
+  { id: 'detectors', group: 'Astronomy & space', title: 'Detector physics in space', c: '#8fd8ff', blurb: 'Up-the-ramp sampling and cosmic-ray rejection, inter-pixel capacitance, charge-transfer inefficiency trails and persistence.' },
   { id: 'telescope', group: 'Astronomy & space', title: 'Space telescopes', c: '#8fd8ff', blurb: 'Resolution limits, sampling, light-gathering, and a Lyot coronagraph simulation for exoplanet imaging.' },
   { id: 'lensing', group: 'Astronomy & space', title: 'Gravitational lensing', c: '#8fd8ff', blurb: 'The universe as a lens: Einstein rings, arcs and multiple images by inverse ray-shooting.' },
 ];
