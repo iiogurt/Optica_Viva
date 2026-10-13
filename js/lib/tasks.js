@@ -17,6 +17,7 @@ import { hdrPipeline } from './hdr.js';
 import { shakeLab } from './shake.js';
 import { eyeMTF, mtfAt } from './eye.js';
 import { filmLab } from './film.js';
+import { aperturePipeline } from './interferometry.js';
 import { phaseScreen } from './turbulence.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
@@ -432,4 +433,10 @@ function film(p) {
   return { result: r, transfer: [r.wedge.buffer] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film };
+// Aperture synthesis: u-v coverage, dirty beam/image and CLEAN (see js/lib/interferometry.js).
+function aperture(p) {
+  const r = aperturePipeline(p);
+  return { result: r, transfer: [r.sky.buffer, r.dirty.buffer, r.beam.buffer, r.restored.buffer] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture };

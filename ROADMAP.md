@@ -66,10 +66,10 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 32 | +7 proposed (v1.9) |
-| Catalogue entries | 162 | link every new lab |
+| Laboratories | 33 | +6 proposed (v1.9) |
+| Catalogue entries | 164 | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 99 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 102 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -328,7 +328,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 | Lab | Content | Priority · effort |
 |---|---|---|
-| [ ] **Interferometry & aperture synthesis** | Young fringes → visibility; u-v coverage of VLTI/EHT-like arrays; dirty beam and CLEAN | P2 · L |
+| [x] **Interferometry & aperture synthesis** | Young fringes → visibility; u-v coverage of VLTI/EHT-like arrays; dirty beam and CLEAN (PR #55) | P2 · L |
 | [ ] **Field-dependent PSF** | JWST/Roman-style PSF variation across an instrument field (after the STPSF multifield model) | P2 · M |
 | [ ] **Detector physics (space)** | inter-pixel capacitance, persistence, cosmic-ray rejection by up-the-ramp fitting, CTI from radiation damage | P2 · M |
 | [ ] **Starshade** | Fresnel diffraction around a petal-shaped occulter; contrast vs Fresnel number | P3 · L |
