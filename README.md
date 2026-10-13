@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Twenty-four interactive simulations, a physics primer and a catalogue of 152 phenomena.
+Twenty-five interactive simulations, a physics primer and a catalogue of 155 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -340,6 +340,16 @@ A **diffraction model of the Shack–Hartmann sensor**: one FFT spot per lenslet
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Spectroscopy** · `#/spectro`<br>
+<img src="docs/screenshots/spectro.webp" alt="Solar spectrum on a detector with Fraunhofer lines, zoom on the sodium D doublet and blaze efficiency curves" width="70%">
+
+**Prisms and gratings** side by side: the grating equation in a Littrow mount, **blaze** efficiency per order, the **resolving power** R = mN or R = b|dn/dλ|, and overlapping orders on the detector, with or without an order-sorting filter. Spectra of the **Sun** (Fraunhofer lines and telluric bands) and of Hg, Ne, H and Na lamps are convolved with the diffraction-limited instrument profile, and a zoom shows when the sodium D or mercury yellow doublets are resolved.
+
+</td>
+</tr>
 </table>
 
 ### Reference pages
@@ -357,9 +367,9 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 <td width="50%" valign="top">
 
 **Catalogue of phenomena** · `#/catalogue`<br>
-<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 152 optical phenomena">
+<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 155 optical phenomena">
 
-**152 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
+**155 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
 
 </td>
 </tr>
@@ -417,7 +427,8 @@ flowchart LR
 | Third-order aberrations | Seidel sums S_I–S_V, C_I, C_II per surface (Welford), including aspheric terms; validated against exact rays | ray tracer |
 | Wavefront | OPD against the exit-pupil reference sphere, sampled on a 41 × 41 pupil grid | ray tracer |
 | Diffraction | Fraunhofer integral by radix-2 2-D FFT of a 4 × 4-supersampled pupil, zero-padded (Q = 4); one FFT per wavelength when aberrated | PSF, Zernike, MTF, seeing, telescope |
-| Colour | CIE 1931 2° colour-matching functions (Wyman–Sloan–Shirley fit) → linear sRGB → sRGB transfer curve | all spectral renders |
+| Colour | CIE 1931 2° colour-matching functions (tabulated CIE data, 5 nm, interpolated) → linear sRGB → sRGB transfer curve | all spectral renders |
+| Spectroscopy | Grating equation, scalar blaze envelope, R = mN; prism R = b\|dn/dλ\| from Sellmeier; sinc² instrument profile convolved with line lists | spectro |
 | Colorimetry | Tabulated CIE data at 5 nm (1931 observer, S₀/S₁/S₂, A, FL, HP, LED); CCT by golden-section search in (u, v); CIE 13.3 CRI; Bradford adaptation; CIEDE2000; camera raw → WB → constrained least-squares 3×3 matrix; metameric blacks by projection | colour |
 | Thin films | Characteristic-matrix method, s and p polarisation, oblique incidence | flare |
 | Polarisation | Stokes vectors and Mueller matrices (diattenuators, retarders, frame rotations); Fresnel reflection and transmission in Mueller form | polarisation |
@@ -509,12 +520,13 @@ Optica_Viva/
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
 │   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
+│   │   ├── spectro.js         Gratings, blaze, prisms, resolving power, line lists, instrument profile
 │   │   ├── wfs.js             Shack–Hartmann sensor, modal reconstructor, Noll residuals, closed AO loop
 │   │   ├── tasks.js           Heavy pure computations (PSF, Zernike, OTF) for the worker
 │   │   ├── compute.js         Worker API: run(task) and latest-only channels, main-thread fallback
 │   │   ├── colordata.js       CIE tables at 5 nm: 1931 observer, daylight basis, illuminants, CRI test colours
 │   │   ├── colorsci.js        CCT/Duv, CIE 13.3 CRI, Bradford adaptation, CIELAB, CIEDE2000
-│   │   ├── color.js           CIE 1931 CMFs, sRGB, colormaps (inferno, viridis, magma)
+│   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── raytrace.js        Exact ray tracer (spheres + even aspheres), paraxial analysis, ray aiming, OPD
 │   │   ├── optimise.js        Damped-least-squares (Levenberg–Marquardt) lens optimiser
@@ -527,11 +539,11 @@ Optica_Viva/
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (152 entries)
+│   │   ├── phenomena.js       Catalogue data (155 entries)
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (26)
+│   └── modules/               One file per page (27)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -597,6 +609,8 @@ The numerical core was checked against published or analytically known values. E
 | Shack–Hartmann reconstruction of Z₄, Z₇, Z₁₁, Z₂₂ | coefficients within 4 %, cross-talk < 6 % | input mode |
 | Closed AO loop (10 × 10 lenslets, 35 modes, bright star) | residual within 0.8–1.6 × the Noll fitting error | σ<sub>fit</sub> = √Δ₃₆ (D/r₀)^5/6 |
 | Modulated pyramid sensor (R = 3 λ/D), tilts 0.5 and 1.5 λ/D | within 15 % of (2/π) asin(θ/R); zero signal at zero tilt | geometric optics (Ragazzoni 1996) |
+| Two equal lines at the Rayleigh separation λ/R | dip 0.8106 | 8/π² = 0.8106 |
+| Grating blaze (Littrow, 600 l/mm, λ_B = 500 nm) | η = 1 at 500 nm (m = 1) and 250 nm (m = 2) | scalar blaze condition |
 
 ---
 
@@ -612,6 +626,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Depth of field, tilt-shift | Thin-lens model; exact disk kernels, blended between 11 radii in tilt-shift | Blur radius interpolated between stack levels in tilt-shift; disks above r = 8 px blurred at reduced resolution (edge softer by ≤ r/4 px) |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |
 | Seeing | Single frozen-flow layer; screens periodic over 8D | One seam per 8D of travel |
+| Spectroscopy | Diffraction-limited instrument profile (no slit yet), scalar blaze theory, illustrative line strengths | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
 | Macro | Unit focusing by extension (no floating elements); diffraction as a Gaussian with the Airy core's width at 550 nm; perfectly aligned focus stack | Internal-focus macro lenses change f and m<sub>p</sub> with distance; no Airy rings in the crop |
@@ -696,7 +711,6 @@ flowchart LR
 - J. R. Janesick, *Photon Transfer: DN → λ*, SPIE Press (2007).
 - R. Kormann, P. Schneider & M. Bartelmann, "Isothermal elliptical gravitational lens models", A&A 284, 285 (1994).
 - B. Lyot, "The study of the solar corona and prominences without eclipses", MNRAS 99, 580 (1939).
-- C. Wyman, P.-P. Sloan & P. Shirley, "Simple analytic approximations to the CIE XYZ color matching functions", JCGT 2(2) (2013).
 - H. M. Merklinger, *Focusing the View Camera* (1996).
 - I. H. Malitson, "Interspecimen comparison of the refractive index of fused silica", JOSA 55, 1205 (1965).
 

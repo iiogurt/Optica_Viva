@@ -1,13 +1,12 @@
-// Colour science: CIE 1931 2° colour-matching functions (Wyman, Sloan & Shirley 2013
-// multi-lobe fit, < 1% error vs. tabulated CMFs), XYZ→linear sRGB, sRGB OETF, colormaps.
-
-const g = (x, mu, s1, s2) => { const t = (x - mu) / (x < mu ? s1 : s2); return Math.exp(-0.5 * t * t); };
+// Colour science: CIE 1931 2° colour-matching functions (tabulated CIE data at 5 nm, linearly
+// interpolated), XYZ→linear sRGB, sRGB OETF, colormaps.
+import { CMF, WL0, DWL, NWL } from './colordata.js';
 
 export function cmf(lambda) {
-  const x = 1.056 * g(lambda, 599.8, 37.9, 31.0) + 0.362 * g(lambda, 442.0, 16.0, 26.7) - 0.065 * g(lambda, 501.1, 20.4, 26.2);
-  const y = 0.821 * g(lambda, 568.8, 46.9, 40.5) + 0.286 * g(lambda, 530.9, 16.3, 31.1);
-  const z = 1.217 * g(lambda, 437.0, 11.8, 36.0) + 0.681 * g(lambda, 459.0, 26.0, 13.8);
-  return [x, y, z];
+  const t = (lambda - WL0) / DWL;
+  if (!(t >= 0 && t <= NWL - 1)) return [0, 0, 0];
+  const i = Math.min(NWL - 2, Math.floor(t)), f = t - i;
+  return [CMF[0][i] * (1 - f) + CMF[0][i + 1] * f, CMF[1][i] * (1 - f) + CMF[1][i + 1] * f, CMF[2][i] * (1 - f) + CMF[2][i + 1] * f];
 }
 
 export function xyzToLinearRGB([X, Y, Z]) {
@@ -33,7 +32,9 @@ export function gamutClip(rgb) {
 
 // Display colour of a monochromatic wavelength, normalised so the max channel = 1.
 export function wavelengthRGB(lambda, gamma = true) {
-  let rgb = gamutClip(xyzToLinearRGB(cmf(lambda)));
+  // hue from the visible band only: beyond ~380–720 nm the CMF fit's small negative lobes would
+  // gamut-clip to false colours (teal "infrared"); brightness still fades outside it
+  let rgb = gamutClip(xyzToLinearRGB(cmf(Math.min(720, Math.max(380, lambda)))));
   const mx = Math.max(...rgb, 1e-9);
   // fade outside the visible band so 380/720 nm don't appear as full-intensity colours
   const fade = lambda < 420 ? 0.3 + 0.7 * (lambda - 380) / 40 : lambda > 680 ? 0.3 + 0.7 * (720 - lambda) / 40 : 1;
