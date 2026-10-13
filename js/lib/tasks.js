@@ -21,6 +21,7 @@ import { aperturePipeline } from './interferometry.js';
 import { luckySim } from './lucky.js';
 import { phaseScreen } from './turbulence.js';
 import { shadowLab } from './starshade.js';
+import { fieldPSFs } from './fieldpsf.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -461,4 +462,10 @@ function starshade(p) {
   return { result: { rhos: main.rhos, prof: main.prof, supp: main.supp, specSupp: spec.supp, disk: disk.prof[0], diskSupp: disk.supp[0] }, transfer: [] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade };
+// PSFs across the field of a two-mirror telescope (see js/lib/fieldpsf.js).
+function fieldPSF(p) {
+  const r = fieldPSFs(p), pts = r.pts.map(({ hx, hy, I, C, strehl, rms, grad }) => ({ hx, hy, I, C, strehl, rms, grad }));
+  return { result: { pts }, transfer: pts.map((q) => q.I.buffer) };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF };
