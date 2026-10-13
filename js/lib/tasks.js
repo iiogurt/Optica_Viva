@@ -16,6 +16,7 @@ import { renderPanorama } from './panorama.js';
 import { hdrPipeline } from './hdr.js';
 import { shakeLab } from './shake.js';
 import { eyeMTF, mtfAt } from './eye.js';
+import { filmLab } from './film.js';
 import { phaseScreen } from './turbulence.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
@@ -425,4 +426,10 @@ function eye(p) {
   return { result: { one, sweep }, transfer: [] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye };
+// Film lab: a step wedge of grains, granularity and DQE (see js/lib/film.js).
+function film(p) {
+  const r = filmLab(p);
+  return { result: r, transfer: [r.wedge.buffer] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film };
