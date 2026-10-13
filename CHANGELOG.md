@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Anamorphic & cinema lenses laboratory** (`#/cinema`, `js/lib/cinema.js`).
+  - **Anamorphic scene:** a 2.39 : 1 night scene through a spherical or anamorphic lens (1.33–2× squeeze), with oval bokeh sized from the defocus geometry and an optional recorded (squeezed) view. The horizontal streak flare's colour is computed from the coating's R(λ)² and its strength from the source brightness.
+  - **Focus breathing:** a unit-focusing lens, a paraxial two-group internal-focus design (fixed sensor, chief ray through the stop) and a compensated lens, shown as frame overlays and curves.
+  - **T-stops:** photopic surface reflectance of each coating, transmission through k surfaces and the T-number.
+  - **Catalogue:** *Anamorphic lenses*, *T-stops* and *Focus breathing* now link here.
+- Tests (`test/cinema.test.mjs`): the 2.39 : 1 aspect, unit-focus breathing equal to 1/(1 + m), the IF design at 50 mm breathing less, uncoated Fresnel R and T = N/√τ, and the streak colours.
 - **Panorama & parallax laboratory** (`#/panorama`, `js/lib/panorama.js`). Two frames are ray-cast from the entrance pupils of a camera rotated about an offset pivot: a striped near pole, a second pole, a checkerboard ground and a skyline 60 m away. They are blended on a cylinder as a stitcher assumes, rendered in the worker with a draft pass. The page offers a frame-difference view, a 3× zoom on the overlap, a to-scale top view of both camera positions and their lines of sight, and readouts of the exact parallax (in pixels for 6 µm pixels), the pivot tolerance and the nearest stitchable distance. A table compares the paraxial entrance pupil z = B/A with the front nodal point z = (D − 1)/C for the library lenses. The catalogue gains a *No-parallax point* entry. `paraxialMatrix` is now exported from `raytrace.js`.
 - Tests (`test/panorama.test.mjs`): the exact disparity formula against the ray geometry and its small-offset limit; a seamless stitch about the pupil and doubling at a 60 mm offset; the principal points of plano-convex lenses (0 and t/n) and the Double-Gauss pupil–nodal gap.
 
