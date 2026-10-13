@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- ROADMAP, README and CLAUDE.md: the v1.8 milestone is complete with all seven photography and cinema laboratories.
+
 ### Added
 - **Virtual production laboratory** (`#/vp`, `js/lib/virtual.js`).
   - **Moiré:** the LED-wall grid on the sensor at ν = 1/(m p), with grid modulation from the emitter fill factor and the defocus disk MTF 2J₁(πbν)/(πbν). The lens diffraction MTF, the photosite aperture and an optional OLPF are also applied, followed by aliasing at the sensor's sampling frequency.

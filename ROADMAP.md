@@ -53,11 +53,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"]
     end
     subgraph Next["Planned"]
         direction TB
-        N8["v1.8 photo/cine labs II"] --> N9["v1.9 space labs II"] --> N7["v2.0 learning platform"]
+        N9["v1.9 space labs II"] --> N7["v2.0 learning platform"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -77,6 +77,19 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.8.0 New laboratories: photography &amp; cinema II</b> (2026-10-13, PRs #43–#49)</summary>
+
+- [x] Panorama & parallax: ray-cast stitch from real pupil positions; entrance pupil vs nodal point (#43)
+- [x] Anamorphic & cinema lenses: oval bokeh, coating-coloured streaks, focus breathing, T-stops (#44)
+- [x] Filters & HDR: graduated ND, inverse-variance merge, tone mapping, exposure fusion (#45)
+- [x] Camera shake & stabilisation: reciprocal rule from Monte Carlo, type-2 servo with gyro random walk (#46)
+- [x] The human eye: Le Grand eye, ocular LoCA vs measurement, best pupil, CoC from acuity (#47)
+- [x] Film & grain: Boolean-model emulsion, H&D curve, Selwyn granularity, DQE, reciprocity (#48)
+- [x] Virtual production: LED-wall moiré and PWM banding (#49)
+
+</details>
+
+<details>
 <summary><b>v1.7.0 New laboratories: astronomy &amp; space I</b> (2026-10-13, PRs #35–#40)</summary>
 
 - [x] Wavefront sensing: diffraction Shack–Hartmann sensor, modal reconstructor and closed AO loop in the worker with an error budget; pyramid sensor with modulation (#37, #38)
@@ -298,6 +311,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | [x] **Spectroscopy** | prisms vs gratings, resolving power R = mN, blaze, order overlap, slit-limited échelle spectrograph with échellogram (PRs #39–#40). *IFU explained in theory; its simulation moves to the Backlog.* | P1 · L |
 
 ### v1.8 New laboratories: photography & cinema II
+
+✅ **Released as v1.8.0** with all seven laboratories.
 
 | Lab | Content | Priority · effort |
 |---|---|---|
