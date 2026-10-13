@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Twenty-six interactive simulations, a physics primer and a catalogue of 156 phenomena.
+Twenty-seven interactive simulations, a physics primer and a catalogue of 156 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -309,6 +309,16 @@ Colorimetry from **CIE tables** (1931 observer, D-series, A, FL, HP and the CIE 
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Anamorphic & cinema lenses** · `#/cinema`<br>
+<img src="docs/screenshots/cinema.webp" alt="Anamorphic night scene with oval bokeh and a blue horizontal streak flare" width="70%">
+
+**Anamorphic squeeze** (1.33–2×) with **oval bokeh** from the s-times narrower horizontal entrance pupil, and the **horizontal streak flare**, coloured by the twice-reflected spectrum R(λ)² of the chosen coating. Also: **focus breathing** of unit-focusing, paraxial internal-focus and compensated designs, with frame overlays, and **T-stops** from photopic surface reflectance and the number of air–glass surfaces.
+
+</td>
+</tr>
 </table>
 
 ### Astronomy & space
@@ -534,6 +544,7 @@ Optica_Viva/
 │   │   ├── wfs.js             Shack–Hartmann sensor, modal reconstructor, Noll residuals, closed AO loop
 │   │   ├── tasks.js           Heavy pure computations (PSF, Zernike, OTF) for the worker
 │   │   ├── compute.js         Worker API: run(task) and latest-only channels, main-thread fallback
+│   │   ├── cinema.js          Anamorphic aspect, streak colour, focus breathing models, T-stops
 │   │   ├── colordata.js       CIE tables at 5 nm: 1931 observer, daylight basis, illuminants, CRI test colours
 │   │   ├── colorsci.js        CCT/Duv, CIE 13.3 CRI, Bradford adaptation, CIELAB, CIEDE2000
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
@@ -554,7 +565,7 @@ Optica_Viva/
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (28)
+│   └── modules/               One file per page (29)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -609,6 +620,9 @@ The numerical core was checked against published or analytically known values. E
 | Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |
 | Disk in diametral compression: centre stresses, force balance | σ<sub>x</sub> = 2P/(πDt), σ<sub>y</sub> = −6P/(πDt); ∫σ<sub>y</sub>t dx = −P | Frocht (1948); free boundary |
 | Walk-off: quartz at 45°, calcite maximum | 5.875 µm/mm, 6.26° at tan θ = n<sub>e</sub>/n<sub>o</sub> | (n<sub>e</sub>² − n<sub>o</sub>²)/(2n<sub>o</sub>n<sub>e</sub>) |
+| 2× anamorphic on a 22.3 × 18.66 mm gate | 2.39 : 1 | 2 × 1.195 |
+| Unit-focus breathing, 50 mm at 0.45 m | tan(θ/2) × 1/(1 + m) exactly | v = f(1 + m) |
+| T-stop of 20 uncoated surfaces (n = 1.6) | τ = (1 − 0.0533)²⁰, T = N/√τ | Fresnel R = ((n − 1)/(n + 1))² |
 | Panorama stitched with the pivot at the entrance pupil | frame difference 0 in the overlap | no parallax by construction |
 | Parallax between frames (ray-cast geometry vs formula) | identical to 10⁻¹² | 2 atan[e sin(Δ/2)/(d − e cos(Δ/2))] |
 | Principal point of a plano-convex lens, flat side first | t/n inside the glass | thick-lens theory |
@@ -645,6 +659,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
+| Cinema | Anamorphic scene drawn from analytic blur sizes (not ray-traced); internal-focus breathing from a two-thin-lens paraxial model; streak shape phenomenological, colour from thin-film theory | Real anamorphics add mumps, astigmatic bokeh edges and field-dependent squeeze |
 | Panorama | One paraxial entrance pupil per frame (no pupil aberration); stitcher assumes pure rotation and does not re-align | Fisheye pupil walk not modelled |
 | Macro | Unit focusing by extension (no floating elements); diffraction as a Gaussian with the Airy core's width at 550 nm; perfectly aligned focus stack | Internal-focus macro lenses change f and m<sub>p</sub> with distance; no Airy rings in the crop |
 | Polarisation | Single Rayleigh scattering in a flat atmosphere (peak DoP set by a slider); specular water with sine-wave ripples; grey pebbles; no aerosols or ozone. Photoelasticity: plane stress, dispersion-free retardation | No neutral points (Arago, Babinet), no sun aureole; underwater light scattering ignored; no colour dispersion of the isochromatics |
