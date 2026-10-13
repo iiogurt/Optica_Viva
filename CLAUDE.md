@@ -37,4 +37,4 @@ Use the most precise model that runs interactively, and state every approximatio
 See also `CONTRIBUTING.md` (human-facing version of these rules) and the PR template checklist.
 
 ## Next work
-Pick from `ROADMAP.md`. v1.1–v1.8 have shipped. Open next: v1.9 (astronomy and space laboratories II), v2.0 (learning platform), the remaining lens-design items (classic designs, glass catalogue, decenter/tilt tolerancing) and the v1.2 worker items. Releases with new features are minor versions; ROADMAP milestone numbers follow the release numbers. Licence: MIT (`LICENSE`); third-party material is listed in `THIRD_PARTY_NOTICES.md` (keep it current when adding data or vendored code).
+Pick from `ROADMAP.md`. v1.1–v1.9 have shipped. Open next: v2.0 (learning platform), the remaining lens-design items (classic designs, glass catalogue, decenter/tilt tolerancing) and the v1.2 worker items. Releases with new features are minor versions; ROADMAP milestone numbers follow the release numbers. Licence: MIT (`LICENSE`); third-party material is listed in `THIRD_PARTY_NOTICES.md` (keep it current when adding data or vendored code).

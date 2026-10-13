@@ -53,11 +53,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"]
     end
     subgraph Next["Planned"]
         direction TB
-        N9["v1.9 space labs II"] --> N7["v2.0 learning platform"]
+        N7["v2.0 learning platform"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -77,6 +77,20 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.9.0 New laboratories: astronomy &amp; space II</b> (2026-10-13, PRs #55–#63)</summary>
+
+- [x] Interferometry & aperture synthesis: van Cittert–Zernike visibilities, Earth-rotation u-v coverage of the VLA, VLTI and EHT, dirty beam and Högbom CLEAN (#55)
+- [x] Detector physics in space: up-the-ramp slopes with jump detection, IPC, CTI trails, persistence (#56)
+- [x] Atmospheric dispersion & ADC: Edlén air index, refraction and dispersion vs zenith angle, two-doublet corrector (#57)
+- [x] Lucky imaging: frame selection by Strehl against Fried's probability (#58)
+- [x] Astrophotography stacking: CCD equation, sky-limited sub length, Bortle sky (#59)
+- [x] Starshade: Fresnel shadow of a hypergaussian occulter vs the Poisson–Arago spot (#61)
+- [x] Field-dependent PSF: Seidel sums through two-mirror telescopes, nodal aberrations, Hubble's flaw (#63)
+- [x] Also: one seeded random-number generator for all simulations (#60); merge-identity check in `worktree.sh` (#62)
+
+</details>
+
+<details>
 <summary><b>v1.8.0 New laboratories: photography &amp; cinema II</b> (2026-10-13, PRs #43–#49)</summary>
 
 - [x] Panorama & parallax: ray-cast stitch from real pupil positions; entrance pupil vs nodal point (#43)
@@ -326,6 +340,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 ### v1.9 New laboratories: astronomy & space II
 
+✅ **Released as v1.9.0** with all seven laboratories.
+
 | Lab | Content | Priority · effort |
 |---|---|---|
 | [x] **Interferometry & aperture synthesis** | Young fringes → visibility; u-v coverage of VLTI/EHT-like arrays; dirty beam and CLEAN (PR #55) | P2 · L |
@@ -376,5 +392,5 @@ Short notes from the October 2026 review that inform priorities above.
 - **WebGPU availability.** WebGPU with compute shaders ships by default in Chromium, in Safari from the 2025 (26.x) releases, and in Firefox on Windows and Apple Silicon. Android coverage is still incomplete, so a CPU/WebGL fallback remains necessary. Sources: [Khronos WebGL & WebGPU update (2026)](https://www.khronos.org/developers/linkto/webgl-and-webgpu-sigg26), [WebGPU adoption overview 2026](https://enterno.io/en/s/research-webgpu-adoption-browsers-2026).
 - **Canvas `filter` in Safari.** It is still disabled by default through Safari 26.5, and the OffscreenCanvas variant is unimplemented. This motivates the in-house blur in v1.1. Sources: [caniuse: CanvasRenderingContext2D.filter](https://caniuse.com/mdn-api_canvasrenderingcontext2d_filter), [MDN: CanvasRenderingContext2D.filter](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/filter), [WebKit bug 275436](https://bugs.webkit.org/show_bug.cgi?id=275436).
 - **Lens-file interoperability.** Open-source projects show the realistic scope. Open Optical Designer (browser, conics, `.len` import) and RayOptics (Python, `.zmx`/CODE V `.seq` import) suggest starting with a `.zmx` subset plus JSON. Sources: [open-optical-designer](https://github.com/alexbock/open-optical-designer), [RayOptics documentation](https://ray-optics.readthedocs.io/), [RayOptics Thorlabs .zmx import example](https://ray-optics.readthedocs.io/en/latest/examples/ThorlabsLensImport/ThorlabsLensImport.html), [Cherry (browser tabletop optics)](https://github.com/kmdouglass/cherry).
-- **Field-dependent telescope PSFs.** STScI's STPSF (formerly WebbPSF) models JWST field dependence from a CODE V model plus measured wavefronts, with per-instrument coefficients. This is the reference for the v1.7 field-dependent PSF lab. Sources: [STPSF multifield model](https://stpsf.readthedocs.io/en/stable/field_dependence/multifield_documentation.html), [STPSF for Roman](https://roman-docs.stsci.edu/simulation-tools/stpsf-space-telescope-point-spread-functions-for-roman).
+- **Field-dependent telescope PSFs.** STScI's STPSF (formerly WebbPSF) models JWST field dependence from a CODE V model plus measured wavefronts, with per-instrument coefficients. The v1.9 field-dependent PSF lab models two-mirror telescopes to third order; per-instrument Zernike maps of this kind are in the Backlog. Sources: [STPSF multifield model](https://stpsf.readthedocs.io/en/stable/field_dependence/multifield_documentation.html), [STPSF for Roman](https://roman-docs.stsci.edu/simulation-tools/stpsf-space-telescope-point-spread-functions-for-roman).
 - **Local performance baseline** (Raspberry Pi 4, Node 20, this repo): 2-D FFT 256² 17 ms, 512² 88 ms; 512² mono PSF 103 ms; JWST 512² pupil raster 184 ms; 1000 aimed Cooke rays 35 ms. Re-measure after v1.2.
