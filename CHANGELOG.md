@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Wavefront sensing & AO loop laboratory** (`#/wfs`, `js/lib/wfs.js`).
+  - **Sensor:** a diffraction model of the Shack–Hartmann sensor (one zero-padded FFT spot per lenslet) with photon (Poisson) and read noise, thresholded centre-of-gravity centroids in a peak-centred window, and per-lenslet centroid gains calibrated through the sensor with two small tilts.
+  - **Reconstruction and loop:** a regularised least-squares Zernike reconstructor (Cholesky) drives a modal deformable mirror with an integrator against frozen-flow von Kármán turbulence on an 8 m telescope. The loop is a persistent simulator in the compute worker (`aoLoop` task); each request advances it for ~120 ms.
+  - **Page:** the detector mosaic, short- and long-exposure science PSFs, turbulence, mirror and residual maps, wavefront error vs time, and modal rejection. The analytic error budget combines Noll fitting error, Greenwood temporal error and noise propagated through the reconstructor and loop.
+  - **Catalogue:** new entries *Shack–Hartmann wavefront sensing* and *Greenwood frequency & AO bandwidth*; *Adaptive optics* now links here.
+- Tests (`test/wfs.test.mjs`): calibrated slopes equal the mean gradient; Z₄–Z₂₂ are recovered within 4 %; the Zernike fitting error after 21 modes matches Noll's Δ₂₁ within 15 % over 24 phase screens; centroid variance scales as 1/N_ph; the closed loop converges to its fitting error.
+
+### Changed
+- The von Kármán phase-screen generator moved from the seeing page to `js/lib/turbulence.js`, shared with the AO lab.
+
 ## [1.6.1] - 2026-10-13
 
 ### Added

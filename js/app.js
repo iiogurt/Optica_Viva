@@ -2,7 +2,7 @@
 import { h, resetUrlState } from './lib/ui.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'telescope', 'lensing', 'sampling', 'noise', 'colour', 'motion', 'vignetting', 'perspective', 'tiltshift', 'macro', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'wfs', 'telescope', 'lensing', 'sampling', 'noise', 'colour', 'motion', 'vignetting', 'perspective', 'tiltshift', 'macro', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -32,6 +32,7 @@ export const MODULES = [
   { id: 'motion', group: 'Light, sensor & time', title: 'Rolling shutter & time', c: '#c18cff', blurb: 'Rolling-shutter distortion, shutter angle, the wagon-wheel effect and flicker banding.' },
 
   { id: 'seeing', group: 'Astronomy & space', title: 'Atmospheric seeing & AO', c: '#8fd8ff', blurb: 'Kolmogorov phase screens, Fried parameter, speckle and long-exposure PSFs, and adaptive-optics correction.' },
+  { id: 'wfs', group: 'Astronomy & space', title: 'Wavefront sensing & AO loop', c: '#8fd8ff', blurb: 'A diffraction Shack–Hartmann sensor with photon and read noise, least-squares modal reconstruction and a closed adaptive-optics loop with its error budget.' },
   { id: 'telescope', group: 'Astronomy & space', title: 'Space telescopes', c: '#8fd8ff', blurb: 'Resolution limits, sampling, light-gathering, and a Lyot coronagraph simulation for exoplanet imaging.' },
   { id: 'lensing', group: 'Astronomy & space', title: 'Gravitational lensing', c: '#8fd8ff', blurb: 'The universe as a lens: Einstein rings, arcs and multiple images by inverse ray-shooting.' },
 ];
