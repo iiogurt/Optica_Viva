@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Thirty-nine interactive simulations, a physics primer and a catalogue of 172 phenomena.
+Thirty-nine interactive simulations, a physics primer and a catalogue of 228 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -505,9 +505,11 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 <td width="50%" valign="top">
 
 **Catalogue of phenomena** · `#/catalogue`<br>
-<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 172 optical phenomena">
+<img src="docs/screenshots/catalogue.webp" alt="Overview of the 13 catalogue groups with counts of simulated phenomena">
 
-**172 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
+**228 phenomena in 13 groups**, browsed by group from a navigator or searched across all groups, with domain and "only simulated" filters. Each entry opens to its governing equation, a fuller explanation, a **worked example with real numbers**, a link to its laboratory and related entries. Every group, entry and search has its own link (`#/catalogue?g=…&e=…`).
+
+<img src="docs/screenshots/catalogue-entry.webp" alt="An opened catalogue entry: the Airy disk with equation, explanation, example and related entries">
 
 </td>
 </tr>
@@ -518,19 +520,19 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 
 | # | Group | Examples |
 |---|---|---|
-| 1 | Geometrical image formation | thin-lens imaging, pupils, étendue, depth of field, projections, Scheimpflug, telecentricity |
-| 2 | Monochromatic aberrations | Seidel terms, Petzval curvature, decentering, Strehl, aspheres |
-| 3 | Chromatic effects | Sellmeier, Abbe number, LoCA/LaCA, secondary spectrum, atmospheric dispersion |
-| 4 | Diffraction and wave optics | Airy disk, Rayleigh/Sparrow, spikes, segmented PSF, OTF, coherence, thin films |
-| 5 | Radiometry and illumination | camera equation, EV, T-stops, cos⁴, flat fields |
-| 6 | Stray light | Fresnel reflection, ghosts, coatings, veiling glare, sensor red-dot flare, TIS |
-| 7 | Polarisation | Brewster, Malus, sky polarisation, birefringence, polarisation aberrations |
-| 8 | Sensors, sampling and noise | Nyquist, moiré, Bayer, OLPF, shot/read/dark noise, DR, QE, drizzle |
-| 9 | Time and motion | motion blur, shutter angle, rolling shutter, flicker, wagon wheel, jitter |
-| 10 | Atmosphere and environment | seeing, Kolmogorov, scintillation, AO, extinction, haze, mirages |
-| 11 | Space telescopes and astronomy | phasing, phase retrieval, coronagraphy, cryogenics, lensing, redshift |
-| 12 | Lens design and manufacturing | retrofocus, Double-Gauss symmetry, ED glass, floating elements, anamorphics |
-| 13 | Rendering and perception | bokeh, swirl, micro-contrast, CoC viewing standard, tone mapping |
+| 1 | Geometrical image formation (24) | thin-lens imaging, pupils, étendue, depth of field, projections, Scheimpflug, telecentricity, Fermat, Lagrange invariant, pinhole camera |
+| 2 | Monochromatic aberrations (18) | Seidel sums, Zernike polynomials, Petzval curvature, sine condition, Coddington equations, stop shift, Strehl, aspheres |
+| 3 | Chromatic effects (12) | Sellmeier, Abbe number, LoCA/LaCA, secondary spectrum, partial dispersion, the eye's chromatic aberration |
+| 4 | Diffraction and wave optics (25) | Airy disk, encircled energy, spikes, segmented PSF, OTF, Poisson spot, interferometry, Gaussian beams, zone plates, Talbot effect |
+| 5 | Radiometry and illumination (16) | camera equation, EV, T-stops, cos⁴, flat fields, photometric units, metering, blackbodies, magnitudes |
+| 6 | Stray light (11) | Fresnel reflection, ghosts, coatings, veiling glare, sensor red-dot flare, TIS, total internal reflection, hoods |
+| 7 | Polarisation (10) | Brewster, Malus, Fresnel equations, Stokes and Mueller, waveplates, circular polarisers, birefringence |
+| 8 | Sensors, sampling and noise (26) | Nyquist, moiré, Bayer, OLPF, shot/read/dark noise, photon transfer, DQE, dual gain, EMCCD, TDI, drizzle |
+| 9 | Time and motion (11) | motion blur, shutter angle, rolling shutter, flicker, wagon wheel, 3:2 pulldown, star trails, jitter |
+| 10 | Atmosphere and environment (19) | seeing, Fried parameter, scintillation, AO, laser guide stars, Rayleigh and Mie scattering, green flash |
+| 11 | Space telescopes and astronomy (27) | phasing, coronagraphy, starshades, exoplanet contrast, nulling, échelle spectrographs, detectors, lensing |
+| 12 | Lens design and manufacturing (11) | retrofocus, Double-Gauss symmetry, ED glass, floating elements, anamorphics, optimisation, field flatteners |
+| 13 | Rendering and perception (18) | bokeh, micro-contrast, CoC viewing standard, tone mapping, contrast sensitivity, metamerism, ΔE₀₀, Purkinje shift |
 
 </details>
 
@@ -693,7 +695,8 @@ Optica_Viva/
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (172 entries)
+│   │   ├── phenomena.js       Catalogue data (228 entries in 13 groups)
+│   │   ├── phenomena-details.js  Explanation and worked example for every catalogue entry
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js

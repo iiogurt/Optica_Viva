@@ -6,7 +6,8 @@ export function h(tag, props = {}, ...children) {
   if (classes.length) el.className = classes.join(' ');
   for (const [k, v] of Object.entries(props || {})) {
     if (v == null || v === false) continue;
-    if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    // custom properties (--c) need setProperty: Object.assign on el.style silently ignores them
+    if (k === 'style' && typeof v === 'object') for (const [p, x] of Object.entries(v)) { if (p.startsWith('--')) el.style.setProperty(p, x); else el.style[p] = x; }
     else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
     else if (k === 'html') el.innerHTML = v;
     else if (k === 'class') el.className += ' ' + v;
