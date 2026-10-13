@@ -11,6 +11,7 @@ export const GROUPS = [
       ['Thin-lens imaging', 'dof', 'pvs', 'Object and image distances are conjugate; lateral magnification is their ratio.', r`\tfrac1{s}+\tfrac1{s'}=\tfrac1f,\quad m=-\tfrac{s'}{s}`],
       ['Thick lenses & cardinal points', 'raytracer', 'pvs', 'Real lenses act as a thin lens placed at two principal planes; found from the system matrix.', r`f=-1/M_{21},\ \ \text{BFD}=-M_{11}/M_{21}`],
       ['Entrance & exit pupils', 'raytracer', 'pvs', 'Images of the aperture stop seen from object and image space; they set the cone of light and the perspective centre.', r`z_{EP}=B/A,\ \ r_{EP}=r_\text{stop}/A`],
+      ['No-parallax point (panoramas)', 'panorama', 'pv', 'Stitched frames align only if the camera rotates about the entrance pupil, not the nodal point.', r`\Delta\varphi\approx\frac{2e\sin(\Delta/2)}{d}`],
       ['f-number & numerical aperture', 'sensor', 'pvs', 'Ratio of focal length to entrance-pupil diameter; image irradiance scales as 1/N².', r`N=\frac{f}{D}\approx\frac{1}{2\,\mathrm{NA}'}`],
       ['Étendue & brightness theorem', 'foundations', 'pvs', 'The product of area and solid angle cannot decrease; no optic can brighten a source\'s image.', r`G=n^2A\Omega,\quad L/n^2=\text{const}`],
       ['Field of view & crop factor', 'sensor', 'pv', 'Sensor size and focal length set the angle of view; crop factor rescales equivalents.', r`\mathrm{FOV}=2\arctan\frac{d}{2f},\ k=\frac{43.27}{d}`],

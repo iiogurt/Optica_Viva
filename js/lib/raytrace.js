@@ -136,7 +136,7 @@ function mediumBefore(lens, i) { return i === 0 ? 'air' : lens.surfaces[i - 1].g
 // ── Paraxial (first-order) analysis, y–nu matrix method ─────────────────────────────────
 // Returns the 2×2 transfer matrix from just before surface `from` to just before surface
 // `to` (exclusive), acting on (y, n·u).
-function paraxialMatrix(lens, lambda, from, to) {
+export function paraxialMatrix(lens, lambda, from, to) {
   let M = [1, 0, 0, 1];
   const mul = (A, B) => [A[0] * B[0] + A[1] * B[2], A[0] * B[1] + A[1] * B[3], A[2] * B[0] + A[3] * B[2], A[2] * B[1] + A[3] * B[3]];
   for (let i = from; i < to; i++) {

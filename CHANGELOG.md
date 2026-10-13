@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Panorama & parallax laboratory** (`#/panorama`, `js/lib/panorama.js`). Two frames are ray-cast from the entrance pupils of a camera rotated about an offset pivot: a striped near pole, a second pole, a checkerboard ground and a skyline 60 m away. They are blended on a cylinder as a stitcher assumes, rendered in the worker with a draft pass. The page offers a frame-difference view, a 3× zoom on the overlap, a to-scale top view of both camera positions and their lines of sight, and readouts of the exact parallax (in pixels for 6 µm pixels), the pivot tolerance and the nearest stitchable distance. A table compares the paraxial entrance pupil z = B/A with the front nodal point z = (D − 1)/C for the library lenses. The catalogue gains a *No-parallax point* entry. `paraxialMatrix` is now exported from `raytrace.js`.
+- Tests (`test/panorama.test.mjs`): the exact disparity formula against the ray geometry and its small-offset limit; a seamless stitch about the pupil and doubling at a 60 mm offset; the principal points of plano-convex lenses (0 and t/n) and the Double-Gauss pupil–nodal gap.
+
 ## [1.7.0] - 2026-10-13
 
 New laboratories for astronomy (PRs [#36](https://github.com/iiogurt/Optica_Viva/pull/36)–[#41](https://github.com/iiogurt/Optica_Viva/pull/41)). **Wavefront sensing & AO loop** simulates a diffraction Shack–Hartmann sensor, a least-squares reconstructor and a closed adaptive-optics loop with its error budget, plus a modulated pyramid sensor. **Spectroscopy** covers prisms and gratings, blaze and overlapping orders, resolving power, and a slit-limited échelle spectrograph with a rendered échellogram of the Sun. Colour rendering now uses the tabulated CIE observer. 25 laboratories and 75 tests.
