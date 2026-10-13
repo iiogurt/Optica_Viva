@@ -225,9 +225,10 @@ export const GROUPS = [
       ['Swirly bokeh', 'bokeh', 'p', 'Tangentially oriented cat\'s eyes plus field curvature (Petzval lenses).', r`V_\text{mech}(\theta)`],
       ['Micro-contrast', 'mtf', 'p', 'Perceived "pop" relates to MTF at low-to-mid frequencies.', r`\mathrm{SQF}=\int\mathrm{MTF}(\nu)\,\mathrm{CSF}(\nu)\,d\ln\nu`],
       ['Circle of confusion & viewing', 'dof', 'p', 'Sharpness criterion set by eye resolution, print size and viewing distance.', r`c=\frac{d}{1500}\ \ (\approx1'\ \text{at 25 cm, }8\times10\,\text{in print})`],
-      ['Colour temperature & white balance', null, 'pv', 'Illuminant spectra shift colours; cameras rescale channels.', r`T_\text{CCT}:\ (x,y)\approx\text{Planckian locus}`],
+      ['Colour temperature & white balance', 'colour', 'pv', 'Illuminant spectra shift colours; cameras rescale channels.', r`T_\text{CCT}:\ (x,y)\approx\text{Planckian locus}`],
       ['Tone mapping & dynamic range', 'noise', 'pv', 'Compressing scene range into display range.', r`L_d=\frac{L}{1+L}`],
-      ['Chromatic adaptation', null, 'pv', 'Von Kries scaling of cone responses to the scene illuminant.', r`\mathbf L'=\mathrm{diag}(k_L,k_M,k_S)\,\mathbf L`],
+      ['Chromatic adaptation', 'colour', 'pv', 'Von Kries scaling of cone responses to the scene illuminant.', r`\mathbf L'=\mathrm{diag}(k_L,k_M,k_S)\,\mathbf L`],
+      ['Colour rendering (CRI, R9)', 'colour', 'pv', 'How faithfully a light source renders surface colours relative to a reference of the same CCT.', r`R_i=100-4.6\,\Delta E_{U^*V^*W^*},\ R_a=\tfrac18\textstyle\sum_1^8R_i`],
     ],
   },
 ];
