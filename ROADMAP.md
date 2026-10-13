@@ -30,6 +30,7 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.6 New laboratories: photography & cinema](#v16-new-laboratories-photography--cinema)
   - [v1.7 New laboratories: astronomy & space](#v17-new-laboratories-astronomy--space)
   - [v1.8 New laboratories: photography & cinema II](#v18-new-laboratories-photography--cinema-ii)
+  - [v1.9 New laboratories: astronomy & space II](#v19-new-laboratories-astronomy--space-ii)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -52,11 +53,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"]
     end
     subgraph Next["Planned"]
         direction TB
-        N6["v1.7 space labs"] --> N8["v1.8 photo/cine labs II"] --> N7["v2.0 learning platform"]
+        N8["v1.8 photo/cine labs II"] --> N9["v1.9 space labs II"] --> N7["v2.0 learning platform"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -65,7 +66,7 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 25 | +14 proposed (v1.7, v1.8) |
+| Laboratories | 25 | +14 proposed (v1.8, v1.9) |
 | Catalogue entries | 155 | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
 | Automated tests | 75 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
@@ -76,6 +77,15 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.7.0 New laboratories: astronomy &amp; space I</b> (2026-10-13, PRs #35–#40)</summary>
+
+- [x] Wavefront sensing: diffraction Shack–Hartmann sensor, modal reconstructor and closed AO loop in the worker with an error budget; pyramid sensor with modulation (#37, #38)
+- [x] Spectroscopy: prisms and gratings, blaze and orders, resolving power, solar and lamp spectra; slit-limited échelle spectrograph and échellogram (#39, #40)
+- [x] MIT licence with third-party notices (#35)
+
+</details>
+
+<details>
 <summary><b>v1.6.0 New laboratories: photography &amp; cinema I</b> (2026-10-13, PRs #28–#32)</summary>
 
 - [x] Polarisation: Stokes-vector lake scene with a Rayleigh sky and a rotating polariser, Malus and wave plates, photoelasticity, birefringent OLPF (#28, #29)
@@ -280,17 +290,12 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 ### v1.7 New laboratories: astronomy & space
 
+✅ **Released as v1.7.0** with the two P1 laboratories. The P2 and P3 laboratories move to v1.9.
+
 | Lab | Content | Priority · effort |
 |---|---|---|
 | [x] **Wavefront sensing** | Shack–Hartmann spots → slopes → reconstructed wavefront; closed-loop AO with noise and an error budget; pyramid sensor with modulation (PRs #37–#38) | P1 · L |
 | [x] **Spectroscopy** | prisms vs gratings, resolving power R = mN, blaze, order overlap, slit-limited échelle spectrograph with échellogram (PRs #39–#40). *IFU explained in theory; its simulation moves to the Backlog.* | P1 · L |
-| [ ] **Interferometry & aperture synthesis** | Young fringes → visibility; u-v coverage of VLTI/EHT-like arrays; dirty beam and CLEAN | P2 · L |
-| [ ] **Field-dependent PSF** | JWST/Roman-style PSF variation across an instrument field (after the STPSF multifield model) | P2 · M |
-| [ ] **Detector physics (space)** | inter-pixel capacitance, persistence, cosmic-ray rejection by up-the-ramp fitting, CTI from radiation damage | P2 · M |
-| [ ] **Starshade** | Fresnel diffraction around a petal-shaped occulter; contrast vs Fresnel number | P3 · L |
-| [ ] **Astrophotography stacking** | SNR ∝ √N, sky-limited vs read-limited sub-exposures, light pollution | P3 · M |
-| [ ] **Atmospheric dispersion & ADC** | elongated stellar images vs zenith angle; Risley-prism corrector | P3 · S |
-| [ ] **Lucky imaging** | frame selection by Strehl from the seeing simulator | P3 · S |
 
 ### v1.8 New laboratories: photography & cinema II
 
@@ -303,6 +308,18 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | [ ] **Virtual production** | LED-wall moiré vs camera MTF and pixel pitch, scan-line/refresh interactions with rolling shutter | P3 · M |
 | [ ] **Stabilisation & shake** | angular-jitter blur, reciprocal rule, IBIS/OIS correction residuals | P3 · S |
 | [ ] **Human eye** | schematic eye, pupil size vs acuity, Stiles–Crawford effect, why the CoC is d/1500 | P3 · M |
+
+### v1.9 New laboratories: astronomy & space II
+
+| Lab | Content | Priority · effort |
+|---|---|---|
+| [ ] **Interferometry & aperture synthesis** | Young fringes → visibility; u-v coverage of VLTI/EHT-like arrays; dirty beam and CLEAN | P2 · L |
+| [ ] **Field-dependent PSF** | JWST/Roman-style PSF variation across an instrument field (after the STPSF multifield model) | P2 · M |
+| [ ] **Detector physics (space)** | inter-pixel capacitance, persistence, cosmic-ray rejection by up-the-ramp fitting, CTI from radiation damage | P2 · M |
+| [ ] **Starshade** | Fresnel diffraction around a petal-shaped occulter; contrast vs Fresnel number | P3 · L |
+| [ ] **Astrophotography stacking** | SNR ∝ √N, sky-limited vs read-limited sub-exposures, light pollution | P3 · M |
+| [ ] **Atmospheric dispersion & ADC** | elongated stellar images vs zenith angle; Risley-prism corrector | P3 · S |
+| [ ] **Lucky imaging** | frame selection by Strehl from the seeing simulator | P3 · S |
 
 ### v2.0 Learning platform
 

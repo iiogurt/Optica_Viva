@@ -660,8 +660,9 @@ Completed and planned milestones are tracked in **[ROADMAP.md](ROADMAP.md)**, to
 | ✅ **v1.4** | MTF across the field, damped-least-squares optimiser, Monte-Carlo tolerancing |
 | ✅ **v1.5** | Real-ray flare ghosts, bokeh traced through the lens, exact disk blur, diffraction of small disks |
 | ✅ **v1.6** | Polarisation (Stokes-vector scene, photoelasticity, OLPF), macro & magnification, colour science (CRI, camera colour, metamerism) |
-| **v1.7** | Astronomy and space laboratories: wavefront sensing, spectroscopy, interferometry, field-dependent PSF, detector physics |
+| ✅ **v1.7** | Wavefront sensing and closed-loop AO (Shack–Hartmann, pyramid), spectroscopy (gratings, prisms, échelle), MIT licence |
 | **v1.8** | Photography and cinema II: panorama, anamorphic lenses, filters & HDR, film, virtual production, stabilisation, the eye |
+| **v1.9** | Astronomy and space II: interferometry, field-dependent PSF, detector physics, starshade, stacking, ADC, lucky imaging |
 | **v2.0** | Guided tours, exercises, export, installable PWA |
 
 ---

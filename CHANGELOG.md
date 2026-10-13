@@ -19,6 +19,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Tests (`test/wfs.test.mjs`): calibrated slopes equal the mean gradient; Z₄–Z₂₂ are recovered within 4 %; the Zernike fitting error after 21 modes matches Noll's Δ₂₁ within 15 % over 24 phase screens; centroid variance scales as 1/N_ph; the closed loop converges to its fitting error.
 
 ### Changed
+- ROADMAP, README and CLAUDE.md: the v1.7 milestone is complete with its two P1 laboratories. The remaining astronomy laboratories move to a new v1.9 milestone.
 - Colour: `cmf()` now interpolates the tabulated CIE 1931 2° observer (5 nm) instead of the Wyman–Sloan–Shirley analytic fit, and `wavelengthRGB` takes its hue from 380–720 nm only. Deep red and infrared wavelengths previously rendered yellow-green or teal.
 - The von Kármán phase-screen generator moved from the seeing page to `js/lib/turbulence.js`, shared with the AO lab.
 
