@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Thirty-four interactive simulations, a physics primer and a catalogue of 166 phenomena.
+Thirty-five interactive simulations, a physics primer and a catalogue of 166 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -440,6 +440,16 @@ A **diffraction model of the Shack–Hartmann sensor**: one FFT spot per lenslet
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Atmospheric dispersion & ADC** · `#/adc`<br>
+<img src="docs/screenshots/adc.webp" alt="A star smeared into a vertical spectrum by atmospheric dispersion and corrected by an ADC" width="70%">
+
+**Edlén's refractive index of air** at real site pressures and temperatures, **refraction and dispersion** vs zenith angle, and a white star rendered as the short vertical spectrum the atmosphere makes of it. A two-doublet **atmospheric dispersion corrector** (choice of glass pairs) is rotated to cancel the dispersion, leaving only its secondary spectrum.
+
+</td>
+</tr>
 </table>
 
 ### Reference pages
@@ -611,6 +621,7 @@ Optica_Viva/
 │   │   ├── eye.js             Le Grand schematic eye, ocular chromatic aberration, retinal MTF vs pupil, CoC from acuity
 │   │   ├── film.js            Boolean-model emulsion: development probability, H&D curve, Selwyn granularity, DQE, reciprocity
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
+│   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
 │   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
@@ -643,7 +654,7 @@ Optica_Viva/
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (36)
+│   └── modules/               One file per page (37)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -699,6 +710,9 @@ The numerical core was checked against published or analytically known values. E
 | Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |
 | Disk in diametral compression: centre stresses, force balance | σ<sub>x</sub> = 2P/(πDt), σ<sub>y</sub> = −6P/(πDt); ∫σ<sub>y</sub>t dx = −P | Frocht (1948); free boundary |
 | Walk-off: quartz at 45°, calcite maximum | 5.875 µm/mm, 6.26° at tan θ = n<sub>e</sub>/n<sub>o</sub> | (n<sub>e</sub>² − n<sub>o</sub>²)/(2n<sub>o</sub>n<sub>e</sub>) |
+| Refractivity of standard air at 633 nm | (n − 1)·10⁸ = 27 653 | Edlén (1966) |
+| Refraction at z = 45°, sea level, 550 nm | 57.3″ | (n − 1) tan z |
+| ADC residual, 400–700 nm at z = 50° (Paranal) | < 10 % of the uncorrected dispersion; ends coincide | zero-deviation doublets |
 | Up-the-ramp slope variance, LS and CDS (5000 simulated ramps) | within 6 % of the exact formulas | correlated read + shot noise |
 | IPC flat-field variance factor (α = 2 %) | 0.848 | (1 − 4α)² + 4α² = 0.848 |
 | CTI: core after 1500 transfers at ε = 2·10⁻⁵ | (1 − ε)ⁿ, charge conserved in the trail | trap model |
@@ -756,6 +770,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
+| ADC | Plane-parallel refraction (≈ 1 % below z = 70°), dry air, thin prisms; Gaussian seeing ∝ λ^−0.2 | No water vapour, curvature or ADC aberrations |
 | Detectors | One trap species with exponential release (real CTI depends on signal level); illustrative persistence law | Flux dependence of CTI and detector-specific persistence not modelled |
 | Interferometry | Noise-free, perfectly calibrated visibilities on a 128² grid; Högbom CLEAN only | No atmospheric phase, closure quantities or regularised imaging |
 | Virtual production | Fundamental and low harmonics of a separable LED grid; single-pulse PWM, no scan multiplexing | Real walls add multiplexing and colour sub-pixel structure |
