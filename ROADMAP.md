@@ -197,7 +197,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | A5 | On phones the controls come after every canvas | 390 px screenshot: the controls appear below all the visuals | You have to scroll back and forth to experiment | v1.1 |
 | A6 | Canvases have no text alternative; almost no ARIA | one `aria-` attribute in the codebase | Screen-reader users get no results | v1.1 |
 | A7 | No shareable state | no URL parameters | Teachers can't link to a specific configuration | v1.1 |
-| A8 | No licence | README states all rights reserved | Blocks contributions and reuse | v1.1 (owner decision) |
+| A8 | No licence | README states all rights reserved | Blocks contributions and reuse | ✅ MIT (2026-10-13) |
 | A9 | Known model simplifications (see README) | ~~paraxial ghosts~~ (real rays since v1.5), ~~phenomenological bokeh~~ (traced since v1.5), ~~Gaussian blur stack~~ (disk kernels since v1.5), circular off-axis pupil | Accuracy ceiling for advanced users | v1.3–v1.4 |
 | A10 | Spherical surfaces only; prescriptions are hard-coded | `raytrace.js` | Can't model modern aspheric lenses or user lenses | v1.3 |
 
@@ -207,7 +207,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 ### v1.1 Robustness, testing & deployment
 
-✅ **Released as v1.1.0** (see *Completed milestones*). Only the licence decision remains open; it is the owner's call.
+✅ **Released as v1.1.0** (see *Completed milestones*). The licence (MIT) followed in v1.6.1.
 
 *Goal: every user on every browser sees correct results, and every physics claim is guarded by a test.*
 
@@ -215,7 +215,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P1 · M** **Physics test suite** with `node --test` and no dependencies. Turn every row of the README validation table into an assertion: Sellmeier indices, EFLs, Fresnel/MgF₂ reflectance, Brewster, Airy encircled energy, Rayleigh dip, hinge rule, ΛCDM distances, hyperfocal distance, cos⁴.
 - [x] **P1 · S** **GitHub Actions CI**: `node --check`, the test suite, Markdown link check, and a headless-browser smoke test of every page. (A Mermaid parse check was dropped; it would need a browser bundle.)
 - [x] **P1 · S** **GitHub Pages deployment** from `main`, with a live-demo badge in the README. Live at <https://iiogurt.github.io/Optica_Viva/>; `main` is protected by required CI checks.
-- [ ] **P1 · S** **Choose a licence** (owner decision; MIT for code + CC BY 4.0 for text and images is a common pairing).
+- [x] **P1 · S** **Choose a licence**. *MIT (owner decision), with third-party notices for KaTeX and the colour-science data.*
 - [x] **P2 · M** **Mobile controls drawer**: a sticky bottom sheet with the controls next to the main canvas on screens < 860 px (A5).
 - [x] **P2 · M** **Accessibility**: `role="img"` and live `aria-label` summaries for canvases (e.g. "Strehl 0.44, spot RMS 21 µm"), visible focus styles, `prefers-reduced-motion` to pause animations, contrast audit (A6).
 - [x] **P2 · S** **Shareable state**: serialise controls to the URL hash (`#/psf?preset=jwst&band=nir`) plus a "copy link" button (A7).
