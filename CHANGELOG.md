@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-10-13
+
 ### Added
 - **MIT licence** (`LICENSE`), the `license` field in `package.json`, and `THIRD_PARTY_NOTICES.md` with the KaTeX (MIT) and colour-science (BSD-3-Clause) notices. README: licence badge and section.
 
@@ -399,7 +401,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.3.0...v1.4.0
