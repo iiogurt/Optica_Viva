@@ -5,7 +5,8 @@
 #   scripts/worktree.sh new <type>/<name>   fetch origin, create the branch from origin/main
 #                                           (no upstream until it is pushed) in its own worktree
 #   scripts/worktree.sh finish <type>/<name> after the PR is merged: remove the worktree, delete
-#                                           the local branch, prune, fast-forward main
+#                                           the local (and any leftover remote) branch, prune,
+#                                           fast-forward main
 #   scripts/worktree.sh list                 worktrees and their branches
 #
 # Branch types follow the Conventional Commits types used in this repository.
@@ -36,6 +37,9 @@ finish)
     git -C "$ROOT" worktree remove ${3:+--force} "$D"
   fi
   git -C "$ROOT" branch -D "$BR" 2>/dev/null || true
+  # the repository deletes merged head branches automatically; remove one that survived
+  # (e.g. when gh skipped it because the branch was checked out in this worktree)
+  if [ "$STATE" = MERGED ] && git -C "$ROOT" ls-remote --exit-code --heads origin "$BR" >/dev/null 2>&1; then git -C "$ROOT" push -q origin --delete "$BR"; fi
   git -C "$ROOT" fetch -q --prune origin
   git -C "$ROOT" worktree prune
   if [ "$(git -C "$ROOT" branch --show-current)" = main ] && [ -z "$(git -C "$ROOT" status --porcelain)" ]; then git -C "$ROOT" merge -q --ff-only origin/main; fi
