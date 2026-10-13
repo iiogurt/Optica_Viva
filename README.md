@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Twenty-five interactive simulations, a physics primer and a catalogue of 155 phenomena.
+Twenty-six interactive simulations, a physics primer and a catalogue of 156 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -184,6 +184,16 @@ Three independent causes, each computed: natural falloff cosⁿθ; mechanical vi
 <img src="docs/screenshots/macro.webp" alt="Tilted ruler at 1:1 with a 100 % crop of diffraction-limited bar targets, side view and blur curves">
 
 Close-up optics with **pupil magnification**: effective f-number N(1 + m/m<sub>p</sub>), bellows factor, extension and working distance for symmetric, macro, retrofocus, **reversed** and telephoto lenses. A tilted steel ruler is rendered through each pixel's chief ray with exact per-point defocus and Airy-width diffraction, in full frame and as a **100 % crop of bar targets**. The page finds the **optimum aperture** where defocus and diffraction blur balance, and simulates **focus stacking**.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Panorama & parallax** · `#/panorama`<br>
+<img src="docs/screenshots/panorama.webp" alt="Stitched two-frame panorama with a doubled near pole, enlarged overlap and top view of the camera positions" width="70%">
+
+Two frames are **ray-cast from their real entrance-pupil positions** and stitched onto a cylinder as a panorama tool would, assuming pure rotation. With the pivot behind the pupil, near objects double in the overlap; with the pivot at the pupil, the seam vanishes. Readouts give the exact parallax 2 atan[e sin(Δ/2)/(d − e cos(Δ/2))] in pixels and the pivot tolerance. A table computes the **entrance pupil and the nodal point** of the library lenses from their paraxial matrices; they differ by 8 mm in the Double-Gauss.
 
 </td>
 </tr>
@@ -367,9 +377,9 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 <td width="50%" valign="top">
 
 **Catalogue of phenomena** · `#/catalogue`<br>
-<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 155 optical phenomena">
+<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 156 optical phenomena">
 
-**155 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
+**156 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
 
 </td>
 </tr>
@@ -534,16 +544,17 @@ Optica_Viva/
 │   │   ├── ghosts.js          Lens-flare ghosts: paraxial matrices and real-ray rasteriser
 │   │   ├── bokeh.js           Bokeh kernels traced through a prescription
 │   │   ├── macro.js           Close-up optics (pupil magnification, exact defocus, optimum aperture), ruler renderer
+│   │   ├── panorama.js        Cardinal points, parallax between frames, two-frame panorama ray caster
 │   │   ├── polar.js           Stokes/Mueller algebra, Fresnel in Mueller form, Rayleigh sky, polarised lake renderer
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (155 entries)
+│   │   ├── phenomena.js       Catalogue data (156 entries)
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (27)
+│   └── modules/               One file per page (28)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -598,6 +609,9 @@ The numerical core was checked against published or analytically known values. E
 | Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |
 | Disk in diametral compression: centre stresses, force balance | σ<sub>x</sub> = 2P/(πDt), σ<sub>y</sub> = −6P/(πDt); ∫σ<sub>y</sub>t dx = −P | Frocht (1948); free boundary |
 | Walk-off: quartz at 45°, calcite maximum | 5.875 µm/mm, 6.26° at tan θ = n<sub>e</sub>/n<sub>o</sub> | (n<sub>e</sub>² − n<sub>o</sub>²)/(2n<sub>o</sub>n<sub>e</sub>) |
+| Panorama stitched with the pivot at the entrance pupil | frame difference 0 in the overlap | no parallax by construction |
+| Parallax between frames (ray-cast geometry vs formula) | identical to 10⁻¹² | 2 atan[e sin(Δ/2)/(d − e cos(Δ/2))] |
+| Principal point of a plano-convex lens, flat side first | t/n inside the glass | thick-lens theory |
 | Close-up: symmetric lens at 1 : 1 | f/8 → f/16 (−2 EV), object–image 4f | N(1 + m/m<sub>p</sub>); thin-lens conjugates |
 | Macro depth of field, 100 mm at 1 : 1, f/8 | exact two-sided blur search within 1 % of the formula | 2N<sub>w</sub>c/m² |
 | CCT of illuminant A; D65 chromaticity | 2856 K; (0.3127, 0.3290) | CIE 15:2018 |
@@ -631,6 +645,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
+| Panorama | One paraxial entrance pupil per frame (no pupil aberration); stitcher assumes pure rotation and does not re-align | Fisheye pupil walk not modelled |
 | Macro | Unit focusing by extension (no floating elements); diffraction as a Gaussian with the Airy core's width at 550 nm; perfectly aligned focus stack | Internal-focus macro lenses change f and m<sub>p</sub> with distance; no Airy rings in the crop |
 | Polarisation | Single Rayleigh scattering in a flat atmosphere (peak DoP set by a slider); specular water with sine-wave ripples; grey pebbles; no aerosols or ozone. Photoelasticity: plane stress, dispersion-free retardation | No neutral points (Arago, Babinet), no sun aureole; underwater light scattering ignored; no colour dispersion of the isochromatics |
 | Coronagraph | Monochromatic, idealised hard-edged masks | Classic Lyot contrast (~10⁻⁶) rather than state-of-the-art designs |

@@ -12,6 +12,7 @@ import { bokehKernels } from './bokeh.js';
 import { renderLake } from './polar.js';
 import { renderRuler } from './macro.js';
 import { createLoop, pyramidWFS } from './wfs.js';
+import { renderPanorama } from './panorama.js';
 import { phaseScreen } from './turbulence.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
@@ -396,4 +397,10 @@ function pyramid(p) {
   return { result: { img, Sx, Sy, inside: r.inside, mx: r.mx, my: r.my, steps: r.steps, phase: Float32Array.from(ph) }, transfer: [img.buffer, Sx.buffer, Sy.buffer] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid };
+// Stitched two-frame panorama with parallax (see js/lib/panorama.js).
+function panorama(p) {
+  const r = renderPanorama(p);
+  return { result: r, transfer: [r.rgb.buffer] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama };
