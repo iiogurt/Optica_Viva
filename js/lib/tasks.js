@@ -14,6 +14,7 @@ import { renderRuler } from './macro.js';
 import { createLoop, pyramidWFS } from './wfs.js';
 import { renderPanorama } from './panorama.js';
 import { hdrPipeline } from './hdr.js';
+import { shakeLab } from './shake.js';
 import { phaseScreen } from './turbulence.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
@@ -410,4 +411,10 @@ function hdr(p) {
   return { result: r, transfer: [r.shot.buffer, r.merged.buffer, ...(r.fused ? [r.fused.buffer] : [])] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr };
+// Camera-shake lab: Monte-Carlo sharpness curves, safe shutter speeds and one blurred frame.
+function shake(p) {
+  const r = shakeLab(p);
+  return { result: r, transfer: [r.img.buffer] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake };

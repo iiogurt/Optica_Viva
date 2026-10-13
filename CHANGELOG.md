@@ -7,6 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Camera shake & stabilisation laboratory** (`#/shake`, `js/lib/shake.js`).
+  - **Shake model:** hand-held angular motion per axis is an Ornstein–Uhlenbeck drift velocity plus ~10 Hz tremor, for three photographers.
+  - **Stabiliser:** a type-2 servo (bandwidth f_c, ζ = 0.7) follows the gyro's rate and angle; the gyro error is an angle random walk.
+  - **Page:** each exposure's image-point path is its PSF, shown on a Siemens star with a resample button and pixel grid. A Monte-Carlo probability of a sharp frame vs shutter speed is computed with and without stabilisation, giving safe shutter speeds and the gain in EV. Everything runs in the worker. *Camera shake* and *Image stabilisation* in the catalogue link here.
+- Tests (`test/shake.test.mjs`): f·t at the safe shutter is nearly constant (reciprocal rule); the servo residual follows (f/f_c)²; a good gyro gains more than 4 EV and a noisier one less; the path PSF conserves energy.
 - **Filters & HDR laboratory** (`#/hdr`, `js/lib/hdr.js`). A procedural 20-stop sunset with the sun in frame is photographed by a photon-transfer camera model (three sensors: full well, shot and read noise, ADC). Features: graduated ND filters (strength, height, soft or hard edge); exposure brackets of 1–7 frames; a radiance merge with inverse-variance weights t²/(S + σ_r²), tone-mapped with Reinhard's global operator; and exposure fusion (Mertens et al.) with Laplacian-pyramid blending. Everything is computed in the worker with a draft pass. SNR-vs-radiance curves cover single frames and the merge, alongside readouts of dynamic range and exposure times. The catalogue gains *HDR bracketing & exposure fusion* and *Neutral-density & graduated filters*, and *Tone mapping & dynamic range* links here.
 - Tests (`test/hdr.test.mjs`): dynamic range log₂(FWC/S_SNR=1); +8 EV for five frames 2 EV apart; SNRs add in quadrature; the merged radiance is unbiased within 1 %; ND and graduated-filter transmissions; Reinhard output in range; pyramid fusion is exact for identical frames.
 - **Anamorphic & cinema lenses laboratory** (`#/cinema`, `js/lib/cinema.js`).

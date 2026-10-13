@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Twenty-eight interactive simulations, a physics primer and a catalogue of 158 phenomena.
+Twenty-nine interactive simulations, a physics primer and a catalogue of 158 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -329,6 +329,16 @@ A 20-stop sunset through a photon-transfer camera model (full well, shot and rea
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Camera shake & stabilisation** · `#/shake`<br>
+<img src="docs/screenshots/shake.webp" alt="Blurred Siemens star from one hand-held exposure, the image-point path, and sharpness probability against shutter speed" width="70%">
+
+Hand-held motion is simulated as drift plus physiological tremor. Each exposure's blur path is its PSF, shown on a Siemens star. A Monte-Carlo **probability of a sharp frame** vs shutter speed shows the **1/f rule** emerging. A **type-2 stabiliser servo** follows the gyro: its residual falls as (f/f<sub>c</sub>)², and the gyro's **angle random walk** limits the gain to the familiar 4–8 stops.
+
+</td>
+</tr>
 </table>
 
 ### Astronomy & space
@@ -550,6 +560,7 @@ Optica_Viva/
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
 │   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
+│   │   ├── shake.js           Hand-held shake model, type-2 stabiliser servo with gyro random walk, Monte-Carlo sharpness
 │   │   ├── spectro.js         Gratings, blaze, prisms, resolving power, line lists, instrument profile
 │   │   ├── wfs.js             Shack–Hartmann sensor, modal reconstructor, Noll residuals, closed AO loop
 │   │   ├── tasks.js           Heavy pure computations (PSF, Zernike, OTF) for the worker
@@ -576,7 +587,7 @@ Optica_Viva/
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (30)
+│   └── modules/               One file per page (31)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -631,6 +642,8 @@ The numerical core was checked against published or analytically known values. E
 | Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |
 | Disk in diametral compression: centre stresses, force balance | σ<sub>x</sub> = 2P/(πDt), σ<sub>y</sub> = −6P/(πDt); ∫σ<sub>y</sub>t dx = −P | Frocht (1948); free boundary |
 | Walk-off: quartz at 45°, calcite maximum | 5.875 µm/mm, 6.26° at tan θ = n<sub>e</sub>/n<sub>o</sub> | (n<sub>e</sub>² − n<sub>o</sub>²)/(2n<sub>o</sub>n<sub>e</sub>) |
+| Safe hand-held shutter (50 % sharp, c = 0.03 mm) at 24, 50, 200 mm | f·t between 0.8 and 2.5, nearly constant | reciprocal rule t ≈ 1/f |
+| Stabiliser servo residual at f/f<sub>c</sub> = 0.05 | within 2× of (f/f<sub>c</sub>)² | type-2 loop error transfer |
 | Single-frame dynamic range (FWC 50 000 e⁻, read 3 e⁻) | 13.79 EV | log₂(FWC / S<sub>SNR=1</sub>), S = (1 + √(1 + 4σ²))/2 |
 | Bracket of 5 frames 2 EV apart | +8.0 EV | (n − 1)Δ |
 | Fusion of identical frames (Laplacian pyramids) | exact to 10⁻⁵ | identity |
@@ -673,6 +686,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
+| Shake | Angular motion only (no translation or roll); model spectra rather than measured CIPA waveforms | Gains are representative of, not certified to, CIPA DC-011 |
 | HDR | Static scene (no ghosting from motion); linear sensor response; Reinhard global operator only | Real merges must align frames and handle moving objects |
 | Cinema | Anamorphic scene drawn from analytic blur sizes (not ray-traced); internal-focus breathing from a two-thin-lens paraxial model; streak shape phenomenological, colour from thin-film theory | Real anamorphics add mumps, astigmatic bokeh edges and field-dependent squeeze |
 | Panorama | One paraxial entrance pupil per frame (no pupil aberration); stitcher assumes pure rotation and does not re-align | Fisheye pupil walk not modelled |
