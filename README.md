@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Twenty-nine interactive simulations, a physics primer and a catalogue of 158 phenomena.
+Thirty interactive simulations, a physics primer and a catalogue of 160 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -194,6 +194,16 @@ Close-up optics with **pupil magnification**: effective f-number N(1 + m/m<sub>p
 <img src="docs/screenshots/panorama.webp" alt="Stitched two-frame panorama with a doubled near pole, enlarged overlap and top view of the camera positions" width="70%">
 
 Two frames are **ray-cast from their real entrance-pupil positions** and stitched onto a cylinder as a panorama tool would, assuming pure rotation. With the pivot behind the pupil, near objects double in the overlap; with the pivot at the pupil, the seam vanishes. Readouts give the exact parallax 2 atan[e sin(Δ/2)/(d − e cos(Δ/2))] in pixels and the pivot tolerance. A table computes the **entrance pupil and the nodal point** of the library lenses from their paraxial matrices; they differ by 8 mm in the Double-Gauss.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
+**The human eye** · `#/eye`<br>
+<img src="docs/screenshots/eye.webp" alt="Le Grand schematic eye with chromatic focus shift and the chromatic difference of refraction against measured data" width="70%">
+
+**Le Grand's schematic eye** (59.94 D) with water-like media: its **chromatic difference of refraction** matches the measured "chromatic eye" of Thibos et al. within 10 % without fitting. **Pupil size vs retinal image quality** (FFT MTF with typical higher-order aberrations and Stiles–Crawford apodisation) reproduces the classic optimum near 3 mm and the match to the foveal cone Nyquist frequency. The page also derives the **circle of confusion** from visual acuity.
 
 </td>
 </tr>
@@ -407,9 +417,9 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 <td width="50%" valign="top">
 
 **Catalogue of phenomena** · `#/catalogue`<br>
-<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 158 optical phenomena">
+<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 160 optical phenomena">
 
-**158 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
+**160 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
 
 </td>
 </tr>
@@ -556,6 +566,7 @@ Optica_Viva/
 ├── js/
 │   ├── app.js                 Laboratory registry, hash router, navigation
 │   ├── lib/                   Numerical core (pure functions, no DOM unless noted)
+│   │   ├── eye.js             Le Grand schematic eye, ocular chromatic aberration, retinal MTF vs pupil, CoC from acuity
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
@@ -583,11 +594,11 @@ Optica_Viva/
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (158 entries)
+│   │   ├── phenomena.js       Catalogue data (160 entries)
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (31)
+│   └── modules/               One file per page (32)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -642,6 +653,9 @@ The numerical core was checked against published or analytically known values. E
 | Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |
 | Disk in diametral compression: centre stresses, force balance | σ<sub>x</sub> = 2P/(πDt), σ<sub>y</sub> = −6P/(πDt); ∫σ<sub>y</sub>t dx = −P | Frocht (1948); free boundary |
 | Walk-off: quartz at 45°, calcite maximum | 5.875 µm/mm, 6.26° at tan θ = n<sub>e</sub>/n<sub>o</sub> | (n<sub>e</sub>² − n<sub>o</sub>²)/(2n<sub>o</sub>n<sub>e</sub>) |
+| Le Grand eye power (d line) | 59.94 D | 59.94 D (Le Grand & El Hage) |
+| Ocular chromatic difference 450 → 650 nm | 1.13 D | 1.23 D measured (Thibos et al. 1992) |
+| Best pupil for retinal MTF at 30 c/deg | 2.5–4 mm | 2.5–3.5 mm (Campbell & Gubisch 1966) |
 | Safe hand-held shutter (50 % sharp, c = 0.03 mm) at 24, 50, 200 mm | f·t between 0.8 and 2.5, nearly constant | reciprocal rule t ≈ 1/f |
 | Stabiliser servo residual at f/f<sub>c</sub> = 0.05 | within 2× of (f/f<sub>c</sub>)² | type-2 loop error transfer |
 | Single-frame dynamic range (FWC 50 000 e⁻, read 3 e⁻) | 13.79 EV | log₂(FWC / S<sub>SNR=1</sub>), S = (1 + √(1 + 4σ²))/2 |
@@ -686,6 +700,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
+| Eye | Paraxial schematic eye with homogeneous media; population-typical aberrations; monochromatic 555 nm MTF | Individual eyes and the gradient-index lens differ |
 | Shake | Angular motion only (no translation or roll); model spectra rather than measured CIPA waveforms | Gains are representative of, not certified to, CIPA DC-011 |
 | HDR | Static scene (no ghosting from motion); linear sensor response; Reinhard global operator only | Real merges must align frames and handle moving objects |
 | Cinema | Anamorphic scene drawn from analytic blur sizes (not ray-traced); internal-focus breathing from a two-thin-lens paraxial model; streak shape phenomenological, colour from thin-film theory | Real anamorphics add mumps, astigmatic bokeh edges and field-dependent squeeze |

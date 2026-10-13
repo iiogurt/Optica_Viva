@@ -15,6 +15,7 @@ import { createLoop, pyramidWFS } from './wfs.js';
 import { renderPanorama } from './panorama.js';
 import { hdrPipeline } from './hdr.js';
 import { shakeLab } from './shake.js';
+import { eyeMTF, mtfAt } from './eye.js';
 import { phaseScreen } from './turbulence.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
@@ -417,4 +418,11 @@ function shake(p) {
   return { result: r, transfer: [r.img.buffer] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake };
+// Eye: retinal MTF for one pupil (with the PSF) and summary curves over pupil sizes.
+function eye(p) {
+  const one = eyeMTF(p.cur);
+  const sweep = p.pupils.map((pp) => { const r = eyeMTF({ ...p.cur, p: pp }); return [pp, r.strehl, mtfAt(r, 30), mtfAt(r, 60)]; });
+  return { result: { one, sweep }, transfer: [] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye };
