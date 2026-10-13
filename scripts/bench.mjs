@@ -8,6 +8,7 @@ import { LENSES, paraxial, aimRay, trace } from '../js/lib/raytrace.js';
 import { gaussianBlurRGBA } from '../js/lib/blur.js';
 import { autoSemiDiameters } from '../js/lib/raytrace.js';
 import { ghostSystem, renderGhosts } from '../js/lib/ghosts.js';
+import { renderLake } from '../js/lib/polar.js';
 import { spectralBasis, linspace } from '../js/lib/color.js';
 
 const time = (f, reps = 3) => { f(); const t = performance.now(); for (let i = 0; i < reps; i++) f(); return (performance.now() - t) / reps; };
@@ -29,6 +30,8 @@ const gsys = ghostSystem(DG, { lambdas: lams, coat: 'mgf2', sd: autoSemiDiameter
 for (const [label, grid, Wpx] of [['draft', 16, 240], ['refined', 32, 360]]) {
   rows.push([`Real-ray flare ghosts, Double-Gauss, 8 λ (${label})`, time(() => renderGhosts(gsys, { theta: [0.065, 0.048], basis: spectralBasis(lams), W: Wpx, grid, cull: 1e-6 }), 1)]);
 }
+const D = Math.PI / 180;
+rows.push(['Polarised lake render 480×270 (Stokes per pixel)', time(() => renderLake({ W: 480, H: 270, hfov: 90 * D, pitch: -12 * D, height: 1.7, sunEl: 30 * D, sunAz: 160 * D, pmax: 0.75, depth: 1.5, cdom: 0.5, ripple: 0.03, pol: true, polAngle: 90 * D }), 2)]);
 const rgba = new Uint8ClampedArray(640 * 427 * 4).fill(200);
 rows.push(['Gaussian blur 640×427, σ = 8', time(() => gaussianBlurRGBA(rgba, 640, 427, 8))]);
 

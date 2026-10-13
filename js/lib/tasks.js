@@ -9,6 +9,7 @@ import { optimise } from './optimise.js';
 import { monteCarlo } from './tolerance.js';
 import { ghostSystem, renderGhosts } from './ghosts.js';
 import { bokehKernels } from './bokeh.js';
+import { renderLake } from './polar.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -342,4 +343,10 @@ function bokehTraced(p) {
   return { result: r, transfer: r.kernels.map((k) => k.rgb.buffer) };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF };
+// Polarised render of a lake through a rotating polariser (see js/lib/polar.js).
+function polarLake(p) {
+  const r = renderLake(p);
+  return { result: r, transfer: [r.rgb.buffer] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake };
