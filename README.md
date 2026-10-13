@@ -229,6 +229,16 @@ Sellmeier dispersion, the Abbe diagram and the partial-dispersion normal line. T
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Polarisation** · `#/polarisation`<br>
+<img src="docs/screenshots/polarisation.webp" alt="Lake scene through a polarising filter, all-sky polarisation map and Fresnel reflectance curves" width="70%">
+
+A lake scene **rendered per pixel in Stokes vectors**. Skylight from a single-scattering **Rayleigh sky** (spectral radiance and E-vector), Fresnel reflection off rippled water in Mueller form, and light from the pebbles below (pure-water and CDOM absorption) all pass through a rotating **polarising filter** with a real extinction ratio. At **Brewster's angle** the glare vanishes and the bottom appears, and the sky darkens 90° from the sun. Also includes an all-sky map of the degree and angle of polarisation, Fresnel curves for water and glass, and a **polariser and wave-plate chain** (Malus's law, the three-polariser paradox, λ/4 and λ/2 plates).
+
+</td>
+</tr>
 </table>
 
 ### Light, sensor & time
@@ -382,6 +392,8 @@ flowchart LR
 | Diffraction | Fraunhofer integral by radix-2 2-D FFT of a 4 × 4-supersampled pupil, zero-padded (Q = 4); one FFT per wavelength when aberrated | PSF, Zernike, MTF, seeing, telescope |
 | Colour | CIE 1931 2° colour-matching functions (Wyman–Sloan–Shirley fit) → linear sRGB → sRGB transfer curve | all spectral renders |
 | Thin films | Characteristic-matrix method, s and p polarisation, oblique incidence | flare |
+| Polarisation | Stokes vectors and Mueller matrices (diattenuators, retarders, frame rotations); Fresnel reflection and transmission in Mueller form | polarisation |
+| Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
 | Bokeh | Exact rays of the direct path from point sources (∞ and near) to the defocused sensor, same flux-conserving rasteriser | bokeh |
 | Lens flare | Exact ray tracing of all k(k−1)/2 two-reflection paths per wavelength, rasterised as flux-conserving triangles with a per-pixel aperture gauge; paraxial ghost matrices as the preview | flare |
 | Turbulence | von Kármán PSD, FFT screens plus 3-level subharmonics, frozen flow, bilinear-influence DM | seeing |
@@ -475,6 +487,7 @@ Optica_Viva/
 │   │   ├── tolerance.js       Monte-Carlo tolerancing with refocus compensation
 │   │   ├── ghosts.js          Lens-flare ghosts: paraxial matrices and real-ray rasteriser
 │   │   ├── bokeh.js           Bokeh kernels traced through a prescription
+│   │   ├── polar.js           Stokes/Mueller algebra, Fresnel in Mueller form, Rayleigh sky, polarised lake renderer
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
@@ -483,7 +496,7 @@ Optica_Viva/
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (22)
+│   └── modules/               One file per page (23)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -531,6 +544,11 @@ The numerical core was checked against published or analytically known values. E
 | Defocused PSF centre, W₀₂₀ = 0.25, 0.5, 1, 1.5, 2 λ | sinc²(W₀₂₀/λ) within 0.03; dark at 1 and 2 λ | Born & Wolf §8.8 |
 | Traced bokeh colour fringes | singlet: violet behind, red in front; achromat: green behind, magenta in front | longitudinal colour and secondary spectrum |
 | Real-ray flare ghosts, Double-Gauss at f/18, 0.57° (4 paths) | position within 3 %, size within 2 %, flux within 3 % | y–nu ghost matrices: (B − AD/C)θ, \|A/C\| r<sub>stop</sub>, R<sub>i</sub>R<sub>j</sub> π(r<sub>stop</sub>/C)² |
+| Brewster angle, water and N-BK7 | 53.12°, 56.60° | arctan n = 53.12°, 56.60° |
+| Three ideal polarisers at 0°, 45°, 90° (unpolarised input) | 1/8 | ½ · cos²45° · cos²45° = 0.125 |
+| Rayleigh optical depth at 550 nm | 0.0973 | sea-level standard atmosphere ≈ 0.097 |
+| Polarised lake render, centre pixel | equals an explicit Mueller chain (rotate · reflect · rotate · polarise) to 10⁻⁶ | independent vector-frame calculation |
+| Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |
 
 ---
 
@@ -546,6 +564,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Depth of field, tilt-shift | Thin-lens model; exact disk kernels, blended between 11 radii in tilt-shift | Blur radius interpolated between stack levels in tilt-shift; disks above r = 8 px blurred at reduced resolution (edge softer by ≤ r/4 px) |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |
 | Seeing | Single frozen-flow layer; screens periodic over 8D | One seam per 8D of travel |
+| Polarisation | Single Rayleigh scattering in a flat atmosphere (peak DoP set by a slider); specular water with sine-wave ripples; grey pebbles; no aerosols or ozone | No neutral points (Arago, Babinet), no sun aureole; underwater light scattering ignored |
 | Coronagraph | Monochromatic, idealised hard-edged masks | Classic Lyot contrast (~10⁻⁶) rather than state-of-the-art designs |
 
 ---

@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Polarisation laboratory** (`#/polarisation`, `js/lib/polar.js`). A lake scene is rendered per pixel with Stokes vectors and Mueller matrices. Skylight comes from a single-scattering Rayleigh slab (Chandrasekhar), with Hansen & Travis optical depth at 16 wavelengths, a 5778 K sun and the E-vector perpendicular to the scattering plane. It reflects off rippled water through Fresnel Mueller matrices in the plane-of-incidence frame. Light from a pebble bottom passes through pure-water (Pope & Fry) and CDOM absorption and leaves through the Fresnel transmission matrix. A rotating polarising filter (k₁ = 0.80, k₂ = 0.002) acts on the result. The renderer is a flat scalar loop in the worker, about 0.3 s per 480×270 frame on a Raspberry Pi 4, with a half-resolution draft while controls move. The page also has an all-sky map of the degree and angle of polarisation with the camera field, Fresnel curves for water and N-BK7 with the Brewster angles, and a polariser and wave-plate chain with polarisation ellipses and the Malus curve.
+- Tests (`test/polar.test.mjs`): Malus's law and the three-polariser 1/8, λ/4 and λ/2 plates, Brewster angles and Fresnel values, Rayleigh optical depth and polarisation, the thin-slab limit, and the renderer's centre pixel against an explicit Mueller chain. A vertical polariser extinguishes a Brewster-angle reflection.
+
 ## [1.5.0] - 2026-10-12
 
 Higher-fidelity rendering (PRs [#22](https://github.com/iiogurt/Optica_Viva/pull/22)–[#26](https://github.com/iiogurt/Optica_Viva/pull/26)): lens flare and bokeh are now traced with exact rays through the real prescriptions, depth of field and tilt-shift blur with the exact disk kernel, and small defocused disks show their Fresnel diffraction rings. The remaining phenomenological shortcuts of the flare, bokeh and tilt-shift labs are gone.

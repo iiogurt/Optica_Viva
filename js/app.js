@@ -2,7 +2,7 @@
 import { h, resetUrlState } from './lib/ui.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'telescope', 'lensing', 'sampling', 'noise', 'motion', 'vignetting', 'perspective', 'tiltshift', 'catalogue']);
+export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'telescope', 'lensing', 'sampling', 'noise', 'motion', 'vignetting', 'perspective', 'tiltshift', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -22,6 +22,7 @@ export const MODULES = [
   { id: 'mtf', group: 'Wave optics', title: 'Sharpness: MTF & resolution', c: '#6ad7ff', blurb: 'Optical transfer function, pixel aperture, OLPF, Nyquist and Rayleigh, applied to a Siemens star.' },
   { id: 'chromatic', group: 'Wave optics', title: 'Chromatic aberration', c: '#6ad7ff', blurb: 'Sellmeier dispersion, Abbe diagram, achromats and apochromats, LoCA fringing and lateral colour.' },
   { id: 'bokeh', group: 'Wave optics', title: 'Bokeh', c: '#6ad7ff', blurb: 'Defocus kernels from blade geometry, cat-eye vignetting, spherical-aberration rims and mirror-lens donuts.' },
+  { id: 'polarisation', group: 'Wave optics', title: 'Polarisation', c: '#6ad7ff', blurb: 'Stokes vectors and Mueller matrices: Malus\'s law, Brewster reflections, the polarised Rayleigh sky and a polariser removing glare from a lake.' },
 
   { id: 'flare', group: 'Light, sensor & time', title: 'Flare, ghosts & coatings', c: '#c18cff', blurb: 'Paraxial ghost tracing, Fresnel equations, thin-film coatings by the transfer-matrix method, and diffraction starbursts.' },
   { id: 'sampling', group: 'Light, sensor & time', title: 'Aliasing, moiré & Bayer', c: '#c18cff', blurb: 'Pixel sampling, optical low-pass filters and demosaicing false colour on a zone plate.' },
