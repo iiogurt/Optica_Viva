@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-10-13
+
 ### Changed
 - ROADMAP, README and CLAUDE.md: the v1.6 milestone is complete with its three P1 laboratories. The remaining photography and cinema laboratories move to a new v1.8 milestone after the v1.7 astronomy laboratories.
 
@@ -392,7 +394,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.2.0...v1.3.0
