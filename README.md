@@ -18,6 +18,7 @@ Everything is computed from first principles, live in your browser.
 ![Dependencies](https://img.shields.io/badge/runtime%20deps-KaTeX%20only-c18cff)
 [![Conventional Commits](https://img.shields.io/badge/commits-conventional-ff9cc0)](https://www.conventionalcommits.org/)
 [![Keep a Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-9aa1b5)](CHANGELOG.md)
+[![Licence: MIT](https://img.shields.io/badge/licence-MIT-6be3a4)](LICENSE)
 
 **[▶ Open the live demo](https://iiogurt.github.io/Optica_Viva/)** · [Quick start](#-quick-start) · [Laboratories](#-the-laboratories) · [Physics](#-physical-models) · [Architecture](#-architecture) · [Accuracy](#-validation) · [Roadmap](ROADMAP.md) · [Contributing](#-contributing)
 
@@ -692,10 +693,11 @@ Each laboratory page lists its own additional references.
 ## 🙏 Acknowledgements and licence
 
 - [KaTeX](https://katex.org/) 0.16.11 (MIT licence) is vendored in `vendor/katex/` with its licence file.
+- CIE colorimetric tables (1931 observer, daylight, illuminants, test colour samples) were generated from the [colour-science](https://github.com/colour-science/colour) datasets (BSD-3-Clause).
 - Glass data from SCHOTT AG optical glass data sheets. Lens prescriptions follow classic textbook forms (Cooke triplet, Double-Gauss).
 - Colormap polynomial fits after M. Zucker; matplotlib colormaps by S. van der Walt and N. Smith.
 
-**Licence:** no open-source licence has been chosen yet, so all rights are reserved by the author. Contact the repository owner before reusing the code.
+**Licence:** [MIT](LICENSE) © 2026 iiogurt. Third-party components keep their own licences (KaTeX: MIT; CIE tables derived from colour-science: BSD-3-Clause); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 <div align="center">
 <sub>Made with light, Fourier transforms and Snell's law · <a href="https://github.com/iiogurt/Optica_Viva">github.com/iiogurt/Optica_Viva</a></sub>

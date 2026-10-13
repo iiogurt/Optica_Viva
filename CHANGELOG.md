@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **MIT licence** (`LICENSE`), the `license` field in `package.json`, and `THIRD_PARTY_NOTICES.md` with the KaTeX (MIT) and colour-science (BSD-3-Clause) notices. README: licence badge and section.
+
 ## [1.6.0] - 2026-10-13
 
 New laboratories for photography and cinema (PRs [#28](https://github.com/iiogurt/Optica_Viva/pull/28)–[#33](https://github.com/iiogurt/Optica_Viva/pull/33)). **Polarisation** renders a lake per pixel in Stokes vectors under a Rayleigh sky, behind a rotating polariser, and adds photoelasticity and the birefringent OLPF. **Macro & magnification** covers pupil magnification, the diffraction-limited optimum aperture and focus stacking on a ray-cast ruler. **Colour science** computes CIE colorimetry, the CIE 13.3 colour rendering index of real LED and fluorescent spectra, camera colour pipelines and metamerism. 23 laboratories and 64 tests.
