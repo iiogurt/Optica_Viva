@@ -31,6 +31,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - `scripts/worktree.sh`: one git worktree per branch. `new <type>/<name>` creates the branch from a freshly fetched `origin/main`, without an upstream, in `../Optica-Viva.worktrees/`. `finish` checks that the PR was merged, then removes the worktree and local branch, prunes and fast-forwards `main`. CONTRIBUTING.md and CLAUDE.md now describe this workflow.
 
 ### Changed
+- `scripts/worktree.sh finish` warns when the merge commit GitHub created records an email that is not a noreply address. Server-side merges take the author and committer from the GitHub account, so its *Keep my email addresses private* setting must stay on; CLAUDE.md and CONTRIBUTING.md say so.
 - All simulations now draw their random numbers from one seeded generator, `js/lib/random.js` (mulberry32 uniforms, Box–Muller normals, Poisson). This replaces ten local copies of a 32-bit LCG whose consecutive outputs, fed to Box–Muller, were correlated: sums of 20 deviates came out about 8 % too high in variance. That affected the phase screens (seeing, AO, lucky imaging), sensor noise, HDR brackets, camera shake, film grain, detector ramps and tolerancing. Random realisations on those pages change; all physics tests pass unchanged.
 
 ### Fixed
