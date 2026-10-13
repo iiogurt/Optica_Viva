@@ -11,7 +11,8 @@ import { ghostSystem, renderGhosts } from './ghosts.js';
 import { bokehKernels } from './bokeh.js';
 import { renderLake } from './polar.js';
 import { renderRuler } from './macro.js';
-import { createLoop } from './wfs.js';
+import { createLoop, pyramidWFS } from './wfs.js';
+import { phaseScreen } from './turbulence.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -367,4 +368,32 @@ function aoLoop(p) {
   return { result: { info, frame: r }, transfer: [] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop };
+// Pyramid wavefront sensor: detector image and slope maps for an aberration, plus the response to
+// a pure tilt (linearity curve, when p.curve) at the same modulation. p = { mode: 'tilt'|Noll
+// j|'turb', amp (rad RMS, or λ/D for tilt), rmod (λ/D), curve (bool) }.
+let pyrScreen = null;
+function pyramid(p) {
+  const Np = 32, ph = new Float64Array(Np * Np), R = Np / 2;
+  if (p.mode === 'turb' && !pyrScreen) pyrScreen = phaseScreen(128, 1 / Np, 1, 30, 5);
+  for (let y = 0; y < Np; y++) for (let x = 0; x < Np; x++) {
+    const dx = (x + 0.5 - R) / R, dy = (y + 0.5 - R) / R;
+    ph[y * Np + x] = p.mode === 'tilt' ? (2 * Math.PI * p.amp * (x - R)) / Np
+      : p.mode === 'turb' ? (pyrScreen[(y + 40) * 128 + x + 40] * p.amp) / 2.2
+        : p.amp * zernike(+p.mode, Math.hypot(dx, dy), Math.atan2(dy, dx));
+  }
+  const r = p.curve ? null : pyramidWFS(ph, { Np, rmod: p.rmod });
+  let curve = null;
+  if (p.curve) {
+    curve = [];
+    for (const a of [0, 0.15, 0.4, 0.8, 1.3, 2, 3, 4.5]) {
+      const t = new Float64Array(Np * Np);
+      for (let y = 0; y < Np; y++) for (let x = 0; x < Np; x++) t[y * Np + x] = (2 * Math.PI * a * (x - R)) / Np;
+      curve.push([a, a ? pyramidWFS(t, { Np, rmod: p.rmod }).mx : 0]);
+    }
+  }
+  if (curve) return { result: { curve }, transfer: [] };
+  const img = Float32Array.from(r.img), Sx = Float32Array.from(r.Sx), Sy = Float32Array.from(r.Sy);
+  return { result: { img, Sx, Sy, inside: r.inside, mx: r.mx, my: r.my, steps: r.steps, phase: Float32Array.from(ph) }, transfer: [img.buffer, Sx.buffer, Sy.buffer] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid };

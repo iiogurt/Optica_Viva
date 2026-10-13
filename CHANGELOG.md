@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Pyramid wavefront sensor** in the AO lab. The pupil field is focused by an FFT onto a four-faced pyramid phase mask and re-imaged into four pupils, with circular modulation (a symmetric ring of tilted copies). The page shows the slope signals Sx and Sy for tilt, defocus, astigmatism, coma or turbulence, and the tilt response curve (computed in the worker) against the geometric law (2/π) asin(θ/R) with the optical gain. Test: zero signal without aberration, the arcsine law within 15 % when modulated, more than 8× higher sensitivity and saturation without modulation, and no cross-talk between axes.
 - **Wavefront sensing & AO loop laboratory** (`#/wfs`, `js/lib/wfs.js`).
   - **Sensor:** a diffraction model of the Shack–Hartmann sensor (one zero-padded FFT spot per lenslet) with photon (Poisson) and read noise, thresholded centre-of-gravity centroids in a peak-centred window, and per-lenslet centroid gains calibrated through the sensor with two small tilts.
   - **Reconstruction and loop:** a regularised least-squares Zernike reconstructor (Cholesky) drives a modal deformable mirror with an integrator against frozen-flow von Kármán turbulence on an 8 m telescope. The loop is a persistent simulator in the compute worker (`aoLoop` task); each request advances it for ~120 ms.
