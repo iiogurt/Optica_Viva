@@ -18,6 +18,7 @@ import { shakeLab } from './shake.js';
 import { eyeMTF, mtfAt } from './eye.js';
 import { filmLab } from './film.js';
 import { aperturePipeline } from './interferometry.js';
+import { luckySim } from './lucky.js';
 import { phaseScreen } from './turbulence.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
@@ -439,4 +440,16 @@ function aperture(p) {
   return { result: r, transfer: [r.sky.buffer, r.dirty.buffer, r.beam.buffer, r.restored.buffer] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture };
+// Lucky imaging: short-exposure frames, selection and shift-and-add, plus the Monte-Carlo
+// probability of a lucky frame over a range of D/r0 (see js/lib/lucky.js).
+let luckyCurve = null;
+function lucky(p) {
+  const r = luckySim(p), f32 = (a) => Float32Array.from(a);
+  // the probability curve does not depend on the controls: compute it once per worker
+  luckyCurve = luckyCurve || [3, 4, 5, 6, 7, 8].map((d) => { const s = luckySim({ Dr0: d, frames: 400, Np: 32, withImages: false, step: 6, seed: 11 }).stats; return [d, s.filter((q) => q.v <= 1).length / s.length]; });
+  const curve = luckyCurve;
+  const out = { N: r.N, strehl: r.strehl, nKeep: r.nKeep, peaks: r.stats.map((s) => s.pk), long: f32(r.long), tt: f32(r.tt), lucky: f32(r.lucky), best: f32(r.ex), worst: f32(r.worst), curve };
+  return { result: out, transfer: [out.long.buffer, out.tt.buffer, out.lucky.buffer, out.best.buffer, out.worst.buffer] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky };

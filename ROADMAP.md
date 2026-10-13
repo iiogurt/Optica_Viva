@@ -66,10 +66,10 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 35 | +4 proposed (v1.9) |
+| Laboratories | 36 | +3 proposed (v1.9) |
 | Catalogue entries | 166 | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 109 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 112 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -334,7 +334,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | [ ] **Starshade** | Fresnel diffraction around a petal-shaped occulter; contrast vs Fresnel number | P3 · L |
 | [ ] **Astrophotography stacking** | SNR ∝ √N, sky-limited vs read-limited sub-exposures, light pollution | P3 · M |
 | [x] **Atmospheric dispersion & ADC** | elongated stellar images vs zenith angle; Risley-prism corrector (PR #57) | P3 · S |
-| [ ] **Lucky imaging** | frame selection by Strehl from the seeing simulator | P3 · S |
+| [x] **Lucky imaging** | frame selection by Strehl from the seeing simulator (PR #58) | P3 · S |
 
 ### v2.0 Learning platform
 
