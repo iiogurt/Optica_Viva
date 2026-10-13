@@ -632,6 +632,7 @@ Optica_Viva/
 │   ├── smoke.mjs              Every page in real-time headless Chrome; labs must render results
 │   ├── bench.mjs              Kernel benchmarks (npm run bench)
 │   ├── release.sh             prepare: release PR (date changelog, bump) · publish: tag + GitHub release
+│   ├── worktree.sh            new / finish: one git worktree per branch, cleanup after merge
 │   ├── screenshots.mjs        Regenerates docs/screenshots (CDP, WebP)
 │   └── lib/browser.mjs        Dependency-free Chrome DevTools Protocol driver
 ├── CHANGELOG.md               Keep a Changelog
