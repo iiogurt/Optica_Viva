@@ -183,7 +183,7 @@ export const GROUPS = [
       ['Shack–Hartmann wavefront sensing', 'wfs', 's', 'A lenslet array turns local wavefront tilts into spot displacements; a reconstructor recovers the wavefront.', r`\Delta x=\frac{f_\ell\lambda}{2\pi}\langle\partial_x\phi\rangle,\ \hat{\mathbf a}=(\mathbf D^\mathsf T\mathbf D)^{-1}\mathbf D^\mathsf T\mathbf s`],
       ['Greenwood frequency & AO bandwidth', 'wfs', 's', 'Turbulence must be corrected faster than it evolves.', r`f_G=0.427\,\frac{v}{r_0},\ \sigma^2=\left(\frac{f_G}{f_{3\,\text{dB}}}\right)^{5/3}`],
       ['Isoplanatic angle', 'seeing', 's', 'Field over which an AO correction remains valid.', r`\theta_0\approx0.314\,\frac{r_0}{\bar h}`],
-      ['Lucky imaging & speckle interferometry', 'seeing', 'ps', 'Short exposures freeze turbulence; select or Fourier-combine them.', r`t\ll\tau_0=0.314\,\frac{r_0}{v}`],
+      ['Lucky imaging & speckle interferometry', 'lucky', 'ps', 'Short exposures freeze turbulence; select or Fourier-combine them.', r`t\ll\tau_0=0.314\,\frac{r_0}{v}`],
       ['Atmospheric refraction', 'adc', 's', 'Objects appear higher near the horizon.', r`R\approx(n-1)\tan z`],
       ['Extinction & airmass', null, 'ps', 'Atmospheric absorption and scattering dim sources with zenith angle.', r`m=m_0+kX,\ X\approx\sec z`],
       ['Aerial perspective & haze', 'dof', 'pv', 'Rayleigh and Mie scattering add airlight and reduce contrast with distance.', r`C(d)=C_0e^{-\beta d},\ \beta_R\propto\lambda^{-4}`],

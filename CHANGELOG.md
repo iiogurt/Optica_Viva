@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Lucky imaging laboratory** (`#/lucky`, `js/lib/lucky.js`). Short exposures are cut by a pupil from a frozen-flow phase screen, with tip-tilt-removed variance and FFT PSF per frame, ranked by Strehl. The page shows the best and worst frames, the long exposure, shift-and-add of all frames and the lucky selection, a Strehl histogram, and the simulated probability of a lucky frame against Fried's formula. Computed in the worker, with the probability curve cached. *Lucky imaging & speckle interferometry* in the catalogue now links here.
+- Tests (`test/lucky.test.mjs`): tip-tilt removal is exact; the probability follows Fried's exponential slope within 30 %; lucky selection beats shift-and-add, which beats the long exposure.
 - **Atmospheric dispersion & ADC laboratory** (`#/adc`, `js/lib/adc.js`). It computes Edlén's refractive index of standard air with the pressure and temperature correction for three sites (sea level, Paranal, Mauna Kea), plane-parallel refraction and dispersion vs zenith angle, and a 5800 K star rendered from seeing-limited images at 31 wavelengths. A two-doublet zero-deviation ADC (three glass pairs) is rotated to cancel the dispersion, and the page plots the residual secondary spectrum. The catalogue's *Atmospheric dispersion* and *Atmospheric refraction* entries now link here.
 - Tests (`test/adc.test.mjs`): (n − 1)·10⁸ = 27 653 at 633 nm, refractivity proportional to pressure, 57.3″ of refraction at z = 45°, dispersion ∝ tan z, zero deviation at the central wavelength, and an ADC residual below 10 %.
 - **Detector physics in space laboratory** (`#/detectors`, `js/lib/detectors.js`). It covers:

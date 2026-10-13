@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Thirty-five interactive simulations, a physics primer and a catalogue of 166 phenomena.
+Thirty-six interactive simulations, a physics primer and a catalogue of 166 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -450,6 +450,16 @@ A **diffraction model of the Shack–Hartmann sensor**: one FFT spot per lenslet
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Lucky imaging** · `#/lucky`<br>
+<img src="docs/screenshots/lucky.webp" alt="Best and worst short exposures, long exposure, shift-and-add and lucky selection, Strehl histogram and Fried probability" width="70%">
+
+Short exposures through frozen-flow Kolmogorov turbulence are ranked by Strehl, re-centred and added. The page compares the long exposure, shift-and-add of all frames and **lucky selection**, and checks the simulated probability of a lucky frame against **Fried's 5.6·exp(−0.1557 (D/r₀)²)**.
+
+</td>
+</tr>
 </table>
 
 ### Reference pages
@@ -641,6 +651,7 @@ Optica_Viva/
 │   │   ├── tolerance.js       Monte-Carlo tolerancing with refocus compensation
 │   │   ├── ghosts.js          Lens-flare ghosts: paraxial matrices and real-ray rasteriser
 │   │   ├── bokeh.js           Bokeh kernels traced through a prescription
+│   │   ├── lucky.js           Short-exposure frames, tip-tilt-removed variance, frame selection and shift-and-add
 │   │   ├── macro.js           Close-up optics (pupil magnification, exact defocus, optimum aperture), ruler renderer
 │   │   ├── panorama.js        Cardinal points, parallax between frames, two-frame panorama ray caster
 │   │   ├── polar.js           Stokes/Mueller algebra, Fresnel in Mueller form, Rayleigh sky, polarised lake renderer
@@ -654,7 +665,7 @@ Optica_Viva/
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (37)
+│   └── modules/               One file per page (38)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -710,6 +721,7 @@ The numerical core was checked against published or analytically known values. E
 | Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |
 | Disk in diametral compression: centre stresses, force balance | σ<sub>x</sub> = 2P/(πDt), σ<sub>y</sub> = −6P/(πDt); ∫σ<sub>y</sub>t dx = −P | Frocht (1948); free boundary |
 | Walk-off: quartz at 45°, calcite maximum | 5.875 µm/mm, 6.26° at tan θ = n<sub>e</sub>/n<sub>o</sub> | (n<sub>e</sub>² − n<sub>o</sub>²)/(2n<sub>o</sub>n<sub>e</sub>) |
+| Probability of a lucky frame vs D/r₀ (8 × 300 frames) | slope of ln P vs (D/r₀)² within 30 % of −0.1557 | Fried (1978) |
 | Refractivity of standard air at 633 nm | (n − 1)·10⁸ = 27 653 | Edlén (1966) |
 | Refraction at z = 45°, sea level, 550 nm | 57.3″ | (n − 1) tan z |
 | ADC residual, 400–700 nm at z = 50° (Paranal) | < 10 % of the uncorrected dispersion; ends coincide | zero-deviation doublets |
@@ -770,6 +782,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
+| Lucky imaging | Single frozen screen, monochromatic, no photon or read noise, selection on the true Strehl | Real selection uses a noisy reference star; anisoplanatism ignored |
 | ADC | Plane-parallel refraction (≈ 1 % below z = 70°), dry air, thin prisms; Gaussian seeing ∝ λ^−0.2 | No water vapour, curvature or ADC aberrations |
 | Detectors | One trap species with exponential release (real CTI depends on signal level); illustrative persistence law | Flux dependence of CTI and detector-specific persistence not modelled |
 | Interferometry | Noise-free, perfectly calibrated visibilities on a 128² grid; Högbom CLEAN only | No atmospheric phase, closure quantities or regularised imaging |
