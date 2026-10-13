@@ -45,3 +45,20 @@ test('solar lines keep their depth at high R and wash out at low R', () => {
   assert.ok(depth(50000) > 0.6, `D2 depth at R = 50000: ${depth(50000)}`);
   assert.ok(depth(500) < 0.2, `D2 depth at R = 500: ${depth(500)}`);
 });
+
+test('slit-limited échelle spectrograph: UVES-like R, slit losses, order stacking', async () => {
+  const { slitR, slitThroughput, echelleOrders, echellePosition, sunAt, combinedR } = await import('../js/lib/spectro.js');
+  const thB = Math.atan(4);
+  near(slitR(thB, 200, 1, 8.2) / 40000, 1, 0.02, 'R4 échelle, 200 mm beam, 1″ slit on 8.2 m (UVES ≈ 40 000)');
+  near(slitR(thB, 200, 0.5, 8.2) / slitR(thB, 200, 1, 8.2), 2, 1e-12, 'R ∝ 1/φ');
+  near(slitThroughput(1, 1), 0.761, 1e-3, 'slit = FWHM passes erf(√ln2)');
+  near(slitThroughput(10, 1), 1, 1e-6, 'wide slit passes everything');
+  near(combinedR(1e4, 1e9), 1e4, 1e-3, 'diffraction negligible');
+  const o = echelleOrders(31.6, thB, 380, 700), opt = { rho: 31.6, thB, fcam: 750, glass: 'N-SF11', apex: Math.PI / 3, lamRef: 520 };
+  near(o.lamB(o.mMin) * o.mMin, (2e6 * Math.sin(thB)) / 31.6, 1e-9, 'm λB = 2 d sin θB');
+  const gap = (m) => echellePosition(opt, m, o.lamB(m))[1] - echellePosition(opt, m + 1, o.lamB(m + 1))[1];
+  assert.ok(gap(100) < 0 && Math.abs(gap(150)) > Math.abs(gap(100)), 'orders separate, more widely in the blue (prism)');
+  // broadening conserves the equivalent width of a line
+  const ew = (R) => { let a = 0; for (let l = 586; l <= 592; l += 0.0005) a += (1 - sunAt(l, R) / sunAt(586, R)) * 0.0005; return a; };
+  near(ew(2000) / ew(1e6), 1, 0.05, 'equivalent width of Na D conserved');
+});
