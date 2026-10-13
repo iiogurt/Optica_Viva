@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Twenty-three interactive simulations, a physics primer and a catalogue of 150 phenomena.
+Twenty-four interactive simulations, a physics primer and a catalogue of 152 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -323,12 +323,20 @@ Resolution and Nyquist sampling for eight real cameras, Planck thermal emission,
 </td>
 </tr>
 <tr>
-<td valign="top" colspan="2">
+<td valign="top">
 
 **Gravitational lensing** · `#/lensing`<br>
-<img src="docs/screenshots/lensing.webp" alt="Einstein ring arcs from an SIE lens, with critical curves and caustics" width="70%">
+<img src="docs/screenshots/lensing.webp" alt="Einstein ring arcs from an SIE lens, with critical curves and caustics">
 
 Inverse ray-shooting through point-mass, SIS and **SIE + shear** lenses. Critical curves are found by marching squares and mapped to caustics. Flat ΛCDM distances give the Einstein radius, enclosed mass and velocity dispersion. Drag the source galaxy across the caustics.
+
+</td>
+<td valign="top">
+
+**Wavefront sensing & AO loop** · `#/wfs`<br>
+<img src="docs/screenshots/wfs.webp" alt="Shack–Hartmann spots, corrected PSF, turbulence, mirror and residual maps, AO error versus time">
+
+A **diffraction model of the Shack–Hartmann sensor**: one FFT spot per lenslet, photon and read noise, thresholded centroids and an interaction matrix calibrated through the sensor. A **least-squares Zernike reconstructor** drives a modal deformable mirror with an **integrator** against frozen-flow turbulence on an 8 m telescope. Plots show the residual against an analytic **error budget** (Noll fitting, Greenwood temporal, propagated noise), the modal rejection and short- and long-exposure PSFs. It runs in the compute worker.
 
 </td>
 </tr>
@@ -349,9 +357,9 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 <td width="50%" valign="top">
 
 **Catalogue of phenomena** · `#/catalogue`<br>
-<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 150 optical phenomena">
+<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 152 optical phenomena">
 
-**150 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
+**152 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
 
 </td>
 </tr>
@@ -417,7 +425,8 @@ flowchart LR
 | Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
 | Bokeh | Exact rays of the direct path from point sources (∞ and near) to the defocused sensor, same flux-conserving rasteriser | bokeh |
 | Lens flare | Exact ray tracing of all k(k−1)/2 two-reflection paths per wavelength, rasterised as flux-conserving triangles with a per-pixel aperture gauge; paraxial ghost matrices as the preview | flare |
-| Turbulence | von Kármán PSD, FFT screens plus 3-level subharmonics, frozen flow, bilinear-influence DM | seeing |
+| Turbulence | von Kármán PSD, FFT screens plus 3-level subharmonics, frozen flow, bilinear-influence DM | seeing, wfs |
+| Adaptive optics | Shack–Hartmann spots by FFT per lenslet (photon + read noise, thresholded windowed centroids, calibrated gains); regularised least-squares Zernike reconstructor; integrator with one frame of delay; Noll/Greenwood/noise-propagation budget | wfs |
 | Sensor | Poisson photon statistics, two-stage read noise, PRNU, dark current, FWC, quantisation | noise, sampling |
 | Gravitational lensing | Thin-lens equation, SIE (Kormann et al. 1994) + shear, flat ΛCDM distances | lensing |
 
@@ -499,6 +508,8 @@ Optica_Viva/
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
+│   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
+│   │   ├── wfs.js             Shack–Hartmann sensor, modal reconstructor, Noll residuals, closed AO loop
 │   │   ├── tasks.js           Heavy pure computations (PSF, Zernike, OTF) for the worker
 │   │   ├── compute.js         Worker API: run(task) and latest-only channels, main-thread fallback
 │   │   ├── colordata.js       CIE tables at 5 nm: 1931 observer, daylight basis, illuminants, CRI test colours
@@ -516,11 +527,11 @@ Optica_Viva/
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (150 entries)
+│   │   ├── phenomena.js       Catalogue data (152 entries)
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (25)
+│   └── modules/               One file per page (26)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -582,6 +593,9 @@ The numerical core was checked against published or analytically known values. E
 | CIEDE2000, Sharma test pairs 1, 3, 7, 17 | 2.0425, 1.0000, 2.3669, 27.1492 | Sharma, Wu & Dalal (2005), same |
 | Luther–Ives camera (sensitivities = x̄ȳz̄), matrix fitted under A | ΔE₀₀ < 10⁻⁴ on all 24 patches | colorimetric by construction |
 | Constructed metamer of TCS13 (skin) | ΔE₀₀ = 0 in D65; > 5 under FL11 | metameric black ⟂ S x̄, S ȳ, S z̄ |
+| Zernike fitting error after 21 modes, D/r₀ = 10 (24 phase screens) | within 15 % of Noll | Δ₂₁ = 0.0208 (D/r₀)^5/3 rad² (Noll 1976) |
+| Shack–Hartmann reconstruction of Z₄, Z₇, Z₁₁, Z₂₂ | coefficients within 4 %, cross-talk < 6 % | input mode |
+| Closed AO loop (10 × 10 lenslets, 35 modes, bright star) | residual within 0.8–1.6 × the Noll fitting error | σ<sub>fit</sub> = √Δ₃₆ (D/r₀)^5/6 |
 
 ---
 
@@ -597,6 +611,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Depth of field, tilt-shift | Thin-lens model; exact disk kernels, blended between 11 radii in tilt-shift | Blur radius interpolated between stack levels in tilt-shift; disks above r = 8 px blurred at reduced resolution (edge softer by ≤ r/4 px) |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |
 | Seeing | Single frozen-flow layer; screens periodic over 8D | One seam per 8D of travel |
+| Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
 | Macro | Unit focusing by extension (no floating elements); diffraction as a Gaussian with the Airy core's width at 550 nm; perfectly aligned focus stack | Internal-focus macro lenses change f and m<sub>p</sub> with distance; no Airy rings in the crop |
 | Polarisation | Single Rayleigh scattering in a flat atmosphere (peak DoP set by a slider); specular water with sine-wave ripples; grey pebbles; no aerosols or ozone. Photoelasticity: plane stress, dispersion-free retardation | No neutral points (Arago, Babinet), no sun aureole; underwater light scattering ignored; no colour dispersion of the isochromatics |

@@ -11,6 +11,7 @@ import { ghostSystem, renderGhosts } from './ghosts.js';
 import { bokehKernels } from './bokeh.js';
 import { renderLake } from './polar.js';
 import { renderRuler } from './macro.js';
+import { createLoop } from './wfs.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -356,4 +357,14 @@ function macroRuler(p) {
   return { result: { full, crop }, transfer: [full.img.buffer, ...(crop ? [crop.img.buffer] : [])] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler };
+// Adaptive-optics loop: a persistent simulator living in the worker (or the main thread when
+// workers are unavailable). p = { config } reconfigures; p = { run: ms } advances the loop.
+let aoSim = null;
+function aoLoop(p) {
+  if (!aoSim) aoSim = createLoop();
+  const info = p.config ? aoSim.configure(p.config) : null;
+  const r = p.run ? aoSim.run(p.run) : null;
+  return { result: { info, frame: r }, transfer: [] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop };
