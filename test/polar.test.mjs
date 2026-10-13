@@ -1,7 +1,7 @@
 // Polarisation: Mueller algebra, Fresnel/Brewster, Rayleigh sky and the polarised lake renderer.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { polariser, retarder, rotator, mmul, mapply, ellipse, fresnelAmp, brewster, reflectionMueller, rayleighTau, rayleighDoP, slabFactor, renderLake } from '../js/lib/polar.js';
+import { polariser, retarder, rotator, mmul, mapply, ellipse, fresnelAmp, brewster, reflectionMueller, rayleighTau, rayleighDoP, slabFactor, renderLake, diskStress, principal, retardation, michelLevy, CRYSTALS, walkOff, maxWalkOff } from '../js/lib/polar.js';
 
 const near = (actual, expected, tol, msg) =>
   assert.ok(Math.abs(actual - expected) <= tol, `${msg}: got ${actual}, expected ${expected} ± ${tol}`);
@@ -81,4 +81,41 @@ test('a vertical polariser removes horizontally polarised glare near Brewster\'s
   const vert = renderLake({ ...base, polAngle: 90 * D }).stats.centreGlare, hor = renderLake({ ...base, polAngle: 0 }).stats.centreGlare;
   assert.ok(vert < 0.01, `vertical axis at Brewster: ${vert}`);
   near(hor, 2 * 0.8 / 0.802, 0.02, 'horizontal axis passes the s-polarised reflection');
+});
+
+test('photoelasticity: Hertz disk in diametral compression', () => {
+  const P = 300, Dd = 0.05, t = 0.006, R = Dd / 2, k = P / (Math.PI * Dd * t);
+  const c = diskStress(0, 0, P, Dd, t);
+  near(c.sx / k, 2, 1e-9, 'centre σx = +2P/(πDt) (tension)');
+  near(c.sy / k, -6, 1e-9, 'centre σy = −6P/(πDt)');
+  near(principal(c).ds / k, 8, 1e-9, 'centre σ1 − σ2 = 8P/(πDt)');
+  // vertical equilibrium of the upper half: ∫ σy t dx across the horizontal diameter = −P
+  let F = 0;
+  const n = 20000;
+  for (let i = 0; i < n; i++) F += diskStress(-R + ((i + 0.5) * Dd) / n, 0, P, Dd, t).sy * (Dd / n) * t;
+  near(F, -P, 1e-3 * P, 'force balance');
+  // the boundary is traction-free (and here entirely unstressed) away from the load points
+  for (const a of [0, 30, 60]) assert.ok(principal(diskStress(0.99999 * R * Math.cos(a * D), 0.99999 * R * Math.sin(a * D), P, Dd, t)).ds < 1e-3 * 8 * k, `free boundary at ${a}°`);
+  // stress-optic law: polycarbonate (82 Br), centre fringe order N = 8P/(πD f_σ) with f_σ = λ/C
+  near(retardation(82, t, principal(c).ds) / 589e-9, (8 * P) / (Math.PI * Dd * (589e-9 / 82e-12)), 1e-9, 'disk calibration formula');
+});
+
+test('Michel-Lévy colours: black at zero, first-order white, first-order red is magenta', () => {
+  const L = michelLevy(2000, 2001), at = (G) => [0, 1, 2].map((c) => L.T[Math.round(G) * 3 + c]);
+  assert.ok(Math.max(...at(0)) < 1e-12, 'zero retardation is dark between crossed polarisers');
+  assert.ok(Math.min(...at(250)) > 0.55, `first-order white at 250 nm: ${at(250)}`);
+  const red = at(551);
+  assert.ok(red[1] < 0.5 * red[0] && red[1] < 0.5 * red[2], `sensitive tint is magenta: ${red}`);
+});
+
+test('birefringent walk-off: maximum at tan θ = nₑ/nₒ; quartz and calcite values', () => {
+  for (const c of Object.values(CRYSTALS)) {
+    let best = 0, arg = 0;
+    for (let th = 0; th < Math.PI / 2; th += 1e-5) { const w = Math.abs(walkOff(c.no, c.ne, th)); if (w > best) { best = w; arg = th; } }
+    near(arg, Math.atan(c.ne / c.no), 2e-5, `${c.name} angle of maximum walk-off`);
+    near(best, Math.abs(maxWalkOff(c.no, c.ne)), 1e-9, `${c.name} maximum walk-off`);
+  }
+  near(1000 * Math.abs(Math.tan(walkOff(CRYSTALS.quartz.no, CRYSTALS.quartz.ne, 45 * D))), 5.875, 0.005, 'quartz µm per mm at 45°');
+  near(Math.abs(maxWalkOff(CRYSTALS.calcite.no, CRYSTALS.calcite.ne)) / D, 6.26, 0.01, 'calcite maximum walk-off (°)');
+  assert.ok(walkOff(CRYSTALS.quartz.no, CRYSTALS.quartz.ne, 0.5) < 0 && walkOff(CRYSTALS.calcite.no, CRYSTALS.calcite.ne, 0.5) > 0, 'positive crystals pull the ray towards the axis, negative ones push it away');
 });
