@@ -15,6 +15,7 @@ ROOT="$(git -C "$(dirname "$0")/.." rev-parse --path-format=absolute --git-commo
 ROOT="$(cd "$ROOT" && pwd)"
 BASE="$(cd "$ROOT/.." && pwd)/$(basename "$ROOT").worktrees"
 CMD="${1:-}"; BR="${2:-}"
+cd "$ROOT" # never run inside a worktree that `finish` is about to remove
 need_branch() { [[ "$BR" =~ ^(feat|fix|docs|ci|chore|refactor|test|perf)/[a-z0-9][a-z0-9._-]*$ ]] || { echo "branch must be <type>/<kebab-name>, type ∈ feat fix docs ci chore refactor test perf" >&2; exit 1; }; }
 dir_of() { echo "$BASE/${BR//\//-}"; }
 
@@ -39,7 +40,7 @@ finish)
   git -C "$ROOT" branch -D "$BR" 2>/dev/null || true
   # the repository deletes merged head branches automatically; remove one that survived
   # (e.g. when gh skipped it because the branch was checked out in this worktree)
-  if [ "$STATE" = MERGED ] && git -C "$ROOT" ls-remote --exit-code --heads origin "$BR" >/dev/null 2>&1; then git -C "$ROOT" push -q origin --delete "$BR"; fi
+  if [ "$STATE" = MERGED ] && git -C "$ROOT" ls-remote --exit-code --heads origin "$BR" >/dev/null 2>&1; then git -C "$ROOT" push -q origin --delete "$BR" 2>/dev/null || true; fi # GitHub may delete it first
   git -C "$ROOT" fetch -q --prune origin
   git -C "$ROOT" worktree prune
   if [ "$(git -C "$ROOT" branch --show-current)" = main ] && [ -z "$(git -C "$ROOT" status --porcelain)" ]; then git -C "$ROOT" merge -q --ff-only origin/main; fi
