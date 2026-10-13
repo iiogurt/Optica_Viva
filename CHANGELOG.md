@@ -6,8 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
-### Changed
-- ROADMAP, README and CLAUDE.md: the v1.8 milestone is complete with all seven photography and cinema laboratories.
+## [1.8.0] - 2026-10-13
+
+Seven new laboratories for photography and cinema (PRs [#43](https://github.com/iiogurt/Optica_Viva/pull/43)–[#50](https://github.com/iiogurt/Optica_Viva/pull/50)): **Panorama & parallax**, **Anamorphic & cinema lenses**, **Filters & HDR**, **Camera shake & stabilisation**, **The human eye**, **Film & grain** and **Virtual production**. Each pairs a simulation from first principles with validation against theory or measurement: Noll-style analytic checks, Thibos's chromatic eye, Selwyn's law, Campbell & Gubisch's optimum pupil, CIPA-like stabilisation gains. 32 laboratories and 99 tests.
 
 ### Added
 - **Virtual production laboratory** (`#/vp`, `js/lib/virtual.js`).
@@ -39,6 +40,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Tests (`test/cinema.test.mjs`): the 2.39 : 1 aspect, unit-focus breathing equal to 1/(1 + m), the IF design at 50 mm breathing less, uncoated Fresnel R and T = N/√τ, and the streak colours.
 - **Panorama & parallax laboratory** (`#/panorama`, `js/lib/panorama.js`). Two frames are ray-cast from the entrance pupils of a camera rotated about an offset pivot: a striped near pole, a second pole, a checkerboard ground and a skyline 60 m away. They are blended on a cylinder as a stitcher assumes, rendered in the worker with a draft pass. The page offers a frame-difference view, a 3× zoom on the overlap, a to-scale top view of both camera positions and their lines of sight, and readouts of the exact parallax (in pixels for 6 µm pixels), the pivot tolerance and the nearest stitchable distance. A table compares the paraxial entrance pupil z = B/A with the front nodal point z = (D − 1)/C for the library lenses. The catalogue gains a *No-parallax point* entry. `paraxialMatrix` is now exported from `raytrace.js`.
 - Tests (`test/panorama.test.mjs`): the exact disparity formula against the ray geometry and its small-offset limit; a seamless stitch about the pupil and doubling at a 60 mm offset; the principal points of plano-convex lenses (0 and t/n) and the Double-Gauss pupil–nodal gap.
+
+### Changed
+- ROADMAP, README and CLAUDE.md: the v1.8 milestone is complete with all seven photography and cinema laboratories.
 
 ## [1.7.0] - 2026-10-13
 
@@ -456,7 +460,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.5.0...v1.6.0
