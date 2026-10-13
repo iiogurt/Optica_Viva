@@ -625,7 +625,9 @@ Completed and planned milestones are tracked in **[ROADMAP.md](ROADMAP.md)**, to
 | ✅ **v1.3** | Aspheres, prescription editor and `.zmx` import, Seidel sums, field curves, vignetted PSF |
 | ✅ **v1.4** | MTF across the field, damped-least-squares optimiser, Monte-Carlo tolerancing |
 | ✅ **v1.5** | Real-ray flare ghosts, bokeh traced through the lens, exact disk blur, diffraction of small disks |
-| **v1.6–v1.7** | 19 proposed laboratories, e.g. polarisation, colour science, wavefront sensing, spectroscopy, interferometry |
+| ✅ **v1.6** | Polarisation (Stokes-vector scene, photoelasticity, OLPF), macro & magnification, colour science (CRI, camera colour, metamerism) |
+| **v1.7** | Astronomy and space laboratories: wavefront sensing, spectroscopy, interferometry, field-dependent PSF, detector physics |
+| **v1.8** | Photography and cinema II: panorama, anamorphic lenses, filters & HDR, film, virtual production, stabilisation, the eye |
 | **v2.0** | Guided tours, exercises, export, installable PWA |
 
 ---

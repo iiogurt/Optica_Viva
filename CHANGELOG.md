@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- ROADMAP, README and CLAUDE.md: the v1.6 milestone is complete with its three P1 laboratories. The remaining photography and cinema laboratories move to a new v1.8 milestone after the v1.7 astronomy laboratories.
+
 ### Added
 - **Colour science laboratory**, part 2.
   - **Camera colour.** Four sensor models (typical CMOS Bayer, narrow-band, broad, Luther–Ives ideal), each with an IR cut. Raw response under any CIE illuminant, grey-card or preset white balance, and a 3×3 colour matrix fitted by least squares with exact white preservation (Finlayson & Drew), either for the scene or reused from daylight. CIEDE2000 errors on 24 patches (the 14 CIE samples plus 10 smooth synthetic reflectances), and the Luther–Ives residual.
