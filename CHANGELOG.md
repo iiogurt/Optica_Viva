@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-10-13
+
 ### Added
 - **Astronomical échelle spectrograph** in the spectroscopy lab. It computes the slit-limited resolving power R = 2 tan θ_B D_col/(φ D_tel), combined in quadrature with diffraction, and the transmission of a Gaussian seeing disk through the slit, with the resolution vs throughput trade-off. An échellogram of the Sun is rendered for R2 or R4 échelles cross-dispersed by a prism on a 4k × 4k detector: orders 88–161, blaze envelope per order, and solar lines broadened to the instrument resolution with their equivalent width conserved. A Na D zoom at the resulting R is shown alongside. Test: the UVES-like configuration gives R ≈ 40 000, R ∝ 1/φ, a slit equal to the FWHM passes erf(√ln2), m λ_B = 2 d sin θ_B, orders separate more widely in the blue, and broadening conserves equivalent width.
 - **Spectroscopy laboratory** (`#/spectro`, `js/lib/spectro.js`). It compares prisms (60° apex, six glasses, R = b|dn/dλ| from Sellmeier) with diffraction gratings in a Littrow mount at the first-order blaze (grating equation, scalar blaze envelope per order, R = mN, angular dispersion, free spectral range). The detector strip has a colour row and a silicon-signal row that also shows UV and IR light from overlapping orders, with an optional order-sorting filter. Sources: the Sun (5778 K continuum, Fraunhofer and telluric lines) and Hg, Ne, H and Na lamps. A zoom plot convolves the spectrum with the sinc² instrument profile, and further plots show blaze efficiency per order or prism R vs wavelength. The catalogue gains three entries (gratings, blaze & orders, prism spectroscopy), and *Rainbows, prisms & halos* links here.
@@ -418,7 +420,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.1...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.4.0...v1.5.0
