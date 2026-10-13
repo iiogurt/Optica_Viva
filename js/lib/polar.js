@@ -320,3 +320,53 @@ export function renderLake(o) {
   // reflected-glare change through the polariser, relative to a neutral filter of the same factor
   return { rgb, W, H, stats: { glareRatio: glareP > 0 ? glare / (glareP * ff) : 1, centreGlare: cGlare, filterEV: Math.log2(1 / ff), key } };
 }
+
+// ── Photoelasticity ─────────────────────────────────────────────────────────────────────────
+// Plane-stress field of a disk of diameter D and thickness t under diametral compression P along
+// y (Hertz 1883; Frocht 1948), at (x, y) from the centre. Units: N, m → Pa. Returns σx, σy, τxy.
+export function diskStress(x, y, P, D, t) {
+  const R = D / 2, a = R - y, b = R + y, r1 = x * x + a * a, r2 = x * x + b * b, k = (2 * P) / (Math.PI * t);
+  return {
+    sx: -k * ((a * x * x) / (r1 * r1) + (b * x * x) / (r2 * r2) - 1 / D),
+    sy: -k * ((a * a * a) / (r1 * r1) + (b * b * b) / (r2 * r2) - 1 / D),
+    txy: k * ((a * a * x) / (r1 * r1) - (b * b * x) / (r2 * r2)),
+  };
+}
+// Principal-stress difference σ1 − σ2 ≥ 0 and the direction φ of σ1 from the x axis.
+export function principal({ sx, sy, txy }) {
+  return { ds: Math.sqrt((sx - sy) ** 2 + 4 * txy * txy), phi: 0.5 * Math.atan2(2 * txy, sx - sy) };
+}
+// Stress-optic law: retardation Γ = C t (σ1 − σ2) with C in brewsters (1 Br = 10⁻¹² Pa⁻¹).
+export const retardation = (C, t, ds) => C * 1e-12 * t * ds;
+
+// Interference colours (Michel-Lévy): linear sRGB of white light (equal energy, 400–700 nm)
+// transmitted by a retarder Γ between crossed (dark) or parallel (light) polarisers in a circular
+// polariscope: I(λ) = sin²(πΓ/λ) or cos²(πΓ/λ). Table over Γ ∈ [0, Gmax] nm.
+export function michelLevy(Gmax = 4000, N = 2001, light = false) {
+  const lams = linspace(400, 700, 61), basis = spectralBasis(lams), T = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    const G = (i / (N - 1)) * Gmax;
+    for (let k = 0; k < lams.length; k++) {
+      const s = Math.sin((Math.PI * G) / lams[k]) ** 2, v = light ? 1 - s : s;
+      for (let c = 0; c < 3; c++) T[i * 3 + c] += v * basis[k][c];
+    }
+    clipRow(T, i * 3);
+  }
+  return { T, N, Gmax };
+}
+
+// ── Birefringent walk-off (optical low-pass filters) ────────────────────────────────────────
+// Uniaxial crystals at 589 nm: ordinary and extraordinary indices.
+export const CRYSTALS = {
+  quartz: { name: 'Crystal quartz', no: 1.5443, ne: 1.5534 },
+  linbo3: { name: 'Lithium niobate', no: 2.3007, ne: 2.2116 },
+  calcite: { name: 'Calcite', no: 1.6584, ne: 1.4864 },
+};
+// Angle ρ between the extraordinary ray and the wave normal, for a wave normal at θ to the optic
+// axis: tan ρ = (1 − r) tan θ / (1 + r tan²θ), r = no²/ne². Signed: > 0 away from the axis.
+export function walkOff(no, ne, theta) {
+  const r = (no * no) / (ne * ne), t = Math.tan(theta);
+  return Math.atan(((r - 1) * t) / (1 + r * t * t));
+}
+// Maximum walk-off, at tan θ = ne/no: tan ρ = (no² − ne²)/(2 no ne).
+export const maxWalkOff = (no, ne) => Math.atan((no * no - ne * ne) / (2 * no * ne));

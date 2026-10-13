@@ -67,7 +67,7 @@ flowchart LR
 | Laboratories | 21 | +18 proposed (v1.6, v1.7) |
 | Catalogue entries | 148 | link every new lab; add polarisation and colour-science entries |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 50 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 53 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -262,7 +262,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 | Lab | Content | Priority · effort |
 |---|---|---|
-| [~] **Polarisation** | ✅ Malus's law, wave plates, Brewster reflections, polariser on water, sky polarisation map (Rayleigh), Stokes-vector scene render · ⬜ birefringent OLPF, stress birefringence (photoelasticity) | P1 · M |
+| [x] **Polarisation** | Malus's law, wave plates, Brewster reflections, polariser on water, sky polarisation map (Rayleigh), Stokes-vector scene render, birefringent OLPF, stress birefringence (photoelasticity). *Shipped in PRs #28–#29.* | P1 · M |
 | [ ] **Macro & magnification** | bellows factor, effective f-number, diffraction at N(1+m), focus stacking, working distance | P1 · M |
 | [ ] **Colour science** | sensor spectral sensitivities, white balance, metamerism, CRI/TLCI of LED lighting, colour-matrix fitting | P1 · L |
 | [ ] **Panorama & parallax** | entrance pupil as the no-parallax point, stitching errors vs rotation centre | P2 · M |

@@ -2,8 +2,8 @@ import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js'
 import { header, lab, theory, references, liveCalc } from '../lib/page.js';
 import { run } from '../lib/compute.js';
 import { plot, range } from '../lib/plot.js';
-import { oetf, colormap } from '../lib/color.js';
-import { polariser, retarder, mapply, ellipse, fresnelAmp, brewster, rayleighDoP } from '../lib/polar.js';
+import { oetf, colormap, wavelengthRGB } from '../lib/color.js';
+import { polariser, retarder, mapply, ellipse, fresnelAmp, brewster, rayleighDoP, diskStress, principal, retardation, michelLevy, CRYSTALS, walkOff, maxWalkOff } from '../lib/polar.js';
 
 const D2R = Math.PI / 180;
 
@@ -288,8 +288,225 @@ export default function mount(root, meta) {
     });
   }
 
+
+  // ── photoelasticity ──
+  const MATS = {
+    pc: { name: 'Polycarbonate (PSM-1 type)', C: 82, P: 300 },
+    epoxy: { name: 'Cast epoxy', C: 55, P: 400 },
+    pmma: { name: 'PMMA (acrylic)', C: 4.5, P: 5000 },
+    bk7: { name: 'N-BK7 glass', C: 2.77, P: 15000 },
+    silica: { name: 'Fused silica', C: 3.5, P: 15000 },
+  };
+  const DISK_D = 0.05, DISK_T = 0.006;
+  const sec2 = h('section.block', {}, h('h2', {}, 'Stress birefringence: photoelasticity'));
+  const ectl = controls({
+    mat: { type: 'select', label: 'Material', value: 'pc', options: Object.entries(MATS).map(([k, m]) => [k, `${m.name}, C = ${m.C} Br`]) },
+    P: { type: 'range', label: 'Diametral load P', min: 5, max: 50000, log: true, value: 300, unit: 'N' },
+    scope: { type: 'seg', label: 'Polariscope', value: 'dark', options: [['dark', 'Circular, dark'], ['light', 'Circular, light'], ['plane', 'Plane, crossed']] },
+    alpha: { type: 'range', label: 'Plane polariscope: polariser axis', min: 0, max: 90, step: 1, value: 0, unit: '°', when: (st) => st.scope === 'plane' },
+    src: { type: 'seg', label: 'Illumination', value: 'white', options: [['white', 'White light'], ['na', 'Sodium 589 nm']] },
+  }, () => updateStress());
+  const ero = h('div');
+  const ecalc = liveCalc();
+  const diskView = stage({ aspect: 1.35, label: 'Disk Ø 50 mm × 6 mm under diametral compression, seen between polarisers', draw: drawDisk, minH: 260 });
+  const mlBar = stage({ aspect: 5, label: 'Michel-Lévy interference colours (crossed polarisers), with the retardation at the disk centre', draw: drawML, minH: 120 });
+  sec2.append(lab([diskView.el, mlBar.el], [h('div.card', {}, ectl.el), h('div.card', {}, ero), ecalc.el]));
+  root.append(sec2);
+  const ML = { dark: michelLevy(6000, 3001, false), light: michelLevy(6000, 3001, true) };
+  let E = null, lastMat = ectl.state.mat;
+  function updateStress() {
+    const st = ectl.state, m = MATS[st.mat];
+    // a new material starts at a load that shows a few fringes
+    if (st.mat !== lastMat) { lastMat = st.mat; ectl.set.P(m.P); }
+    const dsC = (8 * st.P) / (Math.PI * DISK_T * DISK_D), GC = retardation(m.C, DISK_T, dsC) * 1e9, fs = 589e-9 / (m.C * 1e-12);
+    E = { st, m, GC, img: null };
+    ero.replaceChildren(readouts([
+      ['Centre stress difference σ₁ − σ₂', (dsC / 1e6).toFixed(3) + ' MPa'],
+      ['Centre retardation Γ', GC.toFixed(1) + ' nm'],
+      ['Centre fringe order N (589 nm)', (GC / 589).toFixed(3)],
+      ['Material fringe value f_σ (589 nm)', (fs / 1000).toFixed(2) + ' kN/m'],
+      ['Average compressive stress P/(Dt)', (st.P / (DISK_D * DISK_T) / 1e6).toFixed(3) + ' MPa'],
+    ]));
+    ecalc.set(String.raw`\begin{aligned}
+    \sigma_1-\sigma_2\big|_0 &= \frac{8P}{\pi D t} = ${texNum(dsC / 1e6, 4)}\ \text{MPa}\\
+    \Gamma &= C\,t\,(\sigma_1-\sigma_2) = ${texNum(GC, 4)}\ \text{nm}\\
+    N &= \Gamma/\lambda = ${texNum(GC / 589, 4)}\quad(\lambda = 589\ \text{nm})
+    \end{aligned}`);
+    diskView.redraw(); mlBar.redraw();
+  }
+  const mlColor = (tab, G, out) => {
+    if (G >= tab.Gmax) { out[0] = out[1] = out[2] = 0.5; return; }
+    const t = (G / tab.Gmax) * (tab.N - 1), i = Math.floor(t), f = t - i, a = i * 3;
+    for (let c = 0; c < 3; c++) out[c] = tab.T[a + c] * (1 - f) + tab.T[a + 3 + c] * f;
+    // orders above ~5 wash out to grey (the spectrum averages sin² to ½)
+    const wash = Math.min(1, Math.max(0, (G - 4000) / 2000));
+    for (let c = 0; c < 3; c++) out[c] = out[c] * (1 - wash) + 0.5 * wash;
+  };
+  function drawDisk(ctx, w, hh) {
+    ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
+    if (!E) return;
+    const st = E.st, m = E.m, S = Math.round(Math.min(hh - 80, w) * Math.min(2, window.devicePixelRatio || 1)), Rpx = S / 2;
+    if (!E.img || E.img.S !== S) {
+      const ic = imageCanvas(S, S), col = [0, 0, 0], na = wavelengthRGB(589, false), tab = st.scope === 'light' ? ML.light : ML.dark, al = st.alpha * D2R;
+      for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) {
+        const o = (j * S + i) * 4;
+        // 2×2 supersampling (fringes crowd near the load points)
+        let r = 0, g = 0, b = 0, inside = 0;
+        for (let q = 0; q < 4; q++) {
+          const x = ((i + 0.25 + 0.5 * (q & 1)) / Rpx - 1) * (DISK_D / 2), y = (1 - (j + 0.25 + 0.5 * (q >> 1)) / Rpx) * (DISK_D / 2);
+          if (x * x + y * y > (DISK_D / 2) ** 2 * 0.9999) continue;
+          inside++;
+          const pr = principal(diskStress(x, y, st.P, DISK_D, DISK_T)), G = retardation(m.C, DISK_T, pr.ds) * 1e9;
+          const iso = st.scope === 'plane' ? Math.sin(2 * (pr.phi - al)) ** 2 : 1;
+          if (st.src === 'na') {
+            const s2 = Math.sin((Math.PI * G) / 589) ** 2, v = (st.scope === 'light' ? 1 - s2 : s2) * iso;
+            r += na[0] * v; g += na[1] * v; b += na[2] * v;
+          } else { mlColor(tab, G, col); r += col[0] * iso; g += col[1] * iso; b += col[2] * iso; }
+        }
+        if (!inside) { ic.data[o + 3] = 0; continue; }
+        const k = 1 / 4, cov = inside / 4;
+        ic.data[o] = 255 * oetf(Math.min(1, r * k / cov)) ; ic.data[o + 1] = 255 * oetf(Math.min(1, g * k / cov)); ic.data[o + 2] = 255 * oetf(Math.min(1, b * k / cov)); ic.data[o + 3] = 255 * cov;
+      }
+      ic.put();
+      E.img = { S, c: ic.c };
+    }
+    const D = S / Math.min(2, window.devicePixelRatio || 1), cx = w / 2, cy = hh / 2 + 8;
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(E.img.c, cx - D / 2, cy - D / 2, D, D);
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, D / 2, 0, 7); ctx.stroke();
+    // load arrows
+    ctx.fillStyle = '#ffb547'; ctx.strokeStyle = '#ffb547'; ctx.lineWidth = 2.5;
+    for (const sg of [-1, 1]) {
+      const y0 = cy + sg * (D / 2 + 18), y1 = cy + sg * (D / 2 + 3);
+      ctx.beginPath(); ctx.moveTo(cx, y0); ctx.lineTo(cx, y1 - sg * 6); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, y1); ctx.lineTo(cx - 6, y1 - sg * 9); ctx.lineTo(cx + 6, y1 - sg * 9); ctx.fill();
+    }
+    ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'left'; ctx.fillText(`P = ${st.P >= 1000 ? (st.P / 1000).toPrecision(3) + ' kN' : st.P.toPrecision(3) + ' N'}`, cx + 10, cy + D / 2 + 16);
+    if (st.scope === 'plane') {
+      const R = 22, x0 = w - 40, y0 = 40, a = st.alpha * D2R;
+      ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x0, y0, R, 0, 7); ctx.stroke();
+      ctx.strokeStyle = '#6ad7ff'; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.moveTo(x0 - R * Math.cos(a), y0 + R * Math.sin(a)); ctx.lineTo(x0 + R * Math.cos(a), y0 - R * Math.sin(a)); ctx.stroke();
+      ctx.strokeStyle = '#ff9cc0';
+      ctx.beginPath(); ctx.moveTo(x0 + R * Math.sin(a), y0 + R * Math.cos(a)); ctx.lineTo(x0 - R * Math.sin(a), y0 - R * Math.cos(a)); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('polariser / analyser', x0 - 10, y0 + R + 14);
+    }
+  }
+  function drawML(ctx, w, hh) {
+    ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
+    if (!E) return;
+    const Gmax = 2000, pad = 14, top = 30, bw = w - 2 * pad, bh = hh - top - 28, col = [0, 0, 0];
+    const ic = imageCanvas(Math.max(1, Math.round(bw)), 1);
+    for (let i = 0; i < ic.c.width; i++) {
+      mlColor(E.st.scope === 'light' ? ML.light : ML.dark, (i / ic.c.width) * Gmax, col);
+      const o = i * 4; ic.data[o] = 255 * oetf(Math.min(1, col[0])); ic.data[o + 1] = 255 * oetf(Math.min(1, col[1])); ic.data[o + 2] = 255 * oetf(Math.min(1, col[2])); ic.data[o + 3] = 255;
+    }
+    ic.put();
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(ic.c, pad, top, bw, bh);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+    for (let G = 0; G <= Gmax; G += 250) { const x = pad + (G / Gmax) * bw; ctx.fillRect(x, top + bh, 1, 4); if (G % 500 === 0) ctx.fillText(G + ' nm', x, hh - 6); }
+    for (const [G, lab2] of [[551, '1st-order red'], [1101, '2nd'], [1652, '3rd']]) { const x = pad + (G / Gmax) * bw; ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(x, top, 1, bh); ctx.fillStyle = '#05060a'; ctx.fillText(lab2, x, top + 12); }
+    if (E.GC <= Gmax) {
+      const x = pad + (E.GC / Gmax) * bw;
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x, top + bh); ctx.lineTo(x - 6, top + bh + 9); ctx.lineTo(x + 6, top + bh + 9); ctx.fill();
+    }
+  }
+
+  // ── birefringent optical low-pass filter ──
+  const sec3 = h('section.block', {}, h('h2', {}, 'Birefringence: the optical low-pass filter'));
+  const bctl = controls({
+    xtal: { type: 'select', label: 'Crystal', value: 'quartz', options: Object.entries(CRYSTALS).map(([k, c]) => [k, `${c.name} (nₒ ${c.no}, nₑ ${c.ne})`]) },
+    th: { type: 'range', label: 'Optic axis to plate normal', min: 0, max: 90, step: 0.5, value: 45, unit: '°' },
+    t: { type: 'range', label: 'Plate thickness', min: 0.05, max: 3, log: true, value: 0.75, unit: 'mm' },
+    pitch: { type: 'range', label: 'Pixel pitch', min: 1, max: 10, step: 0.05, value: 4.4, unit: 'µm' },
+  }, () => updateOLPF());
+  const bro = h('div');
+  const bcalc = liveCalc();
+  const side = stage({ aspect: 3, label: 'Plate in section: the ordinary ray goes straight, the extraordinary ray walks off (lateral scale exaggerated)', draw: drawSide, minH: 150 });
+  const wplot = stage({ aspect: 1.35, label: '', draw: drawWalk, cls: 'plain', minH: 220 });
+  const spots = stage({ aspect: 1.35, label: 'Two crossed plates + depolariser: four spots on the Bayer pixels', draw: drawSpots, minH: 220 });
+  sec3.append(lab([side.el, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, wplot.el), spots.el)], [h('div.card', {}, bctl.el), h('div.card', {}, bro), bcalc.el]));
+  root.append(sec3);
+  let B = null;
+  function updateOLPF() {
+    const st = bctl.state, c = CRYSTALS[st.xtal], rho = walkOff(c.no, c.ne, st.th * D2R), rmax = maxWalkOff(c.no, c.ne);
+    const d = st.t * 1000 * Math.tan(Math.abs(rho)), tNeed = st.pitch / 1000 / Math.abs(Math.tan(rmax));
+    B = { st, c, rho, rmax, d };
+    bro.replaceChildren(readouts([
+      ['Walk-off angle ρ', (Math.abs(rho) / D2R).toFixed(3) + '°'],
+      ['Spot separation d', d.toFixed(2) + ' µm'],
+      ['…in pixels', (d / st.pitch).toFixed(2)],
+      ['Maximum walk-off (θ = arctan nₑ/nₒ)', (Math.abs(rmax) / D2R).toFixed(3) + '° at ' + (Math.atan(c.ne / c.no) / D2R).toFixed(2) + '°'],
+      ['Thickness for d = pitch', (tNeed).toFixed(3) + ' mm'],
+      ['MTF zero 1/(2d) vs Nyquist 1/(2p)', `${(1000 / (2 * d)).toFixed(0)} vs ${(1000 / (2 * st.pitch)).toFixed(0)} lp/mm`],
+    ]));
+    bcalc.set(String.raw`\begin{aligned}
+    |\tan\rho| &= \frac{|1-r|\tan\theta}{1+r\tan^2\theta} = ${texNum(Math.tan(Math.abs(rho)), 4)},\quad r = \frac{n_o^2}{n_e^2}\\
+    d &= t\tan\rho = ${texNum(d, 4)}\ \text{µm}\\
+    \nu_0 &= \frac{1}{2d} = ${texNum(1000 / (2 * d), 4)}\ \text{lp/mm}
+    \end{aligned}`);
+    [side, wplot, spots].forEach((x) => x.redraw());
+  }
+  function drawSide(ctx, w, hh) {
+    ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
+    if (!B) return;
+    const x0 = w * 0.38, x1 = w * 0.62, y0 = hh * 0.2, y1 = hh * 0.8, yc = hh / 2;
+    ctx.fillStyle = 'rgba(106,215,255,0.08)'; ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+    ctx.strokeStyle = 'rgba(106,215,255,0.5)'; ctx.lineWidth = 1; ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+    // optic-axis hatching at θ to the plate normal (the x axis here)
+    const th = B.st.th * D2R;
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); ctx.clip();
+    ctx.strokeStyle = 'rgba(106,215,255,0.18)';
+    for (let k = -20; k <= 20; k++) { const ox = (x0 + x1) / 2 + k * 14; ctx.beginPath(); ctx.moveTo(ox - 200 * Math.cos(th), yc + 200 * Math.sin(th)); ctx.lineTo(ox + 200 * Math.cos(th), yc - 200 * Math.sin(th)); ctx.stroke(); }
+    ctx.restore();
+    // exaggerate the walk-off so that d is visible
+    const ex = Math.max(1, Math.round(((y1 - y0) * 0.35) / Math.max(1e-6, (x1 - x0) * Math.tan(Math.abs(B.rho)))));
+    const dy = Math.min((y1 - y0) * 0.45, (x1 - x0) * Math.tan(Math.abs(B.rho)) * ex) * (B.rho < 0 ? 1 : -1) * (th > 0 ? 1 : 0);
+    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = '#ffffff'; ctx.beginPath(); ctx.moveTo(20, yc); ctx.lineTo(x0, yc); ctx.stroke();
+    ctx.strokeStyle = '#ff9cc0'; ctx.beginPath(); ctx.moveTo(x0, yc); ctx.lineTo(x1, yc); ctx.lineTo(w - 20, yc); ctx.stroke();
+    ctx.strokeStyle = '#6be3a4'; ctx.beginPath(); ctx.moveTo(x0, yc); ctx.lineTo(x1, yc - dy); ctx.lineTo(w - 20, yc - dy); ctx.stroke();
+    ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillStyle = '#ff9cc0'; ctx.fillText('ordinary (⊥ principal plane)', x1 + 10, yc + 15);
+    ctx.fillStyle = '#6be3a4'; ctx.fillText('extraordinary (in principal plane)', x1 + 10, yc - dy - 7);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.textAlign = 'center';
+    ctx.fillText(`optic axis at ${B.st.th}° · d = ${B.d.toFixed(2)} µm · lateral scale × ${ex}`, (x0 + x1) / 2, y1 + 16);
+  }
+  function drawWalk(ctx, w, hh) {
+    if (!B) return;
+    const th = range(0, 90, 181), col = { quartz: '#6ad7ff', linbo3: '#ffb547', calcite: '#c18cff' };
+    plot(ctx, w, hh, {
+      title: 'Walk-off vs optic-axis angle', x: { min: 0, max: 90, step: 15, label: 'optic axis to plate normal θ (°)' }, y: { min: 1, max: 200, log: true, label: 'displacement per mm (µm)' },
+      series: Object.entries(CRYSTALS).map(([k, c]) => ({ data: th.map((t) => [t, Math.max(1, 1000 * Math.abs(Math.tan(walkOff(c.no, c.ne, t * D2R))))]), color: col[k], width: k === B.st.xtal ? 2.4 : 1.2, label: c.name })),
+      vlines: [{ x: B.st.th, color: 'rgba(255,255,255,0.4)' }],
+      legend: true, legendX: 70, legendY: hh - 92,
+    });
+  }
+  function drawSpots(ctx, w, hh) {
+    ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
+    if (!B) return;
+    const p = B.st.pitch, sc = Math.min(w, hh) / (4.5 * p), cx = w / 2, cy = hh / 2;
+    const bayer = [['#ff6b6b', '#6be3a4'], ['#6be3a4', '#6ad7ff']];
+    for (let j = -3; j < 3; j++) for (let i = -4; i < 4; i++) {
+      ctx.fillStyle = bayer[(j + 4) % 2][(i + 4) % 2]; ctx.globalAlpha = 0.18;
+      ctx.fillRect(cx + i * p * sc + 1, cy + j * p * sc + 1, p * sc - 2, p * sc - 2);
+    }
+    ctx.globalAlpha = 1;
+    // spots: first plate splits horizontally, the depolariser scrambles, the second splits vertically
+    const d = B.d * sc;
+    for (const [ox, oy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
+      const x = cx - p * sc / 2 + ox * d, y = cy - p * sc / 2 + oy * d;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, Math.max(3, p * sc * 0.25));
+      g.addColorStop(0, 'rgba(255,255,255,0.95)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, Math.max(3, p * sc * 0.25), 0, 7); ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(`d = ${B.d.toFixed(2)} µm, pitch ${p} µm`, 8, hh - 8);
+  }
+
   update();
   updateChain();
+  updateStress();
+  updateOLPF();
 
   root.append(theory('The vector nature of light', String.raw`
 <div class="theory-cols"><div>
@@ -319,14 +536,34 @@ export default function mount(root, meta) {
 <p>A camera ray that hits the (rippled) water is split in two. Its mirror direction looks up into the sky: the skylight Stokes vector is rotated from the scattering-plane frame into the plane-of-incidence frame, multiplied by \(\mathbf M_R\), and rotated into the frame of the filter. Its refracted direction reaches the pebbles at depth \(D\). They are lit by the sun and sky through the surface, and pure-water absorption (Pope &amp; Fry 1997) acts on the way down and up, which turns deep water blue-green. The light from below leaves through \(\mathbf M_T\), with radiance divided by \(n^2\). The camera meters the unfiltered scene and compensates the filter factor, so rotating the filter changes only polarised light.</p>
 <p>Ripples tilt the local normal, so the Brewster condition holds only on average, and waves smaller than a pixel are averaged out. Single scattering, a flat-Earth atmosphere, specular water and grey pebbles are the stated approximations.</p>
 </div></div>`));
+  root.append(theory('Birefringence: two indices in one material', String.raw`
+<div class="theory-cols"><div>
+<h3>Uniaxial crystals and walk-off</h3>
+<p>In a uniaxial crystal the ordinary wave sees \(n_o\) in every direction. The extraordinary wave, polarised in the plane containing the optic axis, sees an index between \(n_o\) and \(n_e\) that depends on its direction. Its energy (the Poynting vector) is not parallel to its wave vector. For a wave normal at \(\theta\) to the optic axis the ray deviates by</p>
+\[\tan\rho = \frac{(1-n_o^2/n_e^2)\tan\theta}{1+(n_o^2/n_e^2)\tan^2\theta},\qquad \tan\rho_\text{max} = \frac{|n_e^2-n_o^2|}{2n_on_e}\ \text{at}\ \tan\theta = \frac{n_e}{n_o}.\]
+<p>At normal incidence on a plate of thickness \(t\), the two polarisations leave as parallel beams displaced by \(d = t\tan\rho\). Quartz gives 5.9 µm per mm, lithium niobate 39 µm per mm and calcite 110 µm per mm. That is why calcite makes dramatic double images, and why a quartz OLPF for 4–6 µm pixels is about a millimetre thick.</p>
+<h3>The optical low-pass filter</h3>
+<p>One plate splits each image point into two copies a distance \(d\) apart. A quarter-wave plate (or depolariser) makes both copies circular, and a second plate, rotated 90°, splits each again. The four equal spots form a square of side \(d\), whose transfer function is \(|\cos\pi\nu_x d|\,|\cos\pi\nu_y d|\). With \(d = p\) the first zero falls exactly at the Nyquist frequency \(1/(2p)\), suppressing the moiré and colour aliasing shown in the <a href="#/sampling">sampling lab</a>. The price is a small loss of MTF below Nyquist, which is why many modern cameras omit the filter or cancel it with a second, reversed plate.</p>
+</div><div>
+<h3>Stress birefringence and photoelasticity</h3>
+<p>An isotropic material under stress becomes birefringent. The index difference along the principal stress directions is proportional to the stress difference (Brewster 1816; Maxwell 1853):</p>
+\[n_1-n_2 = C(\sigma_1-\sigma_2),\qquad \Gamma = Ct(\sigma_1-\sigma_2),\qquad N = \frac{\Gamma}{\lambda} = \frac{t(\sigma_1-\sigma_2)}{f_\sigma}.\]
+<p>In a circular polariscope (polariser, λ/4, sample, λ/4, analyser) the transmitted intensity is \(\sin^2(\pi\Gamma/\lambda)\), independent of the stress direction. The fringes are therefore <em>isochromatics</em>, lines of constant \(\sigma_1-\sigma_2\). In white light each order has its interference colour (the Michel-Lévy sequence), and first-order red at Γ ≈ 551 nm is the most sensitive tint. A plane polariscope multiplies by \(\sin^2 2(\varphi-\alpha)\), adding dark <em>isoclinics</em> where a principal stress is parallel to the polariser.</p>
+<p>The disk under diametral compression has the closed-form stress field of Hertz (1883):</p>
+\[\sigma_y = -\frac{2P}{\pi t}\left[\frac{(R-y)^3}{r_1^4}+\frac{(R+y)^3}{r_2^4}-\frac1D\right],\]
+<p>with similar expressions for \(\sigma_x\) and \(\tau_{xy}\). At the centre \(\sigma_1-\sigma_2 = 8P/(\pi Dt)\), which is how the fringe value \(f_\sigma\) of a photoelastic material is calibrated. The same physics limits optics. Mounting forces and annealing residue in a lens of N-BK7 (C = 2.77 Br) produce nanometres of retardance. That is harmless for photography, but it matters for polarimeters, interferometers and the polarisation-sensitive coronagraphs of space telescopes. Glass makers specify it in nm/cm.</p>
+<p>The page treats the colour of the stress pattern as dispersion-free (the same Γ at every wavelength), assumes plane stress, and uses an equal-energy white source.</p>
+</div></div>`));
   root.append(references([
     'M. Born &amp; E. Wolf, <em>Principles of Optics</em>, 7th ed., §1.5 (Fresnel formulae) and §10.8 (Stokes parameters), Cambridge University Press (1999).',
     'E. Collett, <em>Field Guide to Polarization</em>, SPIE Press (2005); D. Goldstein, <em>Polarized Light</em>, 3rd ed., CRC Press (2011).',
     'S. Chandrasekhar, <em>Radiative Transfer</em>, Oxford (1950), ch. I and X (Rayleigh scattering, the polarised sky).',
     'J. E. Hansen &amp; L. D. Travis, “Light scattering in planetary atmospheres”, <em>Space Sci. Rev.</em> 16, 527 (1974): Rayleigh optical depth.',
     'K. L. Coulson, <em>Polarization and Intensity of Light in the Atmosphere</em>, A. Deepak (1988); G. P. Können, <em>Polarized Light in Nature</em>, Cambridge (1985).',
+    'M. M. Frocht, <em>Photoelasticity</em>, vol. 2, Wiley (1948); J. W. Dally &amp; W. F. Riley, <em>Experimental Stress Analysis</em>, 4th ed., ch. 13–14 (2005): disk in diametral compression, isochromatics and isoclinics.',
+    'A. Yariv &amp; P. Yeh, <em>Optical Waves in Crystals</em>, Wiley (1984), ch. 4: walk-off in uniaxial crystals; Schott Technical Information TIE-27, <em>Stress in optical glass</em> (2004).',
     'R. M. Pope &amp; E. S. Fry, “Absorption spectrum (380–700 nm) of pure water. II”, <em>Appl. Opt.</em> 36, 8710 (1997).',
   ]));
 
-  return () => { alive = false; [scene, skymap, fplot, chainView, malus].forEach((s) => s.destroy()); };
+  return () => { alive = false; [scene, skymap, fplot, chainView, malus, diskView, mlBar, side, wplot, spots].forEach((s) => s.destroy()); };
 }
