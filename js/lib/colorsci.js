@@ -122,3 +122,107 @@ export function sampleSRGB(refl, spd) {
   const X = xyz(spd.map((s, i) => s * refl[i])).map((q) => q * k);
   return xyzToSRGB(adapt(X, W.map((q) => q * k), D65_XYZ));
 }
+
+// ── Cameras: spectral sensitivities, white balance, colour matrices, metamerism ─────────────
+const gauss = (mu, s) => LAMBDA.map((l) => Math.exp(-0.5 * ((l - mu) / s) ** 2));
+const irCut = LAMBDA.map((l) => 1 / (1 + Math.exp((l - 655) / 9)) / (1 + Math.exp((400 - l) / 6)));
+const comb = (...parts) => LAMBDA.map((_, i) => parts.reduce((a, [w, g]) => a + w * g[i], 0) * irCut[i]);
+// Camera models (relative sensitivities including an IR-cut filter). 'luther' is a linear
+// combination of the CIE colour-matching functions and therefore colorimetric by construction.
+export const CAMERAS = {
+  cmos: { name: 'Typical CMOS Bayer sensor (model)', sens: [comb([1, gauss(600, 30)], [0.1, gauss(450, 20)]), comb([1, gauss(535, 38)], [0.06, gauss(620, 30)]), comb([1, gauss(462, 25)], [0.05, gauss(540, 30)])] },
+  narrow: { name: 'Narrow-band filters (saturated, metameric)', sens: [comb([1, gauss(612, 12)]), comb([1, gauss(540, 12)]), comb([1, gauss(452, 12)])] },
+  wide: { name: 'Broad, overlapping filters (low noise, desaturated)', sens: [comb([1, gauss(585, 60)]), comb([1, gauss(530, 55)]), comb([1, gauss(475, 50)])] },
+  luther: { name: 'Luther–Ives ideal (combination of x̄, ȳ, z̄)', sens: [CMF[0].slice(), CMF[1].slice(), CMF[2].slice()] },
+};
+
+// Additional smooth reflectances (sigmoid edges and bands) so that the matrix is fitted on more
+// than the 14 CIE samples: yellows, oranges, reds, purples and blues of moderate chroma.
+const sig = (c, k) => LAMBDA.map((l) => 1 / (1 + Math.exp(-(l - c) / k)));
+const band = (c, s, base, peak) => gauss(c, s).map((g) => base + (peak - base) * g);
+export const EXTRA_PATCHES = [
+  { name: 'Orange', r: sig(575, 12).map((v) => 0.06 + 0.8 * v) },
+  { name: 'Red', r: sig(605, 10).map((v) => 0.05 + 0.75 * v) },
+  { name: 'Yellow', r: sig(515, 14).map((v) => 0.07 + 0.82 * v) },
+  { name: 'Purple', r: LAMBDA.map((l, i) => 0.06 + 0.4 * gauss(440, 30)[i] + 0.5 * sig(640, 15)[i]) },
+  { name: 'Cyan', r: band(490, 45, 0.06, 0.65) },
+  { name: 'Grass', r: band(550, 30, 0.05, 0.35) },
+  { name: 'Sky blue', r: LAMBDA.map((l, i) => 0.18 + 0.35 * (1 - sig(520, 25)[i])) },
+  { name: 'Magenta', r: LAMBDA.map((l, i) => 0.08 + 0.55 * gauss(430, 30)[i] + 0.7 * sig(610, 12)[i]) },
+  { name: 'Grey 50 %', r: LAMBDA.map(() => 0.5) },
+  { name: 'Grey 18 %', r: LAMBDA.map(() => 0.18) },
+];
+
+const inv3 = (m) => {
+  const [a, b, c] = m[0], [d, e, f] = m[1], [g, h, i] = m[2], A = e * i - f * h, B = -(d * i - f * g), Cc = d * h - e * g, det = a * A + b * B + c * Cc;
+  return [[A / det, -(b * i - c * h) / det, (b * f - c * e) / det], [B / det, (a * i - c * g) / det, -(a * f - c * d) / det], [Cc / det, -(a * h - b * g) / det, (a * e - b * d) / det]];
+};
+
+// Raw camera response to a reflectance under an illuminant.
+export function cameraRaw(refl, spd, sens) {
+  return sens.map((s) => { let a = 0; for (let i = 0; i < NWL; i++) a += refl[i] * spd[i] * s[i]; return a; });
+}
+// White-balance gains that make a perfect white reflector neutral (green gain 1).
+export function wbGains(spd, sens) {
+  const w = cameraRaw(new Array(NWL).fill(1), spd, sens);
+  return [w[1] / w[0], 1, w[1] / w[2]];
+}
+
+// Fit a 3×3 matrix from white-balanced camera RGB to target XYZ (rows: patches) by least squares,
+// constrained so that the white-balanced white (1, 1, 1)·k maps exactly onto the target white.
+export function fitMatrix(rgb, target, white, whiteXYZ) {
+  const AtA = [0, 1, 2].map((r) => [0, 1, 2].map((c) => rgb.reduce((a, p) => a + p[r] * p[c], 0)));
+  const Ai = inv3(AtA);
+  return [0, 1, 2].map((row) => {
+    const Atb = [0, 1, 2].map((r) => rgb.reduce((a, p, k) => a + p[r] * target[k][row], 0));
+    const m0 = mv(Ai, Atb), Aw = mv(Ai, white);
+    const lam = (white[0] * m0[0] + white[1] * m0[1] + white[2] * m0[2] - whiteXYZ[row]) / (white[0] * Aw[0] + white[1] * Aw[1] + white[2] * Aw[2]);
+    return m0.map((v, k) => v - lam * Aw[k]);
+  });
+}
+
+// Camera colour pipeline for a set of reflectances: raw → WB gains → matrix → XYZ (D65-adapted),
+// against the adapted observer. opts = { sens, spd, gains (optional), matrix (optional),
+// patches }. Returns per-patch truth/camera XYZ and CIEDE2000, plus the fitted matrix.
+export function cameraColour({ sens, spd, gains, matrix, patches }) {
+  const W = xyz(spd), k = 100 / W[1], Wn = W.map((q) => q * k);
+  const g = gains || wbGains(spd, sens);
+  const wRaw = cameraRaw(new Array(NWL).fill(1), spd, sens), kr = 1 / (wRaw[1]);
+  const rgb = patches.map((r) => cameraRaw(r, spd, sens).map((v, c) => v * g[c] * kr));
+  const truth = patches.map((r) => adapt(xyz(spd.map((s, i) => s * r[i])).map((q) => q * k), Wn, D65_XYZ));
+  const white = [0, 1, 2].map((c) => wRaw[c] * g[c] * kr);
+  const M = matrix || fitMatrix(rgb, truth, white, D65_XYZ);
+  const cam = rgb.map((p) => mv(M, p));
+  const dE = truth.map((t, i) => deltaE00(lab(t), lab(cam[i])));
+  return { M, gains: g, truth, cam, dE, mean: dE.reduce((a, b) => a + b, 0) / dE.length, max: Math.max(...dE) };
+}
+
+// Luther–Ives residual: fraction of the colour-matching functions (in an orthonormalised
+// sense) that no linear combination of the camera sensitivities can reproduce.
+export function lutherResidual(sens) {
+  const AtA = [0, 1, 2].map((r) => [0, 1, 2].map((c) => sens[r].reduce((a, v, i) => a + v * sens[c][i], 0))), Ai = inv3(AtA);
+  let res = 0, tot = 0;
+  for (const cm of CMF) {
+    const Atb = [0, 1, 2].map((r) => sens[r].reduce((a, v, i) => a + v * cm[i], 0)), m = mv(Ai, Atb);
+    for (let i = 0; i < NWL; i++) { const fit = m[0] * sens[0][i] + m[1] * sens[1][i] + m[2] * sens[2][i]; res += (cm[i] - fit) ** 2; tot += cm[i] ** 2; }
+  }
+  return res / tot;
+}
+
+// A metamer of reflectance r for the CIE observer under illuminant spd: r + α b with b a smooth
+// spectrum orthogonal to the three rows spd·x̄, spd·ȳ, spd·z̄ (a "metameric black"), α scaled to
+// the largest value that keeps the reflectance within [0.01, 0.99], times strength ∈ [0, 1].
+export function metamer(r, spd, strength = 1, wiggle = 3) {
+  const rows = CMF.map((c) => c.map((v, i) => v * spd[i]));
+  let b = LAMBDA.map((l) => Math.sin((2 * Math.PI * wiggle * (l - 380)) / 400) + 0.6 * Math.cos((2 * Math.PI * (wiggle + 1.3) * (l - 380)) / 400));
+  const G = rows.map((a) => rows.map((c) => a.reduce((s, v, i) => s + v * c[i], 0))), Gi = inv3(G);
+  const proj = rows.map((a) => a.reduce((s, v, i) => s + v * b[i], 0)), coef = mv(Gi, proj);
+  b = b.map((v, i) => v - coef[0] * rows[0][i] - coef[1] * rows[1][i] - coef[2] * rows[2][i]);
+  let amax = Infinity;
+  for (let i = 0; i < NWL; i++) {
+    if (b[i] > 1e-12) amax = Math.min(amax, (0.99 - r[i]) / b[i]);
+    else if (b[i] < -1e-12) amax = Math.min(amax, (0.01 - r[i]) / b[i]);
+  }
+  const a = Math.max(0, amax) * strength;
+  return r.map((v, i) => v + a * b[i]);
+}

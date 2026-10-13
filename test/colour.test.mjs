@@ -44,3 +44,26 @@ test('chromatic adaptation and display rendering', () => {
   assert.equal(TCS.length, 14);
   near(blackbody(5000)[34], 100, 1e-9, 'black body normalised at 550 nm');
 });
+
+test('camera colour: the Luther–Ives camera is exact; real filters are not; WB and matrix matter', async () => {
+  const { CAMERAS, EXTRA_PATCHES, cameraColour, lutherResidual, wbGains } = await import('../js/lib/colorsci.js');
+  const P = [...TCS, ...EXTRA_PATCHES.map((p) => p.r)], D65 = daylight(6504), A = ILLUMINANTS.A.spd;
+  near(lutherResidual(CAMERAS.luther.sens), 0, 1e-12, 'CMF camera satisfies the Luther condition');
+  near(cameraColour({ sens: CAMERAS.luther.sens, spd: A, patches: P }).max, 0, 1e-4, 'Luther camera, matrix fitted under A: exact (to rounding of the Bradford matrices)');
+  const cmos = cameraColour({ sens: CAMERAS.cmos.sens, spd: D65, patches: P }), narrow = cameraColour({ sens: CAMERAS.narrow.sens, spd: D65, patches: P });
+  assert.ok(cmos.mean < 2 && narrow.mean > cmos.mean, `mean ΔE00: cmos ${cmos.mean}, narrow ${narrow.mean}`);
+  // the white-preserving constraint holds exactly
+  const white = cameraColour({ sens: CAMERAS.cmos.sens, spd: D65, patches: [new Array(81).fill(1)], matrix: cmos.M });
+  near(white.dE[0], 0, 1e-4, 'perfect white maps to white');
+  // daylight white balance under tungsten leaves a strong cast
+  assert.ok(cameraColour({ sens: CAMERAS.cmos.sens, spd: A, patches: P, matrix: cmos.M, gains: wbGains(D65, CAMERAS.cmos.sens) }).mean > 10, 'wrong white balance');
+});
+
+test('metamers match under the design illuminant and separate under others', async () => {
+  const { metamer } = await import('../js/lib/colorsci.js');
+  const D65 = daylight(6504), r1 = TCS[12], r2 = metamer(r1, D65, 1);
+  const obs = (r, spd) => { const W = xyz(spd), k = 100 / W[1]; return lab(adapt(xyz(spd.map((s, i) => s * r[i])).map((q) => q * k), W.map((q) => q * k), D65_XYZ)); };
+  near(deltaE00(obs(r1, D65), obs(r2, D65)), 0, 1e-9, 'metameric match in daylight');
+  assert.ok(deltaE00(obs(r1, ILLUMINANTS.FL11.spd), obs(r2, ILLUMINANTS.FL11.spd)) > 5, 'mismatch under a tri-band lamp');
+  assert.ok(Math.min(...r2) >= 0.0099 && Math.max(...r2) <= 0.9901, 'physically valid reflectance');
+});
