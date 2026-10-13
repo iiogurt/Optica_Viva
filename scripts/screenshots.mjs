@@ -16,7 +16,7 @@ const PAGES = {
   tiltshift: ['tiltshift', LAB], vignetting: ['vignetting', LAB], psf: ['psf', [296, 264, 1412, 1084]], zernike: ['zernike', LAB],
   mtf: ['mtf', [296, 264, 1412, 1084]], chromatic: ['chromatic', [296, 300, 1412, 1120]], bokeh: ['bokeh', LAB], flare: ['flare', LAB],
   sampling: ['sampling', LAB], noise: ['noise', LAB], motion: ['motion', LAB], seeing: ['seeing', [296, 316, 1412, 1136]],
-  telescope: ['telescope', [296, 1220, 1412, 2040]], lensing: ['lensing', LAB], polarisation: ['polarisation', LAB], macro: ['macro', LAB], colour: ['colour', LAB], wfs: ['wfs', LAB], spectro: ['spectro', LAB], panorama: ['panorama', LAB], cinema: ['cinema', LAB], hdr: ['hdr', LAB], shake: ['shake', LAB], eye: ['eye', LAB], film: ['film', LAB], vp: ['vp', LAB], interferometry: ['interferometry', LAB],
+  telescope: ['telescope', [296, 1220, 1412, 2040]], lensing: ['lensing', LAB], polarisation: ['polarisation', LAB], macro: ['macro', LAB], colour: ['colour', LAB], wfs: ['wfs', LAB], spectro: ['spectro', LAB], panorama: ['panorama', LAB], cinema: ['cinema', LAB], hdr: ['hdr', LAB], shake: ['shake', LAB], eye: ['eye', LAB], film: ['film', LAB], vp: ['vp', LAB], interferometry: ['interferometry', LAB], detectors: ['detectors', LAB],
 };
 const wanted = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(PAGES);
 mkdirSync(OUT, { recursive: true });
