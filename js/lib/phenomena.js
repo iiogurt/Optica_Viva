@@ -82,6 +82,8 @@ export const GROUPS = [
       ['Fresnel diffraction & defocus rings', 'psf', 'ps', 'Near-field patterns; out-of-focus stars show concentric rings.', r`N_F=\frac{a^2}{\lambda z}`],
       ['Apodisation', 'bokeh', 'ps', 'Tapered pupil transmission suppresses rings (STF lenses, coronagraphs).', r`P(\rho)=T(\rho)\,\mathrm{circ}(\rho)`],
       ['Babinet\'s principle', 'psf', 's', 'Complementary screens give identical diffraction patterns away from the forward beam.', r`U_\text{aperture}+U_\text{screen}=U_0`],
+      ['Stellar interferometry (van Cittert–Zernike)', 'interferometry', 's', 'Fringe visibility on a baseline is the Fourier transform of the source; it vanishes at B = 1.22λ/θ for a disk.', r`V(B)=\left|\frac{2J_1(\pi\theta B/\lambda)}{\pi\theta B/\lambda}\right|`],
+      ['Aperture synthesis & CLEAN', 'interferometry', 's', 'Earth rotation fills the u-v plane; the dirty image is the sky convolved with the dirty beam, deconvolved by CLEAN.', r`I_D=I\ast\mathcal F^{-1}[S(u,v)]`],
       ['Coherence & speckle', 'seeing', 'ps', 'Coherent light interferes randomly off rough surfaces or through turbulence.', r`A_c\approx\frac{\lambda^2}{\Omega_s}\ \ (\text{Van Cittert–Zernike})`],
       ['Thin-film interference', 'flare', 'pvs', 'Reflections from film boundaries interfere: coatings, oil slicks, Newton\'s rings.', r`2n d\cos\theta=m\lambda`],
     ],

@@ -7,6 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Interferometry & aperture synthesis laboratory** (`#/interferometry`, `js/lib/interferometry.js`).
+  - **Michelson stellar interferometer:** fringes of a uniform disk summed numerically over the star, against the van Cittert–Zernike visibility |2J₁(x)/x|, with the first null at 1.22 λ/θ (the Betelgeuse case).
+  - **Aperture synthesis:** Earth-rotation u-v coverage for a VLA-like Y, the four VLTI Unit Telescopes and the 2017 EHT, the last with geocentric stations and 15° elevation limits. Visibilities are gridded with uniform or natural weighting to give the dirty beam and image, followed by Högbom CLEAN with restoring beam. Sky models: black-hole ring, binary, core + jet, disk. Runs in the worker (`aperture` task).
+  - **Catalogue:** two new entries.
+- Tests (`test/interferometry.test.mjs`): the Betelgeuse diameter and null, summed fringes vs |2J₁(x)/x|, an east–west baseline from the pole tracing a circle of radius B/λ, the EHT resolution ≈ 25 µas, the dirty-beam normalisation, and CLEAN recovering a binary's flux ratio.
 - `scripts/worktree.sh`: one git worktree per branch. `new <type>/<name>` creates the branch from a freshly fetched `origin/main`, without an upstream, in `../Optica-Viva.worktrees/`. `finish` checks that the PR was merged, then removes the worktree and local branch, prunes and fast-forwards `main`. CONTRIBUTING.md and CLAUDE.md now describe this workflow.
 
 ### Fixed
