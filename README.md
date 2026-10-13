@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Thirty-eight interactive simulations, a physics primer and a catalogue of 169 phenomena.
+Thirty-nine interactive simulations, a physics primer and a catalogue of 172 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -478,6 +478,16 @@ The **CCD equation for stacks**: a faint galaxy behind a sky set by the **Bortle
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Field-dependent PSF** · `#/fieldpsf`<br>
+<img src="docs/screenshots/fieldpsf.webp" alt="A 5 by 5 mosaic of PSFs across the field of a Ritchey–Chrétien telescope, a map of RMS wavefront error with astigmatic nodes, and RMS vs field for three designs" width="70%">
+
+**Seidel sums traced mirror by mirror** for Cassegrain, **Ritchey–Chrétien** and Dall–Kirkham telescopes, with FFT PSFs on a 5 × 5 grid across the field. A decentred or tilted secondary shows **nodal aberration theory** at work: field-constant coma and binodal astigmatism. The despace and conic-error sliders reproduce **Hubble's 1990 spherical aberration** (K₁ = −1.0139).
+
+</td>
+</tr>
 </table>
 
 ### Reference pages
@@ -495,9 +505,9 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 <td width="50%" valign="top">
 
 **Catalogue of phenomena** · `#/catalogue`<br>
-<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 169 optical phenomena">
+<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 172 optical phenomena">
 
-**169 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
+**172 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
 
 </td>
 </tr>
@@ -648,6 +658,7 @@ Optica_Viva/
 │   │   ├── detectors.js       Up-the-ramp slopes and jump detection, IPC, CTI trails, persistence
 │   │   ├── eye.js             Le Grand schematic eye, ocular chromatic aberration, retinal MTF vs pupil, CoC from acuity
 │   │   ├── film.js            Boolean-model emulsion: development probability, H&D curve, Selwyn granularity, DQE, reciprocity
+│   │   ├── fieldpsf.js        Two-mirror telescopes: Seidel sums through mirrors, RC/DK conics, nodal aberrations, PSFs across the field
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
@@ -682,11 +693,11 @@ Optica_Viva/
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (169 entries)
+│   │   ├── phenomena.js       Catalogue data (172 entries)
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (40)
+│   └── modules/               One file per page (41)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -747,6 +758,12 @@ The numerical core was checked against published or analytically known values. E
 | Axial intensity behind an opaque disk (Poisson–Arago spot) | 1 to 10⁻⁸ at z = 10, 300, 5000 m | \|e<sup>iπF</sup>\|² = 1 |
 | Spot profile behind a disk | J₀²(2πRρ/λz) to 2·10⁻³ | Lommel; Born &amp; Wolf §8.8 |
 | Axis of a circular hole (Babinet) | 4 sin²(πF/2) to 10⁻⁶ | complement of the disk |
+| Ritchey–Chrétien conics for Hubble's layout (2.4 m, f/24, primary f/2.3, b = 1.5 m) | K₁ = −1.0023, K₂ = −1.497; S<sub>I</sub> = S<sub>II</sub> = 0 | Schroeder (2000); as built |
+| Cassegrain coma | S<sub>II</sub> = −y³ū/(2f²), a paraboloid of the same focal length | Schroeder (2000) |
+| Secondary despace focus sensitivity | Δz<sub>focus</sub> = (m² + 1) δ to 0.2 % | Wilson, *Reflecting Telescope Optics* |
+| Hubble's primary, K = −1.0139 instead of −1.0023 | 2.2 µm too flat at the edge; W₀₄₀ = 2 × sag error | Allen report (1990) |
+| Decentred RC secondary | coma constant over the field; two astigmatic nodes | Thompson (2005) |
+| FFT Strehl vs Maréchal at Strehl ≈ 0.8 | within 3 % | exp(−σ²) |
 | Hypergaussian starshade, a = b = 12.5 m, n = 6, 80 000 km | < 10⁻⁹ within 2 m of the axis at 400–700 nm | Cash (2006) |
 | Probability of a lucky frame vs D/r₀ (8 × 300 frames) | slope of ln P vs (D/r₀)² within 30 % of −0.1557 | Fried (1978) |
 | Refractivity of standard air at 633 nm | (n − 1)·10⁸ = 27 653 | Edlén (1966) |
@@ -810,6 +827,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
+| Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |
 | Starshade | Scalar Fresnel diffraction; petals as an azimuthally averaged transmission (no J<sub>N</sub> petal terms); perfect shape; point star | No edge scattering of sunlight, shape or position errors |
 | Lucky imaging | Single frozen screen, monochromatic, no photon or read noise, selection on the true Strehl | Real selection uses a noisy reference star; anisoplanatism ignored |
 | ADC | Plane-parallel refraction (≈ 1 % below z = 70°), dry air, thin prisms; Gaussian seeing ∝ λ^−0.2 | No water vapour, curvature or ADC aberrations |

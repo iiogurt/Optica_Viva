@@ -66,10 +66,10 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 38 | +1 proposed (v1.9) |
-| Catalogue entries | 169 | link every new lab |
+| Laboratories | 39 | v1.9 complete |
+| Catalogue entries | 172 | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 123 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 129 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -329,7 +329,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | Lab | Content | Priority · effort |
 |---|---|---|
 | [x] **Interferometry & aperture synthesis** | Young fringes → visibility; u-v coverage of VLTI/EHT-like arrays; dirty beam and CLEAN (PR #55) | P2 · L |
-| [ ] **Field-dependent PSF** | JWST/Roman-style PSF variation across an instrument field (after the STPSF multifield model) | P2 · M |
+| [x] **Field-dependent PSF** | PSF variation across the field of two-mirror telescopes, nodal aberrations of a misaligned secondary, Hubble's flaw (PR #63) | P2 · M |
 | [x] **Detector physics (space)** | inter-pixel capacitance, persistence, cosmic-ray rejection by up-the-ramp fitting, CTI from radiation damage (PR #56) | P2 · M |
 | [x] **Starshade** | Fresnel diffraction around a petal-shaped occulter; contrast vs Fresnel number (PR #61) | P3 · L |
 | [x] **Astrophotography stacking** | SNR ∝ √N, sky-limited vs read-limited sub-exposures, light pollution (PR #59) | P3 · M |
@@ -358,6 +358,7 @@ Ideas worth keeping but not yet scheduled:
 - *(from v1.6 colour science)* TLCI-2012 (EBU camera model) and ANSI/IES TM-30 fidelity and gamut indices (99 colour evaluation samples).
 - *(from v1.7 spectroscopy)* Integral-field unit simulation: image slicer reformatting a galaxy field into a long slit and reconstructing the data cube.
 - *(from v1.9 starshade)* Petal terms (J<sub>N</sub>, J<sub>2N</sub> …) and 2-D shadows of real petal shapes with manufacturing and deployment errors; sunlight scattered by the petal edges; numerically optimised occulter profiles (Vanderbei, Cady & Kasdin).
+- *(from v1.9 field-dependent PSF)* Three-mirror anastigmats (JWST, Roman) with fifth-order terms from real-ray tracing through mirrors, and field-dependent Zernike maps in the style of STPSF.
 - Coherent imaging mode (laser/speckle) in the PSF lab.
 - Gravitational microlensing light curves and planetary anomalies.
 - Zoom-lens animation, showing group motion and parfocality.
