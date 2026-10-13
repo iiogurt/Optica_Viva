@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Thirty-six interactive simulations, a physics primer and a catalogue of 166 phenomena.
+Thirty-seven interactive simulations, a physics primer and a catalogue of 167 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -460,6 +460,16 @@ Short exposures through frozen-flow Kolmogorov turbulence are ranked by Strehl, 
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Astrophotography stacking** · `#/stacking`<br>
+<img src="docs/screenshots/stacking.webp" alt="A faint galaxy in one sub-exposure and in the stack, with SNR curves vs sub length and total time" width="70%">
+
+The **CCD equation for stacks**: a faint galaxy behind a sky set by the **Bortle class**, with dark current and read noise. The page compares one sub-exposure with the full stack and shows SNR vs sub length (the **sky-limited sub** t = 10σ²/F<sub>sky</sub>) and vs total time (**√T**), with the 2.5× time penalty per magnitude of brighter sky.
+
+</td>
+</tr>
 </table>
 
 ### Reference pages
@@ -477,9 +487,9 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 <td width="50%" valign="top">
 
 **Catalogue of phenomena** · `#/catalogue`<br>
-<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 166 optical phenomena">
+<img src="docs/screenshots/catalogue.webp" alt="Searchable catalogue of 167 optical phenomena">
 
-**166 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
+**167 phenomena in 13 groups**, each with a description, governing equation, domain tags and a link to its laboratory. Searchable, with domain filters and an "only simulated" filter.
 
 </td>
 </tr>
@@ -636,6 +646,7 @@ Optica_Viva/
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
 │   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
 │   │   ├── shake.js           Hand-held shake model, type-2 stabiliser servo with gyro random walk, Monte-Carlo sharpness
+│   │   ├── stacking.js        CCD equation for stacks, sky brightness from Bortle class, sky-limited sub length
 │   │   ├── spectro.js         Gratings, blaze, prisms, resolving power, line lists, instrument profile
 │   │   ├── virtual.js         LED-wall moiré (grid frequency, MTFs, aliasing) and PWM refresh banding
 │   │   ├── wfs.js             Shack–Hartmann sensor, modal reconstructor, Noll residuals, closed AO loop
@@ -661,11 +672,11 @@ Optica_Viva/
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (166 entries)
+│   │   ├── phenomena.js       Catalogue data (167 entries)
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (38)
+│   └── modules/               One file per page (39)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -721,6 +732,8 @@ The numerical core was checked against published or analytically known values. E
 | Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |
 | Disk in diametral compression: centre stresses, force balance | σ<sub>x</sub> = 2P/(πDt), σ<sub>y</sub> = −6P/(πDt); ∫σ<sub>y</sub>t dx = −P | Frocht (1948); free boundary |
 | Walk-off: quartz at 45°, calcite maximum | 5.875 µm/mm, 6.26° at tan θ = n<sub>e</sub>/n<sub>o</sub> | (n<sub>e</sub>² − n<sub>o</sub>²)/(2n<sub>o</sub>n<sub>e</sub>) |
+| Stack SNR (20 × 60 s, Monte Carlo) | within 3 % of the CCD equation | F<sub>o</sub>Nt / √(N[(F<sub>o</sub>+F<sub>s</sub>+F<sub>d</sub>)t+σ²]) |
+| Faint-object SNR, Bortle 4 vs 8 sky | × 3.02 | 10^(0.2 Δμ) |
 | Probability of a lucky frame vs D/r₀ (8 × 300 frames) | slope of ln P vs (D/r₀)² within 30 % of −0.1557 | Fried (1978) |
 | Refractivity of standard air at 633 nm | (n − 1)·10⁸ = 27 653 | Edlén (1966) |
 | Refraction at z = 45°, sea level, 550 nm | 57.3″ | (n − 1) tan z |
@@ -782,6 +795,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
+| Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
 | Lucky imaging | Single frozen screen, monochromatic, no photon or read noise, selection on the true Strehl | Real selection uses a noisy reference star; anisoplanatism ignored |
 | ADC | Plane-parallel refraction (≈ 1 % below z = 70°), dry air, thin prisms; Gaussian seeing ∝ λ^−0.2 | No water vapour, curvature or ADC aberrations |
 | Detectors | One trap species with exponential release (real CTI depends on signal level); illustrative persistence law | Flux dependence of CTI and detector-specific persistence not modelled |

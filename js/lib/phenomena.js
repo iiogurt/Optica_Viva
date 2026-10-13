@@ -188,7 +188,8 @@ export const GROUPS = [
       ['Extinction & airmass', null, 'ps', 'Atmospheric absorption and scattering dim sources with zenith angle.', r`m=m_0+kX,\ X\approx\sec z`],
       ['Aerial perspective & haze', 'dof', 'pv', 'Rayleigh and Mie scattering add airlight and reduce contrast with distance.', r`C(d)=C_0e^{-\beta d},\ \beta_R\propto\lambda^{-4}`],
       ['Heat shimmer & mirages', null, 'pv', 'Ground-level index gradients bend rays and distort distant scenes.', r`\frac{d}{ds}\left(n\frac{d\mathbf r}{ds}\right)=\nabla n`],
-      ['Sky background & light pollution', null, 'ps', 'Scattered artificial light and airglow set the faintest detectable surface brightness.', r`\mathrm{SNR}=\frac{S}{\sqrt{S+B\,\Omega+\sigma_r^2}}`],
+      ['Image stacking (√N)', 'stacking', 'ps', 'Averaging sub-exposures beats noise as √N once each is sky-limited.', r`\mathrm{SNR}=\frac{F_oNt}{\sqrt{N[(F_o+F_s+F_d)t+\sigma_r^2]}}`],
+      ['Sky background & light pollution', 'stacking', 'ps', 'Scattered artificial light and airglow set the faintest detectable surface brightness.', r`\mathrm{SNR}=\frac{S}{\sqrt{S+B\,\Omega+\sigma_r^2}}`],
     ],
   },
   {

@@ -2,7 +2,7 @@
 import { h, resetUrlState } from './lib/ui.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -45,6 +45,7 @@ export const MODULES = [
   { id: 'interferometry', group: 'Astronomy & space', title: 'Interferometry & aperture synthesis', c: '#8fd8ff', blurb: "Michelson's stellar interferometer and van Cittert–Zernike, Earth-rotation u-v coverage of the VLA, VLTI and EHT, dirty beams and CLEAN." },
   { id: 'detectors', group: 'Astronomy & space', title: 'Detector physics in space', c: '#8fd8ff', blurb: 'Up-the-ramp sampling and cosmic-ray rejection, inter-pixel capacitance, charge-transfer inefficiency trails and persistence.' },
   { id: 'adc', group: 'Astronomy & space', title: 'Atmospheric dispersion & ADC', c: '#8fd8ff', blurb: "The atmosphere as a weak prism: Edlén's refractive index of air, stellar spectra smeared by zenith angle, and the counter-rotating prisms that correct them." },
+  { id: 'stacking', group: 'Astronomy & space', title: 'Astrophotography stacking', c: '#8fd8ff', blurb: 'The CCD equation for stacks of sub-exposures: √N, the sky-limited sub length and the cost of light pollution.' },
   { id: 'telescope', group: 'Astronomy & space', title: 'Space telescopes', c: '#8fd8ff', blurb: 'Resolution limits, sampling, light-gathering, and a Lyot coronagraph simulation for exoplanet imaging.' },
   { id: 'lensing', group: 'Astronomy & space', title: 'Gravitational lensing', c: '#8fd8ff', blurb: 'The universe as a lens: Einstein rings, arcs and multiple images by inverse ray-shooting.' },
 ];

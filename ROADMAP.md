@@ -66,10 +66,10 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 36 | +3 proposed (v1.9) |
-| Catalogue entries | 166 | link every new lab |
+| Laboratories | 37 | +2 proposed (v1.9) |
+| Catalogue entries | 167 | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 112 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 114 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -332,7 +332,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | [ ] **Field-dependent PSF** | JWST/Roman-style PSF variation across an instrument field (after the STPSF multifield model) | P2 · M |
 | [x] **Detector physics (space)** | inter-pixel capacitance, persistence, cosmic-ray rejection by up-the-ramp fitting, CTI from radiation damage (PR #56) | P2 · M |
 | [ ] **Starshade** | Fresnel diffraction around a petal-shaped occulter; contrast vs Fresnel number | P3 · L |
-| [ ] **Astrophotography stacking** | SNR ∝ √N, sky-limited vs read-limited sub-exposures, light pollution | P3 · M |
+| [x] **Astrophotography stacking** | SNR ∝ √N, sky-limited vs read-limited sub-exposures, light pollution (PR #59) | P3 · M |
 | [x] **Atmospheric dispersion & ADC** | elongated stellar images vs zenith angle; Risley-prism corrector (PR #57) | P3 · S |
 | [x] **Lucky imaging** | frame selection by Strehl from the seeing simulator (PR #58) | P3 · S |
 
@@ -357,6 +357,7 @@ Ideas worth keeping but not yet scheduled:
 
 - *(from v1.6 colour science)* TLCI-2012 (EBU camera model) and ANSI/IES TM-30 fidelity and gamut indices (99 colour evaluation samples).
 - *(from v1.7 spectroscopy)* Integral-field unit simulation: image slicer reformatting a galaxy field into a long slit and reconstructing the data cube.
+- Shared high-quality random numbers (`js/lib/random.js`, mulberry32 + Box–Muller) for every simulation: several libraries still use a 32-bit LCG whose consecutive outputs are correlated, a small bias in Monte-Carlo variances (found in the stacking lab).
 - Coherent imaging mode (laser/speckle) in the PSF lab.
 - Gravitational microlensing light curves and planetary anomalies.
 - Zoom-lens animation, showing group motion and parfocality.
