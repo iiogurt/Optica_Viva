@@ -66,10 +66,10 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 29 | +10 proposed (v1.8, v1.9) |
-| Catalogue entries | 158 | link every new lab |
+| Laboratories | 30 | +9 proposed (v1.8, v1.9) |
+| Catalogue entries | 160 | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 89 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 93 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -307,7 +307,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | [ ] **Film & grain** | characteristic (H&D) curve, reciprocity failure, grain vs photon noise | P3 · M |
 | [ ] **Virtual production** | LED-wall moiré vs camera MTF and pixel pitch, scan-line/refresh interactions with rolling shutter | P3 · M |
 | [x] **Stabilisation & shake** | angular-jitter blur, reciprocal rule, IBIS/OIS correction residuals (PR #46) | P3 · S |
-| [ ] **Human eye** | schematic eye, pupil size vs acuity, Stiles–Crawford effect, why the CoC is d/1500 | P3 · M |
+| [x] **Human eye** | schematic eye, pupil size vs acuity, Stiles–Crawford effect, why the CoC is d/1500 (PR #47) | P3 · M |
 
 ### v1.9 New laboratories: astronomy & space II
 

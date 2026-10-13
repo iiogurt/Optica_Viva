@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **The human eye laboratory** (`#/eye`, `js/lib/eye.js`). Le Grand's full theoretical eye uses water-like ocular media as model glasses. Power, focal lengths and refraction come from the paraxial matrix, with the refractive error defined as the object-space vergence conjugate to the retina. The chromatic difference of refraction is compared with Thibos et al.'s measured chromatic eye, and a schematic shows ray paths at two wavelengths. The retinal PSF and MTF are computed by FFT for pupils of 1–8 mm, with representative higher-order aberrations scaled by pupil order and Stiles–Crawford apodisation, plus a sweep of Strehl and MTF at 30 and 60 c/deg vs pupil (in the worker). A calculator derives the circle of confusion from visual acuity. The catalogue gains *The eye as an optical system* and *Stiles–Crawford effect*.
+- Tests (`test/eye.test.mjs`): 59.94 D; near-emmetropia; ocular LoCA within 15 % of the measured chromatic eye; the diffraction cut-off and MTF; the best pupil between 2.5 and 4 mm; d/1500 corresponds to 2.3′.
 - **Camera shake & stabilisation laboratory** (`#/shake`, `js/lib/shake.js`).
   - **Shake model:** hand-held angular motion per axis is an Ornstein–Uhlenbeck drift velocity plus ~10 Hz tremor, for three photographers.
   - **Stabiliser:** a type-2 servo (bandwidth f_c, ζ = 0.7) follows the gyro's rate and angle; the gyro error is an angle random walk.

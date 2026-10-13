@@ -230,6 +230,8 @@ export const GROUPS = [
       ['Bokeh', 'bokeh', 'pv', 'Rendering of out-of-focus areas: pupil shape plus residual aberrations.', r`\frac{I(r)}{I_0}=\frac{1}{(1+s\rho^2)(1+3s\rho^2)}`],
       ['Swirly bokeh', 'bokeh', 'p', 'Tangentially oriented cat\'s eyes plus field curvature (Petzval lenses).', r`V_\text{mech}(\theta)`],
       ['Micro-contrast', 'mtf', 'p', 'Perceived "pop" relates to MTF at low-to-mid frequencies.', r`\mathrm{SQF}=\int\mathrm{MTF}(\nu)\,\mathrm{CSF}(\nu)\,d\ln\nu`],
+      ['The eye as an optical system', 'eye', 'pv', 'A 60-dioptre camera with ~1 D of chromatic aberration, an optimum pupil near 3 mm and cones sampling at 60 cycles/degree.', r`P\approx60\,\text{D},\ \nu_c=\frac{D}{\lambda}`],
+      ['Stiles–Crawford effect', 'eye', 'pv', 'Cones accept light less efficiently near the pupil edge: a natural apodisation.', r`\eta(r)=10^{-\rho r^2},\ \rho\approx0.05\,\text{mm}^{-2}`],
       ['Circle of confusion & viewing', 'dof', 'p', 'Sharpness criterion set by eye resolution, print size and viewing distance.', r`c=\frac{d}{1500}\ \ (\approx1'\ \text{at 25 cm, }8\times10\,\text{in print})`],
       ['Colour temperature & white balance', 'colour', 'pv', 'Illuminant spectra shift colours; cameras rescale channels.', r`T_\text{CCT}:\ (x,y)\approx\text{Planckian locus}`],
       ['HDR bracketing & exposure fusion', 'hdr', 'pv', 'Several exposures merged with inverse-variance weights, or blended by pyramids, exceed one frame\'s dynamic range.', r`\hat L=\frac{\sum w_iS_i/kt_i}{\sum w_i},\ w_i=\frac{t_i^2}{S_i+\sigma_r^2}`],

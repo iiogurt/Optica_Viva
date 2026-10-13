@@ -2,7 +2,7 @@
 import { h, resetUrlState } from './lib/ui.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'wfs', 'spectro', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'wfs', 'spectro', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -17,6 +17,7 @@ export const MODULES = [
   { id: 'tiltshift', group: 'Geometric optics', title: 'Tilt–shift & Scheimpflug', c: '#ffd27a', blurb: 'Plane-of-focus geometry, the hinge rule, the depth-of-field wedge, a miniature-effect render and keystone correction.' },
   { id: 'panorama', group: 'Geometric optics', title: 'Panorama & parallax', c: '#ffd27a', blurb: 'Why panoramas must rotate about the entrance pupil, not the nodal point: ray-cast frames stitched with and without parallax.' },
   { id: 'macro', group: 'Geometric optics', title: 'Macro & magnification', c: '#ffd27a', blurb: 'Bellows factor and pupil magnification, depth of field in microns, the diffraction-limited optimum aperture and focus stacking on a tilted ruler.' },
+  { id: 'eye', group: 'Geometric optics', title: 'The human eye', c: '#ffd27a', blurb: "Le Grand's schematic eye, its chromatic aberration, the best pupil size, cone sampling, and where the circle of confusion comes from." },
   { id: 'vignetting', group: 'Geometric optics', title: 'Vignetting & relative illumination', c: '#ffd27a', blurb: 'cos⁴ law, mechanical (optical) vignetting by pupil overlap, and pixel acceptance angle.' },
 
   { id: 'psf', group: 'Wave optics', title: 'Diffraction & the PSF', c: '#6ad7ff', blurb: 'Fraunhofer diffraction by FFT: Airy disks, aperture-blade starbursts and polychromatic PSFs of Hubble, JWST and the ELT.' },
