@@ -11,7 +11,7 @@ const OUT = resolve(ROOT, 'docs/screenshots');
 // page → crop box [left, top, right, bottom] in CSS px at 1440 px width (sidebar is 268 px)
 const LAB = [296, 290, 1412, 1110];
 const PAGES = {
-  home: ['', [268, 0, 1440, 680]], foundations: ['foundations', [296, 0, 1412, 760]], catalogue: ['catalogue', [296, 250, 1412, 1070]],
+  home: ['', [268, 0, 1440, 680]], foundations: ['foundations', [296, 0, 1412, 760]], catalogue: ['catalogue', [296, 250, 1412, 1070]], 'catalogue-entry': ['catalogue?g=diffraction-and-wave-optics&e=airy-disk', [296, 250, 1412, 1070]],
   raytracer: ['raytracer', LAB], dof: ['dof', LAB], sensor: ['sensor', LAB], projection: ['projection', LAB], perspective: ['perspective', LAB],
   tiltshift: ['tiltshift', LAB], vignetting: ['vignetting', LAB], psf: ['psf', [296, 264, 1412, 1084]], zernike: ['zernike', LAB],
   mtf: ['mtf', [296, 264, 1412, 1084]], chromatic: ['chromatic', [296, 300, 1412, 1120]], bokeh: ['bokeh', LAB], flare: ['flare', LAB],

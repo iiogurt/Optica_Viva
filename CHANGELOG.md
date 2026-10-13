@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Catalogue explorer** (`#/catalogue`). The single long page is replaced by an overview of the 13 groups (with counts and the share simulated), a group navigator (a horizontal strip on phones), one group at a time with expandable entries, previous/next group buttons, and search across all groups with results grouped by group. An opened entry shows its equation, a fuller explanation, a worked example with real numbers, a link to its laboratory and related entries from the same laboratory. Group, entry, search and filters are kept in the URL (`#/catalogue?g=…&e=…&q=…`).
+- **56 new phenomena** (228 in total), among them Fermat's principle, the Lagrange invariant, the pinhole camera, Seidel sums, Zernike polynomials, the sine condition, Coddington's equations, stop shift, partial dispersion, encircled energy, Gaussian beams, zone plates, the Talbot effect, photometric units, metering, magnitudes, the Fresnel equations, Stokes parameters, waveplates, the photon transfer curve, DQE, EMCCDs, TDI, star trails, Rayleigh and Mie scattering, laser guide stars, the green flash, exoplanet contrast, nulling interferometry, the contrast sensitivity function, metamerism and the Purkinje shift. Each links to a laboratory only where one simulates it.
+- `js/lib/phenomena-details.js`: an explanation and a worked example for every entry.
+- Tests (`test/catalogue.test.mjs`): unique names, slugs and group ids; valid laboratory links; details for every entry and none for unknown ones; every equation and inline formula renders with the vendored KaTeX.
+
+### Fixed
+- `h()` now sets CSS custom properties from a `style` object (`Object.assign` on `el.style` ignored them). The colour accents of the sidebar dots and the home-page laboratory cards now show as designed.
+- The *Quantisation* catalogue entry had a three-word description.
+
 ## [1.9.0] - 2026-10-13
 
 Seven new laboratories for astronomy and space (PRs [#55](https://github.com/iiogurt/Optica_Viva/pull/55)–[#64](https://github.com/iiogurt/Optica_Viva/pull/64)): **Interferometry & aperture synthesis**, **Detector physics in space**, **Atmospheric dispersion & ADC**, **Lucky imaging**, **Astrophotography stacking**, **Starshade** and **Field-dependent PSF**. Each is validated against known results: the van Cittert–Zernike visibility of a uniform disk, the exact variance of up-the-ramp slopes, Edlén's air index, Fried's lucky-frame probability, the CCD equation, the Poisson–Arago spot and Babinet's principle, and Hubble's as-built Ritchey–Chrétien conics and its 1990 conic error. All simulations now share one seeded random-number generator. 39 interactive simulations, 172 catalogue entries and 129 tests.

@@ -1,9 +1,12 @@
 // Catalogue of optical phenomena and real-world imaging challenges.
-// Entry: [name, lab id | null, domains ('p' photo, 'v' video, 's' space), description, TeX equation]
+// Group: { id (URL slug), title, intro, items }.
+// Entry: [name, lab id | null, domains ('p' photo, 'v' video, 's' space), description, TeX equation].
+// Longer explanations and worked examples live in phenomena-details.js, keyed by name.
 const r = String.raw;
 
 export const GROUPS = [
   {
+    id: 'geometrical-image-formation',
     title: 'Geometrical image formation',
     intro: 'First-order (paraxial) optics: where images form, how big they are, and how much light reaches them.',
     items: [
@@ -26,9 +29,15 @@ export const GROUPS = [
       ['Focus stacking', 'macro', 'p', 'Frames focused at different depths are merged pixel by pixel to beat the shallow depth of field of macro work.', r`n=\left\lceil\frac{\delta}{0.8\,t_\text{DoF}}\right\rceil,\ t_\text{DoF}=\frac{2N_wc}{m^2}`],
       ['Focus breathing', 'cinema', 'v', 'Field of view changes with focus distance because internal focusing changes the effective focal length; critical for cinema lenses.', r`m=\frac{f}{s-f}\ \Rightarrow\ \mathrm{FOV}(s)`],
       ['Telecentricity', 'vignetting', 'pvs', 'Chief rays parallel to the axis in object or image space: magnification independent of defocus, uniform pixel illumination.', r`z_{XP}\to\infty\Rightarrow\theta_\text{CRA}=0`],
+      ['Fermat\'s principle', 'foundations', 'pvs', 'Light follows a path whose optical length is stationary; the laws of reflection and refraction and perfect imaging follow from it.', r`\delta\int n\,ds=0`],
+      ['Lagrange invariant', 'raytracer', 'pvs', 'Built from the marginal and chief rays, it is conserved through any paraxial system and fixes the trade between field and aperture.', r`\mathcal H=n(\bar u y-u\bar y)`],
+      ['Vergence & dioptres', 'eye', 'pv', 'Optical power and the curvature of a ray bundle in reciprocal metres; powers of thin elements in contact add.', r`P=\frac{n}{f},\quad V'=V+P`],
+      ['Image circle & coverage', 'tiltshift', 'pv', 'A lens forms a usable image only inside a circle; the sensor diagonal plus any shift or tilt must stay within it.', r`\varnothing\ge\sqrt{w^2+h^2}`],
+      ['Pinhole camera', null, 'p', 'Without a lens, sharpness balances the geometric shadow of the hole against its diffraction.', r`d_\text{opt}\approx1.9\sqrt{f\lambda}`],
     ],
   },
   {
+    id: 'monochromatic-aberrations',
     title: 'Monochromatic aberrations',
     intro: 'Departures from perfect imaging for a single wavelength: the terms of the wave-aberration expansion.',
     items: [
@@ -44,9 +53,16 @@ export const GROUPS = [
       ['Wavefront error & Strehl ratio', 'zernike', 'pvs', 'RMS wavefront error predicts peak intensity relative to perfection.', r`S\approx e^{-(2\pi\sigma_W/\lambda)^2}`],
       ['Transverse ray aberration', 'raytracer', 'pvs', 'Spot positions are gradients of the wave aberration.', r`\varepsilon_y=-\frac{R}{n'}\frac{\partial W}{\partial y_p}`],
       ['Aspheric surfaces', null, 'pvs', 'Conic and polynomial surfaces cancel aberrations with fewer elements; also cause onion-ring bokeh.', r`z=\frac{cr^2}{1+\sqrt{1-(1+k)c^2r^2}}+\sum a_ir^{2i}`],
+      ['Seidel sums', 'raytracer', 'pvs', 'Third-order aberrations are sums of surface contributions computed from one marginal and one chief paraxial ray.', r`S_I=-\sum_kA_k^2y_k\,\Delta\!\left(\tfrac un\right)_k`],
+      ['Zernike polynomials', 'zernike', 'pvs', 'An orthonormal basis on the unit disk: each coefficient is an independent aberration and their squares add to the wavefront variance.', r`\sigma_W^2=\sum_{j\ge2}a_j^2`],
+      ['Abbe sine condition & aplanatism', null, 'pvs', 'A system free of spherical aberration is also free of coma when the marginal-ray angles obey the sine condition.', r`\frac{n\sin u}{n'\sin u'}=m`],
+      ['Coddington equations', 'raytracer', 'pvs', 'Tangential and sagittal foci of a thin oblique bundle at a surface: the exact origin of astigmatism and field curvature.', r`\frac{n'\cos^2I'}{t'}-\frac{n\cos^2I}{t}=\frac{n'\cos I'-n\cos I}{R}`],
+      ['Stop shift', 'raytracer', 'pvs', 'Moving the aperture stop trades coma, astigmatism and distortion against the spherical aberration already present.', r`S_{II}^*=S_{II}+E\,S_I,\ \ S_{III}^*=S_{III}+2E\,S_{II}+E^2S_I`],
+      ['Ritchey–Chrétien aplanat', 'fieldpsf', 's', 'Two hyperbolic mirrors cancel both spherical aberration and coma; astigmatism and field curvature remain.', r`K_1=-1-\frac{2(1+\beta)}{m^2(m-\beta)}`],
     ],
   },
   {
+    id: 'chromatic-effects',
     title: 'Chromatic effects',
     intro: 'Consequences of dispersion: the refractive index depends on wavelength.',
     items: [
@@ -60,9 +76,12 @@ export const GROUPS = [
       ['Purple fringing', 'chromatic', 'p', 'Violet halos at high-contrast edges from LoCA at short wavelengths plus sensor blooming and microlens leakage.', r`\Delta f(\lambda<450\,\text{nm})`],
       ['Atmospheric dispersion', 'adc', 's', 'Air refracts blue more than red; stars become spectra near the horizon. Corrected by ADC prisms.', r`R(\lambda)\approx(n(\lambda)-1)\tan z`],
       ['Rainbows, prisms & halos', 'spectro', 'p', 'Dispersion in droplets and ice crystals; minimum deviation sets the 42° rainbow and 22° halo.', r`D_\text{min}=2\arcsin\left(n\sin\tfrac A2\right)-A`],
+      ['Partial dispersion & the glass map', 'chromatic', 'pvs', 'Ordinary glasses lie on a "normal line" of partial dispersion against Abbe number; only those off it remove the secondary spectrum.', r`P_{g,F}=\frac{n_g-n_F}{n_F-n_C}\approx0.6438-0.001682\,V_d`],
+      ['Ocular chromatic aberration', 'eye', 'pv', 'The eye has about 2 dioptres of uncorrected longitudinal colour across the visible; the brain and macular pigment hide it.', r`\Delta P\approx2\,\text{D}\ \ (400\to700\,\text{nm})`],
     ],
   },
   {
+    id: 'diffraction-and-wave-optics',
     title: 'Diffraction and wave optics',
     intro: 'The wave nature of light: the ultimate limit on sharpness and the source of stars, rings and speckle.',
     items: [
@@ -87,9 +106,14 @@ export const GROUPS = [
       ['Aperture synthesis & CLEAN', 'interferometry', 's', 'Earth rotation fills the u-v plane; the dirty image is the sky convolved with the dirty beam, deconvolved by CLEAN.', r`I_D=I\ast\mathcal F^{-1}[S(u,v)]`],
       ['Coherence & speckle', 'seeing', 'ps', 'Coherent light interferes randomly off rough surfaces or through turbulence.', r`A_c\approx\frac{\lambda^2}{\Omega_s}\ \ (\text{Van Cittert–Zernike})`],
       ['Thin-film interference', 'flare', 'pvs', 'Reflections from film boundaries interfere: coatings, oil slicks, Newton\'s rings.', r`2n d\cos\theta=m\lambda`],
+      ['Encircled energy', 'psf', 'pvs', 'The fraction of light within a radius: 84 % lies inside the first dark ring of the Airy pattern.', r`\mathrm{EE}(v)=1-J_0^2(v)-J_1^2(v)`],
+      ['Gaussian beams', null, 'pvs', 'Laser beams keep a Gaussian profile; the waist and the Rayleigh range are tied together by diffraction.', r`w(z)=w_0\sqrt{1+(z/z_R)^2},\ z_R=\frac{\pi w_0^2}{\lambda}`],
+      ['Fresnel zone plates', null, 'ps', 'Alternating clear and opaque zones focus light by diffraction, with a focal length inversely proportional to wavelength.', r`r_n=\sqrt{n\lambda f}`],
+      ['Talbot self-imaging', null, 's', 'A periodic grating re-images itself at multiples of the Talbot distance; used in wavefront sensing and X-ray phase imaging.', r`z_T=\frac{2d^2}{\lambda}`],
     ],
   },
   {
+    id: 'radiometry-and-illumination',
     title: 'Radiometry and illumination',
     intro: 'How much light arrives where, and why the corners are darker.',
     items: [
@@ -105,9 +129,14 @@ export const GROUPS = [
       ['Film characteristic curve & grain', 'film', 'pv', 'Silver-halide grains switch on after a few photons: S-shaped H&D curve, grain growing with speed, Selwyn granularity.', r`D=0.434\,Nna,\ \sigma_D\sqrt A=\text{const}`],
       ['Reciprocity failure', 'film', 'p', 'Film loses sensitivity in very long exposures (Schwarzschild effect).', r`H_\text{eff}=I\,t^p,\ p<1`],
       ['Flat-field calibration', 'vignetting', 's', 'Divide by an image of a uniform source to remove vignetting and PRNU.', r`I_\text{cal}=\frac{I-D}{F-D}\langle F-D\rangle`],
+      ['Photometric units', 'colour', 'pvs', 'Lux and candela weight radiometric quantities by the eye\'s luminosity function V(λ); 683 lm per watt at 555 nm.', r`L_v=683\,\tfrac{\text{lm}}{\text{W}}\int V(\lambda)L_\lambda\,d\lambda`],
+      ['Exposure metering & sunny 16', null, 'pv', 'A reflected-light meter sets exposure so the average scene renders mid-grey; in sunlight that is f/16 at 1/ISO seconds.', r`\frac{N^2}{t}=\frac{LS}{K},\ K\approx12.5\ \text{cd s m}^{-2}`],
+      ['Blackbody radiation', 'colour', 'pvs', 'Thermal sources follow Planck\'s law; their colour defines colour temperature and their peak moves with Wien\'s law.', r`\lambda_\text{max}T=2898\ \mu\text{m K}`],
+      ['Astronomical magnitudes', 'stacking', 's', 'A logarithmic flux scale on which 5 magnitudes are a factor of 100; a zero point converts magnitudes to photon rates.', r`m=-2.5\log_{10}F+\mathrm{ZP}`],
     ],
   },
   {
+    id: 'stray-light',
     title: 'Stray light',
     intro: 'Light that reaches the sensor by unintended paths.',
     items: [
@@ -119,9 +148,13 @@ export const GROUPS = [
       ['Filter ghosts', 'flare', 'pv', 'Flat filters in front of the lens create near-in-focus ghosts of bright sources.', r`R_\text{filter}^2`],
       ['Surface-roughness scatter', null, 'ps', 'Micro-roughness scatters a fraction of light set by RMS height.', r`\mathrm{TIS}\approx\left(\frac{4\pi\sigma\cos\theta}{\lambda}\right)^2`],
       ['Baffles & stray-light suppression', 'telescope', 's', 'Vanes, black coatings and field stops block unintended paths.', r`\mathrm{PST}(\theta)=\frac{E_\text{det}(\theta)}{E_\text{in}}`],
+      ['Total internal reflection', null, 'pvs', 'Beyond the critical angle all light is reflected; prisms in binoculars and viewfinders use it without loss.', r`\theta_c=\arcsin\frac{n_2}{n_1}`],
+      ['Lens hoods', null, 'pv', 'A hood shades the front element from bright sources outside the field that would otherwise cause flare and veiling glare.', r`\theta_\text{hood}\gtrsim\tfrac12\,\mathrm{FOV}_\text{diag}`],
+      ['Dust & scratches on optics', null, 'p', 'Small defects scatter roughly their share of the pupil area; they only show against bright sources in or near the frame.', r`P_\text{scat}\approx\frac{A_\text{defect}}{A_\text{pupil}}`],
     ],
   },
   {
+    id: 'polarisation',
     title: 'Polarisation',
     intro: 'The vector nature of light, from glare control to telescope calibration.',
     items: [
@@ -131,9 +164,14 @@ export const GROUPS = [
       ['Birefringence', 'polarisation', 'p', 'Two refractive indices split rays; used in OLPFs and waveplates.', r`d=t\,\frac{n_e^2-n_o^2}{2n_en_o}`],
       ['Stress birefringence', 'polarisation', 'ps', 'Mechanical stress makes glass birefringent, degrading imaging and polarimetry.', r`\Delta n=K\sigma`],
       ['Polarisation aberrations', null, 's', 'Coatings and fold mirrors introduce retardance that distorts the PSF for each polarisation.', r`\mathbf J(\rho,\theta)\ \text{(Jones pupil)}`],
+      ['Fresnel equations', 'polarisation', 'pvs', 'Reflection coefficients for s and p polarisation; their difference makes reflected glare polarised and gives Brewster\'s angle.', r`r_s=\frac{n_1\cos\theta_i-n_2\cos\theta_t}{n_1\cos\theta_i+n_2\cos\theta_t}`],
+      ['Stokes parameters & Mueller matrices', 'polarisation', 'ps', 'Four measurable intensities describe any partially polarised beam; each optical element is a 4 × 4 matrix acting on them.', r`\mathbf S'=\mathbf M\mathbf S,\ \ \mathrm{DoLP}=\frac{\sqrt{Q^2+U^2}}{I}`],
+      ['Waveplates & retardance', null, 'ps', 'A birefringent plate delays one polarisation; a quarter-wave plate turns linear into circular polarisation.', r`\Gamma=\frac{2\pi}{\lambda}\,\Delta n\,t`],
+      ['Circular polarisers (cameras)', null, 'pv', 'A linear polariser followed by a quarter-wave plate removes glare but sends circular light on to autofocus and metering sensors.', r`\mathbf M_\text{CPL}=\mathbf M_{\lambda/4}(45^\circ)\,\mathbf M_\text{pol}(0^\circ)`],
     ],
   },
   {
+    id: 'sensors-sampling-and-noise',
     title: 'Sensors, sampling and noise',
     intro: 'Turning photons into numbers: discrete in space, time and charge.',
     items: [
@@ -149,16 +187,24 @@ export const GROUPS = [
       ['Fixed-pattern noise (PRNU/DSNU)', 'noise', 'ps', 'Pixel-to-pixel gain and offset variations.', r`\sigma_\text{PRNU}=P\,\bar n`],
       ['Full-well & dynamic range', 'noise', 'pvs', 'Ratio of the largest to smallest measurable signal.', r`\mathrm{DR}=\log_2\frac{n_\text{FWC}}{\sigma_r}`],
       ['ISO & ISO invariance', 'noise', 'pv', 'Analogue gain changes clipping and downstream noise, not photon count.', r`\text{ISO}\propto g`],
-      ['Quantisation', 'noise', 'pvs', 'ADC step noise.', r`\sigma_q=\frac{q}{\sqrt{12}}`],
+      ['Quantisation', 'noise', 'pvs', 'Rounding the signal to whole ADC steps adds a uniform error of one step over √12.', r`\sigma_q=\frac{q}{\sqrt{12}}`],
       ['Quantum efficiency', 'noise', 'pvs', 'Fraction of photons converted to electrons; spectral and angular.', r`\eta(\lambda)=\frac{n_e}{n_\gamma}`],
       ['Blooming & smear', null, 'ps', 'Excess charge spills into neighbours or along columns (CCD).', r`n>n_\text{FWC}`],
       ['Pixel crosstalk', 'vignetting', 'p', 'Light or charge leaks into adjacent pixels at steep angles, desaturating colour.', r`\chi(\theta_\text{CRA})`],
       ['Cover-glass aberration', 'raytracer', 'p', 'The sensor stack is a plane-parallel plate that adds spherical aberration to fast lenses.', r`\Delta z=t\left(1-\frac1n\right)`],
       ['Demosaicing', 'sampling', 'pv', 'Interpolating full colour from a mosaic; algorithms trade sharpness and artefacts.', r`\hat G=\hat G_\text{bilinear}+\tfrac12\,\Delta^2_{R}\ \ (\text{Malvar–He–Cutler})`],
       ['Pixel shift & drizzle', 'telescope', 'ps', 'Sub-pixel dithered frames recover resolution beyond the pixel grid.', r`p_\text{eff}=p/n\ \ (n\times n\ \text{sub-pixel dither})`],
+      ['Photon transfer curve', 'noise', 'pvs', 'Variance against mean of flat fields gives the conversion gain, read noise and full well of a sensor.', r`\sigma^2_\text{DN}=\frac{S_\text{DN}}{g}+\sigma^2_{r,\text{DN}}`],
+      ['Detective quantum efficiency', 'film', 'pvs', 'The fraction of incident photons a detector effectively uses, counting all its noise: the fair way to compare film and sensors.', r`\mathrm{DQE}=\frac{\mathrm{SNR}_\text{out}^2}{\mathrm{SNR}_\text{in}^2}`],
+      ['Dual conversion gain', 'hdr', 'pv', 'Pixels switch between a high-gain mode with little read noise and a low-gain mode with the full well, extending dynamic range.', r`\mathrm{DR}=\log_2\frac{n_\text{FWC}(\text{LCG})}{\sigma_r(\text{HCG})}`],
+      ['Up-the-ramp sampling', 'detectors', 's', 'Infrared arrays are read non-destructively many times; fitting the ramp lowers read noise and rejects cosmic rays.', r`\sigma_{\hat f}^2\approx\frac{12\,\sigma_r^2}{N\,t^2}\ \ (\text{read-noise limit})`],
+      ['Electron-multiplying CCDs', null, 's', 'An avalanche register amplifies charge before readout, so single photons beat read noise at the cost of an excess-noise factor of √2.', r`\mathrm{SNR}=\frac{S}{\sqrt{2(S+D)+(\sigma_r/G)^2}}`],
+      ['Back-side illumination', null, 'pvs', 'Light enters through the thinned back of the chip, avoiding the metal wiring: higher quantum efficiency and wider acceptance angles.', r`\eta_\text{BSI}\approx0.8\text{–}0.95`],
+      ['Time-delay integration', null, 's', 'Charge is clocked across the sensor in step with the moving image, as in push-broom satellites and drift-scan surveys.', r`v_\text{clock}=v_\text{image},\ \ \mathrm{SNR}\propto\sqrt{N_\text{stages}}`],
     ],
   },
   {
+    id: 'time-and-motion',
     title: 'Time and motion',
     intro: 'Sampling the time axis: blur, shear and aliasing in moving images.',
     items: [
@@ -171,9 +217,12 @@ export const GROUPS = [
       ['Image stabilisation', 'shake', 'pvs', 'Moving elements or sensor counter angular motion; fine-guidance in telescopes.', r`\delta y=f\,\delta\theta`],
       ['Pan judder', 'motion', 'v', 'Low frame rates strobe during pans; limits on pan speed.', r`v_\text{max}\approx\frac{W}{7\,\text{s}}`],
       ['Pointing jitter (space)', null, 's', 'Line-of-sight jitter broadens the PSF; JWST ≈ 1 mas.', r`\mathrm{PSF}\ast\mathcal N(0,\sigma_j^2)`],
+      ['Frame-rate conversion & 3:2 pulldown', null, 'v', 'Cinema\'s 24 frames per second shown at 60 Hz repeat frames alternately three and two times, adding judder.', r`\frac{60}{24}=\frac{3+2}{2}`],
+      ['Star trails & the 500 rule', null, 'ps', 'The sky turns 15″ per second of time; beyond a focal-length-dependent exposure, stars become trails.', r`t_\text{max}\approx\frac{p}{f\,\omega\cos\delta},\ \omega=7.29\times10^{-5}\,\text{rad s}^{-1}`],
     ],
   },
   {
+    id: 'atmosphere-and-environment',
     title: 'Atmosphere and environment',
     intro: 'What happens to light between the scene and the lens.',
     items: [
@@ -191,9 +240,15 @@ export const GROUPS = [
       ['Heat shimmer & mirages', null, 'pv', 'Ground-level index gradients bend rays and distort distant scenes.', r`\frac{d}{ds}\left(n\frac{d\mathbf r}{ds}\right)=\nabla n`],
       ['Image stacking (√N)', 'stacking', 'ps', 'Averaging sub-exposures beats noise as √N once each is sky-limited.', r`\mathrm{SNR}=\frac{F_oNt}{\sqrt{N[(F_o+F_s+F_d)t+\sigma_r^2]}}`],
       ['Sky background & light pollution', 'stacking', 'ps', 'Scattered artificial light and airglow set the faintest detectable surface brightness.', r`\mathrm{SNR}=\frac{S}{\sqrt{S+B\,\Omega+\sigma_r^2}}`],
+      ['Rayleigh scattering & the blue sky', null, 'pvs', 'Molecules scatter as λ⁻⁴: the sky is blue, sunsets red, and the scattered light polarised.', r`\sigma_R=\frac{8\pi^3(n^2-1)^2}{3N^2\lambda^4}`],
+      ['Mie scattering & haze', null, 'pv', 'Particles comparable to the wavelength scatter almost neutrally and forwards: white haze, bright skies around the sun.', r`Q_\text{ext}\to2\quad(x=2\pi a/\lambda\gg1)`],
+      ['Fried parameter', 'seeing', 's', 'The aperture over which turbulence leaves about 1 rad² of phase error; it sets the seeing and grows as λ^6/5.', r`r_0=\left[0.423\,k^2\sec z\int C_n^2(h)\,dh\right]^{-3/5}`],
+      ['Laser guide stars & the cone effect', null, 's', 'An artificial star at 90 km samples a cone of turbulence rather than the cylinder a real star sees: focal anisoplanatism.', r`\sigma_\text{cone}^2=\left(\frac{D}{d_0}\right)^{5/3}`],
+      ['Green flash', null, 'p', 'At sunset dispersion stacks the solar limb by colour; the green image sets last, for a second or two, often magnified by mirage layers.', r`\Delta R\approx R\,\frac{\Delta(n-1)}{n-1}`],
     ],
   },
   {
+    id: 'space-telescopes-and-astronomy',
     title: 'Space telescopes and astronomy',
     intro: 'Challenges unique to observatories above (or fighting) the atmosphere.',
     items: [
@@ -218,9 +273,16 @@ export const GROUPS = [
       ['Gravitational lensing', 'lensing', 's', 'Mass bends light into arcs, rings and multiple images.', r`\boldsymbol\beta=\boldsymbol\theta-\boldsymbol\alpha(\boldsymbol\theta)`],
       ['Einstein radius & mass', 'lensing', 's', 'Ring size measures the enclosed mass.', r`\theta_E=\sqrt{\frac{4GM}{c^2}\frac{D_{ls}}{D_lD_s}}`],
       ['Cosmological redshift', 'telescope', 's', 'Distant galaxies\' light is stretched into the infrared: JWST\'s raison d\'être.', r`\lambda_\text{obs}=(1+z)\lambda_\text{emit}`],
+      ['Exoplanet contrast', 'starshade', 's', 'In reflected light an Earth is 10⁻¹⁰ of its star and a Jupiter about 10⁻⁹; thermal emission is more favourable in the infrared.', r`C=A_g\,\Phi(\alpha)\left(\frac{R_p}{a}\right)^2`],
+      ['Inner working angle', 'starshade', 's', 'The smallest star–planet separation a starlight suppressor leaves usable.', r`\theta_\text{IWA}\approx\frac{R}{z}\ \text{(starshade)},\ \approx3\frac{\lambda}{D}\ \text{(coronagraph)}`],
+      ['Pyramid wavefront sensor', 'wfs', 's', 'A glass pyramid at focus splits the beam into four pupil images whose intensities encode the wavefront slopes.', r`S_x=\frac{I_1+I_2-I_3-I_4}{\sum I}`],
+      ['Échelle spectrographs', 'spectro', 's', 'A coarse grating used at high orders, with a cross-disperser, gives high resolving power in a compact format.', r`R=\frac{2L\tan\theta_B}{\lambda}`],
+      ['AO error budget', 'wfs', 's', 'Fitting, servo-lag, noise and aliasing errors add in quadrature; the Strehl follows from their sum.', r`\sigma^2=\sigma_\text{fit}^2+\sigma_\text{lag}^2+\sigma_\text{noise}^2+\sigma_\text{alias}^2`],
+      ['Nulling interferometry', null, 's', 'Two telescopes combined in antiphase cancel the star on axis while passing the light of a nearby planet.', r`T(\theta)=\sin^2\!\left(\frac{\pi B\theta}{\lambda}\right)`],
     ],
   },
   {
+    id: 'lens-design-and-manufacturing',
     title: 'Lens design and manufacturing',
     intro: 'Engineering choices that shape every image.',
     items: [
@@ -233,9 +295,12 @@ export const GROUPS = [
       ['Anamorphic lenses', 'cinema', 'v', 'Cylindrical optics squeeze the image; oval bokeh and horizontal streak flares.', r`f_x\neq f_y,\ \text{squeeze}=f_y/f_x`],
       ['Parfocal zooms', null, 'v', 'Focus stays fixed while zooming; essential for broadcast and cinema.', r`\partial z_\text{img}/\partial f=0`],
       ['Tolerancing & yield', 'raytracer', 'pvs', 'Statistical sensitivity of performance to fabrication and assembly errors.', r`\sigma_\text{perf}^2=\sum_i\left(\frac{\partial M}{\partial x_i}\right)^2\sigma_{x_i}^2`],
+      ['Merit function & optimisation', 'raytracer', 'pvs', 'Lens design minimises a weighted sum of squared aberrations, usually by damped least squares.', r`\Phi=\sum_iw_if_i^2,\ \ (\mathbf J^\mathsf T\mathbf J+\mu\mathbf I)\,\delta\mathbf x=-\mathbf J^\mathsf T\mathbf f`],
+      ['Field flatteners', null, 'ps', 'A negative lens near the image cancels Petzval curvature with almost no effect on power or the other aberrations.', r`\sum_k\frac{\phi_k}{n_k}=0`],
     ],
   },
   {
+    id: 'rendering-and-perception',
     title: 'Rendering and perception',
     intro: 'How optical properties become the "look" of an image.',
     items: [
@@ -251,6 +316,12 @@ export const GROUPS = [
       ['Tone mapping & dynamic range', 'hdr', 'pv', 'Compressing scene range into display range.', r`L_d=\frac{L}{1+L}`],
       ['Chromatic adaptation', 'colour', 'pv', 'Von Kries scaling of cone responses to the scene illuminant.', r`\mathbf L'=\mathrm{diag}(k_L,k_M,k_S)\,\mathbf L`],
       ['Colour rendering (CRI, R9)', 'colour', 'pv', 'How faithfully a light source renders surface colours relative to a reference of the same CCT.', r`R_i=100-4.6\,\Delta E_{U^*V^*W^*},\ R_a=\tfrac18\textstyle\sum_1^8R_i`],
+      ['Contrast sensitivity function', null, 'pv', 'The eye\'s contrast sensitivity peaks at 3–5 cycles per degree and vanishes near 60; it weights image-quality metrics.', r`\mathrm{CSF}(\nu)\approx2.6\,(0.0192+0.114\nu)\,e^{-(0.114\nu)^{1.1}}`],
+      ['Colour matching functions', 'colour', 'pvs', 'Three CIE functions turn any spectrum into tristimulus values that predict colour matches for the standard observer.', r`X=\int S(\lambda)\,\bar x(\lambda)\,d\lambda`],
+      ['Metamerism', 'colour', 'pv', 'Different spectra can match under one illuminant or for one camera and differ under another.', r`\int S_1\bar{\mathbf x}\,d\lambda=\int S_2\bar{\mathbf x}\,d\lambda,\ S_1\ne S_2`],
+      ['Colour difference (ΔE₀₀)', 'colour', 'pv', 'CIEDE2000 measures perceived colour differences; ΔE₀₀ ≈ 1 is just noticeable side by side.', r`\Delta E_{00}=\sqrt{\left(\tfrac{\Delta L'}{S_L}\right)^2+\left(\tfrac{\Delta C'}{S_C}\right)^2+\left(\tfrac{\Delta H'}{S_H}\right)^2+R_T\tfrac{\Delta C'\Delta H'}{S_CS_H}}`],
+      ['Purkinje shift', null, 'pv', 'In dim light rods take over and peak sensitivity moves from 555 nm to 507 nm: reds darken, blues brighten.', r`\lambda_\text{max}:\ 555\to507\,\text{nm}`],
+      ['Mach bands & acutance', null, 'pv', 'Lateral inhibition in the retina exaggerates edges; perceived sharpness follows edge gradient more than resolution.', r`A\propto\frac{\overline{(dD/dx)^2}}{\Delta D}`],
     ],
   },
 ];

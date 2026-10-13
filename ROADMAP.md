@@ -67,9 +67,9 @@ flowchart LR
 | Area | Delivered | Planned |
 |---|---|---|
 | Laboratories | 39 | v1.9 complete |
-| Catalogue entries | 172 | link every new lab |
+| Catalogue entries | 228, each with details and a worked example | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 129 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 133 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -354,6 +354,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 ### v2.0 Learning platform
 
+- [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
 - [ ] **P2 · L** **Guided tours**: step-by-step narratives that drive the controls ("Why stopping down stops helping").
 - [ ] **P2 · M** **Exercises with checked answers**: compute the hyperfocal distance, predict the ghost count, and so on, using the live calculation engine.
 - [ ] **P2 · M** **Export**: PNG of any canvas, CSV of any chart, JSON of lab state.
@@ -375,6 +376,7 @@ Ideas worth keeping but not yet scheduled:
 - *(from v1.7 spectroscopy)* Integral-field unit simulation: image slicer reformatting a galaxy field into a long slit and reconstructing the data cube.
 - *(from v1.9 starshade)* Petal terms (J<sub>N</sub>, J<sub>2N</sub> …) and 2-D shadows of real petal shapes with manufacturing and deployment errors; sunlight scattered by the petal edges; numerically optimised occulter profiles (Vanderbei, Cady & Kasdin).
 - *(from v1.9 field-dependent PSF)* Three-mirror anastigmats (JWST, Roman) with fifth-order terms from real-ray tracing through mirrors, and field-dependent Zernike maps in the style of STPSF.
+- *(from the catalogue explorer)* Per-entry references and symbol legends for the equations; a printable or PDF export of a catalogue group.
 - Coherent imaging mode (laser/speckle) in the PSF lab.
 - Gravitational microlensing light curves and planetary anomalies.
 - Zoom-lens animation, showing group motion and parfocality.
