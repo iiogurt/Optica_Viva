@@ -15,6 +15,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
   A strip under the title shows the steps, highlights the current one and jumps between them. The depth-of-field, diffraction & PSF and atmospheric seeing laboratories are the pilot; the plain-language idea replaces their technical lede.
 - `idea()`, `rule()` and `liveCalc().say()` in `js/lib/page.js`; the router adds the strip to any page with an idea.
+- **Ladder for all geometric-optics laboratories**: real-lens ray tracing, sensor size & equivalence, fisheye vs rectilinear, perspective & distortion, tilt–shift, panorama & parallax, macro, the human eye and vignetting each open with the idea in plain words and things to try, state the live result in a sentence, and give a rule of thumb with a worked number and its limits (the lensmaker's equation, crop-factor equivalence, r = f tan θ, size ∝ 1/distance, the hinge rule, pupil-offset parallax, N(1 + m), c = Vα/E, cos⁴θ).
+- `scripts/screenshots.mjs`: laboratory crops are measured from the top of the simulation, so they follow it when text is added above.
 - Tests (`test/ladder.test.mjs`): a page with an idea has no symbols and at most 120 words in it, 1–3 things to try, a rule of thumb with its limits and the result in words.
 
 ## [1.10.0] - 2026-10-14

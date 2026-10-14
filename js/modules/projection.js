@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
 import { SENSORS } from '../lib/sensors.js';
 
@@ -95,7 +95,13 @@ function shade(o, d) {
 }
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'A lens must map a hemisphere of directions onto a flat sensor, and no mapping can keep shapes, sizes, angles and straight lines all at once. Rectilinear lenses keep straight lines straight and stretch everything else. Fisheyes trade straightness for coverage and choose what they preserve: angles, areas or angular distance. The view below is rendered by back-tracing every pixel into a 3-D hall.', domains: ['photo', 'video', 'space'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
+  root.append(idea(String.raw`<p>A wide-angle lens has to squeeze a huge spread of directions onto a flat rectangle, and like a flat map of the round Earth, it cannot get everything right at once. A normal (<strong>rectilinear</strong>) lens keeps straight lines straight, but to do so it stretches things near the edges, and it can never see a full half of the world.</p>
+<p>A <strong>fisheye</strong> gives up straight lines to fit in 180 degrees or more. Lines bend into curves, but shapes near the edge stay more natural. Each kind of fisheye chooses what to keep true: angles, areas or distances from the centre.</p>`, [
+    "Turn on <strong>Tissot indicatrices</strong> and set the rectilinear lens to 10 mm: the circles near the corners stretch into long ellipses.",
+    "Switch to <strong>Stereographic</strong>: the circles stay round everywhere, they just grow towards the edge.",
+    "Choose <strong>Equisolid</strong> at 8 mm and turn the <strong>Yaw</strong>: straight columns curve, but the view covers a whole hemisphere.",
+  ]));
 
   const ctl = controls({
     proj: { type: 'select', label: 'Projection', value: 'rectilinear', options: Object.entries(PROJ).map(([k, p]) => [k, p.name]) },
@@ -161,6 +167,9 @@ export default function mount(root, meta) {
     const th = 40 * Math.PI / 180;
     const sc = (p) => { const R = PROJ[p].R, hh2 = (R(th + 1e-5, 1) - R(th - 1e-5, 1)) / 2e-5, k = R(th, 1) / Math.sin(th); return [hh2, k]; };
     const [hr, kr] = sc('rectilinear'), [he, ke] = sc('equisolid'), [hs, ks] = sc('stereographic');
+    calc.say((P.cyl ? `${P.name} is a panoramic mapping: it unrolls the scene onto a cylinder, so verticals stay straight while horizontal lines bend.`
+      : `At ${fmt(st.f, 3)} mm on ${S.name}, this projection covers <strong>${isFinite(fovFor(st.proj)) ? fovFor(st.proj).toFixed(0) + '°' : 'a full circle'}</strong> across the diagonal`
+      + (st.proj === 'rectilinear' ? `; an equisolid fisheye of the same focal length would cover ${isFinite(fovFor('equisolid')) ? fovFor('equisolid').toFixed(0) + '°' : 'a full circular image'}.` : '.')));
     calc.set(String.raw`\begin{aligned}
     &\text{Scale factors at } \theta = 40^\circ\ (f=1):\\
     &h = \frac{dR}{d\theta},\quad k = \frac{R(\theta)}{\sin\theta}\\
@@ -232,6 +241,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[r = f\tan\theta\ \ \text{(rectilinear)}\qquad r = 2f\sin\tfrac{\theta}{2}\ \ \text{(equisolid fisheye)}\]
+<p>A ray arriving at angle \(\theta\) from the lens axis lands a distance \(r\) from the image centre. Because \(\tan\theta\) runs to infinity at 90°, a rectilinear lens can never cover 180°, and near the edges it stretches objects outwards by \(1/\cos^2\theta\): 2.4 times at 50° off axis. A 14 mm rectilinear lens on full frame covers 114° across the diagonal. An 8 mm equisolid fisheye maps the whole hemisphere into a circle 22.6 mm wide, which fits inside the 24 mm height of the sensor.</p>`,
+    String.raw`Real lenses follow these formulas only approximately; most fisheyes lie between two of the ideal projections and are calibrated with a polynomial. The stretch factors describe small shapes; large objects near the edge also bend.`));
   root.append(theory('The geometry of mapping a sphere onto a plane', String.raw`
 <div class="theory-cols"><div>
 <h3>Mapping functions</h3>

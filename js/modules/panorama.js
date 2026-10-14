@@ -1,5 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt } from '../lib/ui.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { oetf } from '../lib/color.js';
 import { LENSES } from '../lib/raytrace.js';
@@ -8,7 +8,13 @@ import { cardinalPoints, disparity } from '../lib/panorama.js';
 const D2R = Math.PI / 180, PX = 0.006; // 24 MP full-frame pixel (mm)
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Stitching software assumes that every frame of a panorama was taken from the same point. That holds only if the camera turns about the entrance pupil of its lens, the "no-parallax point". Turn it about the tripod screw instead and near objects shift against the background between frames. They then appear twice, or are cut in half, where the frames overlap.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>Hold up a finger and close each eye in turn: the finger jumps against the background. That jump is <strong>parallax</strong>, caused by looking from two slightly different points.</p>
+<p>A panorama is stitched from several photos taken while turning the camera. If the camera turns around the wrong point, each photo is taken from a slightly different place, and nearby objects jump between frames in the same way. Where the photos overlap they then appear twice, or are cut in half. Turning around one special point inside the lens, the <strong>no-parallax point</strong>, makes the jump disappear.</p>`, [
+    "Show the <strong>Frame difference</strong> and move the pupil offset to <strong>0 mm</strong>: the near pole's ghost vanishes.",
+    "Set the offset back to 60 mm and move the near pole from 1 m to 10 m: the farther the object, the smaller the error.",
+    "Halve the <strong>rotation between frames</strong>: smaller turns give less parallax per seam, but you need more frames.",
+  ]));
 
   const ctl = controls({
     e: { type: 'range', label: 'Entrance pupil ahead of the rotation axis', min: -120, max: 120, step: 1, value: 60, unit: 'mm', hint: 'Typical when a camera turns about its tripod screw: the pupil is 40–100 mm in front of it' },
@@ -46,6 +52,7 @@ export default function mount(root, meta) {
       ['Largest pupil offset for ≤ 1 px at this distance', eMax.toFixed(2) + ' mm'],
       ['Nearest object stitchable to 1 px with this offset', e ? ((Math.abs(e) * 2 * Math.sin(delta / 2)) / (PX / st.f)).toFixed(1) + ' m' : '∞ (no parallax)'],
     ]));
+    calc.say(`The near pole at ${fmt(st.dn, 2)} m shifts by <strong>${(Math.abs(disp) * pxPerRad).toFixed(0)} pixels</strong> between the two frames` + (Math.abs(disp) * pxPerRad <= 1 ? ': invisible after stitching.' : '. It will show as a doubled or broken pole; turning about the entrance pupil would remove it.'));
     calc.set(String.raw`\begin{aligned}
     \Delta\varphi &= 2\arctan\frac{e\sin(\Delta/2)}{d - e\cos(\Delta/2)}\\
     &= ${texNum(Math.abs(disp) * 1000, 3)}\ \text{mrad}\\
@@ -106,6 +113,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[\Delta\varphi \approx \frac{2e\,\sin(\Delta/2)}{d}\]
+<p>Turning the camera by \(\Delta\) about a point a distance \(e\) from the entrance pupil moves the pupil sideways by about \(2e\sin(\Delta/2)\). An object at distance \(d\) then shifts by that amount divided by \(d\), in radians. With the pupil 60 mm ahead of the tripod screw, turns of 40° and a pole 1 m away, that is about 0.04 rad (2.4°): roughly 170 pixels with a 24 mm lens and 6 µm pixels. The same offset is harmless for anything more than a few hundred metres away.</p>`,
+    String.raw`It assumes the sideways shift is small compared with the distance. Fisheyes and some wide-angle lenses have no single no-parallax point, because their entrance pupil moves with the viewing angle. Anything that moves between frames causes stitching errors however carefully you rotate.`));
   root.append(theory('Where to put the rotation axis', String.raw`
 <div class="theory-cols"><div>
 <h3>The entrance pupil is the centre of perspective</h3>
