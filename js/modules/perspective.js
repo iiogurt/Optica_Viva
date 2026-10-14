@@ -1,5 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt } from '../lib/ui.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
 
 // ── a portrait scene: head with nose, eyes and ears; shoulders; pillars; back wall ───────
@@ -43,7 +43,13 @@ function trace(o, d) {
 }
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Perspective, the relative size of near and far things, depends only on where the camera stands. Focal length merely crops. The "flattering" telephoto portrait and the "distorting" wide-angle selfie are both perfect central projections taken from different distances. Lens distortion is something else: a lens failing to follow its intended mapping.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>Things look smaller the farther away they are. That simple fact is all of perspective: how big a nose looks next to the ears, or a mountain next to a person, depends only on <strong>where the camera stands</strong>.</p>
+<p>A selfie at arm's length makes the nose look big because it is noticeably closer to the lens than the ears. Step back and use a longer lens to fill the frame again, and the face looks natural. The longer lens did not flatten anything; the distance did. <strong>Lens distortion</strong> is something else: a lens bending straight lines because it does not follow its ideal design.</p>`, [
+    "With the face size locked, move the camera from <strong>0.3 m</strong> to <strong>3 m</strong>: the background grows and the nose shrinks back to normal.",
+    "Turn off <strong>Keep the face the same size</strong> and change only the focal length: everything scales together, nothing changes shape.",
+    "Choose the <strong>Barrel</strong> and then the <strong>Pincushion</strong> preset: straight lines near the edges bow outwards, then inwards.",
+  ]));
 
   const ctl = controls({
     h1: { type: 'heading', label: 'Perspective (dolly zoom)' },
@@ -114,6 +120,8 @@ export default function mount(root, meta) {
       ['Radial distortion at corner', ((Math.hypot(...D(cx, cy)) / 1 - 1) * 100).toFixed(2) + ' %'],
       ['TV distortion (SMIA)', tv.toFixed(2) + ' %'],
     ]));
+    calc.say(`From ${fmt(st.d, 2)} m the nose is drawn <strong>${((magNose / magEar - 1) * 100).toFixed(0)} %</strong> larger, relative to the ears, than in a distant view; a ${F.toFixed(0)} mm lens frames the face.`
+      + (() => { const d = (Math.hypot(...D(cx, cy)) - 1) * 100; return Math.abs(d) < 0.05 ? ' The lens has no distortion.' : ` Lens distortion pulls the image corners ${d < 0 ? 'inwards' : 'outwards'} by ${Math.abs(d).toFixed(1)} %.`; })());
     calc.set(String.raw`\begin{aligned}
     m(z) &= \frac{f}{z}\Rightarrow \frac{m_\text{nose}}{m_\text{ear}} = \frac{d + 0.01}{d - 0.108} = ${texNum(magNose / magEar, 4)}\\
     x_d &= x\,(1 + k_1r^2 + k_2r^4 + k_3r^6) + 2p_1xy + p_2(r^2 + 2x^2)\\
@@ -171,6 +179,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[\frac{\text{size}_1}{\text{size}_2} = \frac{\text{distance}_2}{\text{distance}_1}\]
+<p>Apparent size is inversely proportional to distance. From 50 cm, the ears of a face are about 0.51 m from the lens and the tip of the nose 0.39 m, so the nose is drawn 30 % larger relative to the ears than in a distant view. From 3 m the difference falls to 4 %, which is why portrait photographers step back and use 85–135 mm lenses.</p>`,
+    String.raw`This is exact for a pinhole (central) projection. It says nothing about lens distortion, which moves points away from where the pinhole model puts them. It also ignores how the picture is viewed: a photograph looks natural from a distance equal to the focal length times the enlargement.`));
   root.append(theory('Projection geometry and distortion', String.raw`
 <div class="theory-cols"><div>
 <h3>Perspective is position</h3>

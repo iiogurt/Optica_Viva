@@ -1,5 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt } from '../lib/ui.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { tiltedLens, tiltedImage, tiltedObject } from '../lib/optics.js';
 import { diskBlurRGBA } from '../lib/blur.js';
 
@@ -71,7 +71,13 @@ function castFacade(o, d) {
 }
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Tilting the lens relative to the sensor swings the plane of sharp focus. Three planes then meet in one line (Scheimpflug), and the depth of field becomes a wedge. Tilt one way and a whole receding landscape is sharp. Tilt the other and a real city looks like a miniature model. Shifting the lens instead keeps the sensor parallel to a façade, so its verticals stay vertical.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>Normally the sensor and the lens are parallel, so the zone of sharp focus is a flat wall facing the camera. Tilt the lens a few degrees and that wall tips over: it can lie along the ground, so flowers at your feet and distant mountains are sharp at once, even with a wide aperture.</p>
+<p>Tilt it the other way and the sharp zone cuts steeply through the scene, leaving only a thin band sharp. A real town then looks like a toy model, because we link such shallow focus with tiny, close-up things. <strong>Shifting</strong> the lens upwards instead lets the camera stay level, so the walls of tall buildings stay vertical.</p>`, [
+    "Set the tilt to <strong>0°</strong>, then slowly to <strong>−3°</strong>: the plane of sharp focus swings down onto the ground.",
+    "Go back to <strong>+8°</strong> at f/2.8 and look at the town: a thin diagonal band is sharp and the scene looks like a miniature.",
+    "Choose <strong>Shift</strong>, set the lens shift to 0 and tilt the whole camera up: the building leans backwards. Then level the camera and use the shift instead.",
+  ]));
 
   const ctl = controls({
     mode: { type: 'seg', label: 'Movement', value: 'tilt', options: [['tilt', 'Tilt (Scheimpflug)'], ['shift', 'Shift (keystone)']] },
@@ -171,6 +177,9 @@ export default function mount(root, meta) {
       ['Required image circle (shift)', (2 * Math.hypot(12, 18 + st.shift)).toFixed(1) + ' mm'],
       ['Verticals', st.mode === 'shift' ? (st.pitch > 0.4 ? 'converge (keystone)' : 'parallel ✓') : '—'],
     ]));
+    calc.say((st.mode === 'tilt'
+      ? (isFinite(J) ? `The lens is tilted ${Math.abs(st.alpha).toFixed(1)}°, so the plane of sharp focus pivots about a line <strong>${J.toFixed(2)} m</strong> from the lens and ${st.alpha < 0 ? 'lies along the receding scene' : 'cuts steeply through the scene, leaving a thin band sharp'}.` : `No tilt: the plane of sharp focus is parallel to the sensor, ${fmt(st.s, 3)} m away.`)
+      : (st.pitch > 0.4 ? `The camera points ${st.pitch}° upwards, so vertical lines converge (keystone distortion).` : `The camera is level and the lens is shifted ${st.shift} mm: verticals stay parallel, and the lens must cover an image circle of ${(2 * Math.hypot(12, 18 + st.shift)).toFixed(0)} mm.`)));
     calc.set(String.raw`\begin{aligned}
     &\text{Scheimpflug: sensor} \cap \text{lens plane} \cap \text{PoF} = \text{one line}\\
     &\text{Hinge rule: } J = \frac{f}{\sin\alpha} = \frac{${texNum(st.f, 3)}\,\text{mm}}{\sin ${texNum(Math.abs(st.alpha), 2)}^\circ} = ${isFinite(J) ? texNum(J, 3) + '\\,\\text{m}' : '\\infty'}\\
@@ -246,6 +255,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[J = \frac{f}{\sin\alpha}\]
+<p>The <strong>hinge rule</strong>: tilting a lens of focal length \(f\) by an angle \(\alpha\) makes the plane of sharp focus pivot about a line at distance \(J\) from the lens. Focusing only swings the plane about that line. To lay the focus along the ground from a camera 1.5 m high with a 24 mm lens, you need \(\sin\alpha = 24/1500\): a tilt of only 0.9°. Small tilts do a lot.</p>`,
+    String.raw`It is exact for a thin lens. In a real lens the distances are measured from its principal planes, and a pupil magnification different from 1 moves the hinge line slightly. The sharp zone is a wedge that opens away from the hinge, not a slab, so near objects get less depth than far ones.`));
   root.append(theory('The Scheimpflug principle', String.raw`
 <div class="theory-cols"><div>
 <h3>Three planes, one line</h3>

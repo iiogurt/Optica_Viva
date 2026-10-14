@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, readUrlParam, bindUrlParam, syncUrl } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag, seidel, fieldCurves } from '../lib/raytrace.js';
 import { parseZmx, lensToJSON, lensFromJSON, validateLens, encodeLens, decodeLens } from '../lib/lensio.js';
 import { GLASSES, abbe, index } from '../lib/glass.js';
@@ -17,7 +17,13 @@ const SPECTRA = {
 };
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Real lenses are traced ray by ray with the exact vector form of Snell\'s law, using glass dispersion from Sellmeier equations and real-ray aiming at the aperture stop. The same traced wavefront is then Fourier-transformed into the diffraction PSF. This is how lens-design software works, compressed into one page.', domains: ['photo', 'video', 'space'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
+  root.append(idea(String.raw`<p>A lens works by bending light. A ray that enters glass at a slant changes direction, and a curved surface meets each ray at a different slant, so rays spreading from one point can be steered back together into one point: the image.</p>
+<p>With simple round surfaces the steering is never perfect. Rays through the edge of a lens meet a little closer than rays through the middle, rays from the side of the picture miss slightly, and blue light bends more than red. Designers tame these errors, called <strong>aberrations</strong>, by combining several lenses of different glass. This page follows every ray through real lens designs.</p>`, [
+    "Choose the <strong>plano-convex singlet</strong>, then its <strong>reversed</strong> twin. Guess which way round gives the smaller spot, then compare the spot diagrams.",
+    "On the singlet, set <strong>Wavelengths</strong> to F·d·C, then switch to the <strong>cemented achromat</strong>: blue and red now meet almost at the same focus.",
+    "Pick the <strong>Cooke triplet</strong> and raise <strong>Stop down</strong> towards ×4: the RMS spot shrinks while the Airy disk grows, until diffraction takes over.",
+  ]));
 
   // the editable "custom" lens: restored from a shared URL (rx=…) or a copy of the Cooke triplet
   const clone = (L) => lensFromJSON(lensToJSON(L));
@@ -150,6 +156,8 @@ export default function mount(root, meta) {
     ]));
     const s0 = m.lens.surfaces[0];
     const n1 = index(s0.glass, 587.56);
+    calc.say(`A ${fmt(pd.efl, 3)} mm lens at f/${N.toFixed(1)}: rays from a point ${(ctl.state.field * (m.lens.field || 1)).toFixed(1)}° off axis land in a spot of <strong>${fmt(m.rms, 3)} µm</strong> RMS radius, `
+      + (m.rms > airy ? `${fmt(m.rms / airy, 2)} times the Airy radius (${fmt(airy, 2)} µm), so aberrations, not diffraction, limit the sharpness.` : `inside the Airy radius (${fmt(airy, 2)} µm), so the lens is diffraction-limited here.`));
     calc.set(String.raw`\begin{aligned}
     &f' = -1/M_{21} = ${texNum(pd.efl, 5)}\ \text{mm}\\
     &N = f'/D_{EP} = ${texNum(pd.efl, 4)}/${texNum(m.lens.epd, 3)} = ${texNum(N, 3)}\\
@@ -642,6 +650,10 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[\frac{1}{f} = (n-1)\left(\frac{1}{R_1} - \frac{1}{R_2}\right)\]
+<p>The lensmaker's equation gives the focal length \(f\) of a thin lens from the refractive index \(n\) of its glass and the radii \(R_1, R_2\) of its two surfaces. The plano-convex singlet on this page is N-BK7 (\(n = 1.517\)) with \(R_1 = 51.5\) mm and a flat back, so \(f \approx 51.5/0.517 \approx 100\) mm.</p>
+<p>The errors grow fast with the aperture: the blur from spherical aberration scales with the cube of the aperture diameter, so closing one stop (f-number × \(\sqrt2\)) makes it 2.8 times smaller.</p>`,
+    String.raw`It holds for a thin lens and rays close to the axis (paraxial rays). It tells you where the image is, not how sharp it is: aberrations depend on the shape of each element, the field angle and the colour, and only an exact trace like the one above gets them right.`));
   root.append(theory('The physics behind the trace', String.raw`
 <div class="theory-cols"><div>
 <h3>Exact ray tracing</h3>

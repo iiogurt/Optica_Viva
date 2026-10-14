@@ -1,10 +1,16 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt } from '../lib/ui.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS } from '../lib/sensors.js';
 import { plot, range } from '../lib/plot.js';
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Image corners are darker than the centre for three independent reasons. Geometry dims oblique light (the cos⁴ law). The lens barrel clips oblique bundles (mechanical vignetting, seen as cat\'s-eye bokeh). Pixels accept light only within a limited cone (pixel vignetting). Each one can be computed, and each behaves differently when you stop down.', domains: ['photo', 'video', 'space'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
+  root.append(idea(String.raw`<p>Photos are often darker in the corners than in the middle, for three separate reasons. Light reaching the corners arrives at a slant, and slanted light is spread more thinly, like winter sunlight on the ground. Light coming in at an angle is also partly blocked by the lens barrel, which is why out-of-focus lights near the corners look like cat's eyes instead of circles. Finally, each pixel sits at the bottom of a tiny well and accepts light only from a limited range of directions.</p>
+<p>Stopping down cures the second cause, not the first; the design of lens and sensor decides the third.</p>`, [
+    "Change the f-number from f/1.4 to <strong>f/4</strong>: the mechanical vignetting disappears, the natural falloff stays.",
+    "Shorten the <strong>exit-pupil distance</strong>: light hits the corner pixels more steeply and pixel vignetting grows.",
+    "Change the focal length from 24 mm to <strong>10 mm</strong>: the corners darken quickly, as the rule of thumb below predicts.",
+  ]));
 
   const ctl = controls({
     sensor: { type: 'select', label: 'Sensor', value: 'ff', options: ['ff', 'apsc', 'mft', 'phone'].map((k) => [k, SENSORS[k].name]) },
@@ -61,6 +67,7 @@ export default function mount(root, meta) {
       ['Total corner falloff', ev(c.tot).toFixed(2) + ' EV'],
       ['Entrance-pupil radius f/2N', (st.f / (2 * st.N)).toFixed(2) + ' mm'],
     ]));
+    calc.say(`The corners get <strong>${Math.abs(ev(c.tot)).toFixed(1)} stops</strong> less light than the centre: ${Math.abs(ev(c.nat)).toFixed(1)} from the slanted light, ${isFinite(ev(c.me)) ? Math.abs(ev(c.me)).toFixed(1) : 'all'} from the lens barrel and ${isFinite(ev(c.px)) ? Math.abs(ev(c.px)).toFixed(1) : 'all'} from the pixels.`);
     calc.set(String.raw`\begin{aligned}
     \mathrm{RI}(\theta) &= \cos^{n}\theta\cdot V_\text{mech}(\theta)\cdot T_\text{px}(\theta_\text{CRA})\\
     &= ${texNum(c.nat, 3)}\times${texNum(c.me, 3)}\times${texNum(c.px, 3)} = ${texNum(c.tot, 3)}\\
@@ -135,6 +142,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[\text{brightness} \propto \cos^4\theta\]
+<p>Light arriving at an angle \(\theta\) from the axis is dimmed by \(\cos^4\theta\), even in a perfect lens. A 24 mm lens on full frame sees its corners at 42°, where \(\cos^4 42^\circ = 0.30\): 1.7 stops darker than the centre before the barrel or the pixels take their share. Each stop halves the light.</p>`,
+    String.raw`\(\cos^4\) holds for a thin lens with its pupil at the lens. Retrofocus wide-angles, whose pupil looks larger from the side, fall off more slowly (closer to \(\cos^3\)), and mechanical and pixel vignetting add to it in ways that depend on the design.`));
   root.append(theory('Three kinds of vignetting', String.raw`
 <div class="theory-cols"><div>
 <h3>Natural vignetting: the cos⁴ law</h3>

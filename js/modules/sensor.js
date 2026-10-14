@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, fmt, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS, diag, crop, pitchUm, FF_DIAG } from '../lib/sensors.js';
 import { plot, logRange } from '../lib/plot.js';
 
@@ -7,7 +7,13 @@ const COLORS = ['#ff6b6b', '#ff9a5a', '#ffd27a', '#ffffff', '#ff9cc0', '#6be3a4'
 const LAMBDA = 0.55; // µm
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Sensor size changes nothing about exposure, but almost everything about the photograph. For the same framing, a smaller sensor needs a shorter lens, has a smaller entrance pupil, collects fewer photons, renders deeper focus and reaches the diffraction limit sooner. One number, the entrance-pupil diameter, ties all of these together.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>A smaller sensor captures a smaller piece of the image that the lens projects, so the same lens gives a tighter view. The ratio of sizes is the <strong>crop factor</strong>. To frame the same picture, a small camera needs a shorter lens.</p>
+<p>The surprise is what follows. With the same framing and the same f-number, the small camera's lens has a smaller opening, so it collects less light in total: its photos are noisier and its backgrounds less blurred. Give both cameras a lens opening of the same physical width and their photographs become practically the same: same depth, same blur and, with equally good sensors, the same noise.</p>`, [
+    "With the overlay on <strong>Same lens</strong>, compare the frames: the smaller sensors simply crop the middle of the picture.",
+    "Switch to <strong>Same framing</strong> and read the entrance pupil D = f/N in the table: at equal f-numbers, smaller formats have a smaller opening.",
+    "Raise the f-number until the Airy diameter covers about two pixels: small pixels reach this diffraction limit at wider apertures.",
+  ]));
 
   const keys = Object.keys(SENSORS);
   const ctl = controls({
@@ -92,6 +98,10 @@ export default function mount(root, meta) {
       ['Airy diameter at f/' + st.N.toPrecision(2), (2.44 * LAMBDA * st.N).toFixed(2) + ' µm = ' + ref.airyPx.toFixed(2) + ' px'],
     ]));
     const k = crop(S);
+    const mft = crop(SENSORS.mft);
+    calc.say(k > 1.01 || k < 0.99
+      ? `On ${S.name}, ${fmt(st.f, 3)} mm at f/${st.N.toPrecision(2)} and ISO ${Math.round(st.iso)} makes the same photograph as <strong>${fmt(k * st.f, 3)} mm at f/${(k * st.N).toPrecision(2)} and ISO ${Math.round(k * k * st.iso)}</strong> on full frame: same view, same depth of field, same lens opening of ${(st.f / st.N).toFixed(1)} mm.`
+      : `To make this photograph (${fmt(st.f, 3)} mm, f/${st.N.toPrecision(2)}, ISO ${Math.round(st.iso)} on full frame), a Micro Four Thirds camera would need <strong>${fmt(st.f / mft, 3)} mm at f/${(st.N / mft).toPrecision(2)} and ISO ${Math.round(st.iso / (mft * mft))}</strong>: the same lens opening of ${(st.f / st.N).toFixed(1)} mm.`);
     calc.set(String.raw`\begin{aligned}
     k &= \frac{43.27}{${texNum(diag(S), 4)}} = ${texNum(k, 4)}\\
     f_{FF} &= k f = ${texNum(k * st.f, 4)}\ \text{mm}\\
@@ -184,6 +194,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[f_\text{FF} = k f,\qquad N_\text{FF} = k N,\qquad \text{ISO}_\text{FF} = k^2\,\text{ISO}\]
+<p>The crop factor \(k\) is the full-frame diagonal (43.3 mm) divided by the sensor's diagonal. Multiply the focal length and the f-number by \(k\), and the ISO by \(k^2\), to get the full-frame settings that make the same photograph. A Micro Four Thirds camera (\(k = 2\)) at 25 mm, f/1.4 and ISO 400 matches full frame at 50 mm, f/2.8 and ISO 1600; the lens opening is 17.9 mm in both.</p>`,
+    String.raw`Equivalence assumes sensors with the same efficiency and read noise per unit area, the same aspect ratio, and subjects much farther away than the focal length. Lenses differ too: an f/1.4 lens for a small sensor is not automatically as sharp as its full-frame equivalent.`));
   root.append(theory('Equivalence, derived', String.raw`
 <div class="theory-cols"><div>
 <h3>Crop factor and field of view</h3>

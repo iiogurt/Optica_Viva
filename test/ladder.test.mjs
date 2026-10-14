@@ -7,7 +7,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 const dir = new URL('../js/modules/', import.meta.url);
 const pages = readdirSync(dir).filter((f) => f.endsWith('.js')).map((f) => ({ id: f.slice(0, -3), src: readFileSync(new URL(f, dir), 'utf8') }));
 const laddered = pages.filter((p) => /\bidea\(String\.raw`/.test(p.src));
-const PILOT = ['dof', 'psf', 'seeing'];
+const PILOT = ['dof', 'psf', 'seeing', 'raytracer', 'sensor', 'projection', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'vignetting'];
 
 test('the pilot laboratories have a ladder', () => {
   assert.deepEqual(PILOT.filter((id) => !laddered.some((p) => p.id === id)), []);

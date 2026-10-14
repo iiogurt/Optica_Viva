@@ -1,5 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt } from '../lib/ui.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { run } from '../lib/compute.js';
 import { plot, logRange } from '../lib/plot.js';
 import { oetf } from '../lib/color.js';
@@ -17,7 +17,13 @@ const LENSES = {
 };
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Close to the lens, the simple rules of photography bend. The image moves away from the lens, so the light cone at the sensor narrows and the effective f-number grows. Depth of field shrinks to fractions of a millimetre, and diffraction, not the lens, limits sharpness. The pupil magnification decides how much, which is why a reversed lens or a telephoto behaves so differently from a symmetric one.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>To photograph something tiny at life size, the lens has to sit far from the sensor, about twice as far as for a distant scene. The light that passes the aperture is then spread over a larger area, so the image gets darker, as if the aperture were smaller than marked.</p>
+<p>At the same time the zone of sharp focus shrinks to a fraction of a millimetre, so only a sliver of an insect is sharp. Closing the aperture deepens it, but only up to a point: soon diffraction blurs the whole picture. Macro photographers therefore take many shots focused at slightly different depths and merge them, which is called <strong>focus stacking</strong>.</p>`, [
+    "At <strong>1 : 1</strong> with the 100 mm macro set to f/8, read the working f-number: the lens behaves like about f/18.",
+    "Stop down from f/8 to <strong>f/32</strong> and watch the ruler: the sharp zone grows, but everything gets softer.",
+    "Keep the subject depth at 5 mm and add <strong>focus-stack frames</strong> until the whole depth is covered.",
+  ]));
 
   const ctl = controls({
     lens: { type: 'select', label: 'Lens', value: 'mac100', options: Object.entries(LENSES).map(([k, l]) => [k, l.name]) },
@@ -87,6 +93,7 @@ export default function mount(root, meta) {
       ['Optimum for the subject depth', 'f/' + Nopt.toPrecision(2) + ' (N_w ' + NwOpt.toPrecision(3) + ')'],
       ['Stack frames for that depth', nFrames + ' at f/' + st.N.toPrecision(2)],
     ]));
+    calc.say(`At ${st.m >= 1 ? st.m.toPrecision(2) + ' : 1' : '1 : ' + (1 / st.m).toPrecision(2)} the lens set to f/${st.N.toPrecision(2)} works at <strong>f/${g.Nw.toPrecision(2)}</strong>, ${g.evLoss.toFixed(1)} stops less light, and only <strong>${dof < 1 ? (dof * 1000).toFixed(0) + ' µm' : dof.toFixed(2) + ' mm'}</strong> of depth is sharp.`);
     calc.set(String.raw`\begin{aligned}
     N_w &= N\left(1+\frac{m}{m_p}\right) = ${texNum(st.N, 3)}\left(1+\frac{${texNum(st.m, 3)}}{${texNum(L.mp, 2)}}\right) = ${texNum(g.Nw, 3)}\\
     \Delta EV &= 2\log_2\!\left(1+\tfrac{m}{m_p}\right) = ${texNum(g.evLoss, 3)}\\
@@ -195,6 +202,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[N_w \approx N\,(1+m),\qquad \text{DoF} \approx \frac{2N_w c}{m^2}\]
+<p>At magnification \(m\) the effective (working) f-number grows by the factor \(1+m\), and the depth of field depends almost only on the working f-number and the magnification, not on the focal length. At life size (\(m = 1\)) a symmetric lens set to f/8 works at f/16, loses two stops of light and keeps about \(2 \times 16 \times 0.03 / 1 \approx 1\) mm sharp.</p>`,
+    String.raw`The factor \(1+m\) is for a symmetric lens. Telephoto and retrofocus designs have a pupil magnification \(m_p \neq 1\), and the right factor is \(1 + m/m_p\), which this page uses (the 100 mm macro has \(m_p = 0.8\), so f/8 becomes f/18). At high magnification diffraction, not depth of field, decides the best aperture.`));
   root.append(theory('Optics at close range', String.raw`
 <div class="theory-cols"><div>
 <h3>Magnification and the bellows factor</h3>

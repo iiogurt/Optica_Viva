@@ -1,5 +1,5 @@
-import { h, controls, stage, readouts, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { h, controls, stage, readouts, texNum, fmt } from '../lib/ui.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { wavelengthCSS } from '../lib/color.js';
@@ -8,7 +8,13 @@ import { index } from '../lib/glass.js';
 import { LE_GRAND, eyeAt, chromaticDifference, thibos, cocFromAcuity } from '../lib/eye.js';
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Every photograph is finally judged by an eye: a 60-dioptre optical system with a variable aperture, strong chromatic aberration, an apodised pupil and a sensor of cones that is just fine enough for its optics. Its limits explain why 0.03 mm is the "circle of confusion" of full-frame photography.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>Your eye is a camera: the cornea and the lens focus light onto the retina, the iris is the aperture, and the light-sensitive cells of the retina are the pixels. Its optics are surprisingly imperfect. Blue light comes to focus noticeably in front of red, and the image is sharpest with a medium-sized pupil, not the widest one.</p>
+<p>The eye also decides what counts as sharp in a photograph. At reading distance it cannot see details smaller than about 0.1–0.2 mm on a print, so any blur below that, scaled back to the sensor, looks perfectly sharp. That is where photography's well-known 0.03 mm "circle of confusion" comes from.</p>`, [
+    "Move the wavelength of the marked rays from <strong>450</strong> to <strong>650 nm</strong>: blue focuses in front of the retina, red slightly behind it.",
+    "Under <em>Pupil size, aberrations and the retinal image</em>, change the <strong>pupil</strong> from 1 to 8 mm. Guess which size gives the sharpest image, then read \"Best pupil for 30 c/deg\".",
+    "Under <em>From visual acuity to the circle of confusion</em>, double the <strong>viewing distance</strong>: the allowed circle of confusion doubles too.",
+  ]));
 
   // ── schematic eye ──
   const ctl = controls({ lam: { type: 'range', label: 'Wavelength of the marked rays', min: 420, max: 680, step: 5, value: 450, unit: 'nm' } }, () => update());
@@ -28,6 +34,8 @@ export default function mount(root, meta) {
       ['Chromatic difference 450 → 650 nm', (chromaticDifference(450) - chromaticDifference(650)).toFixed(2) + ' D (measured: ' + (thibos(650) - thibos(450)).toFixed(2) + ' D)'],
       [`Refraction at ${st.lam} nm relative to 555`, (-chromaticDifference(st.lam)).toFixed(2) + ' D' + (st.lam < 555 ? ' (eye myopic in blue)' : '')],
     ]));
+    calc.say(`The eye focuses with <strong>${e.power.toFixed(1)} dioptres</strong>, like a lens of ${(1000 / e.power).toFixed(1)} mm focal length in air. `
+      + (Math.abs(chromaticDifference(st.lam)) < 0.02 ? `Light of ${st.lam} nm is in focus on the retina.` : `Light of ${st.lam} nm comes to focus ${st.lam < 555 ? 'in front of' : 'behind'} the retina, an error of ${Math.abs(chromaticDifference(st.lam)).toFixed(2)} dioptres.`));
     calc.set(String.raw`\begin{aligned}
     P &= -C = ${texNum(e.power, 4)}\ \text{D}\\
     R(\lambda) &= -\frac{S_{00}}{S_{01}},\quad \Delta R_{450\to650} = ${texNum(chromaticDifference(450) - chromaticDifference(650), 3)}\ \text{D}
@@ -157,6 +165,9 @@ export default function mount(root, meta) {
 
   update(); updP(); updC();
 
+  root.append(rule(String.raw`\[c = \frac{V\,\alpha}{E}\]
+<p>The circle of confusion \(c\) on the sensor is the smallest blur the eye can see on the print (viewing distance \(V\) times the eye's resolution angle \(\alpha\)) divided by the enlargement \(E\) from sensor to print. A 25 cm-wide print from a 36 mm-wide full-frame sensor is enlarged 7 times. Viewed from 25 cm by an eye that resolves 2.3′, blur down to 0.17 mm is visible on the print, which is 0.024 mm on the sensor. The classic 0.03 mm comes from the same reasoning with slightly coarser assumptions.</p>`,
+    String.raw`Visual acuity depends on contrast, brightness and age, and people look at large prints from close up. When pictures are inspected pixel by pixel on a screen, the limit becomes the pixel pitch, a few micrometres, far below 0.03 mm.`));
   root.append(theory('The eye as an optical instrument', String.raw`
 <div class="theory-cols"><div>
 <h3>A 60-dioptre camera</h3>
