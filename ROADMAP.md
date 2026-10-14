@@ -396,7 +396,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 - [x] **P1 · M** Mission framework (`missionStep()` in `js/lib/page.js`, `#/mission-<id>`): inputs, steps that each cite a model and a laboratory, a summary of recommended settings, a "Missions" group in the sidebar and on the home page (PR #79).
 - [x] **P1 · M** **Photograph the Milky Way** (PR #79): longest untrailed exposure (500 and NPF rules), aperture vs corner coma and vignetting, ISO invariance, sky brightness, number of frames to stack.
-- [ ] **P1 · M** **Image Jupiter from your garden**: critical f-ratio for the pixel size, seeing and lucky-imaging frame rate, atmospheric dispersion vs altitude, rotation limit on capture length.
+- [x] **P1 · M** **Image Jupiter from your garden** (PR #80): critical f-ratio for the pixel size, seeing and lucky-imaging frame rate, atmospheric dispersion vs altitude, rotation limit on capture length.
 - [ ] **P2 · M** **Portrait session**: flattering distance, focal length, depth of field across the face, background blur, light-source size and shadow softness.
 - [ ] **P2 · M** **Total solar eclipse**: safe filters, exposure ladder from Baily's beads to the outer corona, HDR merge.
 - [ ] **P2 · S** **Film under LED light and on an LED volume**: shutter angle vs flicker, LED-wall moiré distance.

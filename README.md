@@ -125,6 +125,11 @@ Missions are real tasks. Enter your equipment and situation, and the page combin
 
 The longest exposure before stars trail (sidereal drift f ω cos δ against two pixels or the Airy disk, compared with the 500 and NPF rules), the ISO-invariance point of a two-stage read-noise model, sky and detail electrons from the Bortle class, and the number of frames for a signal-to-noise ratio of 5 on the faintest detail you choose.
 
+**Image Jupiter from your garden** · `#/mission-jupiter`<br>
+<img src="docs/screenshots/mission-jupiter.webp" alt="Jupiter mission: focal ratio, frame exposure, capture length, frames to keep and dispersion corrector, with Jupiter rendered at the sensor's pixel scale" width="70%">
+
+The Nyquist focal ratio for your pixels, frames short enough to freeze the seeing, the capture length before Jupiter's rotation blurs detail, Fried's share of lucky frames, and when atmospheric dispersion calls for a corrector.
+
 ### Geometric optics
 
 <table>
@@ -693,6 +698,7 @@ Optica_Viva/
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── glossary.js        Plain definitions of technical terms and their popovers
+│   │   ├── jupiter.js         Jupiter mission: Nyquist focal ratio, coherence time, rotation limit, dispersion
 │   │   ├── milkyway.js        Milky Way mission: trailing limit, ISO invariance, frames to stack
 │   │   ├── path.js            The home page's "Start here" path
 │   │   ├── random.js          Seeded random numbers for every simulation (mulberry32, Box–Muller, Poisson)
