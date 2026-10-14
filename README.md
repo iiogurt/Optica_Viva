@@ -387,6 +387,16 @@ Film as a **Boolean model** of randomly placed silver-halide grains with a log-n
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Lighting: hard and soft light** · `#/lighting`<br>
+<img src="docs/screenshots/lighting.webp" alt="Lighting: a glossy sphere lit by a softbox casting a soft shadow on a wall, with a top view of umbra and penumbra and the inverse-square falloff">
+
+A round area light, from a bare flash to a window, rendered with shadow rays: shadow softness from the light's size (penumbra S b/d), inverse-square falloff to the background, catchlights and flash exposure from the guide number.
+
+</td>
+</tr>
 </table>
 
 ### Astronomy & space
@@ -698,6 +708,7 @@ Optica_Viva/
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── glossary.js        Plain definitions of technical terms and their popovers
+│   │   ├── lighting.js        Area lights with shadow rays, penumbra, falloff, catchlights, flash
 │   │   ├── jupiter.js         Jupiter mission: Nyquist focal ratio, coherence time, rotation limit, dispersion
 │   │   ├── milkyway.js        Milky Way mission: trailing limit, ISO invariance, frames to stack
 │   │   ├── path.js            The home page's "Start here" path

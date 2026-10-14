@@ -409,7 +409,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 | Lab | Content | Priority · effort |
 |---|---|---|
-| [ ] **Lighting** | inverse-square falloff, shadow softness from source size (umbra/penumbra), Lambertian and specular reflection, catchlights, flash guide numbers | P1 · M |
+| [x] **Lighting** (PR #81) | inverse-square falloff, shadow softness from source size (umbra/penumbra), Lambertian and specular reflection, catchlights, flash guide numbers | P1 · M |
 | [ ] **Exoplanet transits** | light-curve depth (Rp/R★)², limb darkening, duration, photometric noise budget | P2 · M |
 | [ ] **Earth observation from orbit** | ground sample distance, push-broom and TDI, atmospheric haze and adjacency, system MTF | P2 · M |
 | [ ] **Underwater photography** | spectral absorption with depth, flat vs dome ports (magnification, distortion, virtual image), backscatter | P2 · M |

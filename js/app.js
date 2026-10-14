@@ -4,7 +4,7 @@ import { ladder } from './lib/page.js';
 import { glossary } from './lib/glossary.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -31,6 +31,7 @@ export const MODULES = [
   { id: 'bokeh', group: 'Wave optics', title: 'Bokeh', c: '#6ad7ff', blurb: 'Defocus kernels from blade geometry, cat-eye vignetting, spherical-aberration rims and mirror-lens donuts.' },
   { id: 'polarisation', group: 'Wave optics', title: 'Polarisation', c: '#6ad7ff', blurb: 'Stokes vectors and Mueller matrices: Malus\'s law, Brewster reflections, the polarised Rayleigh sky and a polariser removing glare from a lake.' },
 
+  { id: 'lighting', group: 'Light, sensor & time', title: 'Lighting: hard and soft light', c: '#ffd27a', blurb: 'Area lights rendered with shadow rays: shadow softness from the light\'s size, inverse-square falloff to the background, catchlights and flash exposure.' },
   { id: 'flare', group: 'Light, sensor & time', title: 'Flare, ghosts & coatings', c: '#c18cff', blurb: 'Paraxial ghost tracing, Fresnel equations, thin-film coatings by the transfer-matrix method, and diffraction starbursts.' },
   { id: 'sampling', group: 'Light, sensor & time', title: 'Aliasing, moiré & Bayer', c: '#c18cff', blurb: 'Pixel sampling, optical low-pass filters and demosaicing false colour on a zone plate.' },
   { id: 'noise', group: 'Light, sensor & time', title: 'Noise & exposure', c: '#c18cff', blurb: 'Photon transfer: shot, read and dark noise, full-well capacity, dynamic range and ISO, with simulated frames.' },

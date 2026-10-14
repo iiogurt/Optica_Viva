@@ -22,6 +22,7 @@ import { luckySim } from './lucky.js';
 import { phaseScreen } from './turbulence.js';
 import { shadowLab } from './starshade.js';
 import { fieldPSFs } from './fieldpsf.js';
+import { makeLight, renderScene } from './lighting.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -468,4 +469,10 @@ function fieldPSF(p) {
   return { result: { pts }, transfer: pts.map((q) => q.I.buffer) };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF };
+// Lighting: the head-sized sphere and the wall lit by a round area light (see js/lib/lighting.js).
+function lighting(p) {
+  const r = renderScene({ ...p, light: makeLight(p.dist, p.az, p.el, p.size) });
+  return { result: r, transfer: [r.img.buffer, r.spec.buffer] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting };
