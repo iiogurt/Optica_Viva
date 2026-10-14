@@ -3,6 +3,8 @@ import { MODULES, READY } from '../app.js';
 import { COUNT } from '../lib/phenomena.js';
 import { index } from '../lib/glass.js';
 import { wavelengthRGB } from '../lib/color.js';
+import { PATH } from '../lib/path.js';
+
 
 // Hero: white light dispersed by an N-SF11 prism, traced exactly (Snell + TIR, Sellmeier n(λ)).
 function heroCanvas() {
@@ -131,13 +133,28 @@ export default function mount(root) {
       h('div.stat', {}, h('b', {}, '12'), h('span', {}, 'real glasses (Sellmeier), 5 real lens prescriptions')),
       h('div.stat', {}, h('b', {}, '0'), h('span', {}, 'precomputed images: everything is simulated live')),
     )));
+  let visited = new Set();
+  try { visited = new Set(JSON.parse(localStorage.getItem('ov-visited') || '[]')); } catch { /* storage unavailable */ }
+  let n = 0;
+  root.append(h('section.block.start-here', {}, h('h2', {}, 'Start here'),
+    h('p.lede', {}, 'New to optics? Follow this path from everyday photography to the research frontier. Each page starts with the idea in plain words and builds up to the full physics, so stop wherever you like; the order is only a suggestion.'),
+    h('div.path', {}, ...PATH.map((st) => h('div.path-stage', {},
+      h('div.path-head', {}, h('h3', {}, st.stage), h('span.note', {}, st.note)),
+      h('ol.path-steps', { start: n + 1 }, ...st.steps.map(([id, q]) => {
+        n++;
+        const m = MODULES.find((x) => x.id === id);
+        return h('li', {}, h('a.path-step' + (visited.has(id) ? '.seen' : ''), { href: '#/' + id, style: { '--c': m.c } },
+          h('span.path-n', { 'aria-hidden': 'true' }, visited.has(id) ? '✓' : String(n)),
+          h('span.path-t', {}, h('b', {}, m.title), h('span', {}, q)),
+          visited.has(id) ? h('span.sr-only', {}, ' (opened before)') : null));
+      })))))));
   for (const g of groups) {
     root.append(h('section.block', {}, h('h2', {}, g),
       h('div.cards', {}, ...MODULES.filter((m) => m.group === g && m.blurb).map((m) =>
         h('a.mcard' + (READY.has(m.id) ? '' : '.soon'), { href: '#/' + m.id, style: { '--c': m.c } }, h('span.k', {}, READY.has(m.id) ? m.group : m.group + ' · coming soon'), h('h3', {}, m.title), h('p', {}, m.blurb))))));
   }
   root.append(h('section.block', {}, h('h2', {}, 'How to read this laboratory'),
-    h('div.prose', { html: `<p>Every page has three layers. The <strong>laboratory</strong> on top is a simulation with controls; drag sliders and the physics is recomputed. The <strong>live calculation</strong> card shows the governing equation with your current numbers substituted, so you can follow the arithmetic. The <strong>theory</strong> below derives the model and states its assumptions and limits of validity, with references to the primary literature.</p>
+    h('div.prose', { html: `<p>Every page climbs from simple to exact, and you can stop at any step. <strong>① The idea</strong> explains the phenomenon in plain words and suggests things to try. The <strong>simulation</strong> recomputes the physics as you move the sliders, and its <strong>live calculation</strong> states the result in a sentence, then shows the governing equations with your numbers substituted. <strong>② Rule of thumb</strong> gives the one formula worth remembering and where it stops working. <strong>③ Full model</strong> derives everything, with its assumptions and limits, and <strong>④ References</strong> lead to the primary literature. Dotted-underlined words have a short definition: hover over or tap them.</p>
     <p>Models are chosen to be the most exact that can run interactively. Real lenses are traced with vector Snell's law through spherical surfaces, and glass dispersion uses manufacturer Sellmeier coefficients. Diffraction is the full Fraunhofer integral evaluated by FFT, with each wavelength computed separately. Coatings use the characteristic-matrix method for thin-film interference. Turbulence uses von Kármán phase screens. Where an approximation is used (paraxial ghost tracing, geometric bokeh), the page says so and explains when it breaks down.</p>` })));
   return () => hero.destroy();
 }

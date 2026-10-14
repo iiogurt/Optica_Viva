@@ -111,6 +111,8 @@ async function route() {
         h('a', { href: issueUrl(meta, e), target: '_blank', rel: 'noopener' }, 'Report this issue on GitHub →'),
         h('pre', { style: { color: 'var(--warn)', whiteSpace: 'pre-wrap', fontSize: '12px' } }, 'Failed to load module: ' + e.message + '\n' + (e.stack || ''))));
   }
+  // remember opened laboratories for the "Start here" ticks (this browser only)
+  try { const v = new Set(JSON.parse(localStorage.getItem('ov-visited') || '[]')); v.add(meta.id); localStorage.setItem('ov-visited', JSON.stringify([...v])); } catch { /* storage unavailable */ }
   document.title = meta.id === 'home' ? 'Optica Viva' : `${meta.title} · Optica Viva`;
   if (meta.id !== lastId) window.scrollTo(0, 0);
   lastId = meta.id;

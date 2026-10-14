@@ -364,7 +364,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
   - [x] Light, sensor & time, 10 laboratories (PR #71)
   - [x] Astronomy & space, the other 10 laboratories, and the physical foundations (PR #72)
 - [x] **P2 · M** **Glossary**: one file of one-sentence definitions; terms such as f-number, PSF, Strehl ratio and MTF show them on hover or tap (PR #73).
-- [ ] **P2 · S** **"Start here" path** on the home page: laboratories ordered from basic (pinhole, exposure, depth of field) to advanced (adaptive optics, starshade), as a suggestion, not a lock.
+- [x] **P2 · S** **"Start here" path** on the home page: laboratories ordered from basic (perspective, exposure, depth of field) to advanced (adaptive optics, exoplanet imaging), as a suggestion, not a lock (PR #74).
 - [ ] **P3 · S** Catalogue entries in the same order: plain description, example, explanation, equation.
 
 ### v2.0 Learning platform
