@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **"Start here" path** on the home page (`js/lib/path.js`): 17 laboratories in three stages, from everyday photography (perspective, depth of field, noise) through lens behaviour to telescopes and the research frontier, each with the question it answers. Laboratories already opened are ticked; this is remembered only in the browser. The order is a suggestion, not a lock. The home page's reading guide now describes the simple-to-exact ladder and the glossary.
+- Tests (`test/path.test.mjs`): the path visits existing laboratories once each, with a question per step.
 - **Glossary** (`js/lib/glossary.js`): 62 technical terms, from f-number and depth of field to Strehl ratio, Fried parameter and Einstein ring, each with a one-sentence plain definition. The first use of a term on a page gets a dotted underline; hovering, focusing or tapping it shows the definition and a link to the laboratory that simulates it. Abbreviations match only in capitals, longer terms win over shorter ones ("spherical aberration" before "aberration"), and the KaTeX formulas, links and headings are left alone.
 - Tests (`test/glossary.test.mjs`): short, plain, unique definitions with valid laboratory links; every term occurs in some page; only the first use is marked.
 - **From the simple idea to the full model.** Pages now climb from simple to exact, with everything visible in that order and no beginner/expert switch:
