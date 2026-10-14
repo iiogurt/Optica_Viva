@@ -31,6 +31,10 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.7 New laboratories: astronomy & space](#v17-new-laboratories-astronomy--space)
   - [v1.8 New laboratories: photography & cinema II](#v18-new-laboratories-photography--cinema-ii)
   - [v1.9 New laboratories: astronomy & space II](#v19-new-laboratories-astronomy--space-ii)
+  - [v1.11 From simple to exact](#v111-from-simple-to-exact)
+  - [v1.12 Missions: optics for real tasks](#v112-missions-optics-for-real-tasks)
+  - [v1.13 New laboratories: light, water and worlds](#v113-new-laboratories-light-water-and-worlds)
+  - [v1.14 Your own gear and real images](#v114-your-own-gear-and-real-images)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -58,7 +62,7 @@ flowchart LR
     end
     subgraph Next["Planned"]
         direction TB
-        N7["v2.0 learning platform"]
+        N8["v1.12 missions"] --> N9["v1.13 lighting · transits · Earth observation"] --> N10["v1.14 your own gear"] --> N7["v2.0 learning platform"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -386,6 +390,41 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P2 · S** **"Start here" path** on the home page: laboratories ordered from basic (perspective, exposure, depth of field) to advanced (adaptive optics, exoplanet imaging), as a suggestion, not a lock (PR #74).
 - [x] **P3 · S** Catalogue entries in the same order: plain description, example, explanation, equation (PR #75).
 
+### v1.12 Missions: optics for real tasks
+
+*Goal: show why the physics matters by solving real tasks.* A mission is a guided page with a goal: the reader enters their equipment and situation, the page combines several laboratory models, recommends settings with the reason for each, and links to the laboratories involved. It follows the simple-to-exact ladder.
+
+- [ ] **P1 · M** Mission framework (`js/lib/missions.js`, `#/mission-<id>`): inputs, steps that each cite a model and a laboratory, a summary of recommended settings, a "Missions" group in the sidebar and on the home page.
+- [ ] **P1 · M** **Photograph the Milky Way**: longest untrailed exposure (500 and NPF rules), aperture vs corner coma and vignetting, ISO invariance, sky brightness, number of frames to stack.
+- [ ] **P1 · M** **Image Jupiter from your garden**: critical f-ratio for the pixel size, seeing and lucky-imaging frame rate, atmospheric dispersion vs altitude, rotation limit on capture length.
+- [ ] **P2 · M** **Portrait session**: flattering distance, focal length, depth of field across the face, background blur, light-source size and shadow softness.
+- [ ] **P2 · M** **Total solar eclipse**: safe filters, exposure ladder from Baily's beads to the outer corona, HDR merge.
+- [ ] **P2 · S** **Film under LED light and on an LED volume**: shutter angle vs flicker, LED-wall moiré distance.
+- [ ] **P2 · M** **Choose a camera or telescope**: compare formats or apertures by resolution, light and depth of field through the equivalence laws.
+- [ ] **P2 · M** **Design an Earth-observation satellite**: orbit, focal length and pixels → ground sample distance, MTF, smear and TDI stages.
+- [ ] **P3 · M** **Plan an exoplanet observation**: contrast, inner working angle, coronagraph or starshade, integration time.
+- [ ] **P3 · S** **Security camera or drone survey**: pixels on target for detection/recognition, motion blur, rolling shutter.
+
+### v1.13 New laboratories: light, water and worlds
+
+| Lab | Content | Priority · effort |
+|---|---|---|
+| [ ] **Lighting** | inverse-square falloff, shadow softness from source size (umbra/penumbra), Lambertian and specular reflection, catchlights, flash guide numbers | P1 · M |
+| [ ] **Exoplanet transits** | light-curve depth (Rp/R★)², limb darkening, duration, photometric noise budget | P2 · M |
+| [ ] **Earth observation from orbit** | ground sample distance, push-broom and TDI, atmospheric haze and adjacency, system MTF | P2 · M |
+| [ ] **Underwater photography** | spectral absorption with depth, flat vs dome ports (magnification, distortion, virtual image), backscatter | P2 · M |
+| [ ] **Computational photography** | multi-frame night mode and burst super-resolution, synthetic portrait blur from depth and its artefacts | P2 · L |
+| [ ] **Autofocus** | phase detection with split pixels, contrast detection, focus hunting | P3 · M |
+| [ ] **Interference filters on fast optics** | narrowband filter blue-shift with angle of incidence, bandpass vs f-ratio | P3 · S |
+
+### v1.14 Your own gear and real images
+
+- [ ] **P1 · L** **Test your own gear** (processed locally, never uploaded): slanted-edge MTF (ISO 12233), vignetting from a flat field, distortion from a grid, lateral colour.
+- [ ] **P2 · M** **Real equipment presets**: sensors, phones and telescopes with focal lengths, apertures and pixel sizes, shared by all laboratories and missions.
+- [ ] **P2 · M** **Phenomena in the wild**: a gallery of real images explained by the laboratories (Hubble before and after 1993, JWST spikes, the EHT ring, rolling-shutter propellers, the green flash), public-domain or CC BY with attribution in THIRD_PARTY_NOTICES.md.
+- [ ] **P2 · M** **Misconception checks**: predict-then-reveal questions built on physics-education research (half-covered lens, f-number and depth of field, ISO and noise).
+- [ ] **P3 · M** **Validation against measurements**: simulated MTFs compared with published manufacturer curves for a few lenses.
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -418,6 +457,10 @@ Ideas worth keeping but not yet scheduled:
 - Aerial perspective and haze with Koschmieder's law in the DoF scene.
 - Light-field (plenoptic) refocusing.
 - Comparison mode: two lab states side by side.
+- *(from the October 2026 exploration)* Further phenomena:
+  - Photography and cinema: in-camera lens corrections and their resolution cost; infrared and UV photography (Wood effect, IR focus shift); diffusion filters (Pro-Mist) and film halation; stereo 3D (interaxial, convergence, depth budget); HDR display transfer functions (PQ, HLG) and cinema screen luminance.
+  - Astronomy and space: satellite trails and their rejection in stacks; radial-velocity precision; planetary-imaging sampling; free-space laser communication link budgets; star trackers; phase angle and sun glint; LIGO as an optical instrument (shot noise vs radiation pressure).
+  - Atmosphere and nature: lunar coronas, glories and Brocken spectres; supernumerary rainbows (Airy theory); caustics and apparent depth in water; mirages; extinction and airmass; zodiacal light and airglow.
 
 ---
 
