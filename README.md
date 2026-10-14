@@ -526,6 +526,16 @@ The dip in starlight as a planet crosses its star: depth (R_p/R★)², limb dark
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Earth observation from orbit** · `#/earthobs`<br>
+<img src="docs/screenshots/earthobs.webp" alt="A city block at 10 cm resolution and as recorded from orbit by a very-high-resolution satellite, with the system MTF">
+
+Ground sample distance, push-broom scanning at 7 km/s, time-delay integration, diffraction against pixel size (Q) and the system MTF, with a city block rendered as a CubeSat, a mapping satellite or a very-high-resolution satellite records it.
+
+</td>
+</tr>
 </table>
 
 ### Reference pages
@@ -699,6 +709,7 @@ Optica_Viva/
 │   │   ├── eye.js             Le Grand schematic eye, ocular chromatic aberration, retinal MTF vs pupil, CoC from acuity
 │   │   ├── film.js            Boolean-model emulsion: development probability, H&D curve, Selwyn granularity, DQE, reciprocity
 │   │   ├── fieldpsf.js        Two-mirror telescopes: Seidel sums through mirrors, RC/DK conics, nodal aberrations, PSFs across the field
+│   │   ├── earthobs.js        Earth observation: GSD, push-broom and TDI, Q, MTF, rendered ground
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha

@@ -4,7 +4,7 @@ import { ladder } from './lib/page.js';
 import { glossary } from './lib/glossary.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -54,6 +54,7 @@ export const MODULES = [
   { id: 'starshade', group: 'Astronomy & space', title: 'Starshade', c: '#8fd8ff', blurb: 'Fresnel diffraction behind a petalled occulter: the Poisson spot of a round screen, hypergaussian apodisation and 10⁻¹⁰ shadows tens of thousands of kilometres long.' },
   { id: 'fieldpsf', group: 'Astronomy & space', title: 'Field-dependent PSF', c: '#8fd8ff', blurb: 'Seidel sums of Cassegrain, Ritchey–Chrétien and Dall–Kirkham telescopes, PSFs across the field, nodal aberrations of a misaligned secondary and Hubble’s flawed primary.' },
   { id: 'transits', group: 'Astronomy & space', title: 'Exoplanet transits', c: '#8fd8ff', blurb: 'The dip in starlight as a planet crosses its star: depth (Rp/R★)², limb darkening, duration from Kepler\'s law, and whether a telescope can see it above the noise.' },
+  { id: 'earthobs', group: 'Astronomy & space', title: 'Earth observation from orbit', c: '#8fd8ff', blurb: 'Ground sample distance, push-broom scanning at 7 km/s, time-delay integration and diffraction: a city block as seen by a CubeSat, a mapping satellite and a very-high-resolution one.' },
   { id: 'telescope', group: 'Astronomy & space', title: 'Space telescopes', c: '#8fd8ff', blurb: 'Resolution limits, sampling, light-gathering, and a Lyot coronagraph simulation for exoplanet imaging.' },
   { id: 'lensing', group: 'Astronomy & space', title: 'Gravitational lensing', c: '#8fd8ff', blurb: 'The universe as a lens: Einstein rings, arcs and multiple images by inverse ray-shooting.' },
 ];
