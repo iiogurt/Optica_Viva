@@ -13,7 +13,7 @@ const OUT = resolve(ROOT, 'docs/screenshots');
 const LAB = { lab: [296, -8, 1412, 812] };
 const PAGES = {
   home: ['', [268, 0, 1440, 680]], foundations: ['foundations', [296, 0, 1412, 760]], catalogue: ['catalogue', [296, 250, 1412, 1070]], 'catalogue-entry': ['catalogue?g=diffraction-and-wave-optics&e=airy-disk', [296, 250, 1412, 1070]],
-  raytracer: ['raytracer', LAB], dof: ['dof', LAB], 'dof-ladder': ['dof', [296, 20, 1412, 510]], sensor: ['sensor', LAB], projection: ['projection', LAB], perspective: ['perspective', LAB],
+  'mission-milkyway': ['mission-milkyway', LAB], raytracer: ['raytracer', LAB], dof: ['dof', LAB], 'dof-ladder': ['dof', [296, 20, 1412, 510]], sensor: ['sensor', LAB], projection: ['projection', LAB], perspective: ['perspective', LAB],
   tiltshift: ['tiltshift', LAB], vignetting: ['vignetting', LAB], psf: ['psf', LAB], zernike: ['zernike', LAB],
   mtf: ['mtf', LAB], chromatic: ['chromatic', LAB], bokeh: ['bokeh', LAB], flare: ['flare', LAB],
   sampling: ['sampling', LAB], noise: ['noise', LAB], motion: ['motion', LAB], seeing: ['seeing', LAB],

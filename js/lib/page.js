@@ -99,3 +99,13 @@ export function liveCalc(title = 'Live calculation') {
   const el = h('div.card.calc', {}, h('div.calc-title', {}, title), words, body);
   return { el, set: (src) => setTex(body, src, true), say: (html) => { words.innerHTML = html; } };
 }
+
+// ── Missions ─────────────────────────────────────────────────────────────────────────────
+// One step of a mission: the answer first, then why, the formula it comes from and the
+// laboratory that explores it. Returns {el, set({answer, why, tex})}.
+export function missionStep(n, title, lab, labTitle) {
+  const answer = h('div.mstep-answer'), why = h('p.mstep-why'), eq = h('div.mstep-eq');
+  const el = h('section.mstep', {}, h('div.mstep-head', {}, h('span.mstep-n', { 'aria-hidden': 'true' }, String(n)), h('h3', {}, title)),
+    answer, why, eq, lab ? h('a.mstep-lab', { href: '#/' + lab }, 'Explore: ' + labTitle + ' →') : null);
+  return { el, set: ({ answer: a, why: w, tex: t }) => { answer.innerHTML = a; why.innerHTML = w; if (t) setTex(eq, t, true); else eq.replaceChildren(); } };
+}

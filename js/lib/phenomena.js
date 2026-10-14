@@ -218,7 +218,7 @@ export const GROUPS = [
       ['Pan judder', 'motion', 'v', 'Low frame rates strobe during pans; limits on pan speed.', r`v_\text{max}\approx\frac{W}{7\,\text{s}}`],
       ['Pointing jitter (space)', null, 's', 'Line-of-sight jitter broadens the PSF; JWST ≈ 1 mas.', r`\mathrm{PSF}\ast\mathcal N(0,\sigma_j^2)`],
       ['Frame-rate conversion & 3:2 pulldown', null, 'v', 'Cinema\'s 24 frames per second shown at 60 Hz repeat frames alternately three and two times, adding judder.', r`\frac{60}{24}=\frac{3+2}{2}`],
-      ['Star trails & the 500 rule', null, 'ps', 'The sky turns 15″ per second of time; beyond a focal-length-dependent exposure, stars become trails.', r`t_\text{max}\approx\frac{p}{f\,\omega\cos\delta},\ \omega=7.29\times10^{-5}\,\text{rad s}^{-1}`],
+      ['Star trails & the 500 rule', 'mission-milkyway', 'ps', 'The sky turns 15″ per second of time; beyond a focal-length-dependent exposure, stars become trails.', r`t_\text{max}\approx\frac{p}{f\,\omega\cos\delta},\ \omega=7.29\times10^{-5}\,\text{rad s}^{-1}`],
     ],
   },
   {
