@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-10-14
+
 ### Changed
 - An opened catalogue entry now reads from simple to exact like the laboratories: worked example, explanation, then the equation, which gets its own label.
 
@@ -539,7 +541,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.10.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.11.0...HEAD
+[1.11.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.7.0...v1.8.0
