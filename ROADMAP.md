@@ -70,7 +70,7 @@ flowchart LR
 | Laboratories | 39 | v1.9 complete |
 | Catalogue entries | 228, each with details and a worked example | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 161 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 173 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -358,12 +358,11 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 *Goal: a reader without physics training understands what each laboratory shows, and a specialist still reaches the derivation in one click.* The design follows the research on concreteness fading (Fyfe et al. 2014), the spiral curriculum (Bruner 1960), the expertise-reversal effect (Kalyuga et al. 2003) and PhET's implicit scaffolding (Podolefsky et al. 2013): simple models first and honest about their limits, short enough not to slow experts down, and guidance through the simulation rather than long instructions.
 
 - [x] **P1 · M** **Ladder pilot** (PR #68): `idea()`, `rule()`, `liveCalc().say()` and the jump strip in `js/lib/page.js`; depth of field, diffraction & the PSF and atmospheric seeing; `test/ladder.test.mjs` (no symbols and at most 120 words in the idea, 1–3 things to try, a rule with its limits, the result in words).
-- [ ] **P1 · L** Ladder for the other 36 laboratories, one PR per sidebar group. When done, the test requires it on every laboratory.
+- [x] **P1 · L** Ladder for the other 36 laboratories, one PR per sidebar group; the test now requires it on every laboratory.
   - [x] Geometric optics, 9 laboratories (PR #69)
   - [x] Wave optics, 5 laboratories (PR #70)
   - [x] Light, sensor & time, 10 laboratories (PR #71)
-  - [ ] Astronomy & space (10)
-  - [ ] Physical foundations
+  - [x] Astronomy & space, the other 10 laboratories, and the physical foundations (PR #72)
 - [ ] **P2 · M** **Glossary**: one file of one-sentence definitions; terms such as f-number, PSF, Strehl ratio and MTF show them on hover or tap.
 - [ ] **P2 · S** **"Start here" path** on the home page: laboratories ordered from basic (pinhole, exposure, depth of field) to advanced (adaptive optics, starshade), as a suggestion, not a lock.
 - [ ] **P3 · S** Catalogue entries in the same order: plain description, example, explanation, equation.

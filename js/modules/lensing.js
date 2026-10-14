@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { angularDiameterDistance as DA, C_KMS as C } from '../lib/optics.js';
 
 const ARC = Math.PI / 180 / 3600;
@@ -38,7 +38,13 @@ function galaxy(bx, by, R) {
 }
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Mass bends light. A galaxy or cluster between us and a more distant galaxy acts as a lens, shaped by its gravitational potential rather than by glass. It produces arcs, Einstein rings and multiple images, and magnifies sources that would otherwise be invisible. JWST and Hubble use these natural telescopes to see the first galaxies.', domains: ['space'] }));
+  root.append(header({ ...meta, domains: ['space'] }));
+  root.append(idea(String.raw`<p>Mass bends light. A massive galaxy between us and a more distant galaxy acts like a giant lens, made not of glass but of gravity. It can stretch the far galaxy into arcs, split it into several images or, when the two line up exactly, turn it into a complete circle, an <strong>Einstein ring</strong>.</p>
+<p>Gravitational lenses also magnify, so astronomers use them as natural telescopes to see galaxies too faint to find otherwise. And because the bending depends only on mass, they weigh galaxies, including their invisible dark matter.</p>`, [
+    "Choose the <strong>Point mass</strong> model and place the source right behind the lens: the arcs close into an Einstein ring.",
+    "Switch to <strong>SIE + shear</strong> and lower the <strong>Axis ratio</strong>: the ring breaks into four images, an Einstein cross.",
+    "Move the <strong>Lens redshift</strong> closer to the source: the same Einstein radius now needs much more mass.",
+  ]));
 
   const ctl = controls({
     model: { type: 'seg', label: 'Lens model', value: 'sie', options: [['point', 'Point mass'], ['sis', 'SIS'], ['sie', 'SIE + shear']] },
@@ -163,6 +169,7 @@ export default function mount(root, meta) {
       ['SIS velocity dispersion σ_v', sigma.toFixed(0) + ' km/s'],
       ['Total magnification (area ratio)', '…'],
     ]));
+    calc.say(`An Einstein radius of ${st.b}″ at these distances encloses about <strong>${fmt(M, 2)} solar masses</strong>, within a radius of ${RE.toFixed(1)} kpc at the lens.`);
     calc.set(String.raw`\begin{aligned}
     \boldsymbol\beta &= \boldsymbol\theta - \boldsymbol\alpha(\boldsymbol\theta)\\
     \theta_E &= \sqrt{\frac{4GM}{c^2}\frac{D_{ls}}{D_lD_s}} \Rightarrow M = ${texNum(M, 3)}\,M_\odot\\
@@ -200,6 +207,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[\theta_E = \sqrt{\frac{4GM}{c^2}\,\frac{D_{ls}}{D_l D_s}}\]
+<p>The Einstein radius \(\theta_E\) grows with the square root of the lens mass \(M\) and depends on the distances to the lens (\(D_l\)), to the source (\(D_s\)) and between them (\(D_{ls}\)). Double the mass and the ring grows by \(\sqrt2\). With the lens at redshift 0.3 and the source at 2, a 1.4″ ring encloses about \(2.9 \times 10^{11}\) solar masses. Galaxies make rings of about 1″, clusters of galaxies tens of arcseconds. Images appear near \(\theta_E\) and are magnified most when the source sits right behind the lens.</p>`,
+    String.raw`The formula is exact for a point mass, and for any round lens it gives the mass enclosed by the ring. Real galaxies are extended and elliptical and sit in groups that add shear, so image positions need a full lens model like the SIE used here, and the distances depend on the cosmological model.`));
   root.append(theory('Gravitational lensing as optics', String.raw`
 <div class="theory-cols"><div>
 <h3>An effective refractive index</h3>

@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { run, latest } from '../lib/compute.js';
@@ -9,7 +9,13 @@ const NP = 120, D = 8, DX = D / NP, NPSF = 256; // 8 m telescope, 120 px pupil, 
 const DIV = lut('diverging'), INF = lut('inferno');
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Adaptive optics measures the atmosphere\'s distortion of a star\'s wavefront hundreds of times a second and cancels it with a deformable mirror. This lab simulates the whole loop: a Shack–Hartmann sensor that forms one diffraction spot per lenslet, centroids with photon and read noise, a least-squares reconstructor, and an integrator driving the mirror against turbulence blowing across an 8 m telescope.', domains: ['space'] }));
+  root.append(header({ ...meta, domains: ['space'] }));
+  root.append(idea(String.raw`<p>Adaptive optics takes the twinkle out of starlight. A sensor looks at a star through a grid of tiny lenses, each forming its own small spot. Where the turbulent air tilts the incoming light, the spots shift, and from hundreds of these shifts a computer works out the shape of the distorted wavefront.</p>
+<p>A flexible mirror, pushed by hundreds of small actuators, then takes on the opposite shape, hundreds of times per second. The loop never quite wins: it is always slightly late, it has a limited number of actuators, and faint stars give noisy measurements.</p>`, [
+    "Switch the <strong>Loop</strong> between Open and Closed: the star image collapses into a sharp core.",
+    "Lower the <strong>Loop frequency</strong> to 100 Hz and raise the wind: the correction lags behind the turbulence.",
+    "Reduce the <strong>Photons per lenslet</strong> to 10: noise in the spot positions spoils the correction.",
+  ]));
 
   const ctl = controls({
     loop: { type: 'seg', label: 'Loop', value: 'closed', options: [['open', 'Open (no correction)'], ['closed', 'Closed']] },
@@ -71,6 +77,7 @@ export default function mount(root, meta) {
     const open = 1.0299 * Dr0 ** (5 / 3) * toNm ** 2;
     const total = st.loop === 'closed' ? fit + temp + noise : open;
     B = { fit, temp, noise, open, total, fG, f3, lam, Dr0, tau0: (0.314 * st.r0) / Math.max(st.wind, 1e-6), r0sci: st.r0 * Math.pow(lam / 500, 1.2) };
+    calc.say(`With the loop ${st.loop === 'closed' ? 'closed' : 'open'}, the predicted wavefront error is <strong>${texNum(Math.sqrt(total), 3)} nm</strong> RMS, giving a Strehl ratio of about <strong>${Math.exp(-(((2 * Math.PI * Math.sqrt(total)) / lam) ** 2)).toFixed(2)}</strong> at ${lam} nm (error budget: fitting, delay and noise).`);
     calc.set(String.raw`\begin{aligned}
     \sigma^2_\text{fit} &= \Delta_{J}\left(\tfrac{D}{r_0}\right)^{5/3} \Rightarrow ${texNum(Math.sqrt(fit), 3)}\ \text{nm}\\
     \sigma^2_\text{temp} &= (f_G/f_{3\,\text{dB}})^{5/3} \Rightarrow ${texNum(Math.sqrt(temp), 3)}\ \text{nm}\\
@@ -253,6 +260,9 @@ export default function mount(root, meta) {
 
   configure();
 
+  root.append(rule(String.raw`\[\sigma^2_\text{fit} \approx 0.28\left(\frac{d}{r_0}\right)^{5/3}\ \text{rad}^2\]
+<p>A mirror whose actuators are \(d\) apart cannot follow wrinkles smaller than \(d\). With \(d = r_0\) the leftover fitting error is about 0.28 rad², a Strehl ratio of 0.76. Because \(r_0\) grows as \(\lambda^{6/5}\), it is 4.2 times larger at 1.65 µm than at 0.5 µm, so the same mirror leaves only \(4.2^{-5/3} \approx 1/11\) of the error. An 8 m telescope with \(r_0 = 15\) cm at 0.5 µm needs about 53 actuators across for visible light, but only about 13 for the near-infrared.</p>`,
+    String.raw`Fitting is one of several errors: the loop's delay, noise from faint guide stars and the shrinking corrected field around the guide star (anisoplanatism) add to it. The coefficient 0.28 depends on how the mirror's actuators bend its surface.`));
   root.append(theory('Sensing and correcting the wavefront', String.raw`
 <div class="theory-cols"><div>
 <h3>The Shack–Hartmann sensor</h3>

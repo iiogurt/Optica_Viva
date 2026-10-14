@@ -1,5 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt } from '../lib/ui.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot, range } from '../lib/plot.js';
 import { lut, wavelengthRGB } from '../lib/color.js';
@@ -11,7 +11,13 @@ const MAS = 206264806.2;
 const css = (l) => { const c = wavelengthRGB(Math.min(680, Math.max(420, l * 1e9)), false), m = Math.max(...c); return `rgb(${c.map((v) => Math.round(255 * (0.25 + (0.75 * v) / m))).join(',')})`; };
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'An Earth-like planet is ten billion times fainter than its star and a tenth of an arcsecond away from it. A starshade is a flower-shaped screen tens of metres across, flown tens of thousands of kilometres in front of a space telescope, that casts a shadow of the star so deep that the planet beside it can be seen. Its petals are not decoration: they are an apodiser that cancels the bright Poisson–Arago spot that any round occulter produces.', domains: ['space'] }));
+  root.append(header({ ...meta, domains: ['space'] }));
+  root.append(idea(String.raw`<p>Finding an Earth-like planet around another star is like spotting a firefly beside a lighthouse from thousands of kilometres away: the planet is ten billion times fainter and sits almost on top of its star.</p>
+<p>A <strong>starshade</strong> is a flower-shaped screen tens of metres wide, flown tens of thousands of kilometres in front of a space telescope. It casts a deep shadow of the star while the planet beside it stays visible. A plain round disc would not work: light bending around its edge makes a bright spot right in the middle of the shadow. The carefully shaped petals cancel that spot.</p>`, [
+    "Compare the suppression of the starshade with that of the same-size opaque disc: the disc lets far more light through.",
+    "Move the telescope from 80 000 km to <strong>30 000 km</strong>: the Fresnel number falls and starlight leaks into the shadow.",
+    "Set the <strong>Wavelength for the shadow map</strong> to 1000 nm: the shadow is shallower in red light.",
+  ]));
 
   const ctl = controls({
     a: { type: 'range', label: 'Opaque core radius a', min: 4, max: 20, step: 0.5, value: 12.5, unit: 'm' },
@@ -57,6 +63,7 @@ export default function mount(root, meta) {
         ['Same-size opaque disk', r.diskSupp.toExponential(1) + ' (Poisson spot)'],
         ['Band with suppression < 10⁻¹⁰', band(r.specSupp, 1e-10)],
       ]));
+      calc.say(`At ${fmt(st.z / 1000, 3)} thousand km the starshade dims the starlight over the telescope to <strong>${fmt(sp, 2)}</strong> of its unblocked level, against ${fmt(r.diskSupp, 2)} for a plain disc of the same size. Planets can be seen from <strong>${th.toFixed(0)} mas</strong> from the star outwards.`);
       note.textContent = `Shadow of a hypergaussian starshade (a = ${st.a} m, b = ${st.b} m, n = ${st.n}) at ${st.z.toLocaleString('en')} km. The telescope aperture is the dashed circle. Scalar Fresnel diffraction, azimuthally averaged petals.`;
       [map, prof, spec].forEach((x) => x.redraw());
     });
@@ -125,6 +132,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[F = \frac{R^2}{\lambda z},\qquad \theta_\text{IWA} \approx \frac{R}{z}\]
+<p>The Fresnel number \(F\) of a starshade of radius \(R\) at distance \(z\) measures how deep its shadow can be; deep shadows need \(F\) of order 10 or more. A starshade of 25 m radius at 80 000 km in 550 nm light has \(F = 25^2/(550 \times 10^{-9} \times 8 \times 10^{7}) = 14\), and it hides a region of \(25/(8 \times 10^{7})\) rad = 64 mas around the star, the inner working angle. Planets farther out are visible.</p>`,
+    String.raw`These are scaling rules. The actual suppression depends on the petal shape, on manufacturing and deployment accurate to a fraction of a millimetre, and on sunlight scattered off the petal edges. The scalar Fresnel model used here also ignores polarisation and the thickness of the petals.`));
   root.append(theory('Casting a shadow ten billion times darker', String.raw`
 <div class="theory-cols"><div>
 <h3>Fresnel diffraction behind an occulter</h3>

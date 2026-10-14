@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
@@ -14,7 +14,13 @@ const FORMS = { cassegrain: 'Classical Cassegrain', rc: 'Ritchey–Chrétien', d
 const ARCMIN = Math.PI / 180 / 60;
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'A telescope is diffraction-limited only somewhere. Away from the axis, coma, astigmatism and field curvature grow with the field angle, each with its own law, and a secondary mirror that is a few microns out of place shifts and splits the aberration field itself. Space-telescope PSF models track this variation across every detector. Here a two-mirror telescope is analysed to third order, mirror by mirror, and its PSF is computed across the field.', domains: ['space'] }));
+  root.append(header({ ...meta, domains: ['space'] }));
+  root.append(idea(String.raw`<p>A telescope is sharpest in the middle of its view. Away from the centre, stars gradually turn into small comets, crosses or blobs, because mirrors that are perfect on the axis cannot also be perfect at an angle. Designers choose mirror shapes that keep the sharp area as large as possible.</p>
+<p>The mirrors must also stay in place to within a few thousandths of a millimetre. Shift the small secondary mirror slightly and the sharpest spot moves away from the centre, or splits in two. Hubble's famous flaw was a main mirror polished to a very slightly wrong shape.</p>`, [
+    "Compare <strong>Classical Cassegrain</strong> and <strong>Ritchey–Chrétien</strong>: the RC keeps stars round much farther from the centre.",
+    "Set the <strong>Secondary decentre</strong> to 100 µm: the best-corrected point moves off centre and the astigmatism splits around two points.",
+    "Press the <strong>Hubble 1990</strong> button: every star in the field is blurred by the primary mirror's wrong shape.",
+  ]));
 
   const ctl = controls({
     tel: { type: 'select', label: 'Telescope', value: 'hubble', options: Object.entries(TELS).map(([k, t]) => [k, t.name]) },
@@ -64,6 +70,7 @@ export default function mount(root, meta) {
       ['Diffraction-limited field (RMS < λ/14)', dlField(st, lam) ],
       ['Coma-free point', S.comaZero ? `(${(S.comaZero[0] * THREF / ARCMIN).toFixed(1)}′, ${(S.comaZero[1] * THREF / ARCMIN).toFixed(1)}′)` : 'none: coma is the same everywhere'],
     ]));
+    calc.say(`Stars are diffraction-limited (RMS error below λ/14) over a field of <strong>${dlField(st, lam)}</strong>; the diffraction limit itself is ${lamD.toFixed(1)} mas.`);
     calc.set(String.raw`\begin{aligned}
     W_{040} &= \tfrac18 S_I = ${texNum(W('SI', 8) * 1e9, 3)}\ \text{nm}\\
     W_{131} &= \tfrac12 S_{II}\,H = ${texNum(W('SII', 2) * ub * 1e9, 3)}\ \text{nm}\\
@@ -157,6 +164,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[W_\text{coma} \propto H,\qquad W_\text{astigmatism} \propto H^2\]
+<p>Coma grows in proportion to the field angle \(H\), astigmatism and field curvature with its square: twice as far from the axis, the comet tails double but the astigmatic blur quadruples. A classical Cassegrain is free of spherical aberration only; a Ritchey–Chrétien also removes coma, so its leftover astigmatism takes over only farther out. That is why Hubble, Keck and most large modern telescopes are Ritchey–Chrétiens.</p>`,
+    String.raw`These are third-order (Seidel) laws, accurate for the small fields of large telescopes. Wide fields add higher orders, misaligned mirrors add terms centred away from the axis (nodal aberration theory, used on this page), and the shape and tilt of the detector decide which field points are in focus.`));
   root.append(theory('Aberrations across the field', String.raw`
 <div class="theory-cols"><div>
 <h3>Third-order aberrations, mirror by mirror</h3>

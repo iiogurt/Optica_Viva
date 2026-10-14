@@ -7,10 +7,13 @@ import { readFileSync, readdirSync } from 'node:fs';
 const dir = new URL('../js/modules/', import.meta.url);
 const pages = readdirSync(dir).filter((f) => f.endsWith('.js')).map((f) => ({ id: f.slice(0, -3), src: readFileSync(new URL(f, dir), 'utf8') }));
 const laddered = pages.filter((p) => /\bidea\(String\.raw`/.test(p.src));
-const PILOT = ['dof', 'psf', 'seeing', 'raytracer', 'sensor', 'projection', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'vignetting', 'zernike', 'mtf', 'chromatic', 'bokeh', 'polarisation', 'flare', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp'];
+// every page in the sidebar except the home page and the catalogue
+const READY = [...readFileSync(new URL('../js/app.js', import.meta.url), 'utf8').match(/READY = new Set\(\[([^\]]*)\]/)[1].matchAll(/'([a-z0-9-]+)'/g)].map((m) => m[1]);
+const LABS = READY.filter((id) => id !== 'home' && id !== 'catalogue');
 
-test('the pilot laboratories have a ladder', () => {
-  assert.deepEqual(PILOT.filter((id) => !laddered.some((p) => p.id === id)), []);
+test('every laboratory has a ladder', () => {
+  assert.equal(LABS.length, 39);
+  assert.deepEqual(LABS.filter((id) => !laddered.some((p) => p.id === id)), []);
 });
 
 for (const { id, src } of laddered) {
@@ -23,6 +26,6 @@ for (const { id, src } of laddered) {
     const n = (tries.match(/^\s*['"`]/gm) || []).length;
     assert.ok(n >= 1 && n <= 3, `${n} things to try (1–3)`);
     assert.match(src, /\brule\(String\.raw`[\s\S]*?`,\s*String\.raw`/, 'rule(html, limits) with a "where it stops working" note');
-    assert.match(src, /\bcalc\.say\(/, 'the live calculation says the result in words');
+    if (/\bliveCalc\(/.test(src)) assert.match(src, /\bcalc\.say\(/, 'the live calculation says the result in words');
   });
 }

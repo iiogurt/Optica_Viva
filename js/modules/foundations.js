@@ -1,8 +1,14 @@
 import { h, prose, section } from '../lib/ui.js';
-import { header, references } from '../lib/page.js';
+import { header, idea, rule, references } from '../lib/page.js';
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Every simulation in this laboratory descends from one of four nested models of light. This page derives each from its parent and states where it stops being valid, so you know which approximation a demonstration uses and why.', domains: ['photo', 'video', 'space'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
+  root.append(idea(String.raw`<p>Optics uses several pictures of what light is, each simpler than the one before and each correct within its limits. The most complete describes light as electromagnetic waves. When everything light meets is much larger than its wavelength, light can be treated as rays that travel in straight lines and bend at surfaces: that is how lenses are designed. Where light passes small openings or edges, its wave nature returns as diffraction.</p>
+<p>This page shows how each picture follows from the more complete one and where it stops working, so you can tell which one a laboratory uses, and why.</p>`, [
+    'Open <a href="#/raytracer">Real-lens ray tracing</a>: everything there is done with rays.',
+    'Open <a href="#/psf">Diffraction &amp; the PSF</a>: the same kind of lens, now treated as a wave.',
+    'Open <a href="#/polarisation">Polarisation</a>: the full electromagnetic picture, including the direction in which the wave vibrates.',
+  ]));
 
   // Hierarchy diagram
   const diag = h('div.card', { style: { padding: '22px' } }, h('div', { html: `
@@ -27,7 +33,12 @@ export default function mount(root, meta) {
       ${i < 3 ? `<path d="M${240 + i * 248} 90 L${256 + i * 248} 90" stroke="#9aa1b5" stroke-width="1.5" marker-end="url(#ar)"/>` : ''}`).join('')}
     <text x="500" y="190" text-anchor="middle" fill="#9aa1b5" font-family="Inter, sans-serif" font-size="12.5">each arrow is a limiting approximation: mean-field → neglect polarisation coupling (feature size ≫ λ) → short-wavelength asymptotics (λ → 0)</text>
   </svg>` }));
-  root.append(section('The hierarchy of models', diag));
+  root.append(rule(String.raw`\[\text{rays work when}\quad \frac{\lambda}{a} \ll 1\]
+<p>Rays are good enough when the openings and features \(a\) that light meets are much larger than its wavelength \(\lambda\), and the image detail you care about is much coarser than \(\lambda N\). A 25 mm lens aperture is 45 000 wavelengths of green light wide, so rays design the lens, but its image of a star, about \(1.3N\) µm across, is set by diffraction. Scalar waves suffice until the light cone gets very steep (faster than about f/1) or polarisation matters, as with reflections and coatings.</p>`,
+    String.raw`Ray optics misses diffraction near focus and at edges; scalar wave optics misses polarisation and steep-angle (vector) effects; classical electromagnetism misses the photon nature of light, which appears as shot noise and in detectors.`));
+  const hierarchy = section('The hierarchy of models', diag);
+  hierarchy.dataset.rung = 'full';
+  root.append(hierarchy);
 
   root.append(section('1 · Electromagnetic foundation', h('div.theory-cols', {},
     prose(String.raw`
