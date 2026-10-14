@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-10-14
+
 ### Added
 - **Earth observation from orbit laboratory** (`#/earthobs`, `js/lib/earthobs.js`). For orbit height, mirror, focal length, pixel size and TDI stages it computes the ground sample distance, the ground-track speed and push-broom line rate, the time per line, the signal and SNR from sunlit ground, Q = λf/(Dp), the diffraction limit on the ground and the system MTF (optics × pixel × along-track smear). An 80 × 56 m city block at 10 cm is rendered as recorded from orbit, with blur, sampling and noise. Presets: a CubeSat camera, a mapping satellite and a very-high-resolution satellite.
 - Tests (`test/earthobs.test.mjs`): orbital and ground speeds, GSD, Q and the diffraction limit, the circular-aperture MTF, TDI signal scaling.
@@ -562,7 +564,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.11.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.12.0...HEAD
+[1.12.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.11.0...v1.12.0
 [1.11.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.8.0...v1.9.0
