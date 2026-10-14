@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Exoplanet transits laboratory** (`#/transits`, `js/lib/transit.js`). The light curve of a limb-darkened star crossed by an opaque planet (quadrature over the planet's disc, quadratic limb darkening), the orbit from Kepler's third law, the duration T₁₄ (Seager & Mallén-Ornelas), the transit probability R★/a, and simulated measurements with photon noise and a systematic floor for a backyard telescope, TESS, Kepler or JWST. Presets: the Earth and Jupiter in front of the Sun, HD 209458 b and TRAPPIST-1 e. The catalogue gains *Exoplanet transits*.
+- Tests (`test/transit.test.mjs`): area-ratio depth, the limb-darkened total flux, 1 AU and 13 h for the Earth, about 3.1 h for HD 209458 b, photon noise scaling.
 - **Lighting laboratory** (`#/lighting`, `js/lib/lighting.js`). A round area light, from a bare flash to a 2 m window, lights a head-sized sphere in front of a wall. The image is rendered in the worker by integrating the light's disc with shadow rays (checked against the exact on-axis irradiance of a disc), with Fresnel reflections of the light on glossy surfaces. A top view shows the umbra and penumbra, and a chart the inverse-square falloff to the wall. Readouts: the light's angular size, penumbra (S b/d) and umbra widths, how many stops darker the wall is, the catchlight size in the cornea, and the flash aperture from the guide number. The catalogue's *Inverse-square law* and *Lambertian reflection* link here.
 - Tests (`test/lighting.test.mjs`): disc quadrature against the exact result, inverse square, umbra and penumbra, shadow rays, falloff, catchlight, guide number and Fresnel reflectance.
 - **Missions**, a new kind of page that solves a real task by combining laboratory models, with a *Missions* group in the sidebar and on the home page. Each step gives the answer first, then why, the formula and a link to the laboratory that explores it (`missionStep()` in `js/lib/page.js`).
@@ -17,6 +19,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 - ROADMAP: new milestones v1.12 *Missions* (practical tasks such as photographing the Milky Way or imaging Jupiter), v1.13 *New laboratories: light, water and worlds* (lighting, exoplanet transits, Earth observation, underwater, computational photography, autofocus, interference filters) and v1.14 *Your own gear and real images*; further phenomena in the backlog.
+
+### Fixed
+- The browser smoke test skipped pages whose id contains a hyphen (the missions), and counted only readouts as results; mission answers now count too.
 
 ## [1.11.0] - 2026-10-14
 

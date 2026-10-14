@@ -273,6 +273,7 @@ export const GROUPS = [
       ['Gravitational lensing', 'lensing', 's', 'Mass bends light into arcs, rings and multiple images.', r`\boldsymbol\beta=\boldsymbol\theta-\boldsymbol\alpha(\boldsymbol\theta)`],
       ['Einstein radius & mass', 'lensing', 's', 'Ring size measures the enclosed mass.', r`\theta_E=\sqrt{\frac{4GM}{c^2}\frac{D_{ls}}{D_lD_s}}`],
       ['Cosmological redshift', 'telescope', 's', 'Distant galaxies\' light is stretched into the infrared: JWST\'s raison d\'être.', r`\lambda_\text{obs}=(1+z)\lambda_\text{emit}`],
+      ['Exoplanet transits', 'transits', 's', 'A planet crossing its star dims it by the ratio of their areas: 84 ppm for an Earth in front of a Sun, 1 % for a Jupiter.', r`\delta=\left(\frac{R_p}{R_\star}\right)^2`],
       ['Exoplanet contrast', 'starshade', 's', 'In reflected light an Earth is 10⁻¹⁰ of its star and a Jupiter about 10⁻⁹; thermal emission is more favourable in the infrared.', r`C=A_g\,\Phi(\alpha)\left(\frac{R_p}{a}\right)^2`],
       ['Inner working angle', 'starshade', 's', 'The smallest star–planet separation a starlight suppressor leaves usable.', r`\theta_\text{IWA}\approx\frac{R}{z}\ \text{(starshade)},\ \approx3\frac{\lambda}{D}\ \text{(coronagraph)}`],
       ['Pyramid wavefront sensor', 'wfs', 's', 'A glass pyramid at focus splits the beam into four pupil images whose intensities encode the wavefront slopes.', r`S_x=\frac{I_1+I_2-I_3-I_4}{\sum I}`],
