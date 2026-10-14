@@ -70,7 +70,7 @@ flowchart LR
 | Laboratories | 39 | v1.9 complete |
 | Catalogue entries | 228, each with details and a worked example | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 146 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 151 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -360,7 +360,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P1 · M** **Ladder pilot** (PR #68): `idea()`, `rule()`, `liveCalc().say()` and the jump strip in `js/lib/page.js`; depth of field, diffraction & the PSF and atmospheric seeing; `test/ladder.test.mjs` (no symbols and at most 120 words in the idea, 1–3 things to try, a rule with its limits, the result in words).
 - [ ] **P1 · L** Ladder for the other 36 laboratories, one PR per sidebar group. When done, the test requires it on every laboratory.
   - [x] Geometric optics, 9 laboratories (PR #69)
-  - [ ] Wave optics (5)
+  - [x] Wave optics, 5 laboratories (PR #70)
   - [ ] Light, sensor & time (10)
   - [ ] Astronomy & space (10)
   - [ ] Physical foundations

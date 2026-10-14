@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { rasterAperture, ZERNIKE_NAMES } from '../lib/pupil.js';
 import { lut } from '../lib/color.js';
 import { latest } from '../lib/compute.js';
@@ -17,7 +17,13 @@ const PRESETS = {
 };
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'The quality of an optical system is fully described by one function: the wavefront error across its pupil. Zernike polynomials split it into orthogonal, physically meaningful modes. Their RMS sum predicts the Strehl ratio, and their shapes predict how a star image is distorted. The last section shows how JWST phased 18 separate mirrors into one telescope.', domains: ['photo', 'space'] }));
+  root.append(header({ ...meta, domains: ['photo', 'space'] }));
+  root.append(idea(String.raw`<p>A perfect lens turns the light from a star into a perfectly curved wave that closes down to a sharp point. A real lens dents that wave by tiny amounts, often less than a thousandth of a millimetre, and the dents decide how sharp the image is.</p>
+<p>Opticians describe the dents as a mix of standard shapes, much as a sound can be described as a mix of pure tones. Each shape has a name and a typical look: <strong>defocus</strong> blurs evenly, <strong>astigmatism</strong> stretches stars into lines, <strong>coma</strong> gives them comet tails. Add the shapes up and you can predict the whole image.</p>`, [
+    "Choose the <strong>Custom</strong> preset with every coefficient at 0, then raise only <strong>Z4 defocus</strong> to 0.1: the star stays round but dims. Now give the same amount to a coma term instead.",
+    "Raise one coefficient until the Strehl ratio drops below 0.8. Try another term: the limit is about the same RMS, roughly 0.075 waves, whatever the shape.",
+    "In the JWST section below, step through the <strong>commissioning steps</strong>: 18 separate mirror segments become one telescope.",
+  ]));
 
   const spec = { preset: { type: 'select', label: 'Preset', value: 'mix', options: [['custom', 'Custom'], ...Object.entries(PRESETS).map(([k, p]) => [k, p.label])] } };
   spec.h1 = { type: 'heading', label: 'Zernike coefficients (waves RMS, Noll)' };
@@ -75,6 +81,7 @@ export default function mount(root, meta) {
     ]));
     const nz = MODES.filter((j) => c[j]);
     const terms = (nz.slice(0, 3).map((j) => `${texNum(c[j], 2)}^2`).join('+') + (nz.length > 3 ? '+\\cdots' : '')) || '0';
+    calc.say(`The wavefront deviates by <strong>${rms.toFixed(3)} waves RMS</strong> (${(mx - mn).toFixed(2)} peak to valley), so the star's peak is <strong>${(D.strehl * 100).toFixed(0)} %</strong> as bright as with a perfect lens` + (D.strehl >= 0.8 ? ': diffraction-limited by the Maréchal criterion.' : '.'));
     calc.set(String.raw`\begin{aligned}\sigma_W^2 &= \textstyle\sum_{j\ge4} a_j^2 = ${terms}\\ \sigma_W &= ${texNum(rms, 4)}\,\lambda\\ S &\approx e^{-(2\pi\sigma_W)^2} = ${texNum(sm, 4)}\\ S_\text{exact} &= \frac{\max|\mathcal F\{Pe^{i2\pi W}\}|^2}{\max|\mathcal F\{P\}|^2} = ${texNum(D.strehl, 4)}\end{aligned}`);
     [wf, ifg, ps, tf, sp].forEach((s) => s.redraw());
   }
@@ -219,6 +226,9 @@ export default function mount(root, meta) {
   }
   recomputeSeg();
 
+  root.append(rule(String.raw`\[S \approx e^{-(2\pi\sigma)^2}\]
+<p>The Strehl ratio \(S\), the peak brightness of a star image relative to a perfect lens, depends mainly on the RMS wavefront error \(\sigma\) in waves and hardly on its shape. A system counts as diffraction-limited when \(S \ge 0.8\), which needs \(\sigma \le \lambda/14 \approx 0.07\) waves (Maréchal): only 39 nm at 550 nm. A mirror doubles its surface errors in the reflected wave, so its surface must be accurate to about 20 nm.</p>`,
+    String.raw`The formula works well up to about 0.1–0.15 waves RMS. For larger errors it can be far off and the shape of the aberration matters, so the image has to be computed from the full wavefront, as the FFT on this page does.`));
   root.append(theory('Wavefront aberration theory', String.raw`
 <div class="theory-cols"><div>
 <h3>Zernike polynomials</h3>

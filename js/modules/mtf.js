@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { mtfDiffraction, airy } from '../lib/pupil.js';
 import { fft2d } from '../lib/fft.js';
 import { latest } from '../lib/compute.js';
@@ -9,7 +9,13 @@ import { plot, range } from '../lib/plot.js';
 const sinc = (x) => (Math.abs(x) < 1e-9 ? 1 : Math.sin(Math.PI * x) / (Math.PI * x));
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: '"Sharpness" is a cascade of transfer functions. Diffraction, aberrations, defocus, the anti-aliasing filter and the pixel\'s own aperture each multiply the contrast at every spatial frequency. Whatever survives beyond the Nyquist frequency does not vanish: it folds back as moiré.', domains: ['photo', 'video', 'space'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
+  root.append(idea(String.raw`<p>How sharp a photo looks depends on how well fine detail keeps its contrast. Picture a pattern of black and white stripes: as the stripes get finer, the camera turns them into lighter and darker greys, until they melt into an even grey. The <strong>MTF</strong> curve shows how much contrast survives at each fineness.</p>
+<p>Every part of the camera takes a share: diffraction at the aperture, lens errors, focus, the filter in front of the sensor and the pixels themselves, and the losses multiply. Detail finer than the pixel grid can record does not simply vanish: it turns into false patterns called <strong>moiré</strong>.</p>`, [
+    "Stop down from f/5.6 to <strong>f/22</strong>: the curve drops everywhere, because diffraction now limits sharpness.",
+    "Go back to f/5.6 and set the pixel pitch to <strong>2 µm</strong>: smaller pixels record finer detail, as long as the lens delivers it.",
+    "Raise the <strong>OLPF split</strong> to about 1 pixel: contrast at the Nyquist line falls and the moiré risk with it, at the cost of some sharpness.",
+  ]));
 
   const ctl = controls({
     N: { type: 'range', label: 'f-number', min: 1.4, max: 32, log: true, value: 5.6, fmt: (v) => 'f/' + v.toPrecision(2) },
@@ -93,6 +99,7 @@ export default function mount(root, meta) {
       ['Rayleigh distance 1.22λN', (1.22 * 0.55 * N).toFixed(2) + ' µm'],
       ['f-number where ν_c = ν_N', 'f/' + (2 * st.p / 0.55).toFixed(1)],
     ]));
+    calc.say(`At f/${st.N.toPrecision(2)} with ${st.p} µm pixels, half the contrast survives up to <strong>${fmt(M.mtf50, 3)} cycles/mm</strong>. At the finest pattern the pixels can record (${fmt(nyq, 3)} cycles/mm), ${(sysAbs(nyq) * 100).toFixed(0)} % remains` + (sysAbs(nyq) > 0.1 ? ', so moiré is likely.' : '.'));
     calc.set(String.raw`\begin{aligned}
     \mathrm{MTF}_\text{sys} &= \mathrm{MTF}_\text{opt}\,\mathrm{MTF}_\text{pix}\,\mathrm{MTF}_\text{OLPF}\\
     \nu_c &= 1/(\lambda N) = ${texNum(nuC(550), 4)}\ \text{cy/mm}\\
@@ -185,6 +192,9 @@ export default function mount(root, meta) {
 
   recompute();
 
+  root.append(rule(String.raw`\[\nu_c = \frac{1}{\lambda N},\qquad \nu_\text{Nyquist} = \frac{1}{2p}\]
+<p>No lens at f-number \(N\) passes detail finer than \(\nu_c\) cycles per millimetre, and a sensor with pixel pitch \(p\) cannot record more than \(\nu_\text{Nyquist}\) without aliasing. At f/8 in green light \(\nu_c = 1/(0.00055 \times 8) = 227\) cycles/mm, while 4.3 µm pixels record up to 116 cycles/mm. The two match at \(N = 2p/\lambda\), about f/16 for 4.3 µm pixels; beyond that, smaller pixels only record the diffraction blur more finely.</p>`,
+    String.raw`Matching the cut-off to Nyquist is not the same as matching sharpness: the lens MTF is already low well before \(\nu_c\), and the system MTF is the product of all the factors. At wide apertures real lenses are limited by aberrations, not by diffraction.`));
   root.append(theory('Linear-systems theory of image sharpness', String.raw`
 <div class="theory-cols"><div>
 <h3>The transfer-function cascade</h3>

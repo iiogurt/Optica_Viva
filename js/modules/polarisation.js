@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { run } from '../lib/compute.js';
 import { plot, range } from '../lib/plot.js';
 import { oetf, colormap, wavelengthRGB } from '../lib/color.js';
@@ -8,7 +8,13 @@ import { polariser, retarder, mapply, ellipse, fresnelAmp, brewster, rayleighDoP
 const D2R = Math.PI / 180;
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Light is a transverse wave, and the direction in which its electric field oscillates is invisible to the eye but not to physics. Reflections off water and glass, and the blue sky itself, are partly polarised. A polariser on the lens can therefore remove glare and deepen the sky. This lab renders a whole scene with Stokes vectors and Mueller matrices, so every pixel carries its state of polarisation through reflection, refraction and the filter.', domains: ['photo', 'video', 'space'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
+  root.append(idea(String.raw`<p>Light is a wave that vibrates across its direction of travel, and the direction of that vibration is its <strong>polarisation</strong>. Our eyes cannot see it, yet it varies a lot: light reflected from water or glass, and light from the blue sky, vibrates mostly in one direction.</p>
+<p>A polarising filter acts like a fence with narrow slots: it passes only light vibrating along the slots. Turned the right way, it blocks most of the glare on water, so you can see the bottom, and it darkens the sky at right angles to the sun. Turned the other way, it leaves them almost untouched.</p>`, [
+    "Turn the <strong>Filter rotation</strong> from 90° to 0°: the reflections on the water come back.",
+    "Change the <strong>Camera tilt</strong> and watch the incidence angle at the image centre: near 53° the glare almost disappears.",
+    "Move the <strong>Sun azimuth</strong>: the sky is darkest where it is 90° away from the sun.",
+  ]));
 
   // ── polarised lake scene ──
   const ctl = controls({
@@ -81,6 +87,8 @@ export default function mount(root, meta) {
       ['Filter factor (unpolarised light)', st.pol ? (Math.log2(1 / ff)).toFixed(2) + ' EV' : '—'],
     ]));
     const P0 = f ? (f.Rs - f.Rp) / (f.Rs + f.Rp) : 0;
+    calc.say((thC !== null ? `Light reflected at the image centre meets the water at ${(thC / D2R).toFixed(0)}° (Brewster's angle is ${(thB / D2R).toFixed(1)}°) and is <strong>${(P0 * 100).toFixed(0)} % polarised</strong>. ` : `The image centre shows sky. `)
+      + (st.pol ? `The filter costs ${Math.log2(1 / ff).toFixed(1)} stops of light.` : 'The filter is off.'));
     calc.set(String.raw`\begin{aligned}
     \theta_B &= \arctan\frac{n_2}{n_1} = \arctan ${texNum(N_W, 4)} = ${texNum(thB / D2R, 4)}^\circ\\
     ${f ? String.raw`r_s &= \frac{\cos\theta_i - n\cos\theta_t}{\cos\theta_i + n\cos\theta_t} = ${texNum(f.rs, 4)},\quad r_p = ${texNum(f.rp, 4)}\\
@@ -508,6 +516,9 @@ export default function mount(root, meta) {
   updateStress();
   updateOLPF();
 
+  root.append(rule(String.raw`\[\tan\theta_B = n\]
+<p>Light reflected at <strong>Brewster's angle</strong> \(\theta_B\) is completely polarised, because the part vibrating in the plane of incidence is not reflected at all. For water (\(n = 1.33\)) \(\theta_B = 53^\circ\) from the vertical: look down at the water about 37° below the horizon and a polariser removes the reflection almost completely. A polariser always costs at least one stop, since even a perfect one blocks half of unpolarised light.</p>`,
+    String.raw`It is exact for a smooth surface. Ripples spread the angles of incidence, so the glare is reduced rather than removed, and metals reflect without polarising much. Sky polarisation is strongest 90° from the sun but rarely exceeds 70–80 %, because of multiple scattering and haze.`));
   root.append(theory('The vector nature of light', String.raw`
 <div class="theory-cols"><div>
 <h3>Stokes vectors and Mueller matrices</h3>

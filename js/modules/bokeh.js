@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, debounce, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
 import { LENSES, autoSemiDiameters, stopIndex } from '../lib/raytrace.js';
 import { linspace } from '../lib/color.js';
@@ -106,7 +106,13 @@ function kernelCanvas(k, rgb, gain = 1) {
 }
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'An out-of-focus point of light is a projected image of the lens\'s own exit pupil. Its outline comes from the iris blades and the barrel\'s mechanical vignetting. Its inner brightness comes from residual spherical aberration and polishing errors on aspheric surfaces. Bokeh quality is therefore pupil geometry plus wavefront error, made visible.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>Out-of-focus points of light, such as street lamps behind a portrait, turn into discs. Each disc is a small picture of the lens opening itself, which is why every lens has its own "bokeh".</p>
+<p>The iris blades give the discs their outline, round or polygonal. The lens barrel clips them into cat's eyes near the edges of the frame. And small lens errors decide whether a disc is evenly lit, has a bright rim like a soap bubble, or fades softly from a bright centre, which is what photographers usually call "creamy" bokeh.</p>`, [
+    "Set <strong>Iris blades</strong> to 6 and stop down 2 EV: the discs become hexagons. Raise <strong>Blade roundness</strong> to make them round again.",
+    "Compare the discs at the centre and in the corners: the barrel cuts the corner ones into cat's eyes. Stop down and they turn round.",
+    "Switch the <strong>Model</strong> to phenomenological and move <strong>Spherical aberration</strong> from one side to the other: background discs swap a bright rim for a soft edge.",
+  ]));
 
   const traced = (s) => s.model === 'traced', pheno = (s) => s.model !== 'traced';
   const ctl = controls({
@@ -186,6 +192,7 @@ export default function mount(root, meta) {
       ['Foreground rim / centre', rc(f0).toFixed(2) + ' (' + look(rc(f0)) + ')'],
       ['Corner kernel flux', ((bc.flux / b0.flux) * 100).toFixed(0) + ' % of centre'],
     ]));
+    calc.say(`A point at infinity behind the subject becomes a disc <strong>${b0.st.Dmm.toFixed(2)} mm</strong> wide on the sensor (the thin-lens estimate gives ${cThin.toFixed(2)} mm), and its rim is ${rc(b0).toFixed(2)} times as bright as its centre: ${look(rc(b0))}.`);
     calc.set(String.raw`\begin{aligned}
     c &= \frac{f^2}{N(s-f)} = \frac{${texNum(f, 3)}^2}{${texNum(N, 2)}\,(${texNum(s, 4)} - ${texNum(f, 3)})} = ${texNum(cThin, 3)}\ \text{mm}\\
     \Delta z &= z_s - z_\infty = ${texNum(r.zs - r.zInf, 3)}\ \text{mm}\\
@@ -224,6 +231,7 @@ export default function mount(root, meta) {
       ['Background disk', st.sa > 0 ? 'bright rim (soap bubble)' : st.sa < 0 ? 'soft edge, bright centre' : 'uniform'],
       ['Foreground disk', st.sa > 0 ? 'soft edge, bright centre' : st.sa < 0 ? 'bright rim' : 'uniform'],
     ]));
+    calc.say(`Background discs ${st.sa > 0 ? 'have a bright rim, like soap bubbles' : st.sa < 0 ? 'have a soft edge and a bright centre' : 'are evenly lit'}, and foreground discs ${st.sa > 0 ? 'have a soft edge and a bright centre' : st.sa < 0 ? 'have a bright rim' : 'are evenly lit'}. The iris is open to <strong>${(iris * 100).toFixed(0)} %</strong> of the full aperture${st.blades >= 3 ? `, so the discs take the shape of its ${st.blades} blades` : ''}.`);
     calc.set(String.raw`\begin{aligned}
     r(\rho) &= c\,(\rho + s\rho^3)\\
     s_\text{bg} &= -2W_{040}/|W_{020}| = ${texNum(-st.sa, 3)}\\
@@ -358,6 +366,9 @@ export default function mount(root, meta) {
 
   recompute();
 
+  root.append(rule(String.raw`\[c = \frac{f^2}{N\,(s-f)}\]
+<p>With the lens focused at distance \(s\), a point at infinity becomes a disc of diameter \(c\) on the sensor. An 85 mm lens at f/1.8 focused at 2 m gives \(85^2/(1.8 \times 1915) = 2.1\) mm, 70 times the 0.03 mm that still counts as sharp. The disc grows with the square of the focal length and shrinks with the f-number and the focus distance.</p>`,
+    String.raw`It gives the thin-lens disc for a point at infinity; nearer background points make smaller discs. The outline and the brightness inside the disc come from the iris, vignetting and aberrations, which only a ray trace or a pupil model like the ones above can predict.`));
   root.append(theory('The anatomy of a blur disk', String.raw`
 <div class="theory-cols"><div>
 <h3>Geometry: the disk is an image of the pupil</h3>
