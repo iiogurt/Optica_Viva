@@ -15,7 +15,7 @@ const PAGES = {
   home: ['', [268, 0, 1440, 680]], foundations: ['foundations', [296, 0, 1412, 760]], catalogue: ['catalogue', [296, 250, 1412, 1070]], 'catalogue-entry': ['catalogue?g=diffraction-and-wave-optics&e=airy-disk', [296, 250, 1412, 1070]],
   raytracer: ['raytracer', LAB], dof: ['dof', LAB], 'dof-ladder': ['dof', [296, 20, 1412, 510]], sensor: ['sensor', LAB], projection: ['projection', LAB], perspective: ['perspective', LAB],
   tiltshift: ['tiltshift', LAB], vignetting: ['vignetting', LAB], psf: ['psf', LAB], zernike: ['zernike', LAB],
-  mtf: ['mtf', LAB], chromatic: ['chromatic', { lab: [296, 2, 1412, 822] }], bokeh: ['bokeh', LAB], flare: ['flare', LAB],
+  mtf: ['mtf', LAB], chromatic: ['chromatic', LAB], bokeh: ['bokeh', LAB], flare: ['flare', LAB],
   sampling: ['sampling', LAB], noise: ['noise', LAB], motion: ['motion', LAB], seeing: ['seeing', LAB],
   telescope: ['telescope', [296, 1220, 1412, 2040]], lensing: ['lensing', LAB], polarisation: ['polarisation', LAB], macro: ['macro', LAB], colour: ['colour', LAB], wfs: ['wfs', LAB], spectro: ['spectro', LAB], panorama: ['panorama', LAB], cinema: ['cinema', LAB], hdr: ['hdr', LAB], shake: ['shake', LAB], eye: ['eye', LAB], film: ['film', LAB], vp: ['vp', LAB], interferometry: ['interferometry', LAB], detectors: ['detectors', LAB], adc: ['adc', LAB], lucky: ['lucky', LAB], stacking: ['stacking', LAB], starshade: ['starshade', LAB], fieldpsf: ['fieldpsf', LAB],
 };
