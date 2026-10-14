@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Glossary** (`js/lib/glossary.js`): 62 technical terms, from f-number and depth of field to Strehl ratio, Fried parameter and Einstein ring, each with a one-sentence plain definition. The first use of a term on a page gets a dotted underline; hovering, focusing or tapping it shows the definition and a link to the laboratory that simulates it. Abbreviations match only in capitals, longer terms win over shorter ones ("spherical aberration" before "aberration"), and the KaTeX formulas, links and headings are left alone.
+- Tests (`test/glossary.test.mjs`): short, plain, unique definitions with valid laboratory links; every term occurs in some page; only the first use is marked.
 - **From the simple idea to the full model.** Pages now climb from simple to exact, with everything visible in that order and no beginner/expert switch:
   - ① *The idea*: the phenomenon in plain words, without symbols, beside two or three things to try in the simulation;
   - the simulation, whose live calculation now starts with the result in a sentence ("Sharp from 2.17 m to 2.23 m, 6.7 cm deep …");

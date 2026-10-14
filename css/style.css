@@ -349,3 +349,16 @@ canvas:focus-visible { outline-offset: -2px; }
   .ladder { position: static; background: none; backdrop-filter: none; }
   .idea { grid-template-columns: 1fr; }
 }
+
+/* Glossary terms: first use on a page, definition in a popover */
+button.term {
+  display: inline; padding: 0; margin: 0; border: 0; background: none; font: inherit; color: inherit; cursor: help;
+  text-decoration: underline dotted rgba(106, 215, 255, 0.7); text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+}
+button.term:hover, button.term:focus-visible { color: var(--accent-2); }
+.gloss-tip {
+  position: fixed; z-index: 40; padding: 10px 12px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line-2);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6); color: var(--fg-dim); font: 400 13.5px/1.5 var(--font-sans);
+}
+.gloss-tip strong { color: var(--fg); }
+.gloss-tip a { display: inline-block; margin-top: 6px; color: var(--accent-2); font-weight: 600; }
