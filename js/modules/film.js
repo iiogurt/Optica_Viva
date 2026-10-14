@@ -1,11 +1,17 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { stock, meanDensity, speedPoint, selwyn, reciprocityCorrection } from '../lib/film.js';
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Film detects light with millions of silver-halide crystals per square millimetre. A crystal that absorbs enough photons becomes developable and turns into an opaque grain of silver. Everything that makes film look like film follows from that all-or-nothing switch: the S-shaped characteristic curve, grain that grows with speed, a detective quantum efficiency of only a few per cent, and the failure of reciprocity in long exposures.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>Photographic film is coated with billions of tiny silver-halide crystals. A crystal that catches a few photons becomes "developable", and the developer turns it into a speck of black silver. Each crystal is either on or off, so the picture is built from countless specks: film <strong>grain</strong>.</p>
+<p>Bigger crystals catch light more easily, so fast, sensitive films have coarser grain. Film also responds gently at both ends of its range, an S-shaped curve that gives highlights a soft roll-off. And in very long exposures it gets less sensitive, so night photographers have to add extra time.</p>`, [
+    "Raise the <strong>Film speed</strong> from ISO 100 to 3200: the grain grows.",
+    "Move the <strong>Exposure</strong> to +4 and −4 EV and follow the point along the S-shaped curve: highlights compress, shadows block up.",
+    "In the reciprocity section below, set a metered exposure of 60 s and read how much longer the film really needs.",
+  ]));
 
   const ctl = controls({
     iso: { type: 'range', label: 'Film speed', min: 25, max: 3200, log: true, value: 400, fmt: (v) => 'ISO ' + Math.round(v) },
@@ -37,6 +43,7 @@ export default function mount(root, meta) {
         ['Selwyn constant σ_D √A', r.G.toFixed(3) + ' µm'],
         ['Detective quantum efficiency', (100 * r.dqe).toFixed(2) + ' %'],
       ]));
+      calc.say(`At ISO ${Math.round(st.iso)} the median grain is <strong>${(2 * f.r).toFixed(2)} µm</strong> across, and the film puts only <strong>${(100 * r.dqe).toFixed(1)} %</strong> of the photons to use (its detective quantum efficiency); a modern sensor reaches over 50 %.`);
       calc.set(String.raw`\begin{aligned}
       D &= 0.434\,L\,n\,\langle p\,\pi r^2\rangle + D_\text{fog}\\
       &= ${texNum(r.Dmid, 3)}\\
@@ -96,6 +103,9 @@ export default function mount(root, meta) {
 
   update(); updR();
 
+  root.append(rule(String.raw`\[\sigma_D \sqrt{A} = G\]
+<p>Selwyn's law: the measured graininess \(\sigma_D\), the scatter of density, falls with the square root of the area \(A\) over which it is measured, with a constant \(G\) set by the film. Enlarge a frame twice as much and each spot the viewer resolves covers a quarter of the film area, so the graininess doubles. That is why grain shows far more in a 30 × 45 cm print than in a postcard from the same negative.</p>`,
+    String.raw`Selwyn's law holds for measuring areas much larger than the grains; near grain size the structure of individual clumps shows. Perceived grain also depends on the development, the scanner and the content of the picture.`));
   root.append(theory('How film detects light', String.raw`
 <div class="theory-cols"><div>
 <h3>Grains as photon counters with a threshold</h3>

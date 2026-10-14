@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS, pitchUm } from '../lib/sensors.js';
 import { makeRng as sharedRng } from '../lib/random.js';
 import { plot, logRange } from '../lib/plot.js';
@@ -11,7 +11,13 @@ const K_METER = 12.5, T_LENS = 0.9;
 function makeRng(seed) { const r = sharedRng(seed); return { u: r.u, gauss: r.g, poisson: r.poisson }; }
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Light arrives as photons, and photons arrive at random. Every pixel value is therefore a random variable whose spread is set by physics (shot noise) and by electronics (read noise, dark current, gain). Exposure sets the photon count, and ISO only decides where the analogue amplifier puts the clipping point. Here the full chain is simulated pixel by pixel.', domains: ['photo', 'video', 'space'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
+  root.append(idea(String.raw`<p>Light arrives as tiny packets, photons, and they arrive at random, like raindrops on a pavement. Even under perfectly even light, neighbouring pixels catch slightly different numbers. That randomness is <strong>shot noise</strong>, and it is the main reason photos taken in dim light look grainy: the fewer photons, the larger the relative scatter.</p>
+<p>The camera's electronics add some noise of their own. Raising the ISO does not collect more light; it only amplifies the signal, which helps a little against the electronic noise in the shadows but makes bright areas clip sooner. More light, from a wider aperture or a longer exposure, is the real cure.</p>`, [
+    "Set the scene brightness to a night street and raise the ISO, with brightening on: the noise improves at first, then stops improving.",
+    "Instead of raising the ISO, open the aperture to <strong>f/1.4</strong> or lengthen the shutter: now the noise really drops.",
+    "Compare <strong>full frame</strong> with the <strong>phone</strong> sensor at the same settings: the smaller pixels catch far fewer photons.",
+  ]));
 
   const ctl = controls({
     sensor: { type: 'select', label: 'Sensor', value: 'ff', options: ['mf', 'ff', 'apsc', 'mft', 'one', 'phone'].map((k) => [k, SENSORS[k].name]) },
@@ -97,6 +103,7 @@ export default function mount(root, meta) {
       ['Engineering dynamic range', m.DR.toFixed(1) + ' EV'],
       ['Clipped pixels', (clipFrac * 100).toFixed(1) + ' %'],
     ]));
+    calc.say(`A mid-grey pixel collects about <strong>${fmt(m.eMid, 3)} photons</strong>, and its signal-to-noise ratio is <strong>${m.snrMid.toFixed(0)}</strong>` + (m.snrMid > 0.9 * Math.sqrt(m.eMid) ? `, close to the shot-noise limit √n = ${Math.sqrt(m.eMid).toFixed(0)}: the electronics add little.` : `; shot noise alone would allow √n = ${Math.sqrt(m.eMid).toFixed(0)}, the rest is lost to electronic noise.`) + (clipFrac > 0.01 ? ` ${(clipFrac * 100).toFixed(0)} % of the pixels clip.` : ''));
     calc.set(String.raw`\begin{aligned}
     E &= \frac{\pi T L}{4N^2},\quad \bar n = E\,t\,A_\text{px}\,\Phi_\gamma\,\eta = ${texNum(m.eMid, 3)}\ e^-\\
     \sigma &= \sqrt{\bar n + D t + \sigma_r^2 + (P\bar n)^2}\\
@@ -149,6 +156,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[\mathrm{SNR} = \sqrt{n}\]
+<p>With \(n\) photons collected, the shot noise is \(\sqrt n\), so the signal-to-noise ratio is \(\sqrt n\) as long as the electronic noise is smaller. 100 photons give an SNR of 10, which looks noisy; 10,000 give 100, which looks clean. Each extra stop of light doubles \(n\) and improves the SNR by 41 %, and a pixel with four times the area collects four times the photons and doubles it.</p>`,
+    String.raw`In deep shadows the read noise \(\sigma_r\) of the electronics adds to the shot noise, \(\mathrm{SNR} = n/\sqrt{n + \sigma_r^2}\), and in bright areas the pixel's capacity (full well) caps \(n\). Fixed-pattern noise and dark current matter in long exposures.`));
   root.append(theory('The photon-transfer model', String.raw`
 <div class="theory-cols"><div>
 <h3>From scene to electrons</h3>

@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot, logRange } from '../lib/plot.js';
 import { snr, dynamicRange } from '../lib/hdr.js';
@@ -11,7 +11,13 @@ const CAMS = {
 };
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'A sunset spans 20 stops from the sun to the shadows, more than any sensor records in one exposure. Photographers either balance the light before it reaches the sensor (neutral-density and graduated filters) or capture several exposures and combine them. The combination can be a merged radiance map that is then tone-mapped, or exposure fusion. Each choice has a precise noise cost.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>A sunset can be a million times brighter near the sun than in the deepest shadows, while a camera sensor records a range of only a few thousand to one in a single shot. Expose for the sky and the shadows turn black; expose for the shadows and the sky turns white.</p>
+<p>There are two ways out. A <strong>graduated filter</strong>, dark at the top and clear at the bottom, holds back the bright sky before the light reaches the sensor. Or you take several photos at different exposures, a <strong>bracket</strong>, and merge them, using the dark frames for the highlights and the bright ones for the shadows.</p>`, [
+    "Set <strong>Bracketed frames</strong> to 1: the sky clips or the shadows drown in noise. Then try 3 and 5 frames.",
+    "With a single frame, add 3 stops of <strong>Graduated ND</strong> and move its transition to the horizon.",
+    "With 3 frames, change the <strong>Bracket step</strong> from 2 to 1 EV: the merged range shrinks by 2 stops.",
+  ]));
 
   const ctl = controls({
     cam: { type: 'select', label: 'Sensor', value: 'ff', options: Object.entries(CAMS).map(([k, c]) => [k, c.name]) },
@@ -44,6 +50,7 @@ export default function mount(root, meta) {
       ['Bracket dynamic range', dr.toFixed(1) + ' EV (+' + (dr - dr1).toFixed(1) + ')'],
       ['Graduated ND: OD', st.gnd ? (st.gnd / Math.log2(10)).toFixed(2) + ` (${st.gnd} stops)` : '—'],
     ]));
+    calc.say(`One frame of this sensor records <strong>${dr1.toFixed(1)} stops</strong>; the bracket of ${st.n} frame${st.n === '1' ? '' : 's'} covers <strong>${dr.toFixed(1)} stops</strong>` + (st.gnd ? `, and the graduated filter holds the sky back by ${st.gnd} more.` : '.') + ' The scene spans about 20 stops.' );
     calc.set(String.raw`\begin{aligned}
     S_{\mathrm{SNR}=1} &= \tfrac12\left(1+\sqrt{1+4\sigma_r^2}\right) = ${texNum((1 + Math.sqrt(1 + 4 * cam.read ** 2)) / 2, 3)}\ e^-\\
     \mathrm{DR} &= \log_2\frac{S_\text{FWC}}{S_{\mathrm{SNR}=1}} = ${texNum(dr1, 3)}\ \text{EV}\\
@@ -84,6 +91,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[\mathrm{DR}_\text{bracket} \approx \mathrm{DR}_1 + (n-1)\,\Delta\]
+<p>Each extra frame in a bracket, spaced \(\Delta\) stops apart, adds \(\Delta\) stops to the range you can record. A sensor with 12 stops of single-frame dynamic range, bracketed with 3 frames 2 stops apart, covers 16 stops; 5 frames cover 20, enough for most sunsets. Every stop doubles the light, so 20 stops is a contrast of a million to one.</p>`,
+    String.raw`It assumes nothing moves between the frames; wind, water and people leave ghosts in the merge. Steps much larger than 2–3 stops leave noisy gaps, and the result must still be compressed into the few stops a screen or print can show, which is the job of tone mapping.`));
   root.append(theory('Capturing more stops than the sensor has', String.raw`
 <div class="theory-cols"><div>
 <h3>Dynamic range of one exposure</h3>

@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, logRange } from '../lib/plot.js';
 import { oetf } from '../lib/color.js';
 import { COATINGS } from '../lib/thinfilm.js';
@@ -9,7 +9,13 @@ import { anamorphicAspect, streakColour, angleOfView, breathing, surfaceReflecta
 const D2R = Math.PI / 180;
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Cinema lenses are judged by more than sharpness. Anamorphic lenses squeeze a widescreen image onto the sensor and give oval out-of-focus highlights and long horizontal flares. Focus pulls must not visibly change the framing ("breathing"). Exposure is set in T-stops, which count the light actually transmitted, not the geometric f-number.', domains: ['video', 'photo'] }));
+  root.append(header({ ...meta, domains: ['video', 'photo'] }));
+  root.append(idea(String.raw`<p>Most films are shown in a wide format, more than twice as wide as tall. <strong>Anamorphic</strong> lenses get there by squeezing the scene sideways onto the sensor, like a funhouse mirror that makes people look thin, and the picture is stretched back out for viewing. Out-of-focus lights then become tall ovals, and bright lights throw long horizontal streaks: the classic "cinematic" look.</p>
+<p>Cinema lenses also face a test photographers rarely care about: moving the focus from one actor to another must not visibly zoom the picture, which is called <strong>breathing</strong>. And they are marked in T-stops, which count the light that actually gets through.</p>`, [
+    "Switch between <strong>Spherical</strong> and <strong>Anamorphic</strong> and watch the background lights: circles become tall ovals.",
+    "Turn on <strong>Show the squeezed image as recorded</strong>: this is what the sensor actually sees.",
+    "In the breathing section below, move the focus distance from 20 m to 0.35 m and watch how much the frame changes size.",
+  ]));
 
   // ── anamorphic ──
   const ctl = controls({
@@ -43,6 +49,7 @@ export default function mount(root, meta) {
       ['Streak strength (two reflections)', sc ? `${sc.strength.toExponential(1)} of the source → ${Math.log2(sc.strength * 2 ** st.hl).toFixed(1)} EV vs exposure` : '—'],
       ['Same framing on a spherical lens needs', s > 1 ? `a ${(sensorW * s).toFixed(1)} mm wide sensor or ${(F / s).toFixed(0)} mm with a crop` : '—'],
     ]));
+    calc.say((s > 1 ? `A ${s}× anamorphic squeeze makes the background lights ovals ${s.toFixed(1)} times taller than wide` : 'A spherical lens draws the background lights as circles') + `; each spans <strong>${(blurV / D2R * 60).toFixed(0)} arcminutes</strong> in height.`);
     calc.set(String.raw`\begin{aligned}
     \text{aspect} &= s\,\frac{w}{h} = ${texNum(s, 3)}\times${texNum(sensorW / GATE_H, 3)} = 2.39\\
     \beta_v &= \frac{D}{1}\left|\frac1{u_o}-\frac1{u_f}\right| = ${texNum(blurV * 1000, 3)}\ \text{mrad},\quad \beta_h = \beta_v/s
@@ -152,6 +159,9 @@ export default function mount(root, meta) {
 
   update(); updB(); updT();
 
+  root.append(rule(String.raw`\[\text{aspect on screen} = s \times \frac{w}{h}\]
+<p>The squeeze factor \(s\) multiplies the aspect ratio recorded on the sensor. A 2× anamorphic on an area about 1.2 times as wide as tall gives the 2.39 : 1 widescreen format. Out-of-focus lights are squeezed by the same factor, so they look \(s\) times taller than wide once the picture is stretched back. T-stops: \(T = N/\sqrt{\tau}\), where \(\tau\) is the lens's transmission, so an f/2 lens that passes 80 % of the light is a T2.2.</p>`,
+    String.raw`Real anamorphics squeeze by slightly different amounts at different focus distances and across the frame, and their ovals are also clipped by the cylindrical elements. T-stops fix the exposure, not the depth of field, which still follows the f-number.`));
   root.append(theory('Cinema optics', String.raw`
 <div class="theory-cols"><div>
 <h3>Anamorphic lenses</h3>

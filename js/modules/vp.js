@@ -1,12 +1,18 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, logRange } from '../lib/plot.js';
 import { moire, renderWall, bandProfile, bandAmplitude } from '../lib/virtual.js';
 
 const D2R = Math.PI / 180;
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'In a virtual-production volume the background is an LED wall filmed directly by the cinema camera. Two of its own fine structures can betray it: its grid of light-emitting pixels, which can alias against the camera\'s photosites into moiré, and its pulse-width-modulated refresh, which a rolling shutter turns into bands. Both are predictable from first principles.', domains: ['video'] }));
+  root.append(header({ ...meta, domains: ['video'] }));
+  root.append(idea(String.raw`<p>In virtual production the background is a giant LED screen, filmed directly by the camera, like a vast television showing the set. The screen is built from a grid of tiny lights, and the camera's sensor is a grid of pixels too. When the two grids nearly line up, they interfere and create wavy false patterns across the wall: <strong>moiré</strong>.</p>
+<p>The usual cure is to keep the wall slightly out of focus, so its grid blurs before it reaches the sensor. The wall's lights also flicker very fast to set their brightness, and a camera that reads its picture line by line can turn that flicker into horizontal bands.</p>`, [
+    "Set the focus distance equal to the wall distance: the grid is sharp and the pattern strongest. Then focus back on the actor at 3 m.",
+    "Open the aperture from T2.8 to <strong>T1.4</strong>: more defocus blur, less moiré.",
+    "In the banding section below, lower the <strong>LED PWM refresh rate</strong>: bands appear.",
+  ]));
 
   const ctl = controls({
     p: { type: 'range', label: 'LED pixel pitch', min: 1.2, max: 4, step: 0.1, value: 2.6, unit: 'mm' },
@@ -41,6 +47,7 @@ export default function mount(root, meta) {
       ['Moiré / grid contrast', (100 * r.contrast).toFixed(2) + ' %'],
       ['Aliased and < 1 % from', safe ? safe.toFixed(1) + ' m' : '—'],
     ]));
+    calc.say(`On the sensor the wall's grid has <strong>${r.nu.toFixed(0)} cycles/mm</strong> against a Nyquist limit of ${r.nyquist.toFixed(0)}` + (r.aliased ? `, so it aliases into moiré with <strong>${(100 * r.contrast).toFixed(1)} %</strong> contrast` : `, so the grid itself is resolved, with ${(100 * r.contrast).toFixed(1)} % contrast`) + (r.contrast < 0.01 ? ', below the 1 % at which it shows.' : '.'));
     calc.set(String.raw`\begin{aligned}
     \nu_w &= \frac{1}{m\,p} = ${texNum(r.nu, 3)}\ \text{mm}^{-1},\quad \nu_\text{alias} = \left|\nu_w - \tfrac{k}{q}\right| = ${texNum(r.alias, 3)}\\
     C &= M_\text{grid}\,\frac{2J_1(\pi b\nu_w)}{\pi b\nu_w}\,\mathrm{MTF}_\text{lens}\,\mathrm{sinc}(q\nu_w) = ${texNum(r.contrast, 3)}
@@ -114,6 +121,9 @@ export default function mount(root, meta) {
 
   update(); updB();
 
+  root.append(rule(String.raw`\[\nu_w = \frac{1}{m\,p} \approx \frac{Z}{f\,p}\]
+<p>An LED wall with pixel pitch \(p\) at distance \(Z\) is imaged at magnification \(m \approx f/Z\), so its grid lands on the sensor at frequency \(\nu_w\). A 2.6 mm wall 6 m away through a 50 mm lens gives \(6000/(50 \times 2.6) = 46\) cycles/mm, below the 83 cycles/mm Nyquist limit of 6 µm photosites: the grid is resolved and shows if the wall is in focus. From 12 m it doubles to 92 cycles/mm, above Nyquist, and aliases into moiré. Defocusing the wall washes out both.</p>`,
+    String.raw`The magnification formula holds for a wall much farther away than the focal length. Whether the pattern is visible depends on the contrast that survives defocus, the lens MTF and the photosites' own averaging, which this page computes, and on the shape of the wall's emitters.`));
   root.append(theory('Filming a screen', String.raw`
 <div class="theory-cols"><div>
 <h3>LED-wall moiré</h3>

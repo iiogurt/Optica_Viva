@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
 
 const NPX = 150; // sensor pixels across
@@ -13,7 +13,13 @@ const SCENES = {
 };
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'A sensor is a grid of point samples taken through square apertures. Detail finer than two pixels per cycle cannot be recorded, but it does not simply vanish: it reappears at the wrong frequency and the wrong angle, as moiré. A Bayer colour filter samples red and blue at half the rate, so fine grey detail can also come back in false colour.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>A sensor records a picture as a grid of pixels, a bit like measuring a landscape only at the posts of a fence. Anything that changes faster than the posts are spaced cannot be captured correctly. Stripes on a shirt finer than two pixels per stripe pair come out as broad, wavy false patterns: <strong>moiré</strong>.</p>
+<p>Colour makes it worse. Most sensors put a red, green or blue filter on each pixel, so each colour is sampled even more sparsely, and fine grey detail can come back in false colours. An optical low-pass filter in front of the sensor blurs the image very slightly to prevent this.</p>`, [
+    "Raise the <strong>Scene detail</strong> slowly: past a point the fine rings turn into large false patterns.",
+    "Add an <strong>OLPF split</strong> of 1 pixel: the moiré fades, at the cost of a little sharpness.",
+    "Move the <strong>input frequency</strong> of the 1-D demo past 0.5 cycles per pixel: the recorded wave gets slower instead of faster.",
+  ]));
 
   const ctl = controls({
     scene: { type: 'select', label: 'Test scene', value: 'zone', options: Object.entries(SCENES).map(([k, s]) => [k, s.name]) },
@@ -115,6 +121,7 @@ export default function mount(root, meta) {
       ['Demo: ' + st.f.toFixed(3) + ' cy/px appears at', fa.toFixed(3) + ' cy/px'],
     ]));
     const H = (nu) => Math.abs((Math.sin(Math.PI * a * nu) / (Math.PI * a * nu + 1e-12)) * (st.olpf ? Math.cos(Math.PI * st.olpf * nu) : 1)) || (nu === 0 ? 1 : 0);
+    calc.say(`A pattern of ${st.f.toFixed(2)} cycles per pixel is recorded as <strong>${fa.toFixed(2)} cycles per pixel</strong>` + (st.f > 0.5 ? ': it lies above the Nyquist limit of 0.5 and folds back as a false, coarser pattern.' : ': it lies below the Nyquist limit of 0.5, so it is recorded faithfully.'));
     calc.set(String.raw`\begin{aligned}
     f_\text{alias} &= |f - k f_s|,\ k = \mathrm{round}(f/f_s)\\
     &= |${texNum(st.f, 3)} - ${Math.round(st.f)}| = ${texNum(fa, 3)}\ \text{cy/px}\\
@@ -145,6 +152,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[f_\text{Nyquist} = \frac{1}{2p}\]
+<p>A grid of pixels with pitch \(p\) records patterns up to one cycle (one dark and one light line) per two pixels. Anything finer reappears at \(|f - k/p|\), a lower, false frequency. With 4 µm pixels the limit is 125 cycles per millimetre, and a pattern of 150 cycles/mm comes back as 100. In a Bayer sensor the red and blue pixels sit two pixels apart, so their limit is half as high.</p>`,
+    String.raw`It assumes ideal point samples. Real pixels average the light over their area, and the lens blurs it too, which damps fine detail before it can alias, so how strong the moiré is depends on all of them. Demosaicing reconstructs colour from neighbouring pixels and can hide or create false colour.`));
   root.append(theory('Sampling theory for image sensors', String.raw`
 <div class="theory-cols"><div>
 <h3>Shannon–Nyquist on a pixel lattice</h3>
