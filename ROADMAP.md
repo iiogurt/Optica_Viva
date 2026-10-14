@@ -44,6 +44,7 @@ This file records **what has been delivered** and **what is planned** for Optica
 3. **Zero install.** Static files, no build step, works offline. New dependencies need a strong justification.
 4. **Verifiable.** Claims of accuracy must be backed by a validation entry, and from v1.1 on, by an automated test.
 5. **Beautiful by default.** Visuals must read at a glance in a dark, photographic aesthetic.
+6. **Simple before exact.** Every reader should get somewhere. Pages climb from a plain-language idea through a rule of thumb to the full model, all visible in that order; there is no beginner/expert switch.
 
 ---
 
@@ -53,11 +54,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"]
     end
     subgraph Next["Planned"]
         direction TB
-        N7["v2.0 learning platform"]
+        N6["v1.11 simple → exact ladder"] --> N7["v2.0 learning platform"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -69,7 +70,7 @@ flowchart LR
 | Laboratories | 39 | v1.9 complete |
 | Catalogue entries | 228, each with details and a worked example | link every new lab |
 | Lens prescriptions | 5 | 10+ with aspheres and file import |
-| Automated tests | 133 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 137 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -351,6 +352,16 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | [x] **Astrophotography stacking** | SNR ∝ √N, sky-limited vs read-limited sub-exposures, light pollution (PR #59) | P3 · M |
 | [x] **Atmospheric dispersion & ADC** | elongated stellar images vs zenith angle; Risley-prism corrector (PR #57) | P3 · S |
 | [x] **Lucky imaging** | frame selection by Strehl from the seeing simulator (PR #58) | P3 · S |
+
+### v1.11 From simple to exact
+
+*Goal: a reader without physics training understands what each laboratory shows, and a specialist still reaches the derivation in one click.* The design follows the research on concreteness fading (Fyfe et al. 2014), the spiral curriculum (Bruner 1960), the expertise-reversal effect (Kalyuga et al. 2003) and PhET's implicit scaffolding (Podolefsky et al. 2013): simple models first and honest about their limits, short enough not to slow experts down, and guidance through the simulation rather than long instructions.
+
+- [x] **P1 · M** **Ladder pilot** (PR #68): `idea()`, `rule()`, `liveCalc().say()` and the jump strip in `js/lib/page.js`; depth of field, diffraction & the PSF and atmospheric seeing; `test/ladder.test.mjs` (no symbols and at most 120 words in the idea, 1–3 things to try, a rule with its limits, the result in words).
+- [ ] **P1 · L** Ladder for the other 36 laboratories, one PR per sidebar group. When done, the test requires it on every laboratory.
+- [ ] **P2 · M** **Glossary**: one file of one-sentence definitions; terms such as f-number, PSF, Strehl ratio and MTF show them on hover or tap.
+- [ ] **P2 · S** **"Start here" path** on the home page: laboratories ordered from basic (pinhole, exposure, depth of field) to advanced (adaptive optics, starshade), as a suggestion, not a lock.
+- [ ] **P3 · S** Catalogue entries in the same order: plain description, example, explanation, equation.
 
 ### v2.0 Learning platform
 

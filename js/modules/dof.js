@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, fmt, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS, diag, pitchUm } from '../lib/sensors.js';
 import { besselJ1 } from '../lib/pupil.js';
 import { plot, logRange } from '../lib/plot.js';
@@ -69,7 +69,13 @@ function cardImage(wpx, hpx, label, subject) {
 }
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'A lens focuses exactly one plane. Points in front of or behind it image as blur disks, and depth of field is the range over which those disks stay smaller than a chosen circle of confusion. The photograph below is rendered with the camera\'s real geometry: framing from focal length and sensor size, and per-object blur from the thin-lens equation.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>A lens can bring only one distance into perfect focus. Anything nearer or farther becomes a small blurred spot instead of a point. While those spots stay small, the eye still reads them as sharp, so there is a zone around the focus distance that looks sharp: the <strong>depth of field</strong>.</p>
+<p>Three things set its depth. A <strong>smaller aperture</strong> (a larger f-number such as f/11) narrows the cone of light and deepens the zone, which is why squinting helps you see. <strong>Focusing farther away</strong> deepens it quickly. A <strong>longer lens</strong> at the same distance makes it shallower.</p>`, [
+    'Set the aperture to <strong>f/1.8</strong> and focus at <strong>2 m</strong>: only a thin slice is sharp. Guess what <strong>f/11</strong> will do, then try it.',
+    'Keep f/1.8 and move the focus from 2 m to <strong>10 m</strong>. The sharp zone grows about 25-fold, not 5-fold. The rule of thumb below says why.',
+    'Stop down to <strong>f/32</strong> and toggle <strong>Include diffraction</strong>: past a point, a smaller aperture makes everything slightly soft.',
+  ]));
 
   const ctl = controls({
     sensor: { type: 'select', label: 'Sensor format', value: 'ff', options: Object.entries(SENSORS).map(([k, s]) => [k, s.name]) },
@@ -118,6 +124,11 @@ export default function mount(root, meta) {
       ['Airy disk diameter', (airy * 1000).toFixed(1) + ' µm'],
       ['Diffraction vs CoC', airy > c ? 'diffraction-limited ⚠' : (airy / c * 100).toFixed(0) + ' % of c'],
     ]));
+    const m1 = (x) => fmt(x / 1000, 3) + ' m';
+    calc.say((isFinite(Df)
+      ? `Sharp from <strong>${m1(Dn)}</strong> to <strong>${m1(Df)}</strong>, ${tot < 1000 ? fmt(tot / 10, 2) + ' cm' : fmt(tot / 1000, 2) + ' m'} deep: ${(((s - Dn) / tot) * 100).toFixed(0)} % of it in front of the focus, ${(((Df - s) / tot) * 100).toFixed(0)} % behind.`
+      : `Sharp from <strong>${m1(Dn)}</strong> to <strong>infinity</strong>: the focus is at or beyond the hyperfocal distance (${m1(H)}).`)
+      + (M.diff && airy > c ? ' At this f-number diffraction alone blurs more than the sharpness limit, so nothing is perfectly crisp.' : ''));
     calc.set(String.raw`\begin{aligned}
 H &= \frac{f^2}{Nc} + f = \frac{${texNum(f, 4)}^2}{${texNum(N, 3)}\times${texNum(c, 3)}} + ${texNum(f, 4)}\\ &= ${texNum(H / 1000, 4)}\ \text{m}\\[2pt]
 D_N &= \frac{s f^2}{f^2 + Nc(s-f)} = ${texNum(Dn / 1000, 4)}\ \text{m}\\[2pt]
@@ -275,6 +286,10 @@ c(d) &= \frac{f}{N}\cdot\frac{f\,|d-s|}{d\,(s-f)}
 
   update();
 
+  root.append(rule(String.raw`\[\mathrm{DoF} \approx \frac{2\,N c\, s^2}{f^2}\]
+<p>Depth of field grows with the f-number \(N\) and with the <em>square</em> of the focus distance \(s\), and shrinks with the square of the focal length \(f\). \(c\) is the largest blur spot that still looks sharp, about 0.03 mm on a full-frame sensor. Example: an 85 mm lens at f/1.8 focused at 2 m gives \(2 \times 1.8 \times 0.03 \times 2000^2 / 85^2 \approx 60\) mm, so only 6 cm is sharp. Focus at 4 m and it is four times deeper.</p>
+<p>A second rule: focus at the <strong>hyperfocal distance</strong> \(H \approx f^2/(Nc)\) and everything from \(H/2\) to infinity looks sharp. For a 24 mm lens at f/8 that is 2.4 m, so everything beyond 1.2 m is sharp.</p>`,
+    String.raw`It assumes the subject is much farther away than the focal length and much closer than the hyperfocal distance. Near \(H\) the far limit runs off to infinity, and in close-up work the magnification term takes over. The full model below handles both, and the live calculation uses it.`));
   root.append(theory('Derivation', String.raw`
 <div class="theory-cols"><div>
 <h3>Blur disk from the thin-lens equation</h3>
