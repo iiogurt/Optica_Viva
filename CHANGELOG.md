@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- An opened catalogue entry now reads from simple to exact like the laboratories: worked example, explanation, then the equation, which gets its own label.
+
 ### Added
 - **"Start here" path** on the home page (`js/lib/path.js`): 17 laboratories in three stages, from everyday photography (perspective, depth of field, noise) through lens behaviour to telescopes and the research frontier, each with the question it answers. Laboratories already opened are ticked; this is remembered only in the browser. The order is a suggestion, not a lock. The home page's reading guide now describes the simple-to-exact ladder and the glossary.
 - Tests (`test/path.test.mjs`): the path visits existing laboratories once each, with a question per step.

@@ -511,9 +511,9 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 **Catalogue of phenomena** · `#/catalogue`<br>
 <img src="docs/screenshots/catalogue.webp" alt="Overview of the 13 catalogue groups with counts of simulated phenomena">
 
-**228 phenomena in 13 groups**, browsed by group from a navigator or searched across all groups, with domain and "only simulated" filters. Each entry opens to its governing equation, a fuller explanation, a **worked example with real numbers**, a link to its laboratory and related entries. Every group, entry and search has its own link (`#/catalogue?g=…&e=…`).
+**228 phenomena in 13 groups**, browsed by group from a navigator or searched across all groups, with domain and "only simulated" filters. Each entry opens, from simple to exact, to a **worked example with real numbers**, a fuller explanation and its governing equation, a link to its laboratory and related entries. Every group, entry and search has its own link (`#/catalogue?g=…&e=…`).
 
-<img src="docs/screenshots/catalogue-entry.webp" alt="An opened catalogue entry: the Airy disk with equation, explanation, example and related entries">
+<img src="docs/screenshots/catalogue-entry.webp" alt="An opened catalogue entry: the Airy disk with example, explanation, equation and related entries">
 
 </td>
 </tr>
