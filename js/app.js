@@ -4,13 +4,14 @@ import { ladder } from './lib/page.js';
 import { glossary } from './lib/glossary.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'mission-milkyway', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
   { id: 'foundations', group: 'Overview', title: 'Physical foundations', c: '#ffb547', blurb: 'From Maxwell to Fourier optics: the four models of light every simulation here is built on.' },
   { id: 'catalogue', group: 'Overview', title: 'Catalogue of phenomena', c: '#ffb547', blurb: 'An exhaustive, searchable atlas of optical effects and real-world imaging challenges with their governing equations.' },
 
+  { id: 'mission-milkyway', group: 'Missions', title: 'Photograph the Milky Way', c: '#9db4ff', blurb: 'A plan for your camera and sky: the longest exposure before stars trail, the right ISO, and how many frames to stack.' },
   { id: 'raytracer', group: 'Geometric optics', title: 'Real-lens ray tracing', c: '#ffd27a', blurb: 'Exact 3-D Snell ray tracing through real prescriptions: spherical aberration, coma, field curvature and the diffraction PSF of the traced wavefront.' },
   { id: 'dof', group: 'Geometric optics', title: 'Depth of field', c: '#ffd27a', blurb: 'Circle of confusion, hyperfocal distance and a physically framed synthetic photograph that refocuses live.' },
   { id: 'sensor', group: 'Geometric optics', title: 'Sensor size & equivalence', c: '#ffd27a', blurb: 'Crop factor, field of view, equivalent aperture, photon budget and diffraction across formats from phones to IMAX.' },

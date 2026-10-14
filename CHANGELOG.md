@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Missions**, a new kind of page that solves a real task by combining laboratory models, with a *Missions* group in the sidebar and on the home page. Each step gives the answer first, then why, the formula and a link to the laboratory that explores it (`missionStep()` in `js/lib/page.js`).
+- **Mission: Photograph the Milky Way** (`#/mission-milkyway`, `js/lib/milkyway.js`). For your sensor, focal length, aperture, target declination, Bortle sky and faintest detail it computes the longest exposure before stars trail (f ω cos δ against two pixels or the Airy disk, compared with the 500 and NPF rules), the ISO-invariance point, how much of the noise is read noise, and the number of frames for a signal-to-noise ratio of 5. A pixel-level view shows a star at the planned exposure and at the 500 rule, and a chart shows SNR against frames for your sky and a pristine one. The catalogue's *Star trails & the 500 rule* links here.
+- Tests (`test/milkyway.test.mjs`): sidereal rate, trailing limit and its scaling, the 500 and NPF rules, the ISO-invariance definition, and frames that just reach the target.
+
 ### Changed
 - ROADMAP: new milestones v1.12 *Missions* (practical tasks such as photographing the Milky Way or imaging Jupiter), v1.13 *New laboratories: light, water and worlds* (lighting, exoplanet transits, Earth observation, underwater, computational photography, autofocus, interference filters) and v1.14 *Your own gear and real images*; further phenomena in the backlog.
 

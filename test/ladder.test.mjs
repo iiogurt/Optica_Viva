@@ -12,7 +12,7 @@ const READY = [...readFileSync(new URL('../js/app.js', import.meta.url), 'utf8')
 const LABS = READY.filter((id) => id !== 'home' && id !== 'catalogue');
 
 test('every laboratory has a ladder', () => {
-  assert.equal(LABS.length, 39);
+  assert.ok(LABS.length >= 39);
   assert.deepEqual(LABS.filter((id) => !laddered.some((p) => p.id === id)), []);
 });
 

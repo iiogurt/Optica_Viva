@@ -116,6 +116,15 @@ KaTeX is vendored in `vendor/katex/`, so the app runs **fully offline**. Web fon
 
 Every image below is a screenshot of the running app. Each one is a simulation result, not an illustration. Regenerate them with [`scripts/screenshots.mjs`](scripts/screenshots.mjs).
 
+### Missions
+
+Missions are real tasks. Enter your equipment and situation, and the page combines several laboratory models into a plan with the reason for every setting.
+
+**Photograph the Milky Way** · `#/mission-milkyway`<br>
+<img src="docs/screenshots/mission-milkyway.webp" alt="Milky Way mission: exposure, aperture, ISO and number of frames, with a star drawn on the pixel grid at the planned exposure and at the 500 rule" width="70%">
+
+The longest exposure before stars trail (sidereal drift f ω cos δ against two pixels or the Airy disk, compared with the 500 and NPF rules), the ISO-invariance point of a two-stage read-noise model, sky and detail electrons from the Bortle class, and the number of frames for a signal-to-noise ratio of 5 on the faintest detail you choose.
+
 ### Geometric optics
 
 <table>
@@ -684,6 +693,7 @@ Optica_Viva/
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── glossary.js        Plain definitions of technical terms and their popovers
+│   │   ├── milkyway.js        Milky Way mission: trailing limit, ISO invariance, frames to stack
 │   │   ├── path.js            The home page's "Start here" path
 │   │   ├── random.js          Seeded random numbers for every simulation (mulberry32, Box–Muller, Poisson)
 │   │   ├── raytrace.js        Exact ray tracer (spheres + even aspheres), paraxial analysis, ray aiming, OPD
