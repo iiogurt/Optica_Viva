@@ -54,11 +54,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"]
     end
     subgraph Next["Planned"]
         direction TB
-        N6["v1.11 simple → exact ladder"] --> N7["v2.0 learning platform"]
+        N7["v2.0 learning platform"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -78,6 +78,23 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.11.0 From simple to exact</b> (2026-10-14, PRs #68–#75)</summary>
+
+- [x] Explanation ladder on all 39 pages: the idea in plain words with things to try, the live result in a sentence, a rule of thumb with its limits, then the full model (#68–#72)
+- [x] Glossary of 62 terms with definitions on hover or tap (#73)
+- [x] "Start here" path of 17 laboratories on the home page (#74)
+- [x] Catalogue entries from example to equation (#75)
+
+</details>
+
+<details>
+<summary><b>v1.10.0 Catalogue explorer</b> (2026-10-14, PR #66)</summary>
+
+- [x] Groups on their own views, details and a worked example for every entry, 56 new phenomena, deep links (#66)
+
+</details>
+
+<details>
 <summary><b>v1.9.0 New laboratories: astronomy &amp; space II</b> (2026-10-13, PRs #55–#63)</summary>
 
 - [x] Interferometry & aperture synthesis: van Cittert–Zernike visibilities, Earth-rotation u-v coverage of the VLA, VLTI and EHT, dirty beam and Högbom CLEAN (#55)
@@ -354,6 +371,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | [x] **Lucky imaging** | frame selection by Strehl from the seeing simulator (PR #58) | P3 · S |
 
 ### v1.11 From simple to exact
+
+✅ **Released as v1.11.0** (see *Completed milestones*).
 
 *Goal: a reader without physics training understands what each laboratory shows, and a specialist still reaches the derivation in one click.* The design follows the research on concreteness fading (Fyfe et al. 2014), the spiral curriculum (Bruner 1960), the expertise-reversal effect (Kalyuga et al. 2003) and PhET's implicit scaffolding (Podolefsky et al. 2013): simple models first and honest about their limits, short enough not to slow experts down, and guidance through the simulation rather than long instructions.
 
