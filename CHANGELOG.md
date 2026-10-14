@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [1.11.0] - 2026-10-14
 
+Optica Viva now works for readers at every level, without a beginner/expert switch ([#68](https://github.com/iiogurt/Optica_Viva/pull/68)–[#75](https://github.com/iiogurt/Optica_Viva/pull/75)). All 39 pages climb from simple to exact: the idea in plain words with things to try, the live result in a sentence, a rule of thumb with a worked number and its limits, then the full model and references, with a strip to jump between the steps. A glossary explains 62 technical terms where they first appear, the home page suggests a 17-laboratory "Start here" path, and catalogue entries open from example to equation. 39 interactive pages, 228 catalogue entries and 178 tests.
+
 ### Changed
 - An opened catalogue entry now reads from simple to exact like the laboratories: worked example, explanation, then the equation, which gets its own label.
 
