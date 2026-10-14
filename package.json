@@ -1,6 +1,6 @@
 {
   "name": "optica-viva",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "license": "MIT",
   "description": "Interactive, physically exact simulations of optical phenomena in photography, cinematography and space telescopes.",
   "private": true,
