@@ -1,5 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 
@@ -8,7 +8,13 @@ const SHAKE = { steady: { name: 'Steady (braced, experienced)', sigma: 0.5, trem
 const fmtT = (t) => (t >= 0.3 ? t.toPrecision(2) + ' s' : '1/' + Math.round(1 / t));
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'A hand-held camera wanders and trembles by about a degree per second. During an exposure the image of every point traces that motion across the sensor. The "one over focal length" rule of thumb follows from that, and so do the five or more stops that a stabiliser buys and the reason it cannot buy unlimited stops.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>No one holds a camera perfectly still. Hands drift and tremble by roughly a degree per second, and during the exposure every point of the image smears along that motion. The longer the exposure, and the more the lens magnifies, the longer the smear.</p>
+<p>That gives the old rule: hand-held, the shutter time should be no longer than one over the focal length, such as 1/50 s with a 50 mm lens. <strong>Image stabilisers</strong> measure the motion with tiny gyroscopes and move a lens element or the sensor to cancel it, buying several stops of longer exposure, but not unlimited ones.</p>`, [
+    "Without stabilisation, find the slowest sharp shutter speed at 50 mm, then at 200 mm.",
+    "Turn <strong>Image stabilisation</strong> on and read the gain in stops; then raise the gyro noise and watch the gain shrink.",
+    "Switch <strong>Sharp means</strong> to 2 pixels of a 45 MP sensor: the safe shutter speed gets much faster.",
+  ]));
 
   const ctl = controls({
     f: { type: 'range', label: 'Focal length (full frame)', min: 12, max: 600, log: true, value: 50, unit: 'mm' },
@@ -42,6 +48,7 @@ export default function mount(root, meta) {
         ['Safe shutter, stabilised', r.safeStab ? fmtT(r.safeStab) : '—'],
         ['Stabilisation gain', gain !== null ? gain.toFixed(1) + ' EV' : '—'],
       ]));
+      calc.say(`At ${fmt(st.f, 3)} mm and ${fmtT(st.t)} the image smears by about <strong>${(r.blur.extent * 1000).toFixed(0)} µm</strong>; ${st.stab && r.safeStab ? 'with' : 'without'} stabilisation the slowest reliably sharp shutter speed is <strong>${fmtT(st.stab && r.safeStab ? r.safeStab : r.safeRaw)}</strong>.`);
       calc.set(String.raw`\begin{aligned}
       b &\approx f\,\omega\,t \le c\\
       t &\le \frac{c}{f\,\omega} = ${texNum(limit / (st.f * Math.hypot(sh.sigma, sh.tremor) * D2R), 3)}\ \text{s}\\
@@ -85,6 +92,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[t \le \frac{c}{f\,\omega}\]
+<p>Turning at angular speed \(\omega\) moves the image across the sensor at \(f\omega\), so the blur stays below \(c\) only if the exposure \(t\) is short enough. With \(\omega \approx 1^\circ\)/s (0.017 rad/s) and \(c = 0.03\) mm, a 50 mm lens needs \(t \le 0.03/(50 \times 0.017) \approx 1/30\) s, and doubling the focal length halves the safe time. The classic \(1/f\) rule is this formula with a little safety margin.</p>`,
+    String.raw`Hand motion is not a steady drift: in short exposures tremor at around 10 Hz dominates, and people differ a lot. Stabilisers are limited by their gyro noise and bandwidth, lens-based ones cannot correct rotation around the lens axis, and none of them stops the subject from moving.`));
   root.append(theory('Shake, the reciprocal rule and stabilisers', String.raw`
 <div class="theory-cols"><div>
 <h3>The motion of a hand-held camera</h3>

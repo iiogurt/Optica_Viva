@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { LENSES, paraxial, autoSemiDiameters } from '../lib/raytrace.js';
 import { paraxialGhosts } from '../lib/ghosts.js';
 import { run } from '../lib/compute.js';
@@ -22,7 +22,13 @@ function coatingColour(layers, ns, th) {
 }
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Every glass–air surface reflects a few per cent of the light that reaches it. Light reflected twice inside a lens travels on toward the sensor as a defocused, displaced image of the aperture: a ghost. Coatings suppress those reflections by thin-film interference, and the iris edges diffract the light source itself into a star. Drag the sun across the frame.', domains: ['photo', 'video', 'space'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
+  root.append(idea(String.raw`<p>Each time light passes from air into glass, or back, a few per cent bounces back. Inside a lens with many surfaces, some of that light bounces twice and still reaches the sensor as a faint, displaced copy of a bright light, often in the shape of the aperture: a <strong>ghost</strong>. Pointing a camera near the sun can produce a whole chain of them.</p>
+<p>Lens coatings are layers thinner than a wavelength that make the reflected light cancel itself out, cutting each reflection from about 4 % to well under 1 %. The star-shaped rays around a bright light have another cause: diffraction at the edges of the iris blades.</p>`, [
+    "Set the coating to <strong>Uncoated</strong>, then back to a multi-layer coating: the ghosts become many times brighter without it.",
+    "Change the <strong>Iris blades</strong> from 7 to 8: the sunstar goes from 14 rays to 8.",
+    "Drag the sun across the frame: the ghosts move along a line through the image centre.",
+  ]));
 
   const ctl = controls({
     model: { type: 'select', label: 'Ghost model', value: 'rays', options: [['rays', 'Real rays: exact trace of every ghost path'], ['paraxial', 'Paraxial: instant, ignores aberrations and vignetting']] },
@@ -164,6 +170,7 @@ export default function mount(root, meta) {
       ['Working f-number', 'f/' + par.fnum.toFixed(1)],
     ]));
     const Rm = Rsurf[0][3];
+    calc.say(`This lens has ${nGlassAir} glass–air surfaces, which allow ${(nGlassAir * (nGlassAir - 1)) / 2} two-reflection ghosts. Together they carry <strong>${(totalGhost * 100).toFixed(2)} %</strong> of the light, and the lens transmits ${(T * 100).toFixed(0)} %.`);
     calc.set(String.raw`\begin{aligned}
     R_\perp &= \left(\tfrac{n_1-n_2}{n_1+n_2}\right)^2\\
     R_1(550) &= ${texNum(Rm * 100, 3)}\,\%\\
@@ -261,6 +268,9 @@ export default function mount(root, meta) {
 
   recompute();
 
+  root.append(rule(String.raw`\[R = \left(\frac{n-1}{n+1}\right)^2,\qquad \text{ghosts} = \frac{k(k-1)}{2}\]
+<p>An uncoated surface of glass with index \(n = 1.5\) reflects \(R = (0.5/2.5)^2 = 4\) % at normal incidence. A ghost needs two reflections, so it carries about \(R^2\): 0.16 % of the light with uncoated glass, but only 0.0025 % with 0.5 % coatings. A lens with \(k\) reflecting surfaces has \(k(k-1)/2\) two-reflection ghosts: 10 surfaces give 45.</p>`,
+    String.raw`How bright a ghost looks also depends on how much it is spread out: one focused near the sensor is small and bright, a defocused one is faint. Coatings work best at their design wavelength and angle, and scattering from dust, the barrel and the sensor adds veiling glare on top.`));
   root.append(theory('Stray light: reflections, ghosts and coatings', String.raw`
 <div class="theory-cols"><div>
 <h3>Fresnel reflection</h3>

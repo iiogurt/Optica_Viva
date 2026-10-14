@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, texNum, imageCanvas } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
 import { oetf, wavelengthCSS } from '../lib/color.js';
 import { ILLUMINANTS, TCS, CMF } from '../lib/colordata.js';
@@ -9,7 +9,13 @@ const css = (rgb) => `rgb(${rgb.map((v) => Math.round(255 * oetf(Math.min(1, Mat
 const TCS_NAMES = ['Light greyish red', 'Dark greyish yellow', 'Strong yellow green', 'Moderate yellowish green', 'Light bluish green', 'Light blue', 'Light violet', 'Light reddish purple', 'Strong red (R9)', 'Strong yellow', 'Strong green', 'Strong blue', 'Light yellowish pink (skin)', 'Moderate olive green (leaf)'];
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'A colour is not a property of an object alone. It is the product of a light source\'s spectrum, a surface\'s reflectance and the spectral sensitivities of an eye or a camera. Two lamps of the same "colour temperature" can make the same skin look healthy or grey, and a camera can disagree with the eye about which colours match. This lab computes all of it from CIE tables, wavelength by wavelength.', domains: ['photo', 'video'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video'] }));
+  root.append(idea(String.raw`<p>The colour you see is not simply painted on an object. It comes from three things together: the light falling on it, how strongly its surface reflects each colour of that light, and how your eyes, or a camera's sensor, respond. Change any one of them and the colour changes.</p>
+<p>Two lamps can both look white and have the same "colour temperature", yet make skin look healthy under one and greyish under the other, because each lacks different colours. A camera can also disagree with your eye: two fabrics that match perfectly to you can look different in a photo. That is called <strong>metamerism</strong>.</p>`, [
+    "Choose the <strong>Black body</strong> source at 3000 K and note the colour rendering index, then pick an LED of a similar temperature.",
+    "In the camera section, set the white balance to <strong>Daylight preset</strong> under tungsten light: everything turns orange.",
+    "In the metamerism section, change <strong>Compare under</strong> to another lamp: two samples that matched in daylight no longer match.",
+  ]));
 
   const ctl = controls({
     src: { type: 'select', label: 'Light source', value: 'LED-B3', options: [['bb', 'Black body (incandescent, candle)'], ['day', 'CIE daylight (D series)'], ...Object.entries(ILLUMINANTS).map(([k, v]) => [k, v.name])] },
@@ -45,6 +51,7 @@ export default function mount(root, meta) {
       ['Skin tone R13', r.R[12].toFixed(1)],
       ['Luminous efficacy of radiation', ler.toFixed(0) + ' lm/W'],
     ]));
+    calc.say(`This light has a colour temperature of <strong>${r.cct.toFixed(0)} K</strong> and a colour rendering index of <strong>${r.Ra.toFixed(0)}</strong> (100 means colours look as under the reference light)` + (r.R[8] < 50 ? `; saturated red scores only ${r.R[8].toFixed(0)}, so reds look dull.` : '.'));
     calc.set(String.raw`\begin{aligned}
     T_{cp} &= \arg\min_T \lVert (u,v) - (u,v)_\text{Planck}(T)\rVert = ${texNum(r.cct, 4)}\ \text{K}\\
     R_i &= 100 - 4.6\,\Delta E_{U^*V^*W^*,i}\\
@@ -260,6 +267,9 @@ export default function mount(root, meta) {
   updateMeta();
   update();
 
+  root.append(rule(String.raw`\[X = \int S(\lambda)\,R(\lambda)\,\bar x(\lambda)\,d\lambda\quad\text{(likewise } Y, Z)\]
+<p>Three colour-matching functions \(\bar x, \bar y, \bar z\), which stand in for the eye's three kinds of cone, are each multiplied by the light's spectrum \(S\) and the surface's reflectance \(R\), wavelength by wavelength, and summed. Two different spectra that give the same three sums look identical: that is metamerism. A colour rendering index of 100 means test colours look as they do under a reference light of the same colour temperature; good LED lamps reach 90–98, cheap ones 70–80.</p>`,
+    String.raw`The colour-matching functions describe an average observer under standard viewing; real people differ, especially with narrow-band LEDs. The CRI averages only eight pastel colours, so a lamp can score well and still render saturated reds poorly, which is why R9 is listed too.`));
   root.append(theory('Spectra, colour temperature and colour rendering', String.raw`
 <div class="theory-cols"><div>
 <h3>From spectrum to colour</h3>

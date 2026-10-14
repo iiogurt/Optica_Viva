@@ -1,11 +1,17 @@
 import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
 
 const wrap = (a) => { a = (a + Math.PI) % (2 * Math.PI); if (a < 0) a += 2 * Math.PI; return a - Math.PI; };
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'A camera samples time as well as space. A rolling-shutter sensor reads its rows one after another, so fast motion is sheared and bent. Video samples motion at a fixed frame rate, so a spinning wheel can appear to stop or turn backwards. Exposures that do not span whole cycles of a flickering light leave dark bands across the frame. These are all sampling theory, applied to the time axis.', domains: ['video', 'photo'] }));
+  root.append(header({ ...meta, domains: ['video', 'photo'] }));
+  root.append(idea(String.raw`<p>A camera samples time as well as space. Most phones and many video cameras read the picture line by line, top to bottom, over a few hundredths of a second. Anything that moves fast meanwhile is caught at different moments in different lines, so propellers bend and buildings lean when you pan: the <strong>rolling shutter</strong> effect.</p>
+<p>Video also samples motion only 24 or so times a second. A wheel that turns almost exactly one spoke per frame looks still, or even turns backwards, the wagon-wheel effect. And lights that flicker with the mains can leave dark bands across the frame.</p>`, [
+    "Lower the <strong>Sensor readout time</strong> to 0, a global shutter: the propeller blades straighten out.",
+    "Change the <strong>Wheel speed</strong> slowly and find where the wheel seems to stop, then to turn backwards.",
+    "With 100 Hz flicker, set the flicker-test exposure to exactly 10 ms: the bands vanish.",
+  ]));
 
   const ctl = controls({
     h1: { type: 'heading', label: 'Rolling shutter' },
@@ -105,6 +111,7 @@ export default function mount(root, meta) {
       ['Exposure / flicker period', (st.fexp / (1000 / f)).toFixed(2) + ' cycles'],
       ['Flicker bands across frame', ((st.readout / 1000) * f).toFixed(1)],
     ]));
+    calc.say(`During the ${st.readout} ms readout the propeller turns <strong>${((tipSpeed * st.readout) / 1000 * 180 / Math.PI).toFixed(0)}°</strong>, which bends the blades. ` + (Math.abs(appRpm) < 0.5 ? 'The wheel seems to stand still.' : `The wheel seems to turn ${appRpm * st.wrpm < 0 ? '<strong>backwards</strong>' : 'forwards'} at <strong>${Math.abs(appRpm).toFixed(0)} rpm</strong> instead of ${st.wrpm}.`));
     calc.set(String.raw`\begin{aligned}
     t_\text{row}(y) &= t_0 + \frac{y}{H}T_\text{read}\\
     t_\text{exp} &= \frac{\theta_\text{shutter}}{360^\circ}\cdot\frac{1}{f_\text{fps}} = \frac{${st.angle}}{360\times${st.fps}}\ \text{s}\\
@@ -164,6 +171,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[f_\text{apparent} = f - f_s\,\mathrm{round}(f/f_s)\]
+<p>A motion that repeats \(f\) times per second, filmed at \(f_s\) frames per second, appears to repeat at the difference between \(f\) and the nearest multiple of \(f_s\). An 8-spoke wheel at 180 rpm passes \(8 \times 3 = 24\) spokes per second: at 24 fps it looks frozen, and slightly slower it seems to turn backwards. For flicker, an exposure spanning whole cycles of the light, such as 1/100 s under 100 Hz flicker from 50 Hz mains, averages it away.</p>`,
+    String.raw`It describes sampling with very short exposures. Longer exposures (a wide shutter angle) add motion blur that softens the illusion, and our own motion perception adds judder at low frame rates. Rolling-shutter skew also depends on how the motion is oriented relative to the readout.`));
   root.append(theory('Sampling in time', String.raw`
 <div class="theory-cols"><div>
 <h3>Rolling shutter</h3>
