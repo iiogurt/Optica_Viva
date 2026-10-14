@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-10-14
+
+A structured **catalogue explorer** ([#66](https://github.com/iiogurt/Optica_Viva/pull/66)): 13 groups with an overview and navigator, expandable entries with an explanation and a worked example each, search across groups and shareable links. The catalogue grows by 56 phenomena to 228, every equation is checked to render, and the colour accents of the sidebar and home cards now show. 39 interactive simulations and 133 tests.
+
 ### Added
 - **Catalogue explorer** (`#/catalogue`). The single long page is replaced by an overview of the 13 groups (with counts and the share simulated), a group navigator (a horizontal strip on phones), one group at a time with expandable entries, previous/next group buttons, and search across all groups with results grouped by group. An opened entry shows its equation, a fuller explanation, a worked example with real numbers, a link to its laboratory and related entries from the same laboratory. Group, entry, search and filters are kept in the URL (`#/catalogue?g=…&e=…&q=…`).
 - **56 new phenomena** (228 in total), among them Fermat's principle, the Lagrange invariant, the pinhole camera, Seidel sums, Zernike polynomials, the sine condition, Coddington's equations, stop shift, partial dispersion, encircled energy, Gaussian beams, zone plates, the Talbot effect, photometric units, metering, magnitudes, the Fresnel equations, Stokes parameters, waveplates, the photon transfer curve, DQE, EMCCDs, TDI, star trails, Rayleigh and Mie scattering, laser guide stars, the green flash, exoplanet contrast, nulling interferometry, the contrast sensitivity function, metamerism and the Purkinje shift. Each links to a laboratory only where one simulates it.
@@ -512,7 +516,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.10.0...HEAD
+[1.10.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.6.1...v1.7.0
