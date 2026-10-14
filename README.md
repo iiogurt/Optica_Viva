@@ -516,6 +516,16 @@ The **CCD equation for stacks**: a faint galaxy behind a sky set by the **Bortle
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Exoplanet transits** · `#/transits`<br>
+<img src="docs/screenshots/transits.webp" alt="Transit of HD 209458 b: a limb-darkened star with the planet's path and the light curve with simulated TESS measurements">
+
+The dip in starlight as a planet crosses its star: depth (R_p/R★)², limb darkening, duration from Kepler's law, transit probability, and the signal-to-noise ratio a backyard telescope, TESS, Kepler or JWST would reach.
+
+</td>
+</tr>
 </table>
 
 ### Reference pages
@@ -708,6 +718,7 @@ Optica_Viva/
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── glossary.js        Plain definitions of technical terms and their popovers
+│   │   ├── transit.js         Transit light curves with limb darkening, orbits, photometric noise
 │   │   ├── lighting.js        Area lights with shadow rays, penumbra, falloff, catchlights, flash
 │   │   ├── jupiter.js         Jupiter mission: Nyquist focal ratio, coherence time, rotation limit, dispersion
 │   │   ├── milkyway.js        Milky Way mission: trailing limit, ISO invariance, frames to stack

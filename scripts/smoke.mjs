@@ -8,14 +8,15 @@ import { fileURLToPath } from 'node:url';
 import { launch, serve, sleep } from './lib/browser.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const ids = [...readFileSync(resolve(ROOT, 'js/app.js'), 'utf8').matchAll(/\{ id: '([a-z]+)'/g)].map((m) => m[1]);
+const ids = [...readFileSync(resolve(ROOT, 'js/app.js'), 'utf8').matchAll(/\{ id: '([a-z0-9-]+)'/g)].map((m) => m[1]);
 const REFERENCE = new Set(['home', 'foundations', 'catalogue']); // pages without readouts
 const site = await serve(ROOT);
 const page = await launch();
 let failed = 0;
 const probe = `(() => ({
   alert: document.querySelectorAll('[role=alert]').length,
-  readouts: document.querySelectorAll('dl.readouts dd').length,
+  // laboratories show readouts; missions show the answers of their steps
+  readouts: document.querySelectorAll('dl.readouts dd').length + [...document.querySelectorAll('.mstep-answer')].filter((d) => d.textContent.trim()).length,
   emptyReadouts: [...document.querySelectorAll('dl.readouts dd')].filter((d) => d.textContent.trim() === '…').length,
 }))()`;
 try {
