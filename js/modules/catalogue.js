@@ -82,9 +82,10 @@ export default function mount(root, meta) {
       const [more, example] = e.more || ['', ''];
       const related = (e.lab ? byLab.get(e.lab) : []).filter((x) => x !== e).slice(0, 6);
       body.append(
-        h('div.eq', {}, tex('\\displaystyle ' + e.eq, true)),
-        prose(`<p>${more}</p>`),
+        // simple to exact: a worked example, the explanation, then the governing equation
         example ? h('div.entry-example', {}, h('span.k', {}, 'Example'), prose(example)) : '',
+        prose(`<p>${more}</p>`),
+        h('div.entry-eq', {}, h('span.k', {}, 'Equation'), h('div.eq', {}, tex('\\displaystyle ' + e.eq, true))),
         h('div.entry-foot', {},
           e.lab ? h('a.btn', { href: '#/' + e.lab }, 'Open laboratory: ' + titleOf(e.lab) + ' →') : h('span.note', {}, 'Not simulated in a laboratory yet.'),
           state.q ? h('button.linkish', { type: 'button', onClick: () => go(e.group.id, e.id) }, 'Show in its group: ' + e.group.title) : ''),
