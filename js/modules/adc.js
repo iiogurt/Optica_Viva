@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
 import { wavelengthRGB } from '../lib/color.js';
 import { airRefractivityPT, refraction, dispersion, adcPrism, adcAngle, residual } from '../lib/adc.js';
@@ -9,7 +9,13 @@ const SITES = { sea: { name: 'Sea level (1013 hPa, 15 °C)', P: 101325, T: 15 },
 const PAIRS = { bkf2: ['N-BK7', 'F2', 'N-BK7 / F2'], fkf: ['N-FK51A', 'N-SF5', 'N-FK51A / N-SF5'], caf: ['CaF2', 'Fused silica', 'CaF₂ / fused silica'] };
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'The atmosphere is a weak prism. It lifts every star towards the zenith by about a minute of arc, slightly more in blue light than in red, so away from the zenith each star becomes a tiny vertical spectrum. For spectrographs with narrow slits and for diffraction-limited imaging that smear matters, and large telescopes cancel it with an atmospheric dispersion corrector: two counter-rotating prisms.', domains: ['space'] }));
+  root.append(header({ ...meta, domains: ['space'] }));
+  root.append(idea(String.raw`<p>The atmosphere bends starlight that enters it at a slant, so stars appear slightly higher in the sky than they really are. Like a weak prism, it bends blue light a little more than red. Away from the zenith every star is therefore stretched into a tiny vertical rainbow, a fraction of an arcsecond long.</p>
+<p>For sharp images and for spectrographs with narrow slits, that smear matters. Large telescopes cancel it with an <strong>atmospheric dispersion corrector</strong>: two pairs of glass prisms that rotate against each other to make an equal and opposite rainbow.</p>`, [
+    "Raise the <strong>Zenith angle</strong> from 0° to 70°: the rainbow grows quickly towards the horizon.",
+    "Turn the <strong>corrector</strong> off and on: the colours collapse back into one image.",
+    "Switch the <strong>Site</strong> from sea level to Mauna Kea: in the thinner air the effect is about a third smaller.",
+  ]));
 
   const ctl = controls({
     z: { type: 'range', label: 'Zenith angle', min: 0, max: 75, step: 0.5, value: 50, unit: '°' },
@@ -49,6 +55,7 @@ export default function mount(root, meta) {
       ['Residual with the ADC', span(res).toFixed(3) + '″'],
       ['Seeing FWHM', st.seeing.toFixed(2) + '″'],
     ]));
+    calc.say(`At ${st.z}° from the zenith the air lifts the star by <strong>${refraction(550, z, s.P, s.T).toFixed(0)}″</strong> and spreads ${st.l0}–${st.l1} nm over <strong>${span(air).toFixed(2)}″</strong>` + (st.adc ? `; the corrector leaves ${span(res).toFixed(3)}″` : '') + `, against a seeing disc of ${st.seeing}″.`);
     calc.set(String.raw`\begin{aligned}
     R_{550} &= (n-1)\tan z = ${texNum(refraction(550, z, s.P, s.T), 4)}''\\
     \Delta R &= [n(\lambda_1)-n(\lambda_2)]\tan z = ${texNum(span(air), 3)}''\\
@@ -99,6 +106,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[R \approx (n-1)\tan z\]
+<p>Refraction lifts a star at zenith angle \(z\) by about \((n-1)\tan z\). At sea level \(n - 1 \approx 2.8 \times 10^{-4}\), so at 45° a star rises by 57″. Blue light has a slightly larger \(n\): between 400 and 700 nm the difference at 45° is 1.4″, already several times the size of a diffraction-limited image on a large telescope. At 60° it is \(\sqrt3\) times larger.</p>`,
+    String.raw`The plane-parallel formula works to about 75° from the zenith; nearer the horizon the curvature of the atmosphere matters. The refractive index depends on pressure, temperature and humidity, and a corrector cancels the dispersion exactly only for one zenith angle per setting.`));
   root.append(theory('A prism made of air', String.raw`
 <div class="theory-cols"><div>
 <h3>Refraction and its dispersion</h3>

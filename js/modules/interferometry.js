@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
@@ -8,7 +8,13 @@ import { MAS, diskVisibility, firstNull, fringes, fringeVisibility, ARRAYS } fro
 const INF = lut('inferno'), DIV = lut('diverging');
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Two small telescopes far apart can measure details that only a single telescope as large as their separation could resolve. They do it by measuring how well the light from both interferes. In 1920 that measurement gave the first diameter of a star other than the Sun. Today networks of radio dishes spread across the Earth synthesise a virtual telescope the size of the planet, sharp enough to image the shadow of a black hole.', domains: ['space'] }));
+  root.append(header({ ...meta, domains: ['space'] }));
+  root.append(idea(String.raw`<p>A telescope's sharpness grows with its width, but mirrors cannot be made arbitrarily large. Two small telescopes far apart can instead combine their light: the waves from both interfere and make stripes of light and dark called <strong>fringes</strong>. How clear the stripes are reveals the size of the source, down to details that only a single telescope as wide as their separation could see.</p>
+<p>A point-like star gives crisp fringes; a slightly larger star blurs them. In 1920 this gave the first measured size of a star other than the Sun. Today radio dishes spread across the Earth act together as one Earth-sized telescope.</p>`, [
+    "Increase the <strong>Baseline</strong> until the fringes vanish at about 3 m: that is how Betelgeuse was measured.",
+    "Make the star smaller: the fringes stay clear up to longer baselines.",
+    "In the array section below, shorten the <strong>Observing time</strong>: fewer tracks fill the u-v plane and the image gets worse.",
+  ]));
 
   // ── Michelson stellar interferometer ──
   const ctl = controls({
@@ -33,6 +39,7 @@ export default function mount(root, meta) {
       ['First null of the visibility', B0.toFixed(2) + ' m'],
       ['A single telescope resolves (1.22 λ/D) with D = B', ((1.22 * lam / st.B) / MAS).toFixed(1) + ' mas'],
     ]));
+    calc.say(`The fringes have a visibility of <strong>${V.toFixed(2)}</strong> (1 would be a point source); they first vanish at a baseline of <strong>${B0.toFixed(2)} m</strong>.`);
     calc.set(String.raw`\begin{aligned}
     V(B) &= \left|\frac{2J_1(\pi\theta B/\lambda)}{\pi\theta B/\lambda}\right| = ${texNum(V, 3)}\\
     B_0 &= 1.22\,\frac{\lambda}{\theta} = ${texNum(B0, 3)}\ \text{m}
@@ -120,6 +127,9 @@ export default function mount(root, meta) {
 
   update(); updA();
 
+  root.append(rule(String.raw`\[B_0 = 1.22\,\frac{\lambda}{\theta}\]
+<p>The fringes of a uniform disc of angular diameter \(\theta\) first disappear at the baseline \(B_0\). Michelson and Pease saw Betelgeuse's fringes vanish at 3.07 m in yellow light (575 nm), so \(\theta \approx 1.22 \times 575\,\text{nm}/3.07\,\text{m} = 0.047''\): the first diameter of a star after the Sun's. The Event Horizon Telescope combines dishes up to 10 000 km apart at 1.3 mm, for a resolution of about \(\lambda/B \approx 27\) microarcseconds.</p>`,
+    String.raw`The formula assumes a uniformly bright disc; limb darkening and spots shift the null. Measuring fringes needs the light paths matched to a fraction of a wavelength, and turbulence scrambles the fringe position, so optical interferometers rely on fringe contrast and closure phases.`));
   root.append(theory('Seeing with separated telescopes', String.raw`
 <div class="theory-cols"><div>
 <h3>Fringes and visibility</h3>

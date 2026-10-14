@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { rasterAperture, zernike } from '../lib/pupil.js';
 import { fft2d } from '../lib/fft.js';
 import { lut } from '../lib/color.js';
@@ -23,7 +23,13 @@ const CAMERAS = [
 const planck = (lamUm, T) => { const l = lamUm * 1e-6, hc = 6.62607e-34 * 2.99792e8, k = 1.380649e-23; return (2 * hc * 2.99792e8 / l ** 5) / (Math.exp(hc / (l * k * T)) - 1); };
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Above the atmosphere a telescope finally reaches its physical limits: diffraction set by its aperture, sampling set by its pixels, sensitivity set by its collecting area and its own thermal glow, and contrast set by how perfectly it controls scattered starlight. The last of these decides whether we can photograph an Earth beside a Sun.', domains: ['space'] }));
+  root.append(header({ ...meta, domains: ['space'] }));
+  root.append(idea(String.raw`<p>Above the atmosphere a telescope finally reaches its natural limits. The width of its mirror sets the finest detail it can see, its pixels how finely that detail is recorded, and its size how many photons it gathers.</p>
+<p>The hardest limit is contrast. A planet like the Earth is ten billion times fainter than its star and lies right beside it. A <strong>coronagraph</strong> blocks the star's light inside the telescope with a tiny mask, but any imperfection in the mirrors scatters starlight into speckles that can hide the planet, so the optics must be smooth to a few billionths of a metre.</p>`, [
+    "Set the <strong>Occulting mask</strong> radius to 0: the star's glare drowns the planet.",
+    "Raise the <strong>Residual wavefront error</strong> from 2 to 20 nm and watch the speckles rise around the planet.",
+    "Move the <strong>Planet separation</strong> inside the mask radius: the planet disappears behind the mask.",
+  ]));
 
   // ── resolution & sampling chart ──
   const resChart = stage({ aspect: 2.3, label: '', draw: drawRes, cls: 'plain', minH: 260 });
@@ -115,6 +121,7 @@ export default function mount(root, meta) {
       ['Planet detectable?', snrRatio > 1 ? 'yes, above the speckle floor' : 'no, buried in speckles'],
     ]));
     const h0 = Math.sqrt(1e-10) * st.lam * 1000 / Math.PI;
+    calc.say(`The planet sits ${st.sep} λ/D from the star; there it is <strong>${snrRatio >= 0.1 && snrRatio < 1000 ? snrRatio.toPrecision(2) : fmt(snrRatio, 2)}</strong> times as bright as the leftover starlight, so it is ` + (snrRatio > 1 ? '<strong>detectable</strong>.' : '<strong>buried in speckles</strong>.'));
     calc.set(String.raw`\begin{aligned}
     E_1 &= \mathcal F\{P\,e^{i\phi}\}\\
     E_2 &= \mathcal F^{-1}\{(1-M)E_1\}\\
@@ -180,6 +187,9 @@ export default function mount(root, meta) {
   }
   runCoro();
 
+  root.append(rule(String.raw`\[C_\text{speckle} \approx \left(\frac{\pi h}{\lambda}\right)^2\]
+<p>A sinusoidal ripple of height \(h\) on the wavefront throws a pair of speckles whose brightness, relative to the star, is about \((\pi h/\lambda)^2\). To see an Earth-like planet at a contrast of \(10^{-10}\) in 1.6 µm light, every ripple must stay below \(h = \lambda\sqrt{C}/\pi \approx 5\) picometres, far smaller than an atom. Only deformable mirrors that measure and correct the wavefront continuously can get there.</p>`,
+    String.raw`It holds for small ripples, each with one spatial frequency; real mirrors have a whole spectrum of them, and deformable mirrors correct only those they can reach. Amplitude errors, polarisation and the star's finite size also limit the contrast.`));
   root.append(theory('Physics of space telescopes', String.raw`
 <div class="theory-cols"><div>
 <h3>Resolution and sampling</h3>

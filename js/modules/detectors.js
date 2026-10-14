@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, logRange } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { rng, ramp, slopeCDS, slopeLS, slopeJump, slopeVarianceLS, slopeVarianceCDS, ipc, ipcVarianceFactor, ctiColumn, persistenceRate } from '../lib/detectors.js';
@@ -7,7 +7,13 @@ import { rng, ramp, slopeCDS, slopeLS, slopeJump, slopeVarianceLS, slopeVariance
 const INF = lut('inferno');
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'A space-telescope detector is not just a grid of photon counters. Infrared arrays are read non-destructively many times per exposure, so cosmic-ray hits can be found and removed. Neighbouring pixels are capacitively coupled. CCDs damaged by radiation smear charge into trails as it is clocked out. Bright stars leave ghosts in the next exposure. Each effect is small, and each matters for precise photometry.', domains: ['space'] }));
+  root.append(header({ ...meta, domains: ['space'] }));
+  root.append(idea(String.raw`<p>A space telescope's camera is more than a grid of light buckets. Infrared detectors can be read again and again during one exposure without being erased, so the charge in each pixel is seen growing step by step. If a cosmic-ray particle hits a pixel, its charge jumps suddenly, and the jump can be cut out instead of ruining the measurement.</p>
+<p>Small effects matter too: neighbouring pixels leak a little signal into each other, radiation-damaged CCDs smear charge into trails, and bright stars leave ghost images in the next exposure. Precise measurements depend on modelling every one.</p>`, [
+    "With the cosmic ray on, compare the first-and-last-read estimate (CDS) with the fit that detects jumps: one hit ruins the simple estimate.",
+    "Increase the <strong>Reads per exposure</strong> from 2 to 100 and watch the slope noise fall.",
+    "In the inter-pixel capacitance section below, raise the coupling: a single hot pixel spreads into a cross.",
+  ]));
 
   // ── up the ramp ──
   const ctl = controls({
@@ -38,6 +44,7 @@ export default function mount(root, meta) {
       ['Fit with jump detection', `${jf.slope.toFixed(3)} e⁻/s (jumps at read ${jf.jumps.join(', ') || '—'})`],
       ['Slope noise: CDS · LS', `${Math.sqrt(vC).toFixed(3)} · ${Math.sqrt(vL).toFixed(3)} e⁻/s`],
     ]));
+    calc.say(`The true flux is ${st.f} e⁻/s. The first and last reads alone give <strong>${cds.toFixed(2)}</strong>, a straight-line fit to all ${st.N} reads <strong>${ls.toFixed(2)}</strong>` + (st.cr ? `, and the fit that detects the cosmic-ray jump <strong>${jf.slope.toFixed(2)}</strong> e⁻/s.` : ' e⁻/s.'));
     calc.set(String.raw`\begin{aligned}
     \sigma^2_\text{LS} &= \tfrac{\sigma_r^2}{\sum(t_i-\bar t)^2} + f\Delta t\textstyle\sum_k W_k^2\\
     &= ${texNum(vL, 3)},\quad W_k = \textstyle\sum_{i\ge k} w_i\\
@@ -146,6 +153,9 @@ export default function mount(root, meta) {
 
   update(); updI(); updC();
 
+  root.append(rule(String.raw`\[\sigma_\text{slope} \approx \sqrt{\frac{12}{N}}\,\frac{\sigma_r}{T}\]
+<p>Fitting a straight line to \(N\) reads spread over the exposure time \(T\) beats the read noise \(\sigma_r\) down as \(1/\sqrt N\). With 15 e⁻ of read noise, 100 reads over 1000 s give \(\sqrt{12/100} \times 15/1000 = 0.005\) e⁻/s, against \(\sqrt2 \times 15/1000 = 0.021\) e⁻/s from the first and last reads alone: four times better.</p>`,
+    String.raw`This is the read-noise limit. For bright sources photon noise dominates and makes the reads correlated, so the best weights change (the full model computes them), and every detected cosmic ray costs the reads around it.`));
   root.append(theory('Detectors in space', String.raw`
 <div class="theory-cols"><div>
 <h3>Up-the-ramp sampling</h3>

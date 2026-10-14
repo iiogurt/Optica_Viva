@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
@@ -8,7 +8,13 @@ import { friedProbability } from '../lib/lucky.js';
 const INF = lut('inferno');
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Turbulence changes many times a second. Every so often, for a few milliseconds, the air over a telescope happens to be nearly flat and a short exposure is almost diffraction-limited. Lucky imaging records thousands of such snapshots, keeps the best few per cent, re-centres them and adds them up. It works for telescopes a few times larger than the Fried parameter, and Fried calculated exactly how lucky one needs to be.', domains: ['space', 'photo'] }));
+  root.append(header({ ...meta, domains: ['space', 'photo'] }));
+  root.append(idea(String.raw`<p>The air above a telescope never stops churning, and it blurs stars into fuzzy blobs. But the churning is random, and every so often, for a few thousandths of a second, the air over the telescope happens to be almost calm: a snapshot taken at that moment is nearly as sharp as one from space.</p>
+<p><strong>Lucky imaging</strong> records thousands of very short exposures, keeps only the sharpest few per cent, lines them up and adds them together. It works for telescopes a few times wider than the air's calm patches; for larger ones, a perfect moment becomes too rare.</p>`, [
+    "Keep <strong>10 %</strong> of the frames and compare the lucky image with the long exposure.",
+    "Raise <strong>D/r₀</strong> from 5 to 10: lucky frames become extremely rare.",
+    "Change the <strong>Fraction kept</strong> from 1 % to 100 %: keeping every frame turns lucky imaging into plain shift-and-add.",
+  ]));
 
   const ctl = controls({
     Dr0: { type: 'range', label: 'Telescope diameter / Fried parameter D/r₀', min: 2, max: 12, step: 0.1, value: 5 },
@@ -38,6 +44,7 @@ export default function mount(root, meta) {
         ['Strehl: lucky selection', r.strehl.lucky.toFixed(3)],
         ['Fried probability of a lucky frame', friedProbability(st.Dr0) < 1 ? (100 * friedProbability(st.Dr0)).toFixed(2) + ' %' : '> 100 % (formula valid for D/r₀ ≥ 3.5)'],
       ]));
+      calc.say(`Keeping the best ${(st.keep * 100).toFixed(st.keep < 0.1 ? 1 : 0)} % of ${st.frames} short exposures gives a Strehl ratio of <strong>${r.strehl.lucky.toFixed(2)}</strong>, against ${r.strehl.tt.toFixed(2)} for re-centring all frames and ${r.strehl.long.toFixed(3)} for one long exposure.`);
       calc.set(String.raw`\begin{aligned}
       P(\sigma^2_\phi \le 1\,\text{rad}^2) &\approx 5.6\,e^{-0.1557\,(D/r_0)^2}\\
       &= ${texNum(friedProbability(st.Dr0), 3)}\quad(D/r_0 = ${st.Dr0})
@@ -78,6 +85,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[P \approx 5.6\,e^{-0.1557\,(D/r_0)^2}\]
+<p>Fried's estimate of the chance that a short exposure has less than 1 rad² of wavefront error, which makes it nearly diffraction-limited. The ratio of the telescope diameter \(D\) to the Fried parameter \(r_0\), the size of the air's calm patches, enters squared in the exponent: at \(D/r_0 = 5\) about 11 % of frames are lucky, at 7 only 0.3 %, and at 10 one in a million. That is why lucky imaging suits 1–2.5 m telescopes in visible light, or larger ones in the infrared, where \(r_0\) is bigger.</p>`,
+    String.raw`Fried's formula is an asymptotic fit, valid for \(D/r_0\) above about 3.5 (below that it exceeds 100 %). It counts only the wavefront variance; the sharp region also shrinks to a small patch of sky around the guide star, and recording the frames needs fast cameras with very low read noise.`));
   root.append(theory('Short exposures and luck', String.raw`
 <div class="theory-cols"><div>
 <h3>Why short exposures help</h3>

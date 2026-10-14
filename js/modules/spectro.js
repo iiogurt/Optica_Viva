@@ -1,5 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt } from '../lib/ui.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
 import { wavelengthRGB } from '../lib/color.js';
 import { index } from '../lib/glass.js';
@@ -9,7 +9,13 @@ const D2R = Math.PI / 180, L0 = 380, L1 = 760, APEX = 60 * D2R;
 const GLASS = ['N-SF11', 'N-SF5', 'F2', 'N-BK7', 'Fused silica', 'CaF2'];
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Almost everything astronomy knows about the universe beyond its pictures comes from spectra: compositions, temperatures, velocities, magnetic fields and the expansion of space. A spectrograph spreads light by wavelength with a prism or a grating. How finely it can separate two wavelengths, its resolving power, is set by a few lines of physics: the size of the beam, the number of grooves and the order of diffraction.', domains: ['space', 'photo'] }));
+  root.append(header({ ...meta, domains: ['space', 'photo'] }));
+  root.append(idea(String.raw`<p>Pass sunlight through a prism and it fans out into a rainbow, a <strong>spectrum</strong>. Look closely and the rainbow is crossed by thousands of dark lines, each a fingerprint of an element absorbing light at its own exact colour. From these lines astronomers read what stars are made of, how hot they are and how fast they move.</p>
+<p>A spectrograph spreads light with a prism or with a grating, a surface ruled with thousands of fine grooves. How finely it can tell two colours apart depends mostly on how many grooves the light covers: more grooves, finer detail.</p>`, [
+    "Set the grating width to 1 mm and zoom in on 589 nm: the yellow sodium line looks single. At 5 mm it splits into two lines 0.6 nm apart.",
+    "Switch to the 2nd <strong>diffraction order</strong>: the resolving power doubles, but orders start to overlap. Turn on the order-sorting filter.",
+    "Switch to the <strong>Prism</strong> and compare how unevenly it spreads blue and red.",
+  ]));
 
   const ctl = controls({
     disp: { type: 'seg', label: 'Disperser', value: 'grating', options: [['prism', 'Prism'], ['grating', 'Diffraction grating']] },
@@ -44,6 +50,7 @@ export default function mount(root, meta) {
       rows.push(['Grooves illuminated N', N.toFixed(0)], ['Blaze angle (Littrow)', (thB / D2R).toFixed(2) + '°'], ['Diffraction angle β at λ', Number.isFinite(beta) ? (beta / D2R).toFixed(2) + '°' : 'evanescent'],
         ['Angular dispersion', Number.isFinite(beta) ? (angularDispersion(m, st.rho, beta) / D2R * 3600).toFixed(0) + '″/nm' : '—'], ['Blaze efficiency at λ (scalar)', (100 * blazeEfficiency(m, lc, st.rho, alpha, thB)).toFixed(0) + ' %'],
         ['Free spectral range λ/m', (lc / m).toFixed(0) + ' nm']);
+      calc.say(`With ${fmt(N, 4)} grooves in order ${m}, the resolving power is <strong>R = ${fmt(R, 4)}</strong>: at ${lc.toFixed(1)} nm it separates lines <strong>${(lc / R).toFixed(3)} nm</strong> apart.`);
       calc.set(String.raw`\begin{aligned}
       m\lambda &= d(\sin\alpha + \sin\beta),\quad d = ${texNum(1e6 / st.rho, 4)}\ \text{nm}\\
       R &= mN = ${m}\times${texNum(N, 4)} = ${texNum(R, 4)}\\
@@ -53,6 +60,7 @@ export default function mount(root, meta) {
       const dn = dndl(st.glass, lc);
       rows.push(['n and dn/dλ at λ', `${index(st.glass, lc).toFixed(4)}, ${(dn * 1e3).toFixed(4)} /µm`], ['Deviation at minimum', (prismDeviation(st.glass, lc, APEX) / D2R).toFixed(2) + '°'],
         ['Angular dispersion', ((2 * Math.sin(APEX / 2) / Math.sqrt(1 - (index(st.glass, lc) * Math.sin(APEX / 2)) ** 2)) * Math.abs(dn) / D2R * 3600).toFixed(1) + '″/nm']);
+      calc.say(`This ${st.glass} prism with a ${st.base} mm base reaches <strong>R = ${fmt(R, 4)}</strong>: at ${lc.toFixed(1)} nm it separates lines <strong>${(lc / R).toFixed(3)} nm</strong> apart, and it spreads blue light far more than red.`);
       calc.set(String.raw`\begin{aligned}
       R &= b\left|\frac{dn}{d\lambda}\right| = ${texNum(st.base, 3)}\ \text{mm}\times${texNum(Math.abs(dn) * 1e6, 4)}\ \text{mm}^{-1} = ${texNum(R, 4)}\\
       \delta\lambda &= \lambda/R = ${texNum(lc / R, 3)}\ \text{nm}
@@ -265,6 +273,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[R = \frac{\lambda}{\delta\lambda} = mN\]
+<p>A grating resolves two wavelengths \(\delta\lambda\) apart when the order \(m\) times the number of illuminated grooves \(N\) exceeds \(\lambda/\delta\lambda\). The two sodium lines at 589.0 and 589.6 nm need \(R \approx 1000\): 2 mm of a 600 lines/mm grating in first order gives \(R = 1200\), just enough. A Doppler shift changes wavelengths by \(v/c\), so \(R = 100\,000\) resolves 3 km/s, and fitting thousands of lines pins velocities down to metres per second.</p>`,
+    String.raw`\(R = mN\) is the diffraction limit of a perfect grating. A real spectrograph is usually limited by the width of its slit as projected on the detector and by the pixels, and higher orders overlap unless a filter or a cross-disperser separates them.`));
   root.append(theory('How spectrographs separate wavelengths', String.raw`
 <div class="theory-cols"><div>
 <h3>Prisms</h3>

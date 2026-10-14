@@ -1,12 +1,18 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, logRange } from '../lib/plot.js';
 import { BORTLE, surfaceRate, stackSNR, skyLimitedSub, galaxyRate, stackImage } from '../lib/stacking.js';
 
 const fmtT = (t) => (t >= 3600 ? (t / 3600).toFixed(1) + ' h' : t >= 60 ? (t / 60).toFixed(t < 600 ? 1 : 0) + ' min' : t.toFixed(t < 10 ? 1 : 0) + ' s');
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'A faint galaxy may be a hundred times fainter than the sky it sits in. Deep astrophotographs are therefore built from many sub-exposures that are calibrated, aligned and averaged. How long each sub should be, how much total time is needed, and what light pollution costs all follow from one equation for signal and noise.', domains: ['space', 'photo'] }));
+  root.append(header({ ...meta, domains: ['space', 'photo'] }));
+  root.append(idea(String.raw`<p>A faint galaxy can be fainter than the glow of the night sky around it. Its light trickles in a few photons at a time, buried in random noise, so astrophotographers take many exposures and average them. The real signal is the same in every frame, while the noise is random and partly cancels out.</p>
+<p>The catch is that the improvement is slow: averaging four times as many frames only halves the noise. Light pollution makes it worse, because a brighter sky adds more noise that has to be averaged away.</p>`, [
+    "Double the <strong>Total integration</strong> twice: the signal-to-noise ratio doubles.",
+    "Move the <strong>Sky</strong> from Bortle 2 to Bortle 8: the same result needs many times longer.",
+    "Shorten the <strong>Sub-exposure length</strong> to a few seconds: read noise starts to cost signal-to-noise.",
+  ]));
 
   const ctl = controls({
     D: { type: 'range', label: 'Telescope aperture', min: 5, max: 40, log: true, value: 20, unit: 'cm' },
@@ -42,6 +48,7 @@ export default function mount(root, meta) {
       ['Read noise costs', ((1 - snr / ideal) * 100).toFixed(1) + ' % of the SNR'],
       ['Sky-limited from (σ_r² = 0.1 F_sky t)', fmtT(tsky)],
     ]));
+    calc.say(`${N} subs of ${fmtT(st.t)} give the galaxy's outskirts a signal-to-noise ratio of <strong>${snr.toFixed(1)}</strong> per pixel (one sub: ${snr1.toFixed(2)}). Subs longer than <strong>${fmtT(tsky)}</strong> are sky-limited, so read noise hardly matters.`);
     calc.set(String.raw`\begin{aligned}
     \mathrm{SNR} &= \frac{F_o N t}{\sqrt{N\left[(F_o+F_s+F_d)\,t+\sigma_r^2\right]}} = ${texNum(snr, 3)}\\
     t_\text{sky} &= \frac{\sigma_r^2}{0.1\,F_s} = ${texNum(tsky, 3)}\ \text{s}
@@ -79,6 +86,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[\mathrm{SNR} \propto \sqrt{T}\]
+<p>Once each sub-exposure is long enough for the sky's noise to swamp the read noise, the stack's signal-to-noise ratio grows only with the square root of the total time \(T\): four times the time doubles it. A sky brighter by \(\Delta m\) magnitudes per square arcsecond multiplies the time needed for faint objects by \(10^{0.4\,\Delta m}\): from a Bortle 4 sky (21.3) to a Bortle 8 city sky (18.9) that is about 9 times the integration.</p>`,
+    String.raw`It holds when the object is much fainter than the sky. For bright objects their own photon noise dominates, and with very short subs the read noise of every frame adds up. Calibration frames, tracking errors and satellite trails cost extra.`));
   root.append(theory('Signal, noise and the night sky', String.raw`
 <div class="theory-cols"><div>
 <h3>The CCD equation for a stack</h3>
