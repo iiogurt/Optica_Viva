@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { GLASSES, index, abbe, partialDispersion, LINES } from '../lib/glass.js';
 import { wavelengthCSS, spectralBasis, linspace, oetf } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
@@ -27,7 +27,13 @@ const apochromat = (gl) => ({ glasses: gl, phi: solve([gl.map(() => 1), gl.map((
 const focal = (sys, l) => 1 / sys.glasses.reduce((s, g, i) => s + sys.phi[i] * k(g, l), 0); // mm
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Glass bends blue light more than red. A simple lens therefore has a different focal length for every colour. Longitudinal chromatic aberration (LoCA) puts magenta and green fringes on out-of-focus edges, and lateral colour (LaCA) splits the image radially towards the corners. Correcting it requires pairing glasses whose dispersions cancel.', domains: ['photo', 'video', 'space'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
+  root.append(idea(String.raw`<p>Glass bends blue light a little more than red, which is how a prism makes a rainbow. A simple lens therefore focuses each colour at a slightly different distance, and a picture that is sharp in green shows purple and green fringes along contrasty edges.</p>
+<p>The cure, found in the 18th century, is to cement together two lenses of different glass: one that bends light strongly but spreads the colours little, and a weaker one of opposite shape that spreads them a lot. Their colour errors cancel while their bending does not. Such an <strong>achromat</strong> brings two colours to one focus; an <strong>apochromat</strong>, made of three glasses, brings three.</p>`, [
+    "Set <strong>Render lens</strong> to Singlet: out-of-focus edges get strong colour fringes. Switch to Achromat, then Apo.",
+    "Move the <strong>Object offset</strong> through zero: the fringe colour flips as the edge passes through focus.",
+    "Raise the f-number from f/2 to <strong>f/8</strong>: the fringes shrink, because a narrower cone of light blurs every colour less.",
+  ]));
 
   // ── Section 1: dispersion & glass map ──
   const disp = stage({ aspect: 1.25, label: '', draw: drawN, cls: 'plain' });
@@ -108,6 +114,7 @@ export default function mount(root, meta) {
       ['Diffraction depth of focus ±2λN²', '±' + (2 * 0.55 * st.N * st.N).toFixed(1) + ' µm'],
     ]));
     const [a, b] = DOUBLETS[st.pair];
+    calc.say(`This ${st.glass} singlet (Abbe number ${V.toFixed(0)}) focuses red <strong>${(focal(sys.singlet, LINES.C) - focal(sys.singlet, LINES.F)).toFixed(2)} mm</strong> farther from the lens than blue. The ${st.pair} achromat leaves ${Math.abs(sp(sys.achromat)).toFixed(0)} µm between violet and blue (g and F lines), the apochromat ${Math.abs(sp(sys.apo)) < 0.05 ? 'less than 0.1' : Math.abs(sp(sys.apo)).toFixed(1)} µm.`);
     calc.set(String.raw`\begin{aligned}
     \Delta f_\text{singlet} &\approx -\frac{f}{V_d} = -\frac{100}{${texNum(V, 4)}}\,\text{mm}\\
     \frac{\phi_1}{V_1} + \frac{\phi_2}{V_2} &= 0 \Rightarrow \phi_1 = \phi\frac{V_1}{V_1-V_2}\\
@@ -287,6 +294,9 @@ export default function mount(root, meta) {
 
   update();
 
+  root.append(rule(String.raw`\[\Delta f \approx \frac{f}{V}\]
+<p>The focal shift between blue (486 nm) and red (656 nm) light in a single lens is its focal length divided by the Abbe number \(V\) of its glass, a measure of how little the glass spreads colours. A 100 mm lens of N-BK7 (\(V = 64\)) shifts by 1.6 mm, while its depth of focus at f/2 is only ±4.4 µm. An achromat brings red and blue together; what remains, the secondary spectrum, is roughly \(f/2000\): for the 100 mm N-BK7/F2 achromat both focus 50 µm behind yellow, and violet another 170 µm farther, the residual shown in the live calculation.</p>`,
+    String.raw`It describes the longitudinal colour of a thin lens. Lateral colour, which grows towards the corners, depends on the lens's shape and stop position, and the exact focal shift at every wavelength follows from the glass's dispersion formula (Sellmeier), as computed above.`));
   root.append(theory('Theory of chromatic correction', String.raw`
 <div class="theory-cols"><div>
 <h3>Dispersion and the Abbe number</h3>
