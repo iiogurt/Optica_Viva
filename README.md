@@ -71,6 +71,10 @@ flowchart LR
     style C fill:#221a2e,stroke:#c18cff,color:#fff
 ```
 
+**From the simple idea to the full model.** Readers come with very different backgrounds, so a page climbs from simple to exact instead of offering a beginner/expert switch. ① *The idea* explains the phenomenon in plain words, without symbols, and suggests two or three things to try (predict first, then check). Then comes the simulation, whose live calculation starts with the result in a sentence. ② *Rule of thumb* gives the one formula worth remembering, a worked number and where it stops working. ③ *Full model* is the derivation, and ④ the references. A strip under the title jumps between the steps, so experts can go straight to the derivation. The depth-of-field, diffraction and seeing laboratories use this ladder; the others follow in v1.11.
+
+<img src="docs/screenshots/dof-ladder.webp" alt="Depth-of-field page: the ladder strip (The idea, Simulation, Rule of thumb, Full model, References) above a plain-language explanation and three things to try">
+
 It covers three domains (📷 photography, 🎬 cinematography and 🔭 astronomy and space), and every phenomenon is tagged with the ones it affects.
 
 Every setting is **shareable**. Controls are mirrored into the URL, so a link like [`#/psf?preset=hubble&band=white`](https://iiogurt.github.io/Optica_Viva/#/psf?preset=hubble&band=white) opens that exact configuration. Use **Copy link** in any page header. On phones each lab's controls slide up from a bottom sheet next to the live result. Canvases are labelled for screen readers, keyboard focus is visible, and animations respect *reduce motion*.
@@ -698,7 +702,7 @@ Optica_Viva/
 │   │   ├── phenomena.js       Catalogue data (228 entries in 13 groups)
 │   │   ├── phenomena-details.js  Explanation and worked example for every catalogue entry
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
-│   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers (DOM)
+│   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
 │   └── modules/               One file per page (41)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use

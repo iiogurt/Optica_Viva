@@ -12,10 +12,10 @@ const OUT = resolve(ROOT, 'docs/screenshots');
 const LAB = [296, 290, 1412, 1110];
 const PAGES = {
   home: ['', [268, 0, 1440, 680]], foundations: ['foundations', [296, 0, 1412, 760]], catalogue: ['catalogue', [296, 250, 1412, 1070]], 'catalogue-entry': ['catalogue?g=diffraction-and-wave-optics&e=airy-disk', [296, 250, 1412, 1070]],
-  raytracer: ['raytracer', LAB], dof: ['dof', LAB], sensor: ['sensor', LAB], projection: ['projection', LAB], perspective: ['perspective', LAB],
-  tiltshift: ['tiltshift', LAB], vignetting: ['vignetting', LAB], psf: ['psf', [296, 264, 1412, 1084]], zernike: ['zernike', LAB],
+  raytracer: ['raytracer', LAB], dof: ['dof', [296, 520, 1412, 1340]], 'dof-ladder': ['dof', [296, 20, 1412, 510]], sensor: ['sensor', LAB], projection: ['projection', LAB], perspective: ['perspective', LAB],
+  tiltshift: ['tiltshift', LAB], vignetting: ['vignetting', LAB], psf: ['psf', [296, 547, 1412, 1367]], zernike: ['zernike', LAB],
   mtf: ['mtf', [296, 264, 1412, 1084]], chromatic: ['chromatic', [296, 300, 1412, 1120]], bokeh: ['bokeh', LAB], flare: ['flare', LAB],
-  sampling: ['sampling', LAB], noise: ['noise', LAB], motion: ['motion', LAB], seeing: ['seeing', [296, 316, 1412, 1136]],
+  sampling: ['sampling', LAB], noise: ['noise', LAB], motion: ['motion', LAB], seeing: ['seeing', [296, 547, 1412, 1367]],
   telescope: ['telescope', [296, 1220, 1412, 2040]], lensing: ['lensing', LAB], polarisation: ['polarisation', LAB], macro: ['macro', LAB], colour: ['colour', LAB], wfs: ['wfs', LAB], spectro: ['spectro', LAB], panorama: ['panorama', LAB], cinema: ['cinema', LAB], hdr: ['hdr', LAB], shake: ['shake', LAB], eye: ['eye', LAB], film: ['film', LAB], vp: ['vp', LAB], interferometry: ['interferometry', LAB], detectors: ['detectors', LAB], adc: ['adc', LAB], lucky: ['lucky', LAB], stacking: ['stacking', LAB], starshade: ['starshade', LAB], fieldpsf: ['fieldpsf', LAB],
 };
 const wanted = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(PAGES);

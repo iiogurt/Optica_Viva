@@ -1,12 +1,18 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, reducedMotion } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { rasterAperture, psf } from '../lib/pupil.js';
 import { lut } from '../lib/color.js';
 import { phaseScreen } from '../lib/turbulence.js';
 
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'Turbulent mixing of air at different temperatures makes the refractive index fluctuate by parts per million. That is enough to corrugate a starlight wavefront by several micrometres across a large telescope, blurring a 0.01″ diffraction pattern into a 1″ seeing disk. Adaptive optics measures the corrugations a thousand times per second and flattens them with a deformable mirror. Space telescopes avoid the problem entirely.', domains: ['space', 'photo'] }));
+  root.append(header({ ...meta, domains: ['space', 'photo'] }));
+  root.append(idea(String.raw`<p>Look across a road on a hot day and the view behind it shimmers. Starlight suffers the same on its way down: pockets of warmer and cooler air bend it by slightly different amounts. A star's image dances and breaks into flickering speckles, and a long exposure smears them into a fuzzy blob, often dozens of times larger than the telescope could otherwise show. Astronomers call this <strong>seeing</strong>. It is why observatories sit on mountaintops, and why telescopes go to space.</p>
+<p><strong>Adaptive optics</strong> fights back: a sensor measures the distortion hundreds of times per second, and a flexible mirror bends to cancel it.</p>`, [
+    'Set Correction to <strong>None</strong> and compare the long exposure with the diffraction limit on the right. How many times larger is the blob?',
+    'Switch to <strong>Full AO</strong>, then raise the <strong>wind speed</strong> to 40 m/s: the mirror can no longer keep up.',
+    'With Full AO, move the <strong>wavelength</strong> from 0.5 to 2.2 µm. The correction works far better in the infrared, which is where most adaptive optics observes.',
+  ]));
 
   const ctl = controls({
     D: { type: 'range', label: 'Telescope diameter D', min: 0.2, max: 10, log: true, value: 4, unit: 'm' },
@@ -65,6 +71,10 @@ export default function mount(root, meta) {
       ['Predicted Strehl e^(−σ²)', Math.exp(-sTot).toExponential(2)],
       ['Measured long-exp. Strehl', '…'],
     ]));
+    const strehl = Math.exp(-sTot);
+    calc.say(`At ${lam} µm the air blurs stars to <strong>${seeing.toFixed(2)}″</strong>, ${Math.max(1, seeing / dlim).toFixed(0)} times the ${st.D.toPrecision(2)} m telescope's own limit of ${(dlim * 1000).toFixed(0)} mas. `
+      + (st.ao === 'off' ? 'Without correction, ' : st.ao === 'tt' ? 'Removing only the image motion, ' : 'With adaptive optics, ')
+      + `the peak brightness is about <strong>${strehl < 0.001 ? 'below 0.1' : (strehl * 100).toPrecision(2)} %</strong> of a perfect image (the Strehl ratio).`);
     calc.set(String.raw`\begin{aligned}
     r_0(\lambda) &= r_0(500)\left(\tfrac{\lambda}{0.5\,\mu m}\right)^{6/5} = ${texNum(r0l * 100, 3)}\ \text{cm}\\
     \sigma^2_\text{fit} &= 0.28\,(d/r_0)^{5/3} = ${texNum(sFit, 3)}\\
@@ -198,6 +208,10 @@ export default function mount(root, meta) {
   reset();
   raf = requestAnimationFrame(loop);
 
+  root.append(rule(String.raw`\[\text{seeing} \approx \frac{\lambda}{r_0}\qquad\text{vs.}\qquad \text{diffraction} \approx 1.22\,\frac{\lambda}{D}\]
+<p>The Fried parameter \(r_0\) is the width of a patch of air that bends light nearly uniformly: 10–20 cm in visible light at a good site. A telescope larger than \(r_0\) resolves no better than one of diameter \(r_0\). Example: with \(r_0 = 12\) cm at 0.5 µm, seeing is \(0.98 \times 0.5\,\mu\text{m}/0.12\,\text{m} \approx 0.84″\), while a 4 m telescope could reach 0.03″, about 27 times sharper.</p>
+<p>\(r_0\) grows with wavelength as \(\lambda^{6/5}\), so seeing improves slowly towards the infrared (\(\propto\lambda^{-1/5}\)) while the diffraction limit worsens. The gap that adaptive optics must close is smallest there.</p>`,
+    String.raw`It assumes Kolmogorov turbulence with a very large outer scale. For telescopes approaching the outer scale (tens of metres) the real seeing disk is smaller than \(\lambda/r_0\) predicts, and a telescope smaller than \(r_0\) is limited by diffraction instead. Real nights change \(r_0\) from minute to minute.`));
   root.append(theory('Kolmogorov turbulence and its correction', String.raw`
 <div class="theory-cols"><div>
 <h3>Statistics of the refractive index</h3>

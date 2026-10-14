@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **From the simple idea to the full model.** Pages now climb from simple to exact, with everything visible in that order and no beginner/expert switch:
+  - ① *The idea*: the phenomenon in plain words, without symbols, beside two or three things to try in the simulation;
+  - the simulation, whose live calculation now starts with the result in a sentence ("Sharp from 2.17 m to 2.23 m, 6.7 cm deep …");
+  - ② *Rule of thumb*: the formula worth remembering, a worked number and where it stops working;
+  - ③ *Full model* (the existing derivation) and ④ references.
+
+  A strip under the title shows the steps, highlights the current one and jumps between them. The depth-of-field, diffraction & PSF and atmospheric seeing laboratories are the pilot; the plain-language idea replaces their technical lede.
+- `idea()`, `rule()` and `liveCalc().say()` in `js/lib/page.js`; the router adds the strip to any page with an idea.
+- Tests (`test/ladder.test.mjs`): a page with an idea has no symbols and at most 120 words in it, 1–3 things to try, a rule of thumb with its limits and the result in words.
+
 ## [1.10.0] - 2026-10-14
 
 A structured **catalogue explorer** ([#66](https://github.com/iiogurt/Optica_Viva/pull/66)): 13 groups with an overview and navigator, expandable entries with an explanation and a worked example each, search across groups and shareable links. The catalogue grows by 56 phenomena to 228, every equation is checked to render, and the colour accents of the sidebar and home cards now show. 39 interactive simulations and 133 tests.

@@ -1,5 +1,6 @@
 // Optica Viva — router and module registry.
 import { h, resetUrlState } from './lib/ui.js';
+import { ladder } from './lib/page.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
 export const READY = new Set(['home', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
@@ -93,7 +94,9 @@ async function route() {
   try {
     const mod = await import(`./modules/${meta.id}.js`);
     if (my !== token) return;
-    cleanup = (await mod.default(page, meta)) || null;
+    const done = (await mod.default(page, meta)) || null;
+    const unladder = ladder(page);
+    cleanup = () => { unladder(); if (done) done(); };
   } catch (e) {
     console.error(e);
     const missing = /Failed to fetch|Importing a module script failed|error loading dynamically imported module/i.test(e.message);

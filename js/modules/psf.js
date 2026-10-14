@@ -1,5 +1,5 @@
 import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
-import { header, lab, theory, references, liveCalc } from '../lib/page.js';
+import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { airy, besselJ1 as besselJ1x } from '../lib/pupil.js';
 import { latest } from '../lib/compute.js';
 import { oetf, linspace } from '../lib/color.js';
@@ -27,7 +27,13 @@ const BANDS = {
 };
 
 export default function mount(root, meta) {
-  root.append(header({ ...meta, lede: 'The image of a point is never a point. A lens forms the Fourier transform of its own aperture, so every iris blade, secondary mirror, support strut and segment gap is written into each star and highlight as rings, spikes and halos. These patterns are computed by FFT from the true pupil geometry.', domains: ['photo', 'video', 'space'] }));
+  root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
+  root.append(idea(String.raw`<p>Light is a wave, and a wave cannot be squeezed into a single point. Even a perfect lens turns each star into a small bright dot surrounded by faint rings, the <strong>Airy pattern</strong>. The wider the opening, the smaller the dot. That is why large telescopes see finer detail, and why stopping a camera lens far down makes photos softer.</p>
+<p>The shape of the opening is written into the pattern too. A straight edge throws light sideways, at right angles to itself. A six-bladed iris therefore turns bright lights into six-pointed stars, and the struts that hold a telescope's small mirror make the spikes in Hubble and Webb pictures.</p>`, [
+    'Choose <strong>Circular (ideal lens)</strong>: a dot and rings. Now guess what a <strong>Square aperture</strong> gives, then check.',
+    'Choose the <strong>5-blade iris</strong> and count the spikes. Why 10 and not 5? (Each edge sends light both ways; with an even blade count the opposite spikes overlap.)',
+    'Compare <strong>Hubble</strong> with <strong>James Webb</strong>: Webb\'s hexagonal mirror segments give six large spikes, and a strut adds two small ones.',
+  ]));
 
   const ctl = controls({
     preset: { type: 'select', label: 'Aperture', value: 'jwst', options: Object.entries(PRESETS).map(([k, p]) => [k, p.label]) },
@@ -83,6 +89,11 @@ export default function mount(root, meta) {
     if (data.spec.type === 'polygon') rows.push(['Diffraction spikes', `${st.blades % 2 ? 2 * st.blades : st.blades} (${st.blades} blades, ${st.blades % 2 ? 'odd → 2n' : 'even → n'})`]);
     ro.replaceChildren(readouts(rows));
     const D = P.tel ? P.D : null;
+    const th = 1.22 * lam / D, d = 2.44 * band.ref / 1000 * st.N;
+    calc.say((P.tel
+      ? `The finest detail the ${P.label.replace(/ \(.*\)$/, '')} can separate at ${fmt(band.ref / 1000, 3)} µm is about <strong>${fmt(th * 206265 * 1000, 3)} milliarcseconds</strong>: the size of a coin seen from ${fmt(0.023 / th / 1000, 3)} km.`
+      : `At f/${st.N.toPrecision(2)} a point of light becomes a dot <strong>${fmt(d, 3)} µm</strong> across, ${fmt(d / 4.3, 2)} pixels on a sensor with 4.3 µm pixels.`)
+      + (st.defocus ? ` Defocus has lowered the peak to ${(data.strehl * 100).toFixed(0)} % of a perfect focus.` : ''));
     calc.set(P.tel
       ? String.raw`\begin{aligned}\theta_R &= 1.22\,\lambda/D\\ &= 1.22\times\frac{${texNum(band.ref / 1000, 3)}\,\mu\text{m}}{${D}\ \text{m}}\\ &= ${texNum((1.22 * lam / D) * 206265 * 1000, 4)}\ \text{mas}\\ \text{PSF}(\boldsymbol\theta) &= \Big|\mathcal F\{P\,e^{i2\pi W/\lambda}\}\Big|^2_{\,\mathbf f=\boldsymbol\theta/\lambda}\end{aligned}`
       : String.raw`\begin{aligned}I(v) &= \left[\frac{2J_1(v)}{v}\right]^2,\quad v = \frac{\pi r}{\lambda N}\\ r_\text{Airy} &= 1.22\,\lambda N = 1.22\times${texNum(band.ref / 1000, 3)}\times${texNum(st.N, 3)}\\ &= ${texNum(1.22 * band.ref / 1000 * st.N, 3)}\ \mu\text{m}\end{aligned}`);
@@ -174,6 +185,10 @@ export default function mount(root, meta) {
 
   recompute();
 
+  root.append(rule(String.raw`\[\theta \approx 1.22\,\frac{\lambda}{D}\qquad\text{on the sensor:}\qquad d_\text{Airy} = 2.44\,\lambda N \approx 1.3\,N\ \mu\text{m}\]
+<p>The smallest angle a telescope of diameter \(D\) can resolve is about the wavelength \(\lambda\) divided by \(D\). Hubble (2.4 m) in green light: \(1.22 \times 0.55\,\mu\text{m} / 2.4\,\text{m} = 0.28\) µrad, or 0.06″. Double the mirror and the limit halves. In a camera the dot's diameter in micrometres is about 1.3 times the f-number for green light: about 10 µm at f/8, 21 µm at f/16.</p>
+<p>Spikes: an iris with \(n\) straight blades gives \(n\) spikes when \(n\) is even and \(2n\) when it is odd.</p>`,
+    String.raw`It describes a round, perfectly focused aperture. A central obstruction moves light from the core into the rings, aberrations and defocus spread it further, and on the ground the atmosphere usually blurs far more than diffraction does (see <a href="#/seeing">Atmospheric seeing</a>). The full model below computes the pattern for any aperture.`));
   root.append(theory('Fraunhofer diffraction by apertures', String.raw`
 <div class="theory-cols"><div>
 <h3>The PSF is the squared Fourier transform of the pupil</h3>

@@ -31,7 +31,7 @@ flowchart LR
 
 ## Adding a laboratory
 
-1. Create `js/modules/<id>.js` exporting `default function mount(root, meta)`. Build it from `header`, `lab`, `theory`, `references` and `liveCalc` (`js/lib/page.js`), plus `controls`, `stage` and `readouts` (`js/lib/ui.js`), and return a cleanup function.
+1. Create `js/modules/<id>.js` exporting `default function mount(root, meta)`. Build it from `header`, `idea`, `lab`, `rule`, `theory`, `references` and `liveCalc` (`js/lib/page.js`), plus `controls`, `stage` and `readouts` (`js/lib/ui.js`), and return a cleanup function.
 2. Register it in `MODULES` and `READY` in [`js/app.js`](js/app.js).
 3. Link it from the matching entries in [`js/lib/phenomena.js`](js/lib/phenomena.js).
 4. Put reusable physics in `js/lib/` (pure functions) and test it in `test/`.
@@ -42,6 +42,7 @@ Controls created with `controls()` are automatically shareable through the URL, 
 ## Style
 
 - Match the surrounding code: 2-space indent, single quotes, compact functional helpers.
+- Pages climb from simple to exact, all visible: `idea()` explains the phenomenon in plain words (no math, at most 120 words, every term explained) with one to three things to try; `calc.say()` states the live result in a sentence; `rule()` gives one formula, a worked number and where it stops working; `theory()` holds the full model.
 - Theory text goes in `String.raw` templates, with `\( … \)` and `\[ … \]` for math (never `$`).
 - Never put a `//` comment inside a one-line `{ … }` block; it swallows the closing brace.
 
