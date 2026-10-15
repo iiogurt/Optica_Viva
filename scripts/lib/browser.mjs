@@ -1,5 +1,5 @@
 // Minimal real-time Chrome DevTools Protocol client (no dependencies).
-// Needs a global WebSocket: Node ≥ 22, or Node 20 with --experimental-websocket.
+// Needs a global WebSocket (Node ≥ 22; the project runs on Node 24).
 // Real time (unlike --virtual-time-budget) lets Web Workers run, so worker-backed
 // laboratories actually finish rendering.
 import { spawn, execSync } from 'node:child_process';
@@ -10,7 +10,7 @@ import { join } from 'node:path';
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export async function launch({ width = 1440, height = 1200 } = {}) {
-  if (typeof WebSocket !== 'function') throw new Error('global WebSocket missing: use Node ≥ 22 or node --experimental-websocket');
+  if (typeof WebSocket !== 'function') throw new Error('global WebSocket missing: use Node 22 or later');
   const exe = ['chromium', 'chromium-browser', 'google-chrome', 'google-chrome-stable']
     .find((b) => { try { execSync(`command -v ${b}`, { stdio: 'ignore', shell: '/bin/sh' }); return true; } catch { return false; } });
   if (!exe) throw new Error('no Chrome/Chromium on PATH');
