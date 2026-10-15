@@ -58,11 +58,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"] --> D14["v1.12–1.13<br/>missions · 3 labs"]
     end
     subgraph Next["Planned"]
         direction TB
-        N8["v1.12 missions"] --> N9["v1.13 lighting · transits · Earth observation"] --> N10["v1.14 your own gear"] --> N7["v2.0 learning platform"]
+        N9["v1.13 underwater · computational · autofocus · filters"] --> N10["v1.14 your own gear"] --> N7["v2.0 learning platform"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -82,6 +82,15 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.12 Missions</b> (released in v1.12.0 and v1.13.0, 2026-10-14/15, PRs #78–#91)</summary>
+
+- [x] Mission framework and nine missions: Milky Way (#79), Jupiter (#80), portrait (#85), total solar eclipse (#86), LED light and LED walls (#87), choosing a camera or telescope (#88), Earth-observation satellite design (#89), exoplanet imaging (#90), security camera and drone survey (#91)
+- [x] From v1.13, released early in v1.12.0: lighting (#81), exoplanet transits (#82) and Earth observation (#83) laboratories
+- [x] Smoke test now covers hyphenated page ids and mission pages (#82)
+
+</details>
+
+<details>
 <summary><b>v1.11.0 From simple to exact</b> (2026-10-14, PRs #68–#75)</summary>
 
 - [x] Explanation ladder on all 39 pages: the idea in plain words with things to try, the live result in a sentence, a rule of thumb with its limits, then the full model (#68–#72)
@@ -391,6 +400,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P3 · S** Catalogue entries in the same order: plain description, example, explanation, equation (PR #75).
 
 ### v1.12 Missions: optics for real tasks
+
+✅ **Complete** (released in v1.12.0 and v1.13.0).
 
 *Goal: show why the physics matters by solving real tasks.* A mission is a guided page with a goal: the reader enters their equipment and situation, the page combines several laboratory models, recommends settings with the reason for each, and links to the laboratories involved. It follows the simple-to-exact ladder.
 
