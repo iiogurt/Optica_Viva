@@ -150,6 +150,11 @@ Shutter angles that cancel mains flicker, which dimmed LED fixtures band on a ro
 
 Two cameras for the same shot, or two telescopes: which gathers more light, blurs the background more or shows finer detail, and which settings make them equivalent.
 
+**Design an Earth-observation satellite** · `#/mission-satellite`<br>
+<img src="docs/screenshots/mission-satellite.webp" alt="Satellite design mission: focal length, mirror, TDI stages and data rate, with the telescope drawn next to a person" width="70%">
+
+From the ground resolution you want to the focal length, mirror, TDI stages and data rate.
+
 ### Geometric optics
 
 <table>
@@ -773,6 +778,7 @@ Optica_Viva/
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
+│   │   ├── satellite.js       Satellite mission: focal length, mirror, TDI stages, data rate
 │   │   ├── sensors.js         Sensor and film formats
 │   │   ├── phenomena.js       Catalogue data (228 entries in 13 groups)
 │   │   ├── phenomena-details.js  Explanation and worked example for every catalogue entry
