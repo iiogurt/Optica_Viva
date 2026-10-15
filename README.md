@@ -71,7 +71,7 @@ flowchart LR
     style C fill:#221a2e,stroke:#c18cff,color:#fff
 ```
 
-**From the simple idea to the full model.** Readers come with very different backgrounds, so a page climbs from simple to exact instead of offering a beginner/expert switch. ① *The idea* explains the phenomenon in plain words, without symbols, and suggests two or three things to try (predict first, then check). Then comes the simulation, whose live calculation starts with the result in a sentence. ② *Rule of thumb* gives the one formula worth remembering, a worked number and where it stops working. ③ *Full model* is the derivation, and ④ the references. A strip under the title jumps between the steps, so experts can go straight to the derivation. Every laboratory and the physical-foundations page use this ladder. New to optics? The home page's **Start here** path suggests 17 laboratories in order, from why selfies distort faces to how we could photograph another Earth. Technical terms are explained where they first appear: hover over or tap a dotted-underlined word for a one-sentence definition and a link to the laboratory that simulates it.
+**From the simple idea to the full model.** Readers come with very different backgrounds, so a page climbs from simple to exact instead of offering a beginner/expert switch. ① *The idea* explains the phenomenon in plain words, without symbols, and suggests two or three things to try (predict first, then check). Then comes the simulation, whose live calculation starts with the result in a sentence. ② *Rule of thumb* gives the one formula worth remembering, a worked number and where it stops working. ③ *Full model* is the derivation, and ④ the references. A strip under the title jumps between the steps, so experts can go straight to the derivation. Every laboratory and the physical-foundations page use this ladder, and ten laboratories add a "Check your intuition" question about a common misconception, answered before the explanation appears. New to optics? The home page's **Start here** path suggests 17 laboratories in order, from why selfies distort faces to how we could photograph another Earth. Technical terms are explained where they first appear: hover over or tap a dotted-underlined word for a one-sentence definition and a link to the laboratory that simulates it.
 
 <img src="docs/screenshots/dof-ladder.webp" alt="Depth-of-field page: the ladder strip (The idea, Simulation, Rule of thumb, Full model, References) above a plain-language explanation and three things to try">
 
@@ -823,6 +823,7 @@ Optica_Viva/
 │   │   ├── ledset.js          LED mission: flicker-free shutter angles, PWM banding, safe wall distance
 │   │   ├── lighting.js        Area lights with shadow rays, penumbra, falloff, catchlights, flash
 │   │   ├── jupiter.js         Jupiter mission: Nyquist focal ratio, coherence time, rotation limit, dispersion
+│   │   ├── misconceptions.js  Predict-then-reveal questions on common misconceptions
 │   │   ├── milkyway.js        Milky Way mission: trailing limit, ISO invariance, frames to stack
 │   │   ├── path.js            The home page's "Start here" path
 │   │   ├── portrait.js        Portrait mission: perspective, focal length, depth of field, background blur, light
