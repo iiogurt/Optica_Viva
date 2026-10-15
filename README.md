@@ -140,6 +140,11 @@ Where to stand and which lens fills the frame without enlarging the nose, the wi
 
 Safe filters for the partial phases, framing for the corona, a 15-stop totality ladder from NASA's exposure guide, and when a tracking mount is needed.
 
+**Film under LED light** · `#/mission-led`<br>
+<img src="docs/screenshots/mission-led.webp" alt="LED mission: flicker-free shutter angle, LED fixture banding and LED wall distance, with brightness down the frame and moiré against distance" width="70%">
+
+Shutter angles that cancel mains flicker, which dimmed LED fixtures band on a rolling shutter, and how far an LED wall must be to keep its grid invisible.
+
 ### Geometric optics
 
 <table>
@@ -741,6 +746,7 @@ Optica_Viva/
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── glossary.js        Plain definitions of technical terms and their popovers
 │   │   ├── transit.js         Transit light curves with limb darkening, orbits, photometric noise
+│   │   ├── ledset.js          LED mission: flicker-free shutter angles, PWM banding, safe wall distance
 │   │   ├── lighting.js        Area lights with shadow rays, penumbra, falloff, catchlights, flash
 │   │   ├── jupiter.js         Jupiter mission: Nyquist focal ratio, coherence time, rotation limit, dispersion
 │   │   ├── milkyway.js        Milky Way mission: trailing limit, ISO invariance, frames to stack
