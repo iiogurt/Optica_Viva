@@ -160,6 +160,11 @@ From the ground resolution you want to the focal length, mirror, TDI stages and 
 
 Can a telescope photograph an Earth or a Jupiter around a nearby star: contrast, separation against the inner working angle, and the hours to detect it and take its spectrum.
 
+**Security camera or drone survey** · `#/mission-survey`<br>
+<img src="docs/screenshots/mission-survey.webp" alt="Survey mission: pixels per metre, DORI zones against distance and a face drawn at the actual pixel count" width="70%">
+
+Pixels on a person for detecting, recognising or identifying them (IEC 62676-4), or ground sample distance, shutter and photo interval for a mapping drone.
+
 ### Geometric optics
 
 <table>
@@ -783,6 +788,7 @@ Optica_Viva/
 │   │   ├── interferometry.js  Visibility of extended sources, array u-v coverage, dirty beam/image, Högbom CLEAN
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
+│   │   ├── survey.js          Survey mission: DORI pixel densities, drone GSD, shutter and overlap
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── satellite.js       Satellite mission: focal length, mirror, TDI stages, data rate
 │   │   ├── sensors.js         Sensor and film formats
