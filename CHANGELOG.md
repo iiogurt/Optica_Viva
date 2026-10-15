@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Misconception checks** (`js/lib/misconceptions.js`, `misconception()` in `js/lib/page.js`): a "Check your intuition" question after the plain-language idea on ten laboratories, answered before the explanation appears. Topics: the half-covered lens (Goldberg & McDermott 1987), f-number and depth of field, telephoto "compression", ISO and noise, sensor size and light, telescope size and star images, twinkling, sky polarisation, a red apple in blue light, and purple fringing.
+- Tests (`test/misconceptions.test.mjs`): every check belongs to a laboratory, has 3–4 distinct options, a valid answer and a short explanation.
 - **Real equipment presets** (`js/lib/equipment.js`): nine camera bodies from full frame to 1″ (sensor size and pixel count from the makers' specifications, pixel pitch derived), four planetary cameras and seven telescopes from a 51 mm refractor to a C11. The Milky Way mission accepts a camera body, the Jupiter mission a telescope and a planetary camera, the comparison mission two bodies or two telescopes, and *Test your lens* a body for its pixel size. A link that names a preset applies it unless it also carries the values.
 - Tests (`test/equipment.test.mjs`): derived pixel pitches against the published ones, preset completeness, missions with real cameras.
 - **Test your lens** (`#/gear`, `js/lib/esfr.js`, `js/lib/gear.js`), in a new *Your own gear* group. Load a photograph (analysed only in the browser) or a demo image with a known answer and measure:

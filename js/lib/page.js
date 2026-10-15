@@ -109,3 +109,18 @@ export function missionStep(n, title, lab, labTitle) {
     answer, why, eq, lab ? h('a.mstep-lab', { href: '#/' + lab }, 'Explore: ' + labTitle + ' →') : null);
   return { el, set: ({ answer: a, why: w, tex: t }) => { answer.innerHTML = a; why.innerHTML = w; if (t) setTex(eq, t, true); else eq.replaceChildren(); } };
 }
+
+// Misconception check: a question answered before the explanation is shown. Inserted after the
+// idea on laboratories listed in misconceptions.js.
+export function misconception(page, id, checks) {
+  const c = checks[id];
+  const idea = page.querySelector('.rung-idea');
+  if (!c || !idea) return;
+  const why = h('p.check-why'), list = h('div.check-options');
+  c.options.forEach((o, i) => list.append(h('button.check-option', { type: 'button', onClick: (e) => {
+    list.querySelectorAll('button').forEach((b, j) => { b.disabled = true; b.classList.toggle('right', j === c.answer); });
+    if (i !== c.answer) e.currentTarget.classList.add('wrong');
+    why.innerHTML = (i === c.answer ? '<strong>Right.</strong> ' : '<strong>Not quite.</strong> ') + c.why;
+  } }, o)));
+  idea.after(h('section.block.check', { 'aria-label': 'Check your intuition' }, h('div.check-k', {}, 'Check your intuition'), h('p.check-q', {}, c.q), list, why));
+}
