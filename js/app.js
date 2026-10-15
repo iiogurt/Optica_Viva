@@ -1,6 +1,7 @@
 // Optica Viva — router and module registry.
 import { h, resetUrlState } from './lib/ui.js';
-import { ladder } from './lib/page.js';
+import { ladder, misconception } from './lib/page.js';
+import { CHECKS } from './lib/misconceptions.js';
 import { glossary } from './lib/glossary.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
@@ -113,6 +114,7 @@ async function route() {
     const mod = await import(`./modules/${meta.id}.js`);
     if (my !== token) return;
     const done = (await mod.default(page, meta)) || null;
+    misconception(page, meta.id, CHECKS);
     const unladder = ladder(page);
     const unglossary = meta.id === 'home' || meta.id === 'catalogue' ? () => {} : glossary(page, meta.id, (lab) => MODULES.find((m) => m.id === lab)?.title || lab);
     cleanup = () => { unglossary(); unladder(); if (done) done(); };
