@@ -400,7 +400,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P2 · M** **Portrait session** (PR #85): flattering distance, focal length, depth of field across the face, background blur, light-source size and shadow softness.
 - [x] **P2 · M** **Total solar eclipse** (PR #86): safe filters, exposure ladder from Baily's beads to the outer corona, HDR merge.
 - [x] **P2 · S** **Film under LED light and on an LED volume** (PR #87): shutter angle vs flicker, LED-wall moiré distance.
-- [ ] **P2 · M** **Choose a camera or telescope**: compare formats or apertures by resolution, light and depth of field through the equivalence laws.
+- [x] **P2 · M** **Choose a camera or telescope** (PR #88): compare formats or apertures by resolution, light and depth of field through the equivalence laws.
 - [ ] **P2 · M** **Design an Earth-observation satellite**: orbit, focal length and pixels → ground sample distance, MTF, smear and TDI stages.
 - [ ] **P3 · M** **Plan an exoplanet observation**: contrast, inner working angle, coronagraph or starshade, integration time.
 - [ ] **P3 · S** **Security camera or drone survey**: pixels on target for detection/recognition, motion blur, rolling shutter.
