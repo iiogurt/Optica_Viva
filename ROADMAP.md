@@ -403,7 +403,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P2 · M** **Choose a camera or telescope** (PR #88): compare formats or apertures by resolution, light and depth of field through the equivalence laws.
 - [x] **P2 · M** **Design an Earth-observation satellite** (PR #89): orbit, focal length and pixels → ground sample distance, MTF, smear and TDI stages.
 - [x] **P3 · M** **Plan an exoplanet observation** (PR #90): contrast, inner working angle, coronagraph or starshade, integration time.
-- [ ] **P3 · S** **Security camera or drone survey**: pixels on target for detection/recognition, motion blur, rolling shutter.
+- [x] **P3 · S** **Security camera or drone survey** (PR #91): pixels on target for detection/recognition, motion blur, rolling shutter.
 
 ### v1.13 New laboratories: light, water and worlds
 
