@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [1.13.0] - 2026-10-15
 
+Seven more missions complete the v1.12 milestone ([#85](https://github.com/iiogurt/Optica_Viva/pull/85)–[#92](https://github.com/iiogurt/Optica_Viva/pull/92)): a **portrait session**, a **total solar eclipse** (exposure ladder from NASA's guide), **filming under LED light** and on LED walls, **choosing a camera or telescope**, **designing an Earth-observation satellite**, **planning an exoplanet observation** and a **security camera or drone survey**. Each turns the laboratory models into a plan with the reason for every setting. 51 interactive pages and 232 tests.
+
 
 ### Added
 - **Mission: Security camera or drone survey** (`#/mission-survey`, `js/lib/survey.js`). For a security camera: pixels per metre on a person, the IEC 62676-4 level reached (detection, observation, recognition, identification) and the distance limit of each, motion blur and rolling-shutter skew of a walking person, with a face drawn at the actual pixel count. For a mapping drone: ground sample distance, photo footprint and interval for the chosen overlap, the half-pixel shutter limit and rolling-shutter skew.
