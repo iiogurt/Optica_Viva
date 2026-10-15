@@ -398,7 +398,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P1 · M** **Photograph the Milky Way** (PR #79): longest untrailed exposure (500 and NPF rules), aperture vs corner coma and vignetting, ISO invariance, sky brightness, number of frames to stack.
 - [x] **P1 · M** **Image Jupiter from your garden** (PR #80): critical f-ratio for the pixel size, seeing and lucky-imaging frame rate, atmospheric dispersion vs altitude, rotation limit on capture length.
 - [x] **P2 · M** **Portrait session** (PR #85): flattering distance, focal length, depth of field across the face, background blur, light-source size and shadow softness.
-- [ ] **P2 · M** **Total solar eclipse**: safe filters, exposure ladder from Baily's beads to the outer corona, HDR merge.
+- [x] **P2 · M** **Total solar eclipse** (PR #86): safe filters, exposure ladder from Baily's beads to the outer corona, HDR merge.
 - [ ] **P2 · S** **Film under LED light and on an LED volume**: shutter angle vs flicker, LED-wall moiré distance.
 - [ ] **P2 · M** **Choose a camera or telescope**: compare formats or apertures by resolution, light and depth of field through the equivalence laws.
 - [ ] **P2 · M** **Design an Earth-observation satellite**: orbit, focal length and pixels → ground sample distance, MTF, smear and TDI stages.

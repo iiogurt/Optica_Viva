@@ -135,6 +135,11 @@ The Nyquist focal ratio for your pixels, frames short enough to freeze the seein
 
 Where to stand and which lens fills the frame without enlarging the nose, the widest aperture that keeps both eyes sharp, how much the background blurs, and how big and close the light should be.
 
+**Photograph a total solar eclipse** · `#/mission-eclipse`<br>
+<img src="docs/screenshots/mission-eclipse.webp" alt="Eclipse mission: filter, framing, totality ladder and mount, with the corona as one exposure and as a merged ladder" width="70%">
+
+Safe filters for the partial phases, framing for the corona, a 15-stop totality ladder from NASA's exposure guide, and when a tracking mount is needed.
+
 ### Geometric optics
 
 <table>
@@ -715,6 +720,7 @@ Optica_Viva/
 │   │   ├── film.js            Boolean-model emulsion: development probability, H&D curve, Selwyn granularity, DQE, reciprocity
 │   │   ├── fieldpsf.js        Two-mirror telescopes: Seidel sums through mirrors, RC/DK conics, nodal aberrations, PSFs across the field
 │   │   ├── earthobs.js        Earth observation: GSD, push-broom and TDI, Q, MTF, rendered ground
+│   │   ├── eclipse.js         Eclipse mission: Espenak's exposure guide, framing, drift
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
