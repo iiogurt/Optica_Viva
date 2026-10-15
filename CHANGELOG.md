@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Mission: Portrait session** (`#/mission-portrait`, `js/lib/portrait.js`). For your sensor, framing, distance, aperture, background distance and light it gives the focal length that fills the frame and the nose enlargement at that distance (natural below 5 %, from about 2.5 m), the depth of field across the face and the widest aperture that keeps both eyes sharp, background blur as a share of the frame, and the light's apparent size and background falloff. A top view shows camera, sharp zone, face, light and background.
+- Tests (`test/portrait.test.mjs`): nose enlargement, focal length for the framing, equal depth of field at equal magnification, background blur.
+
 ## [1.12.0] - 2026-10-14
 
 Optics for real tasks ([#78](https://github.com/iiogurt/Optica_Viva/pull/78)–[#83](https://github.com/iiogurt/Optica_Viva/pull/83)). **Missions**, a new kind of page, turn the laboratory models into a plan for a real task: photographing the Milky Way and imaging Jupiter from a garden. Three new laboratories: **lighting** (hard and soft light, rendered with shadow rays), **exoplanet transits** and **Earth observation from orbit**. The ROADMAP gains milestones for more missions, laboratories and testing your own gear. 44 interactive pages and 205 tests.
