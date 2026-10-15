@@ -4,7 +4,7 @@ import { ladder } from './lib/page.js';
 import { glossary } from './lib/glossary.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -13,6 +13,7 @@ export const MODULES = [
 
   { id: 'mission-milkyway', group: 'Missions', title: 'Photograph the Milky Way', c: '#9db4ff', blurb: 'A plan for your camera and sky: the longest exposure before stars trail, the right ISO, and how many frames to stack.' },
   { id: 'mission-jupiter', group: 'Missions', title: 'Image Jupiter from your garden', c: '#e8b48a', blurb: 'The focal ratio for your camera, frames short enough to freeze the air, how long before Jupiter\'s rotation blurs it, and when you need a dispersion corrector.' },
+  { id: 'mission-portrait', group: 'Missions', title: 'Portrait session', c: '#ff9cc0', blurb: 'Where to stand, which lens, which aperture keeps both eyes sharp, how soft the background gets, and how big and close the light should be.' },
   { id: 'raytracer', group: 'Geometric optics', title: 'Real-lens ray tracing', c: '#ffd27a', blurb: 'Exact 3-D Snell ray tracing through real prescriptions: spherical aberration, coma, field curvature and the diffraction PSF of the traced wavefront.' },
   { id: 'dof', group: 'Geometric optics', title: 'Depth of field', c: '#ffd27a', blurb: 'Circle of confusion, hyperfocal distance and a physically framed synthetic photograph that refocuses live.' },
   { id: 'sensor', group: 'Geometric optics', title: 'Sensor size & equivalence', c: '#ffd27a', blurb: 'Crop factor, field of view, equivalent aperture, photon budget and diffraction across formats from phones to IMAX.' },

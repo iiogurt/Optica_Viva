@@ -130,6 +130,11 @@ The longest exposure before stars trail (sidereal drift f ω cos δ against two 
 
 The Nyquist focal ratio for your pixels, frames short enough to freeze the seeing, the capture length before Jupiter's rotation blurs detail, Fried's share of lucky frames, and when atmospheric dispersion calls for a corrector.
 
+**Portrait session** · `#/mission-portrait`<br>
+<img src="docs/screenshots/mission-portrait.webp" alt="Portrait mission: distance and lens, aperture, background blur and light, with a top view of the set" width="70%">
+
+Where to stand and which lens fills the frame without enlarging the nose, the widest aperture that keeps both eyes sharp, how much the background blurs, and how big and close the light should be.
+
 ### Geometric optics
 
 <table>
@@ -734,6 +739,7 @@ Optica_Viva/
 │   │   ├── jupiter.js         Jupiter mission: Nyquist focal ratio, coherence time, rotation limit, dispersion
 │   │   ├── milkyway.js        Milky Way mission: trailing limit, ISO invariance, frames to stack
 │   │   ├── path.js            The home page's "Start here" path
+│   │   ├── portrait.js        Portrait mission: perspective, focal length, depth of field, background blur, light
 │   │   ├── random.js          Seeded random numbers for every simulation (mulberry32, Box–Muller, Poisson)
 │   │   ├── raytrace.js        Exact ray tracer (spheres + even aspheres), paraxial analysis, ray aiming, OPD
 │   │   ├── optimise.js        Damped-least-squares (Levenberg–Marquardt) lens optimiser
