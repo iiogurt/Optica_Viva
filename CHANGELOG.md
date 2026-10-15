@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.14.0] - 2026-10-15
+
+Four new laboratories complete the v1.13 milestone ([#94](https://github.com/iiogurt/Optica_Viva/pull/94)–[#98](https://github.com/iiogurt/Optica_Viva/pull/98)): **underwater photography** (colour lost with depth and distance, ports and strobes), **narrowband filters on fast optics** (the angle shift of interference filters), **autofocus** (split-pixel phase detection against contrast detection) and **computational photography** (night-mode bursts, burst super-resolution and synthetic portrait blur). 55 interactive pages and 248 tests.
+
 ### Added
 - **Computational photography laboratory** (`#/computational`, `js/lib/computational.js`). A test target is sampled by a burst of noisy frames with hand-shake offsets: one short frame, one long exposure of the same light smeared by shake, the aligned burst average (SNR × √N, minus the read noise of each frame) and a 2× super-resolution merge that places every sample at its sub-pixel position. Portrait mode compares real optical background blur with blur computed from a coarse depth map, which loses fine hair and leaves halos.
 - Tests (`test/computational.test.mjs`): √N burst gain and its read-noise penalty, measured noise in the merge, more fine detail from super-resolution, depth-map errors growing with coarseness.
@@ -603,7 +607,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.13.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.14.0...HEAD
+[1.14.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.11.0...v1.12.0
 [1.11.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.10.0...v1.11.0
