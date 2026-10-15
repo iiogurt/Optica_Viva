@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Test your lens** (`#/gear`, `js/lib/esfr.js`, `js/lib/gear.js`), in a new *Your own gear* group. Load a photograph (analysed only in the browser) or a demo image with a known answer and measure:
+  - **sharpness** by the ISO 12233 slanted-edge method: drag a box across a tilted edge for the MTF of each colour channel, MTF50 and MTF10 in cycles per pixel, line pairs per mm and per picture height, and lateral colour from the per-channel edge offsets;
+  - **vignetting** from a flat field: corner falloff in stops, asymmetry and a radial profile;
+  - **distortion** from points clicked along a straight line: the division-model coefficient and barrel or pincushion distortion at the corner.
+- Tests (`test/gear.test.mjs`): MTF50 of known Gaussian blurs within 1 %, robustness to noise, edge angle and lateral shift, cos⁴ flat field, recovery of the distortion coefficient.
+
 ## [1.14.0] - 2026-10-15
 
 Four new laboratories complete the v1.13 milestone ([#94](https://github.com/iiogurt/Optica_Viva/pull/94)–[#98](https://github.com/iiogurt/Optica_Viva/pull/98)): **underwater photography** (colour lost with depth and distance, ports and strobes), **narrowband filters on fast optics** (the angle shift of interference filters), **autofocus** (split-pixel phase detection against contrast detection) and **computational photography** (night-mode bursts, burst super-resolution and synthetic portrait blur). 55 interactive pages and 248 tests.

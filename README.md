@@ -165,6 +165,13 @@ Can a telescope photograph an Earth or a Jupiter around a nearby star: contrast,
 
 Pixels on a person for detecting, recognising or identifying them (IEC 62676-4), or ground sample distance, shutter and photo interval for a mapping drone.
 
+### Your own gear
+
+**Test your lens** · `#/gear`<br>
+<img src="docs/screenshots/gear.webp" alt="Slanted-edge MTF of a demo image: the edge with the selected region and MTF curves for red, green, blue and luminance" width="70%">
+
+Measure your own lens from your own photographs, analysed only in your browser: sharpness by the ISO 12233 slanted-edge method (MTF per colour channel, MTF50, lateral colour), vignetting from a flat field, and distortion from points on a straight line. Demo images with known answers show how each test works.
+
 ### Geometric optics
 
 <table>
@@ -786,6 +793,7 @@ Optica_Viva/
 │   │   ├── fieldpsf.js        Two-mirror telescopes: Seidel sums through mirrors, RC/DK conics, nodal aberrations, PSFs across the field
 │   │   ├── earthobs.js        Earth observation: GSD, push-broom and TDI, Q, MTF, rendered ground
 │   │   ├── eclipse.js         Eclipse mission: Espenak's exposure guide, framing, drift
+│   │   ├── esfr.js            Slanted-edge MTF (ISO 12233 e-SFR) and synthetic test edges
 │   │   ├── exoimaging.js      Exoplanet mission: reflected-light contrast, separation, integration time
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
@@ -807,6 +815,7 @@ Optica_Viva/
 │   │   ├── colorsci.js        CCT/Duv, CIE 13.3 CRI, Bradford adaptation, CIELAB, CIEDE2000
 │   │   ├── choose.js          Comparison mission: camera equivalence, telescope limits
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
+│   │   ├── gear.js            Your photos: linear decoding, flat-field vignetting, division-model distortion
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── glossary.js        Plain definitions of technical terms and their popovers
 │   │   ├── transit.js         Transit light curves with limb darkening, orbits, photometric noise

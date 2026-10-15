@@ -440,7 +440,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 ### v1.14 Your own gear and real images
 
-- [ ] **P1 · L** **Test your own gear** (processed locally, never uploaded): slanted-edge MTF (ISO 12233), vignetting from a flat field, distortion from a grid, lateral colour.
+- [x] **P1 · L** **Test your own gear** (PR #100, processed locally, never uploaded): slanted-edge MTF (ISO 12233), vignetting from a flat field, distortion from a grid, lateral colour.
 - [ ] **P2 · M** **Real equipment presets**: sensors, phones and telescopes with focal lengths, apertures and pixel sizes, shared by all laboratories and missions.
 - [ ] **P2 · M** **Phenomena in the wild**: a gallery of real images explained by the laboratories (Hubble before and after 1993, JWST spikes, the EHT ring, rolling-shutter propellers, the green flash), public-domain or CC BY with attribution in THIRD_PARTY_NOTICES.md.
 - [ ] **P2 · M** **Misconception checks**: predict-then-reveal questions built on physics-education research (half-covered lens, f-number and depth of field, ISO and noise).
