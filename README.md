@@ -118,7 +118,7 @@ Every image below is a screenshot of the running app. Each one is a simulation r
 
 ### Missions
 
-Missions are real tasks. Enter your equipment and situation, and the page combines several laboratory models into a plan with the reason for every setting.
+Missions are real tasks. Enter your equipment and situation (or pick a real camera body, planetary camera or telescope from the presets), and the page combines several laboratory models into a plan with the reason for every setting.
 
 **Photograph the Milky Way** · `#/mission-milkyway`<br>
 <img src="docs/screenshots/mission-milkyway.webp" alt="Milky Way mission: exposure, aperture, ISO and number of frames, with a star drawn on the pixel grid at the planned exposure and at the 500 rule" width="70%">
@@ -793,6 +793,7 @@ Optica_Viva/
 │   │   ├── fieldpsf.js        Two-mirror telescopes: Seidel sums through mirrors, RC/DK conics, nodal aberrations, PSFs across the field
 │   │   ├── earthobs.js        Earth observation: GSD, push-broom and TDI, Q, MTF, rendered ground
 │   │   ├── eclipse.js         Eclipse mission: Espenak's exposure guide, framing, drift
+│   │   ├── equipment.js       Camera bodies, planetary cameras and telescopes for the missions
 │   │   ├── esfr.js            Slanted-edge MTF (ISO 12233 e-SFR) and synthetic test edges
 │   │   ├── exoimaging.js      Exoplanet mission: reflected-light contrast, separation, integration time
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift

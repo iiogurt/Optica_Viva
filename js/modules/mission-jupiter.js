@@ -1,9 +1,10 @@
 // Mission: image Jupiter from a garden with a small telescope and a planetary camera.
-import { h, controls, stage, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { h, controls, stage, imageCanvas, fmt, texNum, readUrlParam } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc, missionStep } from '../lib/page.js';
 import { MODULES } from '../app.js';
 import { plan, JUPITER_FLATTENING } from '../lib/jupiter.js';
 import { dispersion } from '../lib/adc.js';
+import { TELESCOPES, ASTROCAMS } from '../lib/equipment.js';
 import { gaussianExact } from '../lib/macro.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
@@ -33,15 +34,23 @@ export default function mount(root, meta) {
   ]));
 
   const ctl = controls({
-    D: { type: 'range', label: 'Telescope aperture', min: 8, max: 40, step: 1, value: 20, unit: 'cm' },
-    N0: { type: 'range', label: 'Native focal ratio', min: 4, max: 15, step: 0.5, value: 10, fmt: (v) => 'f/' + v },
+    scope: { type: 'select', label: 'Telescope', value: 'dob8', options: [['custom', 'Custom'], ...Object.entries(TELESCOPES).map(([k, t]) => [k, t.name])] },
+    D: { type: 'range', label: 'Telescope aperture', min: 5, max: 40, step: 0.1, value: 20, unit: 'cm' },
+    N0: { type: 'range', label: 'Native focal ratio', min: 2, max: 15, step: 0.1, value: 6, fmt: (v) => 'f/' + v.toPrecision(2) },
+    cam: { type: 'select', label: 'Camera', value: 'asi462', options: [['custom', 'Custom'], ...Object.entries(ASTROCAMS).map(([k, c]) => [k, `${c.name} (${c.pitch} µm)`])] },
     pitch: { type: 'range', label: 'Camera pixel size', min: 1.5, max: 6, step: 0.05, value: 2.9, unit: 'µm' },
     fps: { type: 'range', label: 'Camera maximum frame rate', min: 30, max: 500, log: true, value: 150, unit: 'fps' },
     fwhm: { type: 'range', label: 'Seeing (FWHM at 500 nm)', min: 0.6, max: 4, step: 0.1, value: 2, unit: '″' },
     wind: { type: 'range', label: 'High-altitude wind', min: 3, max: 40, step: 1, value: 10, unit: 'm/s' },
     alt: { type: 'range', label: 'Jupiter\'s altitude', min: 10, max: 85, step: 1, value: 35, unit: '°' },
     diam: { type: 'range', label: 'Jupiter\'s apparent diameter', min: 31, max: 50, step: 0.5, value: 45, unit: '″' },
-  }, () => update());
+  }, (st) => {
+    if (st.scope !== seen.scope && st.scope !== 'custom') { const t = TELESCOPES[st.scope]; ctl.set.D(t.D / 10); ctl.set.N0(t.f / t.D); }
+    if (st.cam !== seen.cam && st.cam !== 'custom') ctl.set.pitch(ASTROCAMS[st.cam].pitch);
+    seen = { ...ctl.state };
+    update();
+  });
+  let seen = { ...ctl.state };
   const calc = liveCalc('Your plan');
   const steps = [
     missionStep(1, 'Focal ratio', 'sampling', titleOf('sampling')),
@@ -145,6 +154,10 @@ export default function mount(root, meta) {
     });
   }
 
+  // a link that names a preset but not its values applies the preset
+  if (ctl.state.scope !== 'custom' && readUrlParam('D') == null) { const t = TELESCOPES[ctl.state.scope]; ctl.set.D(t.D / 10); ctl.set.N0(t.f / t.D); }
+  if (ctl.state.cam !== 'custom' && readUrlParam('pitch') == null) ctl.set.pitch(ASTROCAMS[ctl.state.cam].pitch);
+  seen = { ...ctl.state };
   update();
 
   root.append(rule(String.raw`\[N = \frac{2p}{\lambda} \approx 4\,p_{[\mu\text{m}]},\qquad t_\text{rot} = \frac{\lambda/D}{\omega_J\,\theta_J/2}\]

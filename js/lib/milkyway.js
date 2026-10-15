@@ -37,7 +37,7 @@ export const pick = (list, x, below = true) => (below ? [...list].reverse().find
 // Full plan. Inputs: sensor key, focal length f (mm), f-number N, target declination (°), Bortle
 // class, faintest detail μ (mag/arcsec²), system throughput × QE q, target SNR of that detail.
 export function plan({ sensor = 'ff', f = 20, N = 2.8, dec = -29, bortle = 3, mu = 23, q = 0.3, snr = 5, pre = 1.6, post = 12 }) {
-  const S = SENSORS[sensor], pitch = pitchUm(S), k = crop(S);
+  const S = typeof sensor === 'string' ? SENSORS[sensor] : sensor, pitch = pitchUm(S), k = crop(S);
   const trail = trailLimit(f, N, pitch, dec);
   const t = pick(SHUTTER, trail.t);
   const isoInv = invarianceISO(pre, post);

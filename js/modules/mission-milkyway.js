@@ -3,7 +3,7 @@ import { h, controls, stage, imageCanvas, fmt, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc, missionStep } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
 import { MODULES } from '../app.js';
-import { SENSORS } from '../lib/sensors.js';
+import { cameraOptions, resolveCamera } from '../lib/equipment.js';
 import { BORTLE, surfaceRate } from '../lib/stacking.js';
 import { plan, SIDEREAL } from '../lib/milkyway.js';
 
@@ -20,7 +20,7 @@ export default function mount(root, meta) {
   ]));
 
   const ctl = controls({
-    sensor: { type: 'select', label: 'Camera sensor', value: 'ff', options: ['ff', 'apsc', 'mft', 'one', 'phone'].map((k) => [k, SENSORS[k].name]) },
+    sensor: { type: 'select', label: 'Camera', value: 'ff', options: cameraOptions(['ff', 'apsc', 'mft', 'one', 'phone']) },
     f: { type: 'range', label: 'Focal length', min: 8, max: 85, log: true, value: 20, unit: 'mm' },
     N: { type: 'range', label: 'Aperture (f-number)', min: 1.2, max: 5.6, log: true, value: 2.8, fmt: (v) => 'f/' + v.toPrecision(2) },
     dec: { type: 'range', label: 'Target declination (Milky Way core −29°)', min: -80, max: 80, step: 1, value: -29, unit: '°' },
@@ -42,7 +42,7 @@ export default function mount(root, meta) {
   let P = null;
   function update() {
     const st = ctl.state;
-    P = { st: { ...st }, ...plan({ sensor: st.sensor, f: st.f, N: st.N, dec: st.dec, bortle: st.bortle, mu: st.mu }) };
+    P = { st: { ...st }, ...plan({ sensor: resolveCamera(st.sensor), f: st.f, N: st.N, dec: st.dec, bortle: st.bortle, mu: st.mu }) };
     const r = P;
     steps[0].set({
       answer: `${fmtT(r.t)} <small>(limit ${r.trail.t.toFixed(1)} s)</small>`,

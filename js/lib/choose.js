@@ -8,7 +8,7 @@ const LAMBDA = 0.55e-3; // mm
 // focal length, entrance pupil, depth of field at the widest aperture, the light it collects
 // relative to a 25 mm pupil, and the f-number at which diffraction spreads over two pixels.
 export function camera({ sensor, N, mp }, { Feq, s }) {
-  const S = SENSORS[sensor], k = crop(S), f = Feq / k, D = f / N;
+  const S = typeof sensor === 'string' ? SENSORS[sensor] : sensor, k = crop(S), f = Feq / k, D = f / N;
   const c = diag(S) / 1500, sm = s * 1000;
   const pitch = mp ? Math.sqrt((S.w * S.h) / (mp * 1e6)) * 1000 : pitchUm(S); // µm
   const dof = (2 * N * c * sm * sm) / (f * f) / 1000; // m, valid well inside the hyperfocal distance
