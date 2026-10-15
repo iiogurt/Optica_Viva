@@ -145,6 +145,11 @@ Safe filters for the partial phases, framing for the corona, a 15-stop totality 
 
 Shutter angles that cancel mains flicker, which dimmed LED fixtures band on a rolling shutter, and how far an LED wall must be to keep its grid invisible.
 
+**Choose a camera or telescope** · `#/mission-choose`<br>
+<img src="docs/screenshots/mission-choose.webp" alt="Comparison mission: light, background blur, detail and equivalent settings for two cameras, with bars for each quality" width="70%">
+
+Two cameras for the same shot, or two telescopes: which gathers more light, blurs the background more or shows finer detail, and which settings make them equivalent.
+
 ### Geometric optics
 
 <table>
@@ -742,6 +747,7 @@ Optica_Viva/
 │   │   ├── cinema.js          Anamorphic aspect, streak colour, focus breathing models, T-stops
 │   │   ├── colordata.js       CIE tables at 5 nm: 1931 observer, daylight basis, illuminants, CRI test colours
 │   │   ├── colorsci.js        CCT/Duv, CIE 13.3 CRI, Bradford adaptation, CIELAB, CIEDE2000
+│   │   ├── choose.js          Comparison mission: camera equivalence, telescope limits
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── glossary.js        Plain definitions of technical terms and their popovers
