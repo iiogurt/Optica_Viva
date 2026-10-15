@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+
 ### Added
 - **Mission: Security camera or drone survey** (`#/mission-survey`, `js/lib/survey.js`). For a security camera: pixels per metre on a person, the IEC 62676-4 level reached (detection, observation, recognition, identification) and the distance limit of each, motion blur and rolling-shutter skew of a walking person, with a face drawn at the actual pixel count. For a mapping drone: ground sample distance, photo footprint and interval for the chosen overlap, the half-pixel shutter limit and rolling-shutter skew.
 - Tests (`test/survey.test.mjs`): the DORI levels, pixel density and distances of a 4 MP camera, GSD, shutter limit and photo interval.
@@ -21,6 +22,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Tests (`test/eclipse.test.mjs`): the exposure formula, the table values and 15-stop range, the Sun's image size, the framing limit and the drift.
 - **Mission: Portrait session** (`#/mission-portrait`, `js/lib/portrait.js`). For your sensor, framing, distance, aperture, background distance and light it gives the focal length that fills the frame and the nose enlargement at that distance (natural below 5 %, from about 2.5 m), the depth of field across the face and the widest aperture that keeps both eyes sharp, background blur as a share of the frame, and the light's apparent size and background falloff. A top view shows camera, sharp zone, face, light and background.
 - Tests (`test/portrait.test.mjs`): nose enlargement, focal length for the framing, equal depth of field at equal magnification, background blur.
+
+### Changed
+- ROADMAP: the v1.12 *Missions* milestone is complete with all nine missions.
 
 ## [1.12.0] - 2026-10-14
 
