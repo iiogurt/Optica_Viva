@@ -1,11 +1,12 @@
 // Test your own gear: sharpness (slanted edge), vignetting (flat field) and distortion (a straight
 // line) measured from your own photographs, entirely in the browser.
-import { h, controls, stage, readouts, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, texNum, readUrlParam } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
 import { oetf } from '../lib/color.js';
 import { makeRng } from '../lib/random.js';
 import { esfr, edgeFit, mtfAt, syntheticEdge } from '../lib/esfr.js';
+import { CAMERAS, pitchOf } from '../lib/equipment.js';
 import { linearPlanes, vignetting, fitDistortion, undistort, distortPoint } from '../lib/gear.js';
 
 const TESTS = { sharp: 'Sharpness (slanted edge)', vig: 'Vignetting (flat field)', dist: 'Distortion (straight line)' };
@@ -25,8 +26,14 @@ export default function mount(root, meta) {
   const clearBtn = h('button.btn', { type: 'button', onClick: () => { pts = []; analyse(); } }, 'Clear points');
   const ctl = controls({
     test: { type: 'seg', label: 'Test', value: 'sharp', options: Object.entries(TESTS).map(([k, t]) => [k, t.split(' (')[0]]) },
-    pitch: { type: 'range', label: 'Pixel size of your camera', min: 1, max: 9, step: 0.05, value: 4.3, unit: 'µm' },
-  }, () => { pts = []; if (!userImage) loadDemo(); else analyse(); });
+    body: { type: 'select', label: 'Your camera', value: 'custom', options: [['custom', 'Other (set the pixel size)'], ...Object.entries(CAMERAS).map(([k, c]) => [k, c.name])] },
+    pitch: { type: 'range', label: 'Pixel size of your camera', min: 1, max: 9, step: 0.01, value: 4.3, unit: 'µm' },
+  }, (st) => {
+    if (st.body !== lastBody) { lastBody = st.body; if (st.body !== 'custom') { ctl.set.pitch(+pitchOf(CAMERAS[st.body]).toFixed(2)); return; } }
+    if (st.test !== lastTest) { lastTest = st.test; pts = []; if (!userImage) { loadDemo(); return; } }
+    analyse();
+  });
+  let lastBody = 'custom', lastTest = ctl.state.test;
   const status = h('p.note', { role: 'status' }, 'Load a photo or the demo image.');
   const howto = { sharp: 'Drag a box across a dark-to-bright edge tilted by a few degrees.', vig: 'Use a photo of an evenly lit, featureless surface.', dist: 'Click at least four points along a line that is straight in reality, near the edge of the frame.' };
   const hint = h('p.note');
@@ -197,6 +204,9 @@ export default function mount(root, meta) {
     }
   }
 
+  // a link that names a camera but not its pixel size applies the camera
+  if (ctl.state.body !== 'custom' && readUrlParam('pitch') == null) ctl.set.pitch(+pitchOf(CAMERAS[ctl.state.body]).toFixed(2));
+  lastBody = ctl.state.body;
   loadDemo();
 
   root.append(rule(String.raw`\[\text{MTF50} \approx \frac{0.187}{\sigma}\ \text{cycles/pixel (Gaussian blur of σ pixels)}\]

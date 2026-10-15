@@ -1,8 +1,8 @@
 // Mission: choose between two cameras or two telescopes for the same job.
-import { h, controls, stage, texNum } from '../lib/ui.js';
+import { h, controls, stage, texNum, readUrlParam } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc, missionStep } from '../lib/page.js';
 import { MODULES } from '../app.js';
-import { SENSORS } from '../lib/sensors.js';
+import { cameraOptions, resolveCamera, TELESCOPES } from '../lib/equipment.js';
 import { camera, telescope, stops } from '../lib/choose.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
@@ -25,19 +25,28 @@ export default function mount(root, meta) {
     Feq: { type: 'range', label: 'Framing (full-frame equivalent focal length)', min: 14, max: 400, log: true, value: 50, unit: 'mm', when: isCam },
     s: { type: 'range', label: 'Subject distance', min: 0.5, max: 20, log: true, value: 3, unit: 'm', when: isCam },
     hA: { type: 'heading', label: 'Option A', when: isCam },
-    sA: { type: 'select', label: 'Sensor A', value: 'ff', options: FORMATS.map((k) => [k, SENSORS[k].name]), when: isCam },
+    sA: { type: 'select', label: 'Sensor A', value: 'ff', options: cameraOptions(FORMATS), when: isCam },
     NA: { type: 'range', label: 'Widest aperture A', min: 0.95, max: 8, log: true, value: 1.8, fmt: (v) => 'f/' + v.toPrecision(2), when: isCam },
     mA: { type: 'range', label: 'Megapixels A', min: 8, max: 100, log: true, value: 24, fmt: (v) => Math.round(v) + ' MP', when: isCam },
     hB: { type: 'heading', label: 'Option B', when: isCam },
-    sB: { type: 'select', label: 'Sensor B', value: 'mft', options: FORMATS.map((k) => [k, SENSORS[k].name]), when: isCam },
+    sB: { type: 'select', label: 'Sensor B', value: 'mft', options: cameraOptions(FORMATS), when: isCam },
     NB: { type: 'range', label: 'Widest aperture B', min: 0.95, max: 8, log: true, value: 1.8, fmt: (v) => 'f/' + v.toPrecision(2), when: isCam },
     mB: { type: 'range', label: 'Megapixels B', min: 8, max: 100, log: true, value: 20, fmt: (v) => Math.round(v) + ' MP', when: isCam },
+    tA: { type: 'select', label: 'Telescope A', value: 'custom', options: [['custom', 'Custom'], ...Object.entries(TELESCOPES).map(([k, t]) => [k, t.name])], when: isTel },
     DA: { type: 'range', label: 'Telescope A aperture', min: 50, max: 500, log: true, value: 80, unit: 'mm', when: isTel },
     fA: { type: 'range', label: 'Telescope A focal length', min: 300, max: 4000, log: true, value: 600, unit: 'mm', when: isTel },
+    tB: { type: 'select', label: 'Telescope B', value: 'custom', options: [['custom', 'Custom'], ...Object.entries(TELESCOPES).map(([k, t]) => [k, t.name])], when: isTel },
     DB: { type: 'range', label: 'Telescope B aperture', min: 50, max: 500, log: true, value: 200, unit: 'mm', when: isTel },
     fB: { type: 'range', label: 'Telescope B focal length', min: 300, max: 4000, log: true, value: 1000, unit: 'mm', when: isTel },
     seeing: { type: 'range', label: 'Typical seeing at your site', min: 0.5, max: 5, step: 0.1, value: 2, unit: '″', when: isTel },
-  }, () => update());
+  }, (st) => {
+    // a chosen body sets its megapixels; a chosen telescope its aperture and focal length
+    for (const [sel, mp] of [['sA', 'mA'], ['sB', 'mB']]) if (st[sel] !== seen[sel] && st[sel].startsWith('cam:')) ctl.set[mp](resolveCamera(st[sel]).mp);
+    for (const [sel, D, f] of [['tA', 'DA', 'fA'], ['tB', 'DB', 'fB']]) if (st[sel] !== seen[sel] && st[sel] !== 'custom') { ctl.set[D](TELESCOPES[st[sel]].D); ctl.set[f](TELESCOPES[st[sel]].f); }
+    seen = { ...ctl.state };
+    update();
+  });
+  let seen = { ...ctl.state };
   const calc = liveCalc('Verdict');
   const steps = [1, 2, 3, 4].map((n) => missionStep(n, '', null, ''));
   const bars = stage({ aspect: 2.4, label: '', draw: drawBars, cls: 'plain', minH: 220 });
@@ -56,7 +65,7 @@ export default function mount(root, meta) {
   function update() {
     const st = ctl.state;
     if (isCam(st)) {
-      const shot = { Feq: st.Feq, s: st.s }, a = camera({ sensor: st.sA, N: st.NA, mp: st.mA }, shot), b = camera({ sensor: st.sB, N: st.NB, mp: st.mB }, shot);
+      const shot = { Feq: st.Feq, s: st.s }, a = camera({ sensor: resolveCamera(st.sA), N: st.NA, mp: st.mA }, shot), b = camera({ sensor: resolveCamera(st.sB), N: st.NB, mp: st.mB }, shot);
       const dl = stops(a.light, b.light);
       M = { st, a, b, rows: [['Light gathered', a.light, b.light, true], ['Sharp depth (more = deeper)', a.dof, b.dof, true], ['Megapixels', a.mp, b.mp, true], ['Entrance pupil (lens size)', a.D, b.D, true]] };
       setTitle(0, 'Light and noise', 'sensor'); setTitle(1, 'Background blur', 'dof'); setTitle(2, 'Detail', 'mtf'); setTitle(3, 'Equivalent settings', 'sensor');
@@ -139,6 +148,10 @@ export default function mount(root, meta) {
     });
   }
 
+  // a link that names a preset but not its values applies the preset
+  for (const [sel, mp] of [['sA', 'mA'], ['sB', 'mB']]) if (ctl.state[sel].startsWith('cam:') && readUrlParam(mp) == null) ctl.set[mp](resolveCamera(ctl.state[sel]).mp);
+  for (const [sel, D, f] of [['tA', 'DA', 'fA'], ['tB', 'DB', 'fB']]) if (ctl.state[sel] !== 'custom' && readUrlParam(D) == null) { ctl.set[D](TELESCOPES[ctl.state[sel]].D); ctl.set[f](TELESCOPES[ctl.state[sel]].f); }
+  seen = { ...ctl.state };
   update();
 
   root.append(rule(String.raw`\[D = \frac{f}{N}\]

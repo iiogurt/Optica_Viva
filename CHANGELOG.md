@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Real equipment presets** (`js/lib/equipment.js`): nine camera bodies from full frame to 1″ (sensor size and pixel count from the makers' specifications, pixel pitch derived), four planetary cameras and seven telescopes from a 51 mm refractor to a C11. The Milky Way mission accepts a camera body, the Jupiter mission a telescope and a planetary camera, the comparison mission two bodies or two telescopes, and *Test your lens* a body for its pixel size. A link that names a preset applies it unless it also carries the values.
+- Tests (`test/equipment.test.mjs`): derived pixel pitches against the published ones, preset completeness, missions with real cameras.
 - **Test your lens** (`#/gear`, `js/lib/esfr.js`, `js/lib/gear.js`), in a new *Your own gear* group. Load a photograph (analysed only in the browser) or a demo image with a known answer and measure:
   - **sharpness** by the ISO 12233 slanted-edge method: drag a box across a tilted edge for the MTF of each colour channel, MTF50 and MTF10 in cycles per pixel, line pairs per mm and per picture height, and lateral colour from the per-channel edge offsets;
   - **vignetting** from a flat field: corner falloff in stops, asymmetry and a radial profile;
