@@ -4,7 +4,7 @@ import { ladder } from './lib/page.js';
 import { glossary } from './lib/glossary.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -18,6 +18,7 @@ export const MODULES = [
   { id: 'mission-led', group: 'Missions', title: 'Film under LED light', c: '#c18cff', blurb: 'Shutter angles that cancel mains flicker, LED fixtures that band, and how far an LED wall must be to avoid moiré.' },
   { id: 'mission-choose', group: 'Missions', title: 'Choose a camera or telescope', c: '#6be3a4', blurb: 'Two cameras or two telescopes for the same job: which gathers more light, blurs the background more, shows finer detail, and what settings make them equal.' },
   { id: 'mission-satellite', group: 'Missions', title: 'Design an Earth-observation satellite', c: '#8fd8ff', blurb: 'From the ground resolution you want to the focal length, mirror size, TDI stages and the data rate your camera produces.' },
+  { id: 'mission-exoplanet', group: 'Missions', title: 'Plan an exoplanet observation', c: '#c18cff', blurb: 'Can a telescope photograph an Earth or a Jupiter around a nearby star? Contrast, separation against the inner working angle, and the hours needed to detect it and take its spectrum.' },
   { id: 'raytracer', group: 'Geometric optics', title: 'Real-lens ray tracing', c: '#ffd27a', blurb: 'Exact 3-D Snell ray tracing through real prescriptions: spherical aberration, coma, field curvature and the diffraction PSF of the traced wavefront.' },
   { id: 'dof', group: 'Geometric optics', title: 'Depth of field', c: '#ffd27a', blurb: 'Circle of confusion, hyperfocal distance and a physically framed synthetic photograph that refocuses live.' },
   { id: 'sensor', group: 'Geometric optics', title: 'Sensor size & equivalence', c: '#ffd27a', blurb: 'Crop factor, field of view, equivalent aperture, photon budget and diffraction across formats from phones to IMAX.' },

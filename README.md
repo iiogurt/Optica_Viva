@@ -155,6 +155,11 @@ Two cameras for the same shot, or two telescopes: which gathers more light, blur
 
 From the ground resolution you want to the focal length, mirror, TDI stages and data rate.
 
+**Plan an exoplanet observation** · `#/mission-exoplanet`<br>
+<img src="docs/screenshots/mission-exoplanet.webp" alt="Exoplanet mission: contrast, separation, detection and spectrum times, with the planet against the inner working angle" width="70%">
+
+Can a telescope photograph an Earth or a Jupiter around a nearby star: contrast, separation against the inner working angle, and the hours to detect it and take its spectrum.
+
 ### Geometric optics
 
 <table>
@@ -736,6 +741,7 @@ Optica_Viva/
 │   │   ├── fieldpsf.js        Two-mirror telescopes: Seidel sums through mirrors, RC/DK conics, nodal aberrations, PSFs across the field
 │   │   ├── earthobs.js        Earth observation: GSD, push-broom and TDI, Q, MTF, rendered ground
 │   │   ├── eclipse.js         Eclipse mission: Espenak's exposure guide, framing, drift
+│   │   ├── exoimaging.js      Exoplanet mission: reflected-light contrast, separation, integration time
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
