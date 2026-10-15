@@ -452,6 +452,16 @@ Phase detection with split pixels against contrast detection: why one look tells
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Computational photography** · `#/computational`<br>
+<img src="docs/screenshots/computational.webp" alt="Night mode, burst super-resolution and portrait-mode blur compared with real optics">
+
+Night mode from a burst of short frames, detail beyond the pixel grid from hand shake, and portrait blur computed from a coarse depth map against real optics.
+
+</td>
+</tr>
 </table>
 
 ### Astronomy & space
@@ -790,6 +800,7 @@ Optica_Viva/
 │   │   ├── virtual.js         LED-wall moiré (grid frequency, MTFs, aliasing) and PWM refresh banding
 │   │   ├── wfs.js             Shack–Hartmann sensor, modal reconstructor, Noll residuals, closed AO loop
 │   │   ├── tasks.js           Heavy pure computations (PSF, Zernike, OTF) for the worker
+│   │   ├── computational.js   Burst merging, super-resolution and synthetic portrait blur
 │   │   ├── compute.js         Worker API: run(task) and latest-only channels, main-thread fallback
 │   │   ├── cinema.js          Anamorphic aspect, streak colour, focus breathing models, T-stops
 │   │   ├── colordata.js       CIE tables at 5 nm: 1931 observer, daylight basis, illuminants, CRI test colours
