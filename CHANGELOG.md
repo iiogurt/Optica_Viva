@@ -13,6 +13,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   - **distortion** from points clicked along a straight line: the division-model coefficient and barrel or pincushion distortion at the corner.
 - Tests (`test/gear.test.mjs`): MTF50 of known Gaussian blurs within 1 %, robustness to noise, edge angle and lateral shift, cos⁴ flat field, recovery of the distortion coefficient.
 
+### Fixed
+- `npm test` failed on Node 22 and later, which no longer accept a directory for `node --test`; it now passes the test files explicitly. CI and the Pages workflow run on Node 24 (Node 20 reached end of life in April 2026), `engines` requires Node 22 or later for the global `WebSocket` used by the browser scripts, and the `--experimental-websocket` flag is gone.
+
 ## [1.14.0] - 2026-10-15
 
 Four new laboratories complete the v1.13 milestone ([#94](https://github.com/iiogurt/Optica_Viva/pull/94)–[#98](https://github.com/iiogurt/Optica_Viva/pull/98)): **underwater photography** (colour lost with depth and distance, ports and strobes), **narrowband filters on fast optics** (the angle shift of interference filters), **autofocus** (split-pixel phase detection against contrast detection) and **computational photography** (night-mode bursts, burst super-resolution and synthetic portrait blur). 55 interactive pages and 248 tests.

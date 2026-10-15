@@ -7,18 +7,18 @@
   "type": "module",
   "scripts": {
     "start": "python3 -m http.server 8000",
-    "test": "node --test test/",
+    "test": "node --test test/*.test.mjs",
     "check": "node scripts/check.mjs",
-    "smoke": "node --experimental-websocket scripts/smoke.mjs",
+    "smoke": "node scripts/smoke.mjs",
     "ci": "npm run check && npm test && npm run smoke",
     "bench": "node scripts/bench.mjs",
-    "screenshots": "node --experimental-websocket scripts/screenshots.mjs"
+    "screenshots": "node scripts/screenshots.mjs"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/iiogurt/Optica_Viva.git"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }
