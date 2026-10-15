@@ -23,6 +23,7 @@ import { phaseScreen } from './turbulence.js';
 import { shadowLab } from './starshade.js';
 import { fieldPSFs } from './fieldpsf.js';
 import { makeLight, renderScene } from './lighting.js';
+import { runAF } from './autofocus.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -475,4 +476,10 @@ function lighting(p) {
   return { result: r, transfer: [r.img.buffer, r.spec.buffer] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting };
+// Autofocus: phase detection and contrast detection on a scene strip (see js/lib/autofocus.js).
+function autofocus(p) {
+  const r = runAF(p);
+  return { result: { ...r, left: Float32Array.from(r.left), right: Float32Array.from(r.right) }, transfer: [] };
+}
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus };

@@ -442,6 +442,16 @@ Water swallows red light on the way down and across: colour with depth and dista
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Autofocus** · `#/autofocus`<br>
+<img src="docs/screenshots/autofocus.webp" alt="Autofocus lab: the shifted half-pupil images of a split-pixel sensor and the steps of a contrast-detection search">
+
+Phase detection with split pixels against contrast detection: why one look tells which way and how far to focus, while the other has to search.
+
+</td>
+</tr>
 </table>
 
 ### Astronomy & space
@@ -769,6 +779,7 @@ Optica_Viva/
 │   │   ├── exoimaging.js      Exoplanet mission: reflected-light contrast, separation, integration time
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
+│   │   ├── autofocus.js       Phase and contrast autofocus on a defocused scene strip
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
 │   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
