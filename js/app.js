@@ -4,7 +4,7 @@ import { ladder } from './lib/page.js';
 import { glossary } from './lib/glossary.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'filters', 'underwater', 'mission-survey', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'autofocus', 'filters', 'underwater', 'mission-survey', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -40,6 +40,7 @@ export const MODULES = [
 
   { id: 'lighting', group: 'Light, sensor & time', title: 'Lighting: hard and soft light', c: '#ffd27a', blurb: 'Area lights rendered with shadow rays: shadow softness from the light\'s size, inverse-square falloff to the background, catchlights and flash exposure.' },
   { id: 'underwater', group: 'Light, sensor & time', title: 'Underwater photography', c: '#6ad7ff', blurb: 'Water swallows red light: colour with depth and distance, white balance and strobes, flat and dome ports, and strobe placement against backscatter.' },
+  { id: 'autofocus', group: 'Light, sensor & time', title: 'Autofocus', c: '#c18cff', blurb: 'Phase detection with split pixels against contrast detection: why one look tells which way to focus, and the other has to search.' },
   { id: 'flare', group: 'Light, sensor & time', title: 'Flare, ghosts & coatings', c: '#c18cff', blurb: 'Paraxial ghost tracing, Fresnel equations, thin-film coatings by the transfer-matrix method, and diffraction starbursts.' },
   { id: 'sampling', group: 'Light, sensor & time', title: 'Aliasing, moiré & Bayer', c: '#c18cff', blurb: 'Pixel sampling, optical low-pass filters and demosaicing false colour on a zone plate.' },
   { id: 'noise', group: 'Light, sensor & time', title: 'Noise & exposure', c: '#c18cff', blurb: 'Photon transfer: shot, read and dark noise, full-well capacity, dynamic range and ISO, with simulated frames.' },

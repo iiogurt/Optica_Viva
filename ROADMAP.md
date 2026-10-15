@@ -425,7 +425,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | [x] **Earth observation from orbit** (PR #83) | ground sample distance, push-broom and TDI, atmospheric haze and adjacency, system MTF | P2 · M |
 | [x] **Underwater photography** (PR #94) | spectral absorption with depth, flat vs dome ports (magnification, distortion, virtual image), backscatter | P2 · M |
 | [ ] **Computational photography** | multi-frame night mode and burst super-resolution, synthetic portrait blur from depth and its artefacts | P2 · L |
-| [ ] **Autofocus** | phase detection with split pixels, contrast detection, focus hunting | P3 · M |
+| [x] **Autofocus** (PR #96) | phase detection with split pixels, contrast detection, focus hunting | P3 · M |
 | [x] **Interference filters on fast optics** (PR #95) | narrowband filter blue-shift with angle of incidence, bandpass vs f-ratio | P3 · S |
 
 ### v1.14 Your own gear and real images
