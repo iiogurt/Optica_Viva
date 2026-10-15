@@ -564,6 +564,16 @@ The **CCD equation for stacks**: a faint galaxy behind a sky set by the **Bortle
 <tr>
 <td valign="top" colspan="2">
 
+**Narrowband filters on fast optics** · `#/filters`<br>
+<img src="docs/screenshots/filters.webp" alt="An Hα filter's passband in parallel light and in an f/2 beam, and line transmission against focal ratio for four filter widths">
+
+Interference filters pass bluer light at an angle: why a 3 nm hydrogen-alpha filter loses most of its own line at f/2, and how a pre-shifted filter wins it back.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Exoplanet transits** · `#/transits`<br>
 <img src="docs/screenshots/transits.webp" alt="Transit of HD 209458 b: a limb-darkened star with the planet's path and the light curve with simulated TESS measurements">
 
@@ -795,6 +805,7 @@ Optica_Viva/
 │   │   ├── panorama.js        Cardinal points, parallax between frames, two-frame panorama ray caster
 │   │   ├── polar.js           Stokes/Mueller algebra, Fresnel in Mueller form, Rayleigh sky, polarised lake renderer
 │   │   ├── hdr.js             HDR scene, ND/graduated filters, camera model, radiance merge, tone mapping, exposure fusion
+│   │   ├── ifilter.js         Interference filters in converging beams: angle shift, cone average, pre-shift
 │   │   ├── interferometry.js  Visibility of extended sources, array u-v coverage, dirty beam/image, Högbom CLEAN
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
