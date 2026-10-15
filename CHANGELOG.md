@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Underwater photography laboratory** (`#/underwater`, `js/lib/underwater.js`). Pure-water absorption (Pope & Fry) plus dissolved organic matter for clear ocean, coastal water and a green lake: the CIE test colours and a grey card at the surface, by daylight at depth and distance, and with a strobe, with or without white balance, and the transmission spectrum. Flat ports (narrower field, magnification, lateral colour from water's dispersion) and dome ports (the virtual image the lens must focus on), and where strobe light enters the camera's view, which sets the backscatter.
+- Tests (`test/underwater.test.mjs`): red against blue absorption, green lakes, the water index and its dispersion, a neutral white-balanced grey card, a strobe restoring red, flat-port magnification, the dome's virtual image and the backscatter geometry.
+
 ## [1.13.0] - 2026-10-15
 
 Seven more missions complete the v1.12 milestone ([#85](https://github.com/iiogurt/Optica_Viva/pull/85)–[#92](https://github.com/iiogurt/Optica_Viva/pull/92)): a **portrait session**, a **total solar eclipse** (exposure ladder from NASA's guide), **filming under LED light** and on LED walls, **choosing a camera or telescope**, **designing an Earth-observation satellite**, **planning an exoplanet observation** and a **security camera or drone survey**. Each turns the laboratory models into a plan with the reason for every setting. 51 interactive pages and 232 tests.

@@ -432,6 +432,16 @@ A round area light, from a bare flash to a window, rendered with shadow rays: sh
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Underwater photography** · `#/underwater`<br>
+<img src="docs/screenshots/underwater.webp" alt="Underwater lab: colour chart at the surface, at depth and with a strobe; transmission spectrum; strobe and field geometry">
+
+Water swallows red light on the way down and across: colour with depth and distance, white balance and strobes, flat and dome ports, and where strobe light enters the view.
+
+</td>
+</tr>
 </table>
 
 ### Astronomy & space
@@ -795,6 +805,7 @@ Optica_Viva/
 │   │   ├── phenomena.js       Catalogue data (228 entries in 13 groups)
 │   │   ├── phenomena-details.js  Explanation and worked example for every catalogue entry
 │   │   ├── plot.js            Canvas charting (log axes, legends, bands)
+│   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
 │   └── modules/               One file per page (41)
