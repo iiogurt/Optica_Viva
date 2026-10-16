@@ -105,6 +105,9 @@ export function plot(ctx, w, h, opt) {
   }
   ctx.strokeStyle = T.faint; ctx.lineWidth = 1;
   ctx.strokeRect(pad.l + 0.5, pad.t + 0.5, w - pad.l - pad.r - 1, h - pad.t - pad.b - 1);
+  // keep the plotted data with the canvas so it can be exported as CSV
+  const store = ctx.canvas._plots || (ctx.canvas._plots = []);
+  store.push({ title: opt.title || '', x: x.label || 'x', y: y.label || 'y', series: (opt.series || []).map((s, i) => ({ label: s.label || `series ${i + 1}`, data: s.data || [] })) });
   return { X, Y, pad };
 }
 

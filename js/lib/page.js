@@ -1,7 +1,20 @@
 // Page scaffolding shared by every module.
-import { h, prose, section, copyLink } from './ui.js';
+import { h, prose, section, copyLink, download, allSettings } from './ui.js';
 
 const TAG = { photo: 'Photography', video: 'Cinematography', space: 'Astronomy & space' };
+
+// The page's settings (every control, plus extra URL state) with the page, time and app version, as JSON.
+export async function settingsJSON(meta) {
+  let version = '';
+  try { version = (await (await fetch('package.json')).json()).version; } catch { /* offline file or no server */ }
+  const params = Object.fromEntries(new URLSearchParams(location.hash.split('?')[1] || ''));
+  const id = location.hash.replace(/^#\/?/, '').split('?')[0] || 'home';
+  return { app: 'Optica Viva', version, page: id, title: meta.title, saved: new Date().toISOString(), link: location.href, settings: { ...params, ...allSettings() } };
+}
+async function saveSettings(meta) {
+  const j = await settingsJSON(meta);
+  download(new Blob([JSON.stringify(j, null, 2) + '\n'], { type: 'application/json' }), `${j.page}-settings.json`);
+}
 
 export function header(meta) {
   return h('header.mod-head', {},
@@ -11,6 +24,7 @@ export function header(meta) {
     h('div.tags', {}, ...(meta.domains || []).map((d) => h('span.tag.' + d, {}, TAG[d] || d)),
       h('button.tag.share', { type: 'button', title: 'Copy a link to this page with the current settings', onClick: (e) => copyLink(e.currentTarget.querySelector('span')),
         html: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span>Copy link</span>' })),
+      h('button.tag.share', { type: 'button', title: 'Save the current settings of this page as a JSON file', onClick: () => saveSettings(meta) }, 'Save settings'),
   );
 }
 
