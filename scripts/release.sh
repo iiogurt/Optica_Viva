@@ -27,7 +27,7 @@ prepare)
   MSG="${3:?commit subject required}"
   on_fresh_main
   node scripts/check.mjs >/dev/null || { echo "checks failed (npm run check)" >&2; exit 1; }
-  node --test test/ >/dev/null || { echo "tests failed (npm test)" >&2; exit 1; }
+  npm test >/dev/null || { echo "tests failed (npm test)" >&2; exit 1; }
   grep -q "^## \[Unreleased\]" CHANGELOG.md || { echo "CHANGELOG.md has no [Unreleased] section" >&2; exit 1; }
   grep -q "^## \[$V\]" CHANGELOG.md && { echo "CHANGELOG.md already has [$V]" >&2; exit 1; }
   PREV=$(node -p "require('./package.json').version")
