@@ -4,6 +4,7 @@ import { ladder, misconception } from './lib/page.js';
 import { CHECKS } from './lib/misconceptions.js';
 import { glossary } from './lib/glossary.js';
 import { tours } from './lib/tours.js';
+import { exercises } from './lib/exercises.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
 export const READY = new Set(['home', 'gallery', 'gear', 'computational', 'autofocus', 'filters', 'underwater', 'mission-survey', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
@@ -118,6 +119,7 @@ async function route() {
     if (my !== token) return;
     const done = (await mod.default(page, meta)) || null;
     misconception(page, meta.id, CHECKS);
+    exercises(page, meta.id);
     const untour = tours(page, meta.id, wantedTour);
     const unladder = ladder(page);
     const unglossary = meta.id === 'home' || meta.id === 'catalogue' ? () => {} : glossary(page, meta.id, (lab) => MODULES.find((m) => m.id === lab)?.title || lab);

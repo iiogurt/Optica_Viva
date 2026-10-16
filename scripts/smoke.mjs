@@ -54,6 +54,24 @@ try {
     console.log(`${problems.length ? '✗' : '✓'} tour ${t.id}${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
     if (problems.length) failed++;
   }
+  // exercises: each one's solution shows and "Set it up in the lab" moves real controls
+  const { EXERCISES } = await import('../js/lib/exercises.js');
+  for (const [lab, list] of Object.entries(EXERCISES)) {
+    const errors = await page.goto(site.url + '#/' + lab, 2500);
+    const r = await page.eval(`(async () => {
+      const cards = document.querySelectorAll('.ex');
+      if (cards.length !== ${list.length}) return 'exercises missing';
+      for (const e of cards) {
+        for (const b of e.querySelectorAll('button')) if (/Show solution|Set it up/.test(b.textContent) && !b.hidden) b.click();
+        if (!e.querySelector('.ex-sol').textContent) return 'no solution';
+        await new Promise((res) => setTimeout(res, 300));
+      }
+      return '';
+    })()`);
+    const problems = [...errors, ...page.errors().slice(errors.length), ...(r ? [r] : [])];
+    console.log(`${problems.length ? '✗' : '✓'} exercises ${lab}${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
+    if (problems.length) failed++;
+  }
 } finally {
   await page.close(); site.stop();
 }

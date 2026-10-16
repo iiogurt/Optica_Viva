@@ -452,3 +452,18 @@ button.term:hover, button.term:focus-visible { color: var(--accent-2); }
 @keyframes tour-flash { 0% { box-shadow: 0 0 0 2px var(--accent); background: rgba(255, 181, 71, 0.12); } 100% { box-shadow: 0 0 0 2px transparent; background: transparent; } }
 @media (max-width: 860px) { .tour { right: 16px; top: 60px; bottom: auto; max-height: 40vh; } }
 @media (prefers-reduced-motion: reduce) { .tour-flash { animation: none; outline: 2px solid var(--accent); } }
+
+/* Exercises */
+.ex-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.ex { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; background: var(--panel); }
+.ex h3 { margin: 0 0 6px; font-size: 15px; }
+.ex-q { margin: 0 0 10px; font-size: 14px; line-height: 1.5; }
+.ex-form { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ex-in { width: 9em; padding: 7px 10px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--panel-2); color: var(--fg); font: 500 14px var(--font-mono); }
+.ex-in:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ex-unit { font-size: 13px; color: var(--fg-dim); }
+.ex-verdict { margin: 8px 0 0; font-size: 13.5px; min-height: 1em; color: var(--fg-dim); }
+.ex-verdict.right { color: var(--good); }
+.ex-verdict.wrong { color: var(--warn); }
+.ex-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.ex-sol { margin: 10px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--fg-dim); border-left: 2px solid var(--accent); padding-left: 10px; }
