@@ -2,6 +2,7 @@
 // Repository checks with no dependencies:
 //  1. every JavaScript module parses (node --check)
 //  2. every relative link, image and #anchor in the Markdown files resolves
+//  3. precache.json lists the files the service worker needs offline
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join, dirname, resolve, relative } from 'node:path';
@@ -17,7 +18,7 @@ let failures = 0;
 const fail = (msg) => { failures++; console.error('✗ ' + msg); };
 
 // 1. syntax
-const js = [...walk(join(ROOT, 'js'), '.js'), ...walk(join(ROOT, 'scripts'), '.mjs'), ...walk(join(ROOT, 'test'), '.mjs')];
+const js = [join(ROOT, 'sw.js'), ...walk(join(ROOT, 'js'), '.js'), ...walk(join(ROOT, 'scripts'), '.mjs'), ...walk(join(ROOT, 'test'), '.mjs')];
 for (const f of js) {
   const r = spawnSync(process.execPath, ['--check', f], { encoding: 'utf8' });
   if (r.status !== 0) fail(`syntax: ${relative(ROOT, f)}\n${r.stderr}`);
@@ -50,5 +51,8 @@ for (const file of md) {
   }
 }
 console.log(`links: ${links} relative links checked in ${md.length} Markdown files`);
+// 3. the service worker's offline file list
+const pre = spawnSync(process.execPath, [join(ROOT, 'scripts/precache.mjs')], { encoding: 'utf8' });
+if (pre.status !== 0) fail(pre.stderr.trim()); else process.stdout.write(pre.stdout);
 if (failures) { console.error(`${failures} problem(s) found`); process.exit(1); }
 console.log('all checks passed');
