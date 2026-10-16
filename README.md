@@ -77,7 +77,7 @@ flowchart LR
 
 It covers three domains (📷 photography, 🎬 cinematography and 🔭 astronomy and space), and every phenomenon is tagged with the ones it affects.
 
-Every setting is **shareable**. Controls are mirrored into the URL, so a link like [`#/psf?preset=hubble&band=white`](https://iiogurt.github.io/Optica_Viva/#/psf?preset=hubble&band=white) opens that exact configuration. Use **Copy link** in any page header. **Save settings** downloads the page state as JSON, and every figure has **PNG** and (for charts) **CSV** export buttons. On phones each lab's controls slide up from a bottom sheet next to the live result. Canvases are labelled for screen readers, keyboard focus is visible, and animations respect *reduce motion*.
+Every setting is **shareable**. Controls are mirrored into the URL, so a link like [`#/psf?preset=hubble&band=white`](https://iiogurt.github.io/Optica_Viva/#/psf?preset=hubble&band=white) opens that exact configuration. Use **Copy link** in any page header. **Guided tours** (listed on the home page) move a laboratory's controls step by step and say what to look at; a link like `#/mtf?tour=stop-down` starts one. **Save settings** downloads the page state as JSON, and every figure has **PNG** and (for charts) **CSV** export buttons. On phones each lab's controls slide up from a bottom sheet next to the live result. Canvases are labelled for screen readers, keyboard focus is visible, and animations respect *reduce motion*.
 
 ---
 
@@ -817,6 +817,7 @@ Optica_Viva/
 │   │   ├── virtual.js         LED-wall moiré (grid frequency, MTFs, aliasing) and PWM refresh banding
 │   │   ├── wfs.js             Shack–Hartmann sensor, modal reconstructor, Noll residuals, closed AO loop
 │   │   ├── tasks.js           Heavy pure computations (PSF, Zernike, OTF) for the worker
+│   │   ├── tours.js           Guided tours: narrated steps that set a laboratory's controls
 │   │   ├── computational.js   Burst merging, super-resolution and synthetic portrait blur
 │   │   ├── compute.js         Worker API: run(task) and latest-only channels, main-thread fallback
 │   │   ├── cinema.js          Anamorphic aspect, streak colour, focus breathing models, T-stops

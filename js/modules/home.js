@@ -4,6 +4,7 @@ import { COUNT } from '../lib/phenomena.js';
 import { index } from '../lib/glass.js';
 import { wavelengthRGB } from '../lib/color.js';
 import { PATH } from '../lib/path.js';
+import { TOURS } from '../lib/tours.js';
 
 
 // Hero: white light dispersed by an N-SF11 prism, traced exactly (Snell + TIR, Sellmeier n(λ)).
@@ -148,6 +149,12 @@ export default function mount(root) {
           h('span.path-t', {}, h('b', {}, m.title), h('span', {}, q)),
           visited.has(id) ? h('span.sr-only', {}, ' (opened before)') : null));
       })))))));
+  root.append(h('section.block', {}, h('h2', {}, 'Guided tours'),
+    h('p.lede', {}, 'A few minutes each: the tour moves the controls for you, one step at a time, and says what to look at.'),
+    h('div.cards', {}, ...TOURS.map((t) => {
+      const m = MODULES.find((x) => x.id === t.lab);
+      return h('a.mcard', { href: `#/${t.lab}?tour=${t.id}`, style: { '--c': m.c } }, h('span.k', {}, `${m.title} · ${t.steps.length} steps`), h('h3', {}, t.title), h('p', {}, t.blurb));
+    }))));
   for (const g of groups) {
     root.append(h('section.block', {}, h('h2', {}, g),
       h('div.cards', {}, ...MODULES.filter((m) => m.group === g && m.blurb).map((m) =>

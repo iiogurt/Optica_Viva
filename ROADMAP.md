@@ -449,7 +449,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
-- [ ] **P2 · L** **Guided tours**: step-by-step narratives that drive the controls ("Why stopping down stops helping").
+- [x] **P2 · L** **Guided tours**: step-by-step narratives that drive the controls ("Why stopping down stops helping"); five tours (#108).
 - [ ] **P2 · M** **Exercises with checked answers**: compute the hyperfocal distance, predict the ghost count, and so on, using the live calculation engine.
 - [x] **P2 · M** **Export**: PNG of any canvas, CSV of any chart, JSON of lab state (#107).
 - [ ] **P3 · M** **Installable PWA** with service-worker caching (fonts included).
