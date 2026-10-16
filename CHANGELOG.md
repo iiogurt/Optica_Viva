@@ -20,6 +20,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Tests (`test/gear.test.mjs`): MTF50 of known Gaussian blurs within 1 %, robustness to noise, edge angle and lateral shift, cos⁴ flat field, recovery of the distortion coefficient.
 
 ### Fixed
+- `scripts/release.sh` still ran `node --test test/`, which fails on Node 22 and later, so `release.sh prepare` refused to release; it now runs `npm test`.
 - `npm test` failed on Node 22 and later, which no longer accept a directory for `node --test`; it now passes the test files explicitly. CI and the Pages workflow run on Node 24 (Node 20 reached end of life in April 2026), `engines` requires Node 22 or later for the global `WebSocket` used by the browser scripts, and the `--experimental-websocket` flag is gone.
 
 ## [1.14.0] - 2026-10-15
