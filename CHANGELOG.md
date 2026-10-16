@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.15.0] - 2026-10-16
+
+Your own gear and real images ([#100](https://github.com/iiogurt/Optica_Viva/pull/100)–[#105](https://github.com/iiogurt/Optica_Viva/pull/105)): **Test your lens** measures sharpness (ISO 12233 slanted edge), vignetting and distortion from your own photographs, in the browser only; **real equipment presets** put actual camera bodies, planetary cameras and telescopes into the missions; **misconception checks** ask a predict-then-reveal question on ten laboratories; and **Phenomena in the wild** explains four famous photographs. The project now runs on Node 24. 57 pages and 258 tests.
+
 ### Added
 - **Phenomena in the wild** (`#/gallery`, `js/lib/gallery.js`, `img/gallery/`): real photographs explained and linked to the laboratories that reproduce them: Hubble's view of M100 before and after its 1993 repair (spherical aberration), Webb's First Deep Field (diffraction spikes and gravitational arcs), the Event Horizon Telescope image of M87 (aperture synthesis) and ESO's green flash (atmospheric dispersion). Public-domain and CC BY 4.0 images, credited on the page and in `THIRD_PARTY_NOTICES.md`.
 - Tests (`test/gallery.test.mjs`): image files, allowed licences, credits listed in the notices, valid laboratory links.
@@ -624,7 +628,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.14.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.15.0...HEAD
+[1.15.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.11.0...v1.12.0
