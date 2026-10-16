@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-10-16
+
 ### Added
 - **Installable app with offline cache** (PWA): `manifest.webmanifest` with icons, and a service worker (`sw.js`) that caches the whole app on the first visit (`precache.json`, 164 files), fetches network-first so an online visit is always current, refreshes the offline copy when the version changes, and caches Google Fonts. `scripts/precache.mjs` writes the list and `npm run check` fails when it is out of date. The smoke test stops the server after installation and checks that a laboratory still computes.
 
@@ -643,7 +645,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.15.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.16.0...HEAD
+[1.16.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.12.0...v1.13.0
