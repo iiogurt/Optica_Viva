@@ -1,5 +1,5 @@
 // Optica Viva — router and module registry.
-import { h, resetUrlState } from './lib/ui.js';
+import { h, resetUrlState, bindUrlParam, withEmbed } from './lib/ui.js';
 import { ladder, misconception } from './lib/page.js';
 import { CHECKS } from './lib/misconceptions.js';
 import { glossary } from './lib/glossary.js';
@@ -98,6 +98,14 @@ const issueUrl = (meta, e) => 'https://github.com/iiogurt/Optica_Viva/issues/new
   body: `**Page:** ${location.href}\n**Browser:** ${navigator.userAgent}\n\n\`\`\`\n${(e.stack || e.message).slice(0, 1500)}\n\`\`\``,
 });
 
+// Embed mode: no sidebar or theory, and links open the full app in a new tab.
+function setEmbed(on) {
+  document.documentElement.classList.toggle('embed', on);
+  let b = document.querySelector('base[target]');
+  if (on && !b) { b = document.createElement('base'); b.target = '_blank'; document.head.append(b); }
+  if (!on && b) b.remove();
+}
+
 let cleanup = null;
 let lastId = null;
 let token = 0;
@@ -111,6 +119,8 @@ async function route() {
   if (cleanup) { try { cleanup(); } catch (e) { console.error(e); } cleanup = null; }
   main.innerHTML = '';
   const wantedTour = new URLSearchParams(location.hash.split('?')[1] || '').get('tour');
+  const embed = new URLSearchParams(location.hash.split('?')[1] || '').get('embed') === '1';
+  setEmbed(embed);
   resetUrlState();
   const page = h('div.page');
   main.append(page);
@@ -121,6 +131,9 @@ async function route() {
     misconception(page, meta.id, CHECKS);
     exercises(page, meta.id);
     const untour = tours(page, meta.id, wantedTour);
+    // bound after mounting: an earlier URL write would drop the page's own settings from the link
+    if (embed) bindUrlParam('embed', () => '1');
+    if (embed) page.append(h('a.embed-open', { href: '#/', target: '_blank', rel: 'noopener', onClick: (e) => { e.currentTarget.href = withEmbed(location.href, false); } }, 'Open the full laboratory in Optica Viva ↗'));
     const unladder = ladder(page);
     const unglossary = meta.id === 'home' || meta.id === 'catalogue' ? () => {} : glossary(page, meta.id, (lab) => MODULES.find((m) => m.id === lab)?.title || lab);
     cleanup = () => { untour(); unglossary(); unladder(); if (done) done(); };

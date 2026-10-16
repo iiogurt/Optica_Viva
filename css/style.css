@@ -467,3 +467,13 @@ button.term:hover, button.term:focus-visible { color: var(--accent-2); }
 .ex-verdict.wrong { color: var(--warn); }
 .ex-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .ex-sol { margin: 10px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--fg-dim); border-left: 2px solid var(--accent); padding-left: 10px; }
+
+/* Embed mode (#/<lab>?embed=1): the simulation alone, for an iframe */
+.embed .app { grid-template-columns: 1fr; }
+.embed .sidebar, .embed .nav-toggle, .embed .ladder, .embed .check, .embed .tour-offer, .embed .exercises,
+.embed [data-rung="idea"], .embed [data-rung="rule"], .embed [data-rung="full"], .embed [data-rung="refs"],
+.embed .mod-head .tags, .embed .mod-head .share, .embed .mod-head .lede { display: none; }
+.embed main { padding: 0 16px 24px; }
+.embed .mod-head { padding-top: 14px; }
+.embed .mod-head h1 { font-size: clamp(22px, 3vw, 30px); }
+.embed-open { display: inline-block; margin-top: 18px; font-size: 13px; color: var(--accent); }

@@ -454,7 +454,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P2 · M** **Export**: PNG of any canvas, CSV of any chart, JSON of lab state (#107).
 - [ ] **P3 · M** **Installable PWA** with service-worker caching (fonts included).
 - [ ] **P3 · L** **Internationalisation**, starting with the UI strings, then the theory text.
-- [ ] **P3 · M** **Embed mode** (`?embed=1`) for courses and blogs.
+- [x] **P3 · M** **Embed mode** (`?embed=1`) for courses and blogs (#110).
 - [ ] **P3 · L** Lab plugin API and documentation site generated from module metadata.
 
 ---

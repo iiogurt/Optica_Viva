@@ -90,6 +90,14 @@ const serialise = (s, v) => (s.type === 'toggle' ? (v ? '1' : '0') : s.type === 
 export const readUrlParam = (key) => hashParams().get(key);
 export function bindUrlParam(key, getter) { urlKeys.set(key, getter); writeUrlSoon(); }
 export const syncUrl = () => writeUrlSoon();
+// Embed mode (#/<lab>?embed=1): the page without navigation or theory, for an iframe.
+export function withEmbed(url, on) {
+  const [base, q = ''] = url.split('#'), [path, query = ''] = q.split('?');
+  const p = new URLSearchParams(query);
+  if (on) p.set('embed', '1'); else p.delete('embed');
+  return base + '#' + path + (p.toString() ? '?' + p : '');
+}
+export const embedCode = (url, title) => `<iframe src="${withEmbed(url, true).replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" title="${title.replace(/"/g, '&quot;')} (Optica Viva)" width="100%" height="760" style="border:0;border-radius:12px" loading="lazy"></iframe>`;
 
 // spec: { key: {type:'range'|'select'|'toggle'|'seg', label, ...} } → {el, state}
 export function controls(spec, onChange) {
@@ -168,12 +176,11 @@ export function rafThrottle(fn) {
   };
 }
 
-// Copy the current URL (with its state) to the clipboard.
-export async function copyLink(btn) {
-  const url = location.href;
+// Copy the current URL (with its state), or other text, to the clipboard.
+export async function copyLink(btn, url = location.href, done = 'Link copied ✓') {
   try { await navigator.clipboard.writeText(url); }
   catch { const t = h('textarea', { style: { position: 'fixed', opacity: '0' } }, url); document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); }
-  const old = btn.textContent; btn.textContent = 'Link copied ✓'; setTimeout(() => (btn.textContent = old), 1600);
+  const old = btn.textContent; btn.textContent = done; setTimeout(() => (btn.textContent = old), 1600);
 }
 
 // Defer heavy computations so slider dragging stays fluid.
