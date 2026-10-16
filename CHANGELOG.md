@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Guided tours** (`js/lib/tours.js`): five step-by-step narratives that move a laboratory's controls and say what to look at: *Why stopping down stops helping* (MTF), *What really sets depth of field*, *Where diffraction spikes come from* (PSF), *Why lens coatings matter* (flare) and *Taming colour fringes* (chromatic). Each is offered on its laboratory and on the home page, and a link `#/<lab>?tour=<id>` starts it. Every narrated number was checked against the page's readouts. `test/tours.test.mjs` checks that every step sets real controls within range, and the smoke test plays every tour to the end.
+
+### Added
 - **Export** on every page: each figure gets **PNG** (the canvas as shown) and, when it holds charts, **CSV** buttons (long format: chart, series, x, y); the page header gets **Save settings**, a JSON file with the page, app version, time, link and every control value. `test/export.test.mjs` checks the CSV format.
 
 ## [1.15.0] - 2026-10-16

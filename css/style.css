@@ -431,3 +431,24 @@ button.term:hover, button.term:focus-visible { color: var(--accent-2); }
 @media (hover: none) { .stage-tools { opacity: 0.8; } }
 .st-btn { padding: 4px 8px; border-radius: 7px; border: 1px solid var(--line-2); background: rgba(16, 19, 29, 0.85); color: var(--fg-dim); font: 600 10.5px/1 var(--font-mono); cursor: pointer; }
 .st-btn:hover, .st-btn:focus-visible { color: var(--fg); border-color: var(--accent-2); }
+
+/* Guided tours */
+.tour-offer { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; background: rgba(255, 181, 71, 0.04); }
+.tour-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 14px; }
+.tour-item + .tour-item { margin-top: 10px; }
+.tour-btn { padding: 7px 12px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--panel-2); color: var(--fg); font: 500 13px var(--font-sans); cursor: pointer; }
+.tour-btn.primary { border-color: var(--accent); color: var(--accent); }
+.tour-btn:hover:not(:disabled) { border-color: var(--accent); }
+.tour-btn:disabled { opacity: 0.4; cursor: default; }
+.tour { position: fixed; right: 20px; bottom: 20px; z-index: 60; width: min(380px, calc(100vw - 32px)); max-height: 50vh; overflow: auto; padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--line-2); background: var(--panel); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); }
+.tour h3 { margin: 4px 0 6px; font-size: 16px; }
+.tour-head { display: flex; align-items: center; gap: 10px; }
+.tour-k { font: 600 10.5px/1 var(--font-sans); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.tour-count { font-size: 12px; color: var(--fg-dim); }
+.tour-x { margin-left: auto; background: none; border: 0; color: var(--fg-dim); font-size: 15px; cursor: pointer; padding: 2px 6px; }
+.tour-text { margin: 0 0 12px; font-size: 14px; line-height: 1.5; color: var(--fg); }
+.tour-nav { display: flex; justify-content: space-between; gap: 8px; }
+.tour-flash { animation: tour-flash 1.4s ease-out; border-radius: 8px; }
+@keyframes tour-flash { 0% { box-shadow: 0 0 0 2px var(--accent); background: rgba(255, 181, 71, 0.12); } 100% { box-shadow: 0 0 0 2px transparent; background: transparent; } }
+@media (max-width: 860px) { .tour { right: 16px; top: 60px; bottom: auto; max-height: 40vh; } }
+@media (prefers-reduced-motion: reduce) { .tour-flash { animation: none; outline: 2px solid var(--accent); } }

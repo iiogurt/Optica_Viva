@@ -36,6 +36,24 @@ try {
   const ok = await page.eval(`document.querySelector('select').value === 'hubble' && [...document.querySelectorAll('.seg button')].some((b) => b.classList.contains('on') && /White/.test(b.textContent))`);
   console.log(`${ok ? '✓' : '✗'} URL state restores controls`);
   if (!ok) failed++;
+  // guided tours: each one starts from its link and plays to the end; every select it sets must hold the value
+  const { TOURS } = await import('../js/lib/tours.js');
+  for (const t of TOURS) {
+    const errors = await page.goto(site.url + `#/${t.lab}?tour=${t.id}`, 2500);
+    const r = await page.eval(`(async () => {
+      const bad = [];
+      for (let i = 0; i < ${t.steps.length}; i++) {
+        if (!document.querySelector('.tour')) return 'tour did not start';
+        for (const s of document.querySelectorAll('.controls select')) if (s.value === '') bad.push(s.closest('label').textContent.slice(0, 30));
+        document.querySelector('.tour .tour-btn.primary').click();
+        await new Promise((res) => setTimeout(res, 250));
+      }
+      return document.querySelector('.tour') ? 'tour did not finish' : bad.join(', ');
+    })()`);
+    const problems = [...errors, ...page.errors().slice(errors.length), ...(r ? [r] : [])];
+    console.log(`${problems.length ? '✗' : '✓'} tour ${t.id}${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
+    if (problems.length) failed++;
+  }
 } finally {
   await page.close(); site.stop();
 }

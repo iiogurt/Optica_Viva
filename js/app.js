@@ -3,6 +3,7 @@ import { h, resetUrlState } from './lib/ui.js';
 import { ladder, misconception } from './lib/page.js';
 import { CHECKS } from './lib/misconceptions.js';
 import { glossary } from './lib/glossary.js';
+import { tours } from './lib/tours.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
 export const READY = new Set(['home', 'gallery', 'gear', 'computational', 'autofocus', 'filters', 'underwater', 'mission-survey', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
@@ -108,6 +109,7 @@ async function route() {
   const my = ++token;
   if (cleanup) { try { cleanup(); } catch (e) { console.error(e); } cleanup = null; }
   main.innerHTML = '';
+  const wantedTour = new URLSearchParams(location.hash.split('?')[1] || '').get('tour');
   resetUrlState();
   const page = h('div.page');
   main.append(page);
@@ -116,9 +118,10 @@ async function route() {
     if (my !== token) return;
     const done = (await mod.default(page, meta)) || null;
     misconception(page, meta.id, CHECKS);
+    const untour = tours(page, meta.id, wantedTour);
     const unladder = ladder(page);
     const unglossary = meta.id === 'home' || meta.id === 'catalogue' ? () => {} : glossary(page, meta.id, (lab) => MODULES.find((m) => m.id === lab)?.title || lab);
-    cleanup = () => { unglossary(); unladder(); if (done) done(); };
+    cleanup = () => { untour(); unglossary(); unladder(); if (done) done(); };
   } catch (e) {
     console.error(e);
     const missing = /Failed to fetch|Importing a module script failed|error loading dynamically imported module/i.test(e.message);

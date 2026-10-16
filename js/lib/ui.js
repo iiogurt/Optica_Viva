@@ -61,10 +61,12 @@ export const texNum = (v, d = 3) => {
 // ── Controls ─────────────────────────────────────────────────────────────────────────────
 // ── Shareable state: every control mirrors its non-default value into the URL hash ─────
 // (#/psf?preset=jwst&band=nir). The router calls resetUrlState() before mounting a page.
-let urlKeys = new Map(), allKeys = new Map(), panels = 0;
-export function resetUrlState() { urlKeys = new Map(); allKeys = new Map(); panels = 0; }
+let urlKeys = new Map(), allKeys = new Map(), setters = new Map(), panels = 0;
+export function resetUrlState() { urlKeys = new Map(); allKeys = new Map(); setters = new Map(); panels = 0; }
 // Every control's current value, defaults included (for saved settings).
 export const allSettings = () => Object.fromEntries([...allKeys].map(([k, get]) => [k, get()]));
+// Set a control as if the reader had moved it (guided tours). Returns its row, or null if the page has no such control.
+export function setControl(key, v) { const c = setters.get(key); if (!c) return null; c.set(v); return c.row; }
 const hashParams = () => new URLSearchParams(location.hash.split('?')[1] || '');
 function writeUrl() {
   const p = new URLSearchParams();
@@ -149,6 +151,7 @@ export function controls(spec, onChange) {
       row = h('div.ctl', {}, s.label ? h('span.ctl-label', {}, s.label) : null, h('div.seg', {}, ...btns));
     }
     if (s.hint) row.title = s.hint;
+    if (api.set[key]) setters.set(uk, { row, set: (v) => { api.set[key](v); fire(); } });
     if (s.when) conditional.push([row, s.when]);
     el.append(row);
   }
