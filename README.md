@@ -1046,8 +1046,10 @@ Completed and planned milestones are tracked in **[ROADMAP.md](ROADMAP.md)**, to
 | ✅ **v1.11** | From simple to exact: plain idea, rule of thumb and full model on every page; glossary; Start-here path |
 | ✅ **v1.12** | Missions: Milky Way, Jupiter, portraits, eclipses, LED sets, choosing gear, satellite design, exoplanet imaging, security and drone surveys |
 | ✅ **v1.13** | New laboratories: lighting, exoplanet transits, Earth observation, underwater, narrowband filters, autofocus, computational photography |
-| **v1.14** | Test your own gear, real equipment presets, real images explained |
-| **v2.0** | Guided tours, exercises, export, installable PWA |
+| ✅ **v1.14** | Underwater, narrowband filters, autofocus, computational photography |
+| ✅ **v1.15** | Test your own gear, real equipment presets, misconception checks, real images explained |
+| ✅ **v1.16** | Learning platform: guided tours, exercises with checked answers, export, embed mode, installable offline app |
+| **v2.0** | Internationalisation, lab plugin API |
 
 ---
 
