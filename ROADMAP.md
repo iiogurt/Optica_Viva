@@ -73,7 +73,7 @@ flowchart LR
 |---|---|---|
 | Laboratories | 59 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 228, each with details and a worked example | link every new lab |
-| Lens prescriptions | 10, with aspheres and file import | mirror telescopes (Ritchey–Chrétien, TMA), a symmetric wide angle |
+| Lens prescriptions | 13, with aspheres, mirrors and file import | a three-mirror anastigmat, a symmetric wide angle |
 | Automated tests | 274 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
@@ -323,7 +323,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P1 · M** **Prescription editor**: an editable table of surfaces (R, t, glass, semi-diameter, conic, stop) with validation and undo.
 - [x] **P1 · M** **Prescription import/export**: JSON, simple `.len`, and a subset of Zemax `.zmx` (SURF, CURV, DISZ, GLAS, CONI, PARM). This follows the RayOptics and Open Optical Designer approach.
 - [x] **P2 · M** **More classic designs** (#113): Tessar, Petzval portrait, telephoto and retrofocus, designed with the built-in optimiser (new `minBfd` back-focus constraint).
-- [ ] **P2 · M** **Mirror designs and a symmetric wide angle**: reflective surfaces in the ray tracer, then a Ritchey–Chrétien and a TMA telescope; a Biogon-type symmetric wide angle.
+- [x] **P2 · M** **Mirrors in the ray tracer** (#114): reflective surfaces (negative-index convention, Zemax `MIRROR` import); the Hubble Space Telescope as designed and with its 1990 flaw, and a classical Cassegrain.
+- [ ] **P2 · M** A three-mirror anastigmat (Korsch type, as in JWST) and a Biogon-type symmetric wide angle.
 - [x] **P2 · M** **Seidel sums per surface** (S_I–S_V and chromatic C_I, C_II) as bar charts. This shows where each aberration originates.
 - [x] **P2 · M** **Through-field analysis**: sagittal and tangential field curves and real-ray distortion. *The PSF pupil is now vignetted by the clear apertures (editable Semi-Ø), and MTF vs field (S/T at 10 and 30 lp/mm) is plotted. Traced relative illumination remains open.*
 - [ ] **P2 · S** Fix the off-axis pupil anamorphosis in the OPD/PSF path (sample the real exit-pupil shape).

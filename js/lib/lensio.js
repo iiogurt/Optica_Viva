@@ -6,7 +6,8 @@ const ALIASES = { BK7: 'N-BK7', BAK4: 'N-BAK4', SF5: 'N-SF5', SF11: 'N-SF11', FK
 
 // Resolve a glass: catalogue name, alias, or a (n_d, V_d) model glass. Returns {glass, warning}.
 export function resolveGlass(name, nd, vd) {
-  if (!name || /^(AIR|MIRROR)$/i.test(name)) return { glass: 'air' };
+  if (!name || /^AIR$/i.test(name)) return { glass: 'air' };
+  if (/^MIRROR$/i.test(name)) return { glass: 'mirror' };
   const up = name.toUpperCase();
   const hit = Object.keys(GLASSES).find((k) => k.toUpperCase() === up) || ALIASES[up];
   if (hit) return { glass: hit };
@@ -86,11 +87,13 @@ export function lensFromJSON(text) {
 export function validateLens(lens) {
   const errs = [];
   if (!(lens.epd > 0)) errs.push('entrance-pupil diameter must be positive');
+  let dir = 1; // +1 while light travels toward +z; each mirror reverses it
   lens.surfaces.forEach((s, i) => {
     if (s.R === 0 || Number.isNaN(s.R)) errs.push(`surface ${i + 1}: radius must be non-zero (use inf for a plane)`);
-    if (!(s.t >= 0)) errs.push(`surface ${i + 1}: thickness must be ≥ 0`);
+    if (s.glass === 'mirror') dir = -dir;
+    if (!(s.t * dir >= 0)) errs.push(`surface ${i + 1}: thickness must be ${dir > 0 ? '≥ 0' : '≤ 0 after an odd number of mirrors'}`);
     if (s.sd !== undefined && !(s.sd > 0)) errs.push(`surface ${i + 1}: semi-diameter must be positive`);
-    if (typeof s.glass === 'string' && s.glass !== 'air' && !GLASSES[s.glass]) errs.push(`surface ${i + 1}: unknown glass ${s.glass}`);
+    if (typeof s.glass === 'string' && s.glass !== 'air' && s.glass !== 'mirror' && !GLASSES[s.glass]) errs.push(`surface ${i + 1}: unknown glass ${s.glass}`);
   });
   if (lens.surfaces.filter((s) => s.stop).length !== 1) errs.push('exactly one surface must be the stop');
   return errs;

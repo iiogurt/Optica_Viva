@@ -188,7 +188,7 @@ Real photographs explained by the laboratories: Hubble before and after its repa
 **Real-lens ray tracing** · `#/raytracer`<br>
 <img src="docs/screenshots/raytracer.webp" alt="Ray tracer: Cooke triplet with caustic, spot diagram, ray fan and diffraction PSF">
 
-Exact 3-D ray tracing through a plano-convex singlet (both orientations), an **aspheric** plano-hyperbolic singlet with zero spherical aberration, a BK7/F2 achromat designed for this project, the Cooke triplet and the Double-Gauss, plus four classic forms designed here with the built-in optimiser: a **Tessar**, a **Petzval** portrait lens, a **telephoto** (0.79 f long) and a **retrofocus** wide angle (back focus longer than the focal length). Includes real-ray aiming at the stop, a magnified caustic, spot diagram, ray fans, chromatic focal shift, best-focus search, and the **diffraction PSF of the traced wavefront** (OPD → FFT). Seidel sums per surface, exact field curves and **MTF across the field** show where image quality is won and lost. A **prescription editor** lets you modify any design surface by surface, **optimise** it (damped least squares), run a **Monte-Carlo tolerance analysis**, or import a Zemax `.zmx`; custom lenses are shareable by link.
+Exact 3-D ray tracing through a plano-convex singlet (both orientations), an **aspheric** plano-hyperbolic singlet with zero spherical aberration, a BK7/F2 achromat designed for this project, the Cooke triplet and the Double-Gauss, plus four classic forms designed here with the built-in optimiser: a **Tessar**, a **Petzval** portrait lens, a **telephoto** (0.79 f long) and a **retrofocus** wide angle (back focus longer than the focal length). **Mirrors** are traced too: the **Hubble Space Telescope** as designed (Ritchey–Chrétien), with its 1990 flawed primary, and a classical Cassegrain of the same layout. Includes real-ray aiming at the stop, a magnified caustic, spot diagram, ray fans, chromatic focal shift, best-focus search, and the **diffraction PSF of the traced wavefront** (OPD → FFT). Seidel sums per surface, exact field curves and **MTF across the field** show where image quality is won and lost. A **prescription editor** lets you modify any design surface by surface, **optimise** it (damped least squares), run a **Monte-Carlo tolerance analysis**, or import a Zemax `.zmx`; custom lenses are shareable by link.
 
 </td>
 <td width="50%" valign="top">
@@ -901,6 +901,9 @@ The numerical core was checked against published or analytically known values. E
 | N-BK7 n<sub>d</sub>, V<sub>d</sub> | 1.51680, 64.17 | Schott: 1.51680, 64.17 |
 | F2 n<sub>d</sub>, V<sub>d</sub> | 1.62004, 36.37 | Schott: 1.62004, 36.37 |
 | CaF₂ n<sub>d</sub>, V<sub>d</sub> | 1.43385, 94.99 | Malitson: 1.4338, 95.0 |
+| Hubble Space Telescope focal length, f-number | 57.60 m, f/24.00 | 57.6 m, f/24 |
+| Hubble aplanatic conic constants from S<sub>I</sub> = S<sub>II</sub> = 0 | −1.0022985, −1.4969 | design: −1.0022985, −1.4963 |
+| Hubble 1990 primary (K = −1.0139): edge error at 1.2 m | 2.23 µm | failure report: ≈ 2.2 µm |
 | Cooke triplet EFL | 50.02 mm | design value 50 mm |
 | Double-Gauss EFL | 99.50 mm | design value ≈ 100 mm |
 | Uncoated crown reflectance | 4.26 % | ((n−1)/(n+1))² = 4.26 % |
