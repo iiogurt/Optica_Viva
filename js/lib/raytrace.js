@@ -8,6 +8,9 @@ import { index } from './glass.js';
 // ── Lens prescriptions ─────────────────────────────────────────────────────────────────
 // Each surface: R (radius, Infinity = plane), t (axial distance to next surface),
 // glass (medium AFTER the surface), stop: true marks the aperture stop.
+// Mirrors: glass 'mirror'. After a mirror light travels toward −z, so the following distances t
+// are negative, and the medium's refractive index changes sign (the usual negative-index
+// convention): paraxial matrices, Seidel sums and optical path then need no special cases.
 export const LENSES = {
   'plano-convex': {
     name: 'Plano-convex singlet f/5 (N-BK7, convex side to object)',
@@ -134,6 +137,37 @@ export const LENSES = {
       { R: -13.1801, t: 39.9996, glass: 'air' },
     ],
   },
+  // Two-mirror telescopes. The Hubble Space Telescope's published design: primary R = −11 040 mm,
+  // secondary R = −1 358 mm, 4 906.071 mm apart, focus 1 500 mm behind the primary vertex (f/24).
+  // Its conic constants make it aplanatic (no spherical aberration, no coma): a Ritchey–Chrétien.
+  // The central obstruction is not part of this sequential model.
+  'hubble': {
+    name: 'Hubble Space Telescope: Ritchey–Chrétien f/24, 2.4 m (as designed)',
+    epd: 2400, field: 0.05,
+    surfaces: [
+      { R: -11040, k: -1.0022985, t: -4906.071, glass: 'mirror', stop: true },
+      { R: -1358, k: -1.4963, t: 6406.071, glass: 'mirror' },
+    ],
+  },
+  'hubble-1990': {
+    // the primary as polished: conic −1.0139 instead of −1.0023, its edge 2.2 µm too low
+    name: 'Hubble in 1990: primary mirror with conic −1.0139 (the flaw)',
+    epd: 2400, field: 0.05,
+    surfaces: [
+      { R: -11040, k: -1.0139, t: -4906.071, glass: 'mirror', stop: true },
+      { R: -1358, k: -1.4963, t: 6406.071, glass: 'mirror' },
+    ],
+  },
+  'cassegrain': {
+    // same layout with a paraboloidal primary and the secondary conic that cancels spherical
+    // aberration (solved from the Seidel sums): perfect on axis, but with the paraboloid's coma
+    name: 'Classical Cassegrain f/24, 2.4 m (paraboloid primary, Hubble layout)',
+    epd: 2400, field: 0.05,
+    surfaces: [
+      { R: -11040, k: -1, t: -4906.071, glass: 'mirror', stop: true },
+      { R: -1358, k: -1.4689008, t: 6406.071, glass: 'mirror' },
+    ],
+  },
 };
 
 // ── Geometry helpers ────────────────────────────────────────────────────────────────────
@@ -192,7 +226,17 @@ export function intersectAsphere(s, z0, p, d) {
   }
   return null;
 }
-function mediumBefore(lens, i) { return i === 0 ? 'air' : lens.surfaces[i - 1].glass; }
+// Signed refractive index of the medium after each surface (negative while light travels toward −z).
+export function mediaIndices(lens, lambda) {
+  const out = [];
+  let n = 1, sgn = 1;
+  for (const s of lens.surfaces) {
+    if (s.glass === 'mirror') { sgn = -sgn; n = -n; } else n = sgn * index(s.glass, lambda);
+    out.push(n);
+  }
+  return out;
+}
+export const hasMirrors = (lens) => lens.surfaces.some((s) => s.glass === 'mirror');
 
 // ── Paraxial (first-order) analysis, y–nu matrix method ─────────────────────────────────
 // Returns the 2×2 transfer matrix from just before surface `from` to just before surface
@@ -200,9 +244,10 @@ function mediumBefore(lens, i) { return i === 0 ? 'air' : lens.surfaces[i - 1].g
 export function paraxialMatrix(lens, lambda, from, to) {
   let M = [1, 0, 0, 1];
   const mul = (A, B) => [A[0] * B[0] + A[1] * B[2], A[0] * B[1] + A[1] * B[3], A[2] * B[0] + A[3] * B[2], A[2] * B[1] + A[3] * B[3]];
+  const nm = mediaIndices(lens, lambda);
   for (let i = from; i < to; i++) {
     const s = lens.surfaces[i];
-    const n = index(mediumBefore(lens, i), lambda), n2 = index(s.glass, lambda);
+    const n = i ? nm[i - 1] : 1, n2 = nm[i];
     const phi = (n2 - n) * (isFinite(s.R) ? 1 / s.R : 0);
     M = mul([1, 0, -phi, 1], M);
     if (i < to - 1) M = mul([1, s.t / n2, 0, 1], M);
@@ -216,8 +261,9 @@ export function paraxial(lens, lambda = 587.56) {
   // Marginal ray from infinity: y = 1, nu = 0
   const M = paraxialMatrix(lens, lambda, 0, N);
   const efl = -1 / M[2];
-  const yLast = M[0], uLast = M[2];
-  const bfl = -yLast / uLast;
+  const nm = mediaIndices(lens, lambda), nImg = nm[N - 1];
+  // image distance from the last vertex along z (negative after an odd number of mirrors)
+  const bfl = -M[0] * nImg / M[2];
   const zImage = zv[N - 1] + bfl;
   // Entrance pupil: matrix from surface 1 up to (just before) the stop, including the
   // final translation onto the stop vertex.
@@ -225,7 +271,7 @@ export function paraxial(lens, lambda = 587.56) {
   let A = 1, B = 0;
   if (si > 0) {
     const Ms = paraxialMatrix(lens, lambda, 0, si);
-    const nS = index(lens.surfaces[si - 1].glass, lambda), t = lens.surfaces[si - 1].t;
+    const nS = nm[si - 1], t = lens.surfaces[si - 1].t;
     // y_stop = (Ms00 + t/n Ms10) y + (Ms01 + t/n Ms11) u   (n·u with n=1 in object space)
     A = Ms[0] + (t / nS) * Ms[2];
     B = Ms[1] + (t / nS) * Ms[3];
@@ -239,17 +285,17 @@ export function paraxial(lens, lambda = 587.56) {
     let y = 0, nu = 1;
     for (let i = si; i < N; i++) {
       const s = lens.surfaces[i];
-      const n = index(mediumBefore(lens, i), lambda), n2 = index(s.glass, lambda);
+      const n = i ? nm[i - 1] : 1, n2 = nm[i];
       if (i > si) { y += lens.surfaces[i - 1].t * nu / n; }
       const phi = (n2 - n) * (isFinite(s.R) ? 1 / s.R : 0);
       nu = nu - y * phi;
     }
-    zXP = zv[N - 1] - y / nu; // ray y(z) = y + nu (z − z_last); axis crossing
+    zXP = zv[N - 1] - y * nImg / nu; // ray y(z) = y + (nu/n) (z − z_last); axis crossing
   }
   // Petzval sum Σ φ_k / (n_k n'_k)
   let petz = 0;
   lens.surfaces.forEach((s, i) => {
-    const n = index(mediumBefore(lens, i), lambda), n2 = index(s.glass, lambda);
+    const n = i ? nm[i - 1] : 1, n2 = nm[i];
     petz += (n2 - n) * (isFinite(s.R) ? 1 / s.R : 0) / (n * n2);
   });
   return { efl, bfl, zImage, zEP, stopR, zXP, petzval: petz, fnum: efl / lens.epd, zv };
@@ -266,9 +312,12 @@ export function trace(lens, lambda, p0, d0, opts = {}) {
   const path = opts.path ? [p.slice()] : null;
   const N = lens.surfaces.length;
   const stopHit = { x: 0, y: 0 };
+  let n1 = 1, sgn = 1; // signed index of the current medium (see mediaIndices)
   for (let i = 0; i < N; i++) {
     const s = lens.surfaces[i];
-    const n1 = index(mediumBefore(lens, i), lambda), n2 = index(s.glass, lambda);
+    const mirror = s.glass === 'mirror';
+    if (mirror) sgn = -sgn;
+    const n2 = mirror ? -n1 : sgn * index(s.glass, lambda);
     const z0 = zv[i];
     let t, nrm;
     if (isAspheric(s)) {
@@ -295,18 +344,24 @@ export function trace(lens, lambda, p0, d0, opts = {}) {
       p = [p[0] + t * d[0], p[1] + t * d[1], p[2] + t * d[2]];
       nrm = [p[0] / R, p[1] / R, (p[2] - cz) / R]; // points against the propagation (−z side)
     }
-    opl += n1 * t;
+    opl += Math.abs(n1) * t;
     if (path) path.push(p.slice());
     const r = Math.hypot(p[0], p[1]);
     if (s.stop) { stopHit.x = p[0]; stopHit.y = p[1]; }
     if (clip && sds && r > sds[i] * 1.0000001) return { ok: false, blocked: i, path, p, d, opl };
-    // vector Snell's law
-    const mu = n1 / n2;
-    const cosi = -(nrm[0] * d[0] + nrm[1] * d[1] + nrm[2] * d[2]);
-    const k = 1 - mu * mu * (1 - cosi * cosi);
-    if (k < 0) return { ok: false, tir: i, path };
-    const f = mu * cosi - Math.sqrt(k);
-    d = [mu * d[0] + f * nrm[0], mu * d[1] + f * nrm[1], mu * d[2] + f * nrm[2]];
+    // the normal must face the incoming ray (it does not after a mirror, when light travels toward −z)
+    let cosi = -(nrm[0] * d[0] + nrm[1] * d[1] + nrm[2] * d[2]);
+    if (cosi < 0) { nrm = [-nrm[0], -nrm[1], -nrm[2]]; cosi = -cosi; }
+    if (mirror) d = [d[0] + 2 * cosi * nrm[0], d[1] + 2 * cosi * nrm[1], d[2] + 2 * cosi * nrm[2]];
+    else {
+      // vector Snell's law
+      const mu = Math.abs(n1 / n2);
+      const k = 1 - mu * mu * (1 - cosi * cosi);
+      if (k < 0) return { ok: false, tir: i, path };
+      const f = mu * cosi - Math.sqrt(k);
+      d = [mu * d[0] + f * nrm[0], mu * d[1] + f * nrm[1], mu * d[2] + f * nrm[2]];
+    }
+    n1 = n2;
   }
   return { ok: true, p, d, opl, path, stopHit };
 }
@@ -419,7 +474,7 @@ export function opd(lens, lambda, thetaDeg, px, py, ref, par) {
 // W₂₂₂ = S_III/2, W₂₂₀ = (S_III + S_IV)/4 (medial), W₃₁₁ = S_V/2 (all in lens units).
 export function seidel(lens, lambda = 587.56) {
   const S = lens.surfaces, N = S.length, par = paraxial(lens, lambda);
-  const mb = (i) => (i === 0 ? 'air' : S[i - 1].glass);
+  const nm = mediaIndices(lens, lambda), nB = mediaIndices(lens, 486.13), nR = mediaIndices(lens, 656.27);
   let y = lens.epd / 2, u = 0;
   const ub0 = Math.tan((lens.field * Math.PI) / 180);
   let yb = -ub0 * par.zEP, ub = ub0;
@@ -427,8 +482,8 @@ export function seidel(lens, lambda = 587.56) {
   const rows = [];
   for (let i = 0; i < N; i++) {
     const s = S[i], c = isFinite(s.R) ? 1 / s.R : 0;
-    const n = index(mb(i), lambda), n2 = index(s.glass, lambda);
-    const dn1 = index(mb(i), 486.13) - index(mb(i), 656.27), dn2 = index(s.glass, 486.13) - index(s.glass, 656.27);
+    const n = i ? nm[i - 1] : 1, n2 = nm[i];
+    const dn1 = i ? nB[i - 1] - nR[i - 1] : 0, dn2 = nB[i] - nR[i];
     const A = n * (u + y * c), Ab = n * (ub + yb * c);
     const u2 = (n * u - y * (n2 - n) * c) / n2, ub2 = (n * ub - yb * (n2 - n) * c) / n2;
     const dUn = u2 / n2 - u / n;
@@ -448,7 +503,7 @@ export function seidel(lens, lambda = 587.56) {
   }
   const total = {};
   for (const k of ['SI', 'SII', 'SIII', 'SIV', 'SV', 'CI', 'CII']) total[k] = rows.reduce((a, r) => a + r[k], 0);
-  return { rows, total, H, uImage: u, nImage: index(S[N - 1].glass, lambda) };
+  return { rows, total, H, uImage: u, nImage: nm[N - 1] };
 }
 
 // ── Through-field analysis ──────────────────────────────────────────────────────────────

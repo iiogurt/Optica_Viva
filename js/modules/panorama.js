@@ -2,7 +2,7 @@ import { h, controls, stage, readouts, imageCanvas, texNum, fmt } from '../lib/u
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { oetf } from '../lib/color.js';
-import { LENSES } from '../lib/raytrace.js';
+import { LENSES, hasMirrors } from '../lib/raytrace.js';
 import { cardinalPoints, disparity } from '../lib/panorama.js';
 
 const D2R = Math.PI / 180, PX = 0.006; // 24 MP full-frame pixel (mm)
@@ -33,7 +33,7 @@ export default function mount(root, meta) {
   root.append(lab([pano.el, h('div.grid-2', {}, zoom.el, top.el), table], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   // where are the entrance pupil and the nodal point of real designs?
-  const rows = Object.entries(LENSES).map(([k, L]) => { const c = cardinalPoints(L); return [(L.name || k).replace(/\s*\(.*\)$/, ''), c.efl, c.zEP, c.zH]; });
+  const rows = Object.entries(LENSES).filter(([, L]) => !hasMirrors(L)).map(([k, L]) => { const c = cardinalPoints(L); return [(L.name || k).replace(/\s*\(.*\)$/, ''), c.efl, c.zEP, c.zH]; });
   table.append(h('div', { style: { fontSize: '13px', fontWeight: 600, marginBottom: '6px' } }, 'No-parallax point vs nodal point of the library lenses (paraxial, mm behind the front vertex)'),
     h('div.prose', {}, h('table', {}, h('thead', {}, h('tr', {}, ...['Lens', 'f', 'Entrance pupil', 'Front nodal point', 'Difference'].map((t) => h('th', {}, t)))),
       h('tbody', {}, ...rows.map(([n, f, ep, hp]) => h('tr', {}, h('td', {}, n), h('td', {}, f.toFixed(1)), h('td', {}, ep.toFixed(1)), h('td', {}, hp.toFixed(1)), h('td', {}, (hp - ep).toFixed(1))))))),

@@ -54,7 +54,7 @@ test('validation catches broken prescriptions', () => {
 test('every glass used by a built-in lens exists in the catalogue (editor menus must offer it)', async () => {
   const { GLASSES } = await import('../js/lib/glass.js');
   for (const L of Object.values(LENSES)) for (const s of L.surfaces) {
-    if (typeof s.glass === 'string' && s.glass !== 'air') assert.ok(GLASSES[s.glass], `${L.name}: ${s.glass}`);
+    if (typeof s.glass === 'string' && s.glass !== 'air' && s.glass !== 'mirror') assert.ok(GLASSES[s.glass], `${L.name}: ${s.glass}`);
   }
 });
 

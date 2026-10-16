@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Mirrors in the ray tracer**: reflective surfaces (`glass: 'mirror'`, negative-index convention) in the exact tracer, paraxial analysis and Seidel sums, drawn as mirrors in the layout. Three telescopes: the **Hubble Space Telescope** as designed (Ritchey–Chrétien f/24), **Hubble in 1990** with its flawed primary (conic −1.0139), and a **classical Cassegrain** of the same layout. Solving the Seidel sums for zero spherical aberration and coma reproduces Hubble's design conic constants, and the flawed primary's edge comes out 2.2 µm too low, as in the 1990 failure report (`test/mirrors.test.mjs`). The field of view of a telescope is shown in arcminutes.
+
+### Fixed
+- Zemax import: `MIRROR` surfaces were read as air; they are now mirrors, and validation accepts the negative distances that follow them.
+
+### Added
 - **Four classic lens forms** in the ray tracer, bokeh and panorama laboratories: a Tessar type (f/5, 50 mm), a Petzval portrait type (f/4, 100 mm), a telephoto (f/5.6, 200 mm, 0.79 f long) and a retrofocus wide angle (f/6, 35 mm, back focus 40 mm). They were designed for this project with the built-in optimiser; the ray tracer's theory explains each form and the two-group formula behind telephoto and retrofocus. `test/classics.test.mjs` checks their first-order properties and that every field traces.
 - Optimiser: optional minimum back focal distance (`minBfd`), a one-sided penalty.
 

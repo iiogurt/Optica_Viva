@@ -1,7 +1,7 @@
 import { h, controls, stage, readouts, debounce, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
-import { LENSES, autoSemiDiameters, stopIndex } from '../lib/raytrace.js';
+import { LENSES, autoSemiDiameters, stopIndex, hasMirrors } from '../lib/raytrace.js';
 import { linspace } from '../lib/color.js';
 import { latest } from '../lib/compute.js';
 
@@ -117,7 +117,7 @@ export default function mount(root, meta) {
   const traced = (s) => s.model === 'traced', pheno = (s) => s.model !== 'traced';
   const ctl = controls({
     model: { type: 'select', label: 'Model', value: 'traced', options: [['traced', 'Traced lens: real rays through a prescription'], ['pheno', 'Phenomenological: pupil + aberration sliders']] },
-    lens: { type: 'select', label: 'Lens', value: 'double-gauss', options: Object.entries(LENSES).map(([k, l]) => [k, l.name]), when: traced },
+    lens: { type: 'select', label: 'Lens', value: 'double-gauss', options: Object.entries(LENSES).filter(([, l]) => !hasMirrors(l)).map(([k, l]) => [k, l.name]), when: traced },
     focus: { type: 'range', label: 'Focus distance', min: 300, max: 20000, log: true, value: 1500, fmt: (v) => (v / 1000).toFixed(2) + ' m', when: traced },
     barrel: { type: 'range', label: 'Barrel clear apertures (cat\'s eye)', min: 0, max: 0.4, step: 0.01, value: 0.3, fmt: (v) => '−' + (v * 100).toFixed(0) + ' %', when: traced },
     blades: { type: 'range', label: 'Iris blades (0 = circular)', min: 0, max: 15, step: 1, value: 9, fmt: (v) => (v < 3 ? 'circular' : v) },

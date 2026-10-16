@@ -1,6 +1,6 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, readUrlParam, bindUrlParam, syncUrl } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
-import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag, seidel, fieldCurves } from '../lib/raytrace.js';
+import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag, seidel, fieldCurves, mediaIndices, hasMirrors } from '../lib/raytrace.js';
 import { parseZmx, lensToJSON, lensFromJSON, validateLens, encodeLens, decodeLens } from '../lib/lensio.js';
 import { GLASSES, abbe, index } from '../lib/glass.js';
 import { wavelengthCSS } from '../lib/color.js';
@@ -32,7 +32,7 @@ export default function mount(root, meta) {
   const S = { lens: 'cooke' };
   const ctl = controls({
     lens: { type: 'select', label: 'Lens prescription', value: 'cooke', options: Object.entries(LENSES).map(([k, L]) => [k, L.name]) },
-    field: { type: 'range', label: 'Field angle', min: 0, max: 1, step: 0.01, value: 0.7, fmt: (v) => (v * (LENSES[S.lens]?.field || 1)).toFixed(1), unit: '°' },
+    field: { type: 'range', label: 'Field angle', min: 0, max: 1, step: 0.01, value: 0.7, fmt: (v) => { const F = LENSES[S.lens]?.field || 1; return F < 1 ? (v * F * 60).toFixed(2) + ' ′' : (v * F).toFixed(1) + ' °'; } },
     fnum: { type: 'range', label: 'Stop down (×  nominal f/#)', min: 1, max: 4, step: 0.01, value: 1, fmt: (v) => '×' + v.toFixed(2) },
     focus: { type: 'range', label: 'Image plane shift', min: -1, max: 1, step: 0.002, value: 0, fmt: (v) => (v * 1000).toFixed(0), unit: 'µm' },
     spectrum: { type: 'seg', label: 'Wavelengths', value: 'rgb', options: [['mono', 'd 588'], ['rgb', 'F·d·C'], ['full', '7 λ']] },
@@ -158,9 +158,10 @@ export default function mount(root, meta) {
       ['Regime', m.rms > airy ? 'aberration-limited' : 'diffraction-limited'],
     ]));
     const s0 = m.lens.surfaces[0];
-    const n1 = index(s0.glass, 587.56);
-    calc.say(`A ${fmt(pd.efl, 3)} mm lens at f/${N.toFixed(1)}: rays from a point ${(ctl.state.field * (m.lens.field || 1)).toFixed(1)}° off axis land in a spot of <strong>${fmt(m.rms, 3)} µm</strong> RMS radius, `
-      + (m.rms > airy ? `${fmt(m.rms / airy, 2)} times the Airy radius (${fmt(airy, 2)} µm), so aberrations, not diffraction, limit the sharpness.` : `inside the Airy radius (${fmt(airy, 2)} µm), so the lens is diffraction-limited here.`));
+    const n1 = mediaIndices(m.lens, 587.56)[0]; // −1 after a mirror
+    const off = ctl.state.field * (m.lens.field || 1), offTxt = off < 1 && off > 0 ? `${(off * 60).toFixed(1)}′` : `${off.toFixed(1)}°`;
+    calc.say(`A ${fmt(pd.efl, 3)} mm ${hasMirrors(m.lens) ? 'telescope' : 'lens'} at f/${N.toFixed(1)}: rays from a point ${offTxt} off axis land in a spot of <strong>${fmt(m.rms, 3)} µm</strong> RMS radius, `
+      + (m.rms > airy ? `${fmt(m.rms / airy, 2)} times the Airy radius (${fmt(airy, 2)} µm), so aberrations, not diffraction, limit the sharpness.` : `inside the Airy radius (${fmt(airy, 2)} µm), so it is diffraction-limited here.`));
     calc.set(String.raw`\begin{aligned}
     &f' = -1/M_{21} = ${texNum(pd.efl, 5)}\ \text{mm}\\
     &N = f'/D_{EP} = ${texNum(pd.efl, 4)}/${texNum(m.lens.epd, 3)} = ${texNum(N, 3)}\\
@@ -193,7 +194,9 @@ export default function mount(root, meta) {
   function drawLayout(ctx, w, hh) {
     if (!model) return;
     const m = model, L = m.lens, zv = m.pd.zv;
-    const zMin = -0.18 * m.zImg, zMax = m.zImg * 1.03;
+    // the drawing spans every vertex and the image (mirrors send light back toward −z)
+    const lo = Math.min(0, ...zv, m.zImg), hi = Math.max(...zv, m.zImg), span = hi - lo;
+    const zMin = lo - 0.18 * span, zMax = hi + 0.03 * span;
     const yMax = Math.max(...m.sd) * 1.25;
     const sc = Math.min((w - 30) / (zMax - zMin), (hh - 30) / (2 * yMax));
     const X = (z) => 15 + (z - zMin) * sc, Y = (y) => hh / 2 - y * sc;
@@ -204,6 +207,19 @@ export default function mount(root, meta) {
     for (let i = 0; i < L.surfaces.length; i++) {
       const s = L.surfaces[i];
       if (s.glass === 'air') continue;
+      if (s.glass === 'mirror') {
+        // a mirror: its surface, with short hatching on the back (the side light does not reach)
+        const r = m.sd[i], back = (zv[i + 1] ?? m.zImg) > zv[i] ? -1 : 1;
+        ctx.strokeStyle = 'rgba(210,220,240,0.9)'; ctx.lineWidth = 2.5; ctx.beginPath();
+        for (let k = 0; k <= 60; k++) { const y = -r + (2 * r * k) / 60, z = zv[i] + surfaceSag(s, y); k ? ctx.lineTo(X(z), Y(y)) : ctx.moveTo(X(z), Y(y)); }
+        ctx.stroke();
+        ctx.strokeStyle = 'rgba(210,220,240,0.35)'; ctx.lineWidth = 1; ctx.beginPath();
+        for (let k = 0; k <= 12; k++) { const y = -r + (2 * r * k) / 12, x = X(zv[i] + surfaceSag(s, y)); ctx.moveTo(x, Y(y)); ctx.lineTo(x + back * 6, Y(y) + 6); }
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('mirror', X(zv[i]), Y(-r) + 14);
+        continue;
+      }
       const s2 = L.surfaces[i + 1];
       const r = Math.max(m.sd[i], m.sd[i + 1]);
       const r1 = Math.min(m.sd[i], r), r2 = Math.min(m.sd[i + 1], r);
@@ -251,9 +267,10 @@ export default function mount(root, meta) {
     ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'right';
     ctx.fillText('image plane', X(m.zImg) - 5, Y(yMax * 0.9) + 10);
     // scale bar
-    const tenmm = 10 * sc;
-    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(w - 20 - tenmm, hh - 18, tenmm, 2);
-    ctx.textAlign = 'right'; ctx.fillText('10 mm', w - 20, hh - 22);
+    // scale bar: the round length closest to 80 px
+    const bar = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000].reduce((b, v) => (Math.abs(v * sc - 80) < Math.abs(b * sc - 80) ? v : b), 10);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(w - 20 - bar * sc, hh - 18, bar * sc, 2);
+    ctx.textAlign = 'right'; ctx.fillText(bar >= 1000 ? `${bar / 1000} m` : `${bar} mm`, w - 20, hh - 22);
   }
 
   function drawZoom(ctx, w, hh) {
@@ -508,7 +525,7 @@ export default function mount(root, meta) {
   }
 
   // ── Prescription editor ───────────────────────────────────────────────────────────────
-  const GLASS_OPTIONS = ['air', ...Object.keys(GLASSES)]; // every catalogue glass, or the select would mis-display one
+  const GLASS_OPTIONS = ['air', 'mirror', ...Object.keys(GLASSES)]; // every catalogue glass, or the select would mis-display one
   const msg = h('div.note', { role: 'status' });
   const tableWrap = h('div', { style: { overflowX: 'auto' } });
   const fileIn = h('input', { type: 'file', accept: '.zmx,.json,.txt', style: { display: 'none' } });
@@ -689,12 +706,17 @@ export default function mount(root, meta) {
 <h3>Four classic forms</h3>
 <p>The <strong>Tessar</strong> (Rudolph, 1902) is a Cooke triplet whose rear element became a cemented doublet; the extra glass surface gives one more handle on astigmatism, and its performance here is close to the triplet's. The <strong>Petzval portrait lens</strong> (1840) puts two achromats far apart: it was the first fast lens (f/3.6 against f/15 for the earlier landscape lens), very sharp on axis, but its Petzval sum is large, so the field curves and the edges soften, the origin of its "swirly" background. The <strong>telephoto</strong> places a negative group behind a positive one: the rear principal plane moves in front of the lens, so the 200 mm design here is only \(0.79\,f\) long. The <strong>retrofocus</strong> or inverted telephoto (Angénieux, 1950) reverses that order: a negative front meniscus pushes the rear principal plane behind the lens, so a 35 mm lens focuses 40 mm behind its last surface, leaving room for an SLR mirror. For two thin groups of powers \(\phi_1, \phi_2\) a distance \(d\) apart, \(\phi = \phi_1 + \phi_2 - d\,\phi_1\phi_2\) and the back focal distance is \(\mathrm{BFD} = f\,(1 - d\,\phi_1)\): \(\phi_1 > 0\) shortens it (telephoto), \(\phi_1 < 0\) lengthens it (retrofocus).</p>
 <p>These four were designed for this project, not copied from a manufacturer: a layout of the classic form, then curvatures and focus optimised by damped least squares with the thicknesses held fixed (the retrofocus with a minimum back focal distance). Spot sizes quoted on this page are at the paraxial focus unless you press <em>Find best focus</em>; the designs were optimised at their best image plane, where spherical aberration is balanced against defocus.</p>
+<h3>Mirrors and the Hubble Space Telescope</h3>
+<p>A mirror is traced with the law of reflection, \(\hat d' = \hat d - 2(\hat d\cdot\hat n)\hat n\). Bookkeeping uses the usual negative-index convention: after a reflection light travels toward \(-z\), distances are negative and the medium's index changes sign, so a mirror of radius \(R\) has power \(\phi = (n'-n)/R = -2/R\) and the paraxial matrices, Seidel sums and optical path need no special cases. Mirrors have no chromatic aberration.</p>
+<p>The <strong>Hubble Space Telescope</strong> entries use its published design: a primary of radius \(-11\,040\) mm and a secondary of \(-1\,358\) mm, 4 906.071 mm apart, focusing 1 500 mm behind the primary at f/24 (\(f = 57.6\) m). A paraboloidal primary (conic \(K=-1\)) with a secondary that cancels spherical aberration is a <strong>classical Cassegrain</strong>: perfect on axis, with the coma of the paraboloid off axis. Making both mirrors hyperbolic so that spherical aberration and coma vanish together gives the <strong>Ritchey–Chrétien</strong>; solving \(S_I = S_{II} = 0\) from the Seidel sums of this page gives \(K_1 = -1.00230\) and \(K_2 = -1.4969\), Hubble's design values (\(-1.0022985\), \(-1.4963\)). The primary was polished to \(K_1 = -1.0139\): its edge is only 2.2 µm too low, yet the edge and centre of the beam focus about 4 cm apart, and a star's image became a halo some 30 times the Airy radius until corrective optics were installed in 1993. The central obstruction by the secondary is not part of this sequential model (see the PSF laboratory).</p>
 <h3>Domain notes</h3>
 <p><strong>Photography and cinema</strong> lenses are judged across the full field, which is why the Double-Gauss uses a near-symmetric layout to cancel coma, distortion and lateral colour. <strong>Space telescopes</strong> are reflective (no chromatic aberration). Their designs, such as Ritchey–Chrétien (Hubble) and the three-mirror anastigmat (JWST), use conic and aspheric surfaces to remove spherical aberration and coma together.</p>
 </div></div>`));
   root.append(references([
     'W. J. Smith, <i>Modern Optical Engineering</i>, 4th ed., McGraw-Hill (2008): Cooke triplet and Double-Gauss forms.',
     'R. Kingslake, <i>A History of the Photographic Lens</i>, Academic Press (1989): Petzval, Tessar, telephoto and retrofocus.',
+    'D. J. Schroeder, <i>Astronomical Optics</i>, 2nd ed., Academic Press (2000): Cassegrain and Ritchey–Chrétien telescopes.',
+    'L. Allen et al., <i>The Hubble Space Telescope Optical Systems Failure Report</i>, NASA TM-103443 (1990).',
     'D. C. O\'Shea, <i>Elements of Modern Optical Design</i>, Wiley (1985): ray-aiming and pupil analysis.',
     'G. H. Spencer &amp; M. V. R. K. Murty, "General ray-tracing procedure", JOSA 52, 672 (1962).',
     'H. H. Hopkins, "Calculation of the aberrations and image assessment for a general optical system", Optica Acta 28, 667 (1981).',
