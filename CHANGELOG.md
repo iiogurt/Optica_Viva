@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Embed mode**: `#/<lab>?embed=1` shows a page without the sidebar, theory, exercises or tours, for an iframe in a course page or blog; links inside it open the full app in a new tab, and a link at the bottom opens the full laboratory. The new **Embed** button in every page header copies ready-made `<iframe>` code with the current settings. `test/embed.test.mjs` and the smoke test cover it.
+
+### Added
 - **Exercises with checked answers** (`js/lib/exercises.js`): seven "Try it yourself" problems on the depth-of-field, MTF, PSF and flare laboratories (hyperfocal distance, depth of a portrait, diffraction cut-off, diffraction meeting the pixels, Airy disk size, telescope resolution, ghost count). Numbers are drawn from a seeded generator, answers are computed with the laboratory's own functions and accept a decimal comma, a first wrong answer gets a hint, every problem has a worked solution, and **Set it up in the lab** moves the controls so the readouts show the answer. `test/exercises.test.mjs` checks the answers against textbook values; the smoke test opens every solution and set-up.
 
 ### Added

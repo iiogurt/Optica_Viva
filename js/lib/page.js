@@ -1,5 +1,5 @@
 // Page scaffolding shared by every module.
-import { h, prose, section, copyLink, download, allSettings } from './ui.js';
+import { h, prose, section, copyLink, download, allSettings, embedCode } from './ui.js';
 
 const TAG = { photo: 'Photography', video: 'Cinematography', space: 'Astronomy & space' };
 
@@ -25,6 +25,7 @@ export function header(meta) {
       h('button.tag.share', { type: 'button', title: 'Copy a link to this page with the current settings', onClick: (e) => copyLink(e.currentTarget.querySelector('span')),
         html: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span>Copy link</span>' })),
       h('button.tag.share', { type: 'button', title: 'Save the current settings of this page as a JSON file', onClick: () => saveSettings(meta) }, 'Save settings'),
+      h('button.tag.share.embed-code', { type: 'button', title: 'Copy HTML that embeds this laboratory, with its current settings, in a course page or blog', onClick: (e) => copyLink(e.currentTarget, embedCode(location.href, meta.title), 'Embed code copied ✓') }, 'Embed'),
   );
 }
 

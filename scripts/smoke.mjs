@@ -36,6 +36,13 @@ try {
   const ok = await page.eval(`document.querySelector('select').value === 'hubble' && [...document.querySelectorAll('.seg button')].some((b) => b.classList.contains('on') && /White/.test(b.textContent))`);
   console.log(`${ok ? '✓' : '✗'} URL state restores controls`);
   if (!ok) failed++;
+  // embed mode: no sidebar, results still render, and the page's own settings survive in the link
+  {
+    const errors = await page.goto(site.url + '#/dof?N=4&embed=1', 3000);
+    const r = await page.eval(`(() => getComputedStyle(document.querySelector('.sidebar')).display === 'none' && document.querySelectorAll('dl.readouts dd').length > 0 && /N=4/.test(location.hash) && /embed=1/.test(location.hash))()`);
+    console.log(`${r && !errors.length ? '✓' : '✗'} embed mode${errors.length ? '  ' + errors.join(' | ').slice(0, 300) : ''}`);
+    if (!r || errors.length) failed++;
+  }
   // guided tours: each one starts from its link and plays to the end; every select it sets must hold the value
   const { TOURS } = await import('../js/lib/tours.js');
   for (const t of TOURS) {
