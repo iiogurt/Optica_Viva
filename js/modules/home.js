@@ -131,7 +131,7 @@ export default function mount(root) {
       h('div.stat', {}, h('b', {}, `${[...READY].filter((id) => id !== 'home').length} / ${MODULES.length - 1}`), h('span', {}, READY.size >= MODULES.length ? 'interactive laboratories and reference pages' : 'laboratories live (the rest are in progress)')),
       
       h('div.stat', {}, h('b', {}, String(COUNT)), h('span', {}, 'catalogued phenomena with governing equations')),
-      h('div.stat', {}, h('b', {}, '12'), h('span', {}, 'real glasses (Sellmeier), 5 real lens prescriptions')),
+      h('div.stat', {}, h('b', {}, '12'), h('span', {}, 'real glasses (Sellmeier), 10 lens prescriptions')),
       h('div.stat', {}, h('b', {}, '0'), h('span', {}, 'precomputed images: everything is simulated live')),
     )));
   let visited = new Set();

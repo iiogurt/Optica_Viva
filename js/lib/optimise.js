@@ -19,6 +19,8 @@ export function residuals(lens, cfg) {
   if (!isFinite(par.efl) || par.efl <= 0) return null;
   const zImg = vertices(lens)[lens.surfaces.length - 1] + lens.surfaces[lens.surfaces.length - 1].t;
   const out = [cfg.eflWeight * (par.efl - cfg.efl)];
+  // one-sided: penalise a back focal distance shorter than minBfd (retrofocus designs, mirror clearance)
+  if (cfg.minBfd != null) out.push(cfg.bfdWeight * Math.min(0, lens.surfaces[lens.surfaces.length - 1].t - cfg.minBfd));
   const pts = pupilSamples(cfg.rings);
   for (const f of cfg.fields) {
     const th = f * lens.field;
@@ -59,11 +61,12 @@ function solve(A, b) {
 
 // opts: { surfaces: indices whose curvature varies (default: all curved or flat refracting),
 //         focus: true to vary the image distance, efl: target (default current), eflWeight,
+//         minBfd: shortest allowed back focal distance (mm), bfdWeight,
 //         fields: [0, 0.7, 1], wavelengths: [486.13, 587.56, 656.27], rings: 3, iterations: 25 }
 export function optimise(lens0, opts = {}) {
   const N = lens0.surfaces.length;
   const cfg = {
-    efl: opts.efl ?? paraxial(lens0).efl, eflWeight: opts.eflWeight ?? 0.5,
+    efl: opts.efl ?? paraxial(lens0).efl, eflWeight: opts.eflWeight ?? 0.5, minBfd: opts.minBfd, bfdWeight: opts.bfdWeight ?? 1,
     fields: opts.fields ?? [0, 0.7, 1], wavelengths: opts.wavelengths ?? [486.13, 587.56, 656.27], rings: opts.rings ?? 3,
   };
   const curv = opts.surfaces ?? [...Array(N).keys()];

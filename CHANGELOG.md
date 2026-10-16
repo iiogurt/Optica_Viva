@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Four classic lens forms** in the ray tracer, bokeh and panorama laboratories: a Tessar type (f/5, 50 mm), a Petzval portrait type (f/4, 100 mm), a telephoto (f/5.6, 200 mm, 0.79 f long) and a retrofocus wide angle (f/6, 35 mm, back focus 40 mm). They were designed for this project with the built-in optimiser; the ray tracer's theory explains each form and the two-group formula behind telephoto and retrofocus. `test/classics.test.mjs` checks their first-order properties and that every field traces.
+- Optimiser: optional minimum back focal distance (`minBfd`), a one-sided penalty.
+
+### Fixed
+- Ray tracer: the field-angle label now follows the chosen lens (it kept the Cooke triplet's degrees after a lens change or a shared link).
+
 ## [1.16.0] - 2026-10-16
 
 The learning platform: guided tours that move the controls for you, exercises with checked answers, export of every figure and setting, embedding in course pages, and an installable app that works offline.

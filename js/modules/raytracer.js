@@ -64,8 +64,11 @@ export default function mount(root, meta) {
     psfStage.el,
   ], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '12px' } }, bestBtn)), h('div.card', {}, ro), calc.el], true));
 
+  let shownLens = null;
   function build() {
     Object.assign(S, ctl.state);
+    // the field label is in degrees of the chosen lens: refresh it when the lens changes
+    if (S.lens !== shownLens) { shownLens = S.lens; ctl.set.field(ctl.state.field); }
     const base = LENSES[S.lens];
     const p0 = paraxial(base);
     const lens = { ...base, epd: base.epd / S.fnum };
@@ -683,11 +686,15 @@ export default function mount(root, meta) {
 \[W(p_x,p_y) = \mathrm{OPL}(p_x,p_y) - \mathrm{OPL}_\text{chief}\]
 <p>is sampled on a 41×41 pupil grid, interpolated onto the FFT grid, and propagated by the Fraunhofer integral \(\mathrm{PSF} = |\mathcal F\{P\,e^{i2\pi W/\lambda}\}|^2\). The Strehl ratio is the peak of this PSF divided by the peak for \(W=0\). Off-axis, the pupil is treated as circular in normalised stop coordinates, which ignores the small anamorphic projection of the pupil (≈ \(\cos\theta\)).</p>
 <div class="callout">Try this: choose the <em>plano-convex</em> singlet, then its <em>reversed</em> twin. Bending alone changes the spherical aberration about 4× (the P–V OPD goes from ≈4.8 λ to ≈18.6 λ). Coddington's shape factor \(q = (R_2+R_1)/(R_2-R_1)\) controls it, with the optimum near \(q\approx+0.7\) for \(n\approx1.5\). Then open the achromat and watch the chromatic focal shift fold from a line into a parabola.</div>
+<h3>Four classic forms</h3>
+<p>The <strong>Tessar</strong> (Rudolph, 1902) is a Cooke triplet whose rear element became a cemented doublet; the extra glass surface gives one more handle on astigmatism, and its performance here is close to the triplet's. The <strong>Petzval portrait lens</strong> (1840) puts two achromats far apart: it was the first fast lens (f/3.6 against f/15 for the earlier landscape lens), very sharp on axis, but its Petzval sum is large, so the field curves and the edges soften, the origin of its "swirly" background. The <strong>telephoto</strong> places a negative group behind a positive one: the rear principal plane moves in front of the lens, so the 200 mm design here is only \(0.79\,f\) long. The <strong>retrofocus</strong> or inverted telephoto (Angénieux, 1950) reverses that order: a negative front meniscus pushes the rear principal plane behind the lens, so a 35 mm lens focuses 40 mm behind its last surface, leaving room for an SLR mirror. For two thin groups of powers \(\phi_1, \phi_2\) a distance \(d\) apart, \(\phi = \phi_1 + \phi_2 - d\,\phi_1\phi_2\) and the back focal distance is \(\mathrm{BFD} = f\,(1 - d\,\phi_1)\): \(\phi_1 > 0\) shortens it (telephoto), \(\phi_1 < 0\) lengthens it (retrofocus).</p>
+<p>These four were designed for this project, not copied from a manufacturer: a layout of the classic form, then curvatures and focus optimised by damped least squares with the thicknesses held fixed (the retrofocus with a minimum back focal distance). Spot sizes quoted on this page are at the paraxial focus unless you press <em>Find best focus</em>; the designs were optimised at their best image plane, where spherical aberration is balanced against defocus.</p>
 <h3>Domain notes</h3>
 <p><strong>Photography and cinema</strong> lenses are judged across the full field, which is why the Double-Gauss uses a near-symmetric layout to cancel coma, distortion and lateral colour. <strong>Space telescopes</strong> are reflective (no chromatic aberration). Their designs, such as Ritchey–Chrétien (Hubble) and the three-mirror anastigmat (JWST), use conic and aspheric surfaces to remove spherical aberration and coma together.</p>
 </div></div>`));
   root.append(references([
     'W. J. Smith, <i>Modern Optical Engineering</i>, 4th ed., McGraw-Hill (2008): Cooke triplet and Double-Gauss forms.',
+    'R. Kingslake, <i>A History of the Photographic Lens</i>, Academic Press (1989): Petzval, Tessar, telephoto and retrofocus.',
     'D. C. O\'Shea, <i>Elements of Modern Optical Design</i>, Wiley (1985): ray-aiming and pupil analysis.',
     'G. H. Spencer &amp; M. V. R. K. Murty, "General ray-tracing procedure", JOSA 52, 672 (1962).',
     'H. H. Hopkins, "Calculation of the aberrations and image assessment for a general optical system", Optica Acta 28, 667 (1981).',
