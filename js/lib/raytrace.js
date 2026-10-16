@@ -73,6 +73,67 @@ export const LENSES = {
       { R: -67.147919, t: 57.314642, glass: 'air' },
     ],
   },
+  // The four classic forms below were designed for this project: a starting layout of the classic
+  // form, then curvatures and focus optimised with optimise.js (damped least squares, thicknesses
+  // fixed). They show what each form does, not any manufacturer's lens.
+  'tessar': {
+    // a Cooke triplet whose rear element became a cemented doublet (Rudolph, Zeiss 1902)
+    name: 'Tessar type f/5, 50 mm (SK16 / F2 / F5–SK16)',
+    epd: 10, field: 20,
+    surfaces: [
+      { R: 22.2546, t: 3.259, glass: 'SK16' },
+      { R: -374.0917, t: 6.0076, glass: 'air' },
+      { R: -23.4571, t: 1, glass: 'F2' },
+      { R: 20.2634, t: 4.7504, glass: 'air', stop: true },
+      { R: 77.0688, t: 0.9, glass: 'F5' },
+      { R: 50.304, t: 3, glass: 'SK16' },
+      { R: -19.1924, t: 42.0363, glass: 'air' },
+    ],
+  },
+  'petzval': {
+    // two achromats far apart (Petzval 1840): sharp and fast on axis, curved field at the edges
+    name: 'Petzval portrait type f/4, 100 mm (N-BK7–F2, N-BK7 + F2)',
+    epd: 25, field: 8,
+    surfaces: [
+      { R: 83.7582, t: 7, glass: 'N-BK7' },
+      { R: -88.6622, t: 4, glass: 'F2' },
+      { R: 2041.0289, t: 10, glass: 'air' },
+      { R: Infinity, t: 90, glass: 'air', stop: true },
+      { R: 40.2233, t: 5, glass: 'N-BK7' },
+      { R: -50.7325, t: 1.5, glass: 'air' },
+      { R: -46.8312, t: 2.5, glass: 'F2' },
+      { R: -2841.6297, t: 40.6713, glass: 'air' },
+    ],
+  },
+  'telephoto': {
+    // positive front achromat, negative rear achromat: the lens is shorter than its focal length
+    name: 'Telephoto f/5.6, 200 mm, length 0.79 f (N-BK7–F2, N-BK7–F2)',
+    epd: 35.7, field: 6,
+    surfaces: [
+      { R: 40.1736, t: 6, glass: 'N-BK7', stop: true },
+      { R: -83.5895, t: 3, glass: 'F2' },
+      { R: 207.27, t: 55, glass: 'air' },
+      { R: -25.4191, t: 2.5, glass: 'N-BK7' },
+      { R: -104.9679, t: 4, glass: 'F2' },
+      { R: -50.3117, t: 86.7838, glass: 'air' },
+    ],
+  },
+  'retrofocus': {
+    // negative front meniscus ahead of a triplet (inverted telephoto, Angénieux 1950): the back
+    // focal distance (40 mm) exceeds the focal length, leaving room for an SLR mirror
+    name: 'Retrofocus wide angle f/6, 35 mm, back focus 40 mm (N-BK7 + triplet)',
+    epd: 5.8333, field: 22,
+    surfaces: [
+      { R: 17.2003, t: 2.5, glass: 'N-BK7' },
+      { R: 9.2032, t: 14, glass: 'air' },
+      { R: 15.5906, t: 1.7272, glass: 'SK16' },
+      { R: -25.5342, t: 3.184, glass: 'air' },
+      { R: -15.937, t: 0.53, glass: 'F2' },
+      { R: 15.2936, t: 2.5177, glass: 'air', stop: true },
+      { R: 745.5605, t: 1.5646, glass: 'SK16' },
+      { R: -13.1801, t: 39.9996, glass: 'air' },
+    ],
+  },
 };
 
 // ── Geometry helpers ────────────────────────────────────────────────────────────────────
