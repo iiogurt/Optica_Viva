@@ -7,9 +7,9 @@ import { readFileSync, readdirSync } from 'node:fs';
 const dir = new URL('../js/modules/', import.meta.url);
 const pages = readdirSync(dir).filter((f) => f.endsWith('.js')).map((f) => ({ id: f.slice(0, -3), src: readFileSync(new URL(f, dir), 'utf8') }));
 const laddered = pages.filter((p) => /\bidea\(String\.raw`/.test(p.src));
-// every page in the sidebar except the home page and the catalogue
 const READY = [...readFileSync(new URL('../js/app.js', import.meta.url), 'utf8').match(/READY = new Set\(\[([^\]]*)\]/)[1].matchAll(/'([a-z0-9-]+)'/g)].map((m) => m[1]);
-const LABS = READY.filter((id) => id !== 'home' && id !== 'catalogue');
+// every page in the sidebar except the reference pages (home, catalogue, gallery)
+const LABS = READY.filter((id) => !['home', 'catalogue', 'gallery'].includes(id));
 
 test('every laboratory has a ladder', () => {
   assert.ok(LABS.length >= 39);

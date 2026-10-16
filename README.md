@@ -172,6 +172,13 @@ Pixels on a person for detecting, recognising or identifying them (IEC 62676-4),
 
 Measure your own lens from your own photographs, analysed only in your browser: sharpness by the ISO 12233 slanted-edge method (MTF per colour channel, MTF50, lateral colour), vignetting from a flat field, and distortion from points on a straight line. Demo images with known answers show how each test works.
 
+### Phenomena in the wild
+
+**Phenomena in the wild** · `#/gallery`<br>
+<img src="docs/screenshots/gallery.webp" alt="Gallery page: Hubble's M100 before and after the 1993 repair and Webb's First Deep Field, each with an explanation and links to the laboratories" width="70%">
+
+Real photographs explained by the laboratories: Hubble before and after its repair, Webb's diffraction spikes and lensed arcs, the black hole in M87 and the green flash. Images are public domain or CC BY 4.0 (see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).
+
 ### Geometric optics
 
 <table>
@@ -784,6 +791,7 @@ export default function mount(root, meta) {
 Optica_Viva/
 ├── index.html                 App shell (sidebar, main, KaTeX includes)
 ├── css/style.css              Design system: dark theme, lab layout, controls
+├── img/gallery/               Photographs for Phenomena in the wild (public domain and CC BY 4.0)
 ├── js/
 │   ├── app.js                 Laboratory registry, hash router, navigation
 │   ├── lib/                   Numerical core (pure functions, no DOM unless noted)
@@ -816,6 +824,7 @@ Optica_Viva/
 │   │   ├── colorsci.js        CCT/Duv, CIE 13.3 CRI, Bradford adaptation, CIELAB, CIEDE2000
 │   │   ├── choose.js          Comparison mission: camera equivalence, telescope limits
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
+│   │   ├── gallery.js         Real photographs with explanations, credits and laboratory links
 │   │   ├── gear.js            Your photos: linear decoding, flat-field vignetting, division-model distortion
 │   │   ├── glass.js           Sellmeier catalogue, Abbe number, partial dispersion
 │   │   ├── glossary.js        Plain definitions of technical terms and their popovers

@@ -5,12 +5,13 @@ import { CHECKS } from './lib/misconceptions.js';
 import { glossary } from './lib/glossary.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'gear', 'computational', 'autofocus', 'filters', 'underwater', 'mission-survey', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'gallery', 'gear', 'computational', 'autofocus', 'filters', 'underwater', 'mission-survey', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
   { id: 'foundations', group: 'Overview', title: 'Physical foundations', c: '#ffb547', blurb: 'From Maxwell to Fourier optics: the four models of light every simulation here is built on.' },
   { id: 'catalogue', group: 'Overview', title: 'Catalogue of phenomena', c: '#ffb547', blurb: 'An exhaustive, searchable atlas of optical effects and real-world imaging challenges with their governing equations.' },
+  { id: 'gallery', group: 'Overview', title: 'Phenomena in the wild', c: '#ffb547', blurb: 'Real photographs explained: Hubble before and after its repair, Webb\'s diffraction spikes and lensed arcs, the black hole in M87, the green flash.' },
 
   { id: 'mission-milkyway', group: 'Missions', title: 'Photograph the Milky Way', c: '#9db4ff', blurb: 'A plan for your camera and sky: the longest exposure before stars trail, the right ISO, and how many frames to stack.' },
   { id: 'mission-jupiter', group: 'Missions', title: 'Image Jupiter from your garden', c: '#e8b48a', blurb: 'The focal ratio for your camera, frames short enough to freeze the air, how long before Jupiter\'s rotation blurs it, and when you need a dispersion corrector.' },

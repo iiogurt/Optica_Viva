@@ -45,3 +45,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## Published physical data
 
 Glass Sellmeier coefficients (SCHOTT AG data sheets; Malitson 1965), CIE colorimetric tables, and other constants cited on each laboratory page are factual reference data. Their sources are credited where they are used.
+
+## Photographs in *Phenomena in the wild* (`img/gallery/`)
+
+Resized and converted to WebP; otherwise unchanged.
+
+| File | Credit | Licence | Source |
+|---|---|---|---|
+| `hubble-m100-1993.webp` | NASA | Public domain | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Improvement_in_Hubble_images_after_SMM1.jpg) |
+| `webb-first-deep-field.webp` | NASA, ESA, CSA and STScI | Public domain | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Webb%27s_First_Deep_Field.jpg) |
+| `eht-m87.webp` (cropped to a square) | Event Horizon Telescope Collaboration | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Black_hole_-_Messier_87.jpg), ESO eso1907a |
+| `green-flash.webp` | Aleksandar Cikota/ESO | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Green_flash_at_sunset_(greenflash-20161212-cc).jpg) |
