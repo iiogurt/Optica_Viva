@@ -6,20 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
-### Added
-- **Installable app with offline cache** (PWA): `manifest.webmanifest` with icons, and a service worker (`sw.js`) that caches the whole app on the first visit (`precache.json`, 164 files), fetches network-first so an online visit is always current, refreshes the offline copy when the version changes, and caches Google Fonts. `scripts/precache.mjs` writes the list and `npm run check` fails when it is out of date. The smoke test stops the server after installation and checks that a laboratory still computes.
+## [1.16.0] - 2026-10-16
 
-### Added
-- **Embed mode**: `#/<lab>?embed=1` shows a page without the sidebar, theory, exercises or tours, for an iframe in a course page or blog; links inside it open the full app in a new tab, and a link at the bottom opens the full laboratory. The new **Embed** button in every page header copies ready-made `<iframe>` code with the current settings. `test/embed.test.mjs` and the smoke test cover it.
-
-### Added
-- **Exercises with checked answers** (`js/lib/exercises.js`): seven "Try it yourself" problems on the depth-of-field, MTF, PSF and flare laboratories (hyperfocal distance, depth of a portrait, diffraction cut-off, diffraction meeting the pixels, Airy disk size, telescope resolution, ghost count). Numbers are drawn from a seeded generator, answers are computed with the laboratory's own functions and accept a decimal comma, a first wrong answer gets a hint, every problem has a worked solution, and **Set it up in the lab** moves the controls so the readouts show the answer. `test/exercises.test.mjs` checks the answers against textbook values; the smoke test opens every solution and set-up.
-
-### Added
-- **Guided tours** (`js/lib/tours.js`): five step-by-step narratives that move a laboratory's controls and say what to look at: *Why stopping down stops helping* (MTF), *What really sets depth of field*, *Where diffraction spikes come from* (PSF), *Why lens coatings matter* (flare) and *Taming colour fringes* (chromatic). Each is offered on its laboratory and on the home page, and a link `#/<lab>?tour=<id>` starts it. Every narrated number was checked against the page's readouts. `test/tours.test.mjs` checks that every step sets real controls within range, and the smoke test plays every tour to the end.
+The learning platform: guided tours that move the controls for you, exercises with checked answers, export of every figure and setting, embedding in course pages, and an installable app that works offline.
 
 ### Added
 - **Export** on every page: each figure gets **PNG** (the canvas as shown) and, when it holds charts, **CSV** buttons (long format: chart, series, x, y); the page header gets **Save settings**, a JSON file with the page, app version, time, link and every control value. `test/export.test.mjs` checks the CSV format.
+- **Guided tours** (`js/lib/tours.js`): five step-by-step narratives that move a laboratory's controls and say what to look at: *Why stopping down stops helping* (MTF), *What really sets depth of field*, *Where diffraction spikes come from* (PSF), *Why lens coatings matter* (flare) and *Taming colour fringes* (chromatic). Each is offered on its laboratory and on the home page, and a link `#/<lab>?tour=<id>` starts it. Every narrated number was checked against the page's readouts. `test/tours.test.mjs` checks that every step sets real controls within range, and the smoke test plays every tour to the end.
+- **Exercises with checked answers** (`js/lib/exercises.js`): seven "Try it yourself" problems on the depth-of-field, MTF, PSF and flare laboratories (hyperfocal distance, depth of a portrait, diffraction cut-off, diffraction meeting the pixels, Airy disk size, telescope resolution, ghost count). Numbers are drawn from a seeded generator, answers are computed with the laboratory's own functions and accept a decimal comma, a first wrong answer gets a hint, every problem has a worked solution, and **Set it up in the lab** moves the controls so the readouts show the answer. `test/exercises.test.mjs` checks the answers against textbook values; the smoke test opens every solution and set-up.
+- **Embed mode**: `#/<lab>?embed=1` shows a page without the sidebar, theory, exercises or tours, for an iframe in a course page or blog; links inside it open the full app in a new tab, and a link at the bottom opens the full laboratory. The new **Embed** button in every page header copies ready-made `<iframe>` code with the current settings. `test/embed.test.mjs` and the smoke test cover it.
+- **Installable app with offline cache** (PWA): `manifest.webmanifest` with icons, and a service worker (`sw.js`) that caches the whole app on the first visit (`precache.json`, 164 files), fetches network-first so an online visit is always current, refreshes the offline copy when the version changes, and caches Google Fonts. `scripts/precache.mjs` writes the list and `npm run check` fails when it is out of date. The smoke test stops the server after installation and checks that a laboratory still computes.
 
 ## [1.15.0] - 2026-10-16
 
@@ -643,7 +639,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.15.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.16.0...HEAD
+[1.16.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.12.0...v1.13.0
