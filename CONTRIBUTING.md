@@ -36,6 +36,7 @@ flowchart LR
 3. Link it from the matching entries in [`js/lib/phenomena.js`](js/lib/phenomena.js).
 4. Put reusable physics in `js/lib/` (pure functions) and test it in `test/`.
 5. Add a crop entry in [`scripts/screenshots.mjs`](scripts/screenshots.mjs) and a gallery tile in the README.
+6. Run `node scripts/precache.mjs --write` so the new files are part of the offline app (`npm run check` reminds you).
 
 Controls created with `controls()` are automatically shareable through the URL, and on phones they slide into a bottom sheet; there is nothing extra to do.
 

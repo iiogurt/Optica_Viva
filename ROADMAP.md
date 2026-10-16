@@ -452,7 +452,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P2 · L** **Guided tours**: step-by-step narratives that drive the controls ("Why stopping down stops helping"); five tours (#108).
 - [x] **P2 · M** **Exercises with checked answers**: compute the hyperfocal distance, predict the ghost count, and so on, using the live calculation engine (#109).
 - [x] **P2 · M** **Export**: PNG of any canvas, CSV of any chart, JSON of lab state (#107).
-- [ ] **P3 · M** **Installable PWA** with service-worker caching (fonts included).
+- [x] **P3 · M** **Installable PWA** with service-worker caching (fonts included) (#111).
 - [ ] **P3 · L** **Internationalisation**, starting with the UI strings, then the theory text.
 - [x] **P3 · M** **Embed mode** (`?embed=1`) for courses and blogs (#110).
 - [ ] **P3 · L** Lab plugin API and documentation site generated from module metadata.

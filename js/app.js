@@ -157,6 +157,12 @@ async function route() {
 }
 
 buildNav();
+// Offline use and installation (sw.js). A page that already had a worker asks it to refresh the
+// offline copy, which it does only when the version changed.
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  const had = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then((r) => { if (had) r.active?.postMessage('refresh'); }).catch(() => {});
+}
 // the skip link must not change the hash (that would re-route): focus <main> directly
 document.querySelector('.skip-link')?.addEventListener('click', (e) => { e.preventDefault(); main.focus(); });
 window.addEventListener('hashchange', route);

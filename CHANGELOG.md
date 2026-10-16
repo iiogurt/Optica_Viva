@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Installable app with offline cache** (PWA): `manifest.webmanifest` with icons, and a service worker (`sw.js`) that caches the whole app on the first visit (`precache.json`, 164 files), fetches network-first so an online visit is always current, refreshes the offline copy when the version changes, and caches Google Fonts. `scripts/precache.mjs` writes the list and `npm run check` fails when it is out of date. The smoke test stops the server after installation and checks that a laboratory still computes.
+
+### Added
 - **Embed mode**: `#/<lab>?embed=1` shows a page without the sidebar, theory, exercises or tours, for an iframe in a course page or blog; links inside it open the full app in a new tab, and a link at the bottom opens the full laboratory. The new **Embed** button in every page header copies ready-made `<iframe>` code with the current settings. `test/embed.test.mjs` and the smoke test cover it.
 
 ### Added

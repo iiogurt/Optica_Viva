@@ -79,6 +79,18 @@ try {
     console.log(`${problems.length ? '✗' : '✓'} exercises ${lab}${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
     if (problems.length) failed++;
   }
+  // offline: once the service worker has cached the app, a reload with the server stopped still works
+  {
+    await page.goto(site.url + '#/dof', 1500);
+    let cached = false;
+    for (let t = 0; t < 60 && !cached; t++) { await sleep(500); cached = await page.eval(`caches.open('optica-viva').then((c) => c.match('precache-version')).then((r) => !!r)`); }
+    site.stop();
+    const errors = await page.goto(site.url + '?offline#/dof', 4000);
+    const s = await page.eval(probe);
+    const ok = cached && s.readouts > 0 && !s.alert;
+    console.log(`${ok ? '✓' : '✗'} offline after install${cached ? '' : '  (app never cached)'}${errors.length ? '  ' + errors.join(' | ').slice(0, 300) : ''}`);
+    if (!ok) failed++;
+  }
 } finally {
   await page.close(); site.stop();
 }
