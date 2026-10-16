@@ -61,8 +61,10 @@ export const texNum = (v, d = 3) => {
 // ── Controls ─────────────────────────────────────────────────────────────────────────────
 // ── Shareable state: every control mirrors its non-default value into the URL hash ─────
 // (#/psf?preset=jwst&band=nir). The router calls resetUrlState() before mounting a page.
-let urlKeys = new Map(), panels = 0;
-export function resetUrlState() { urlKeys = new Map(); panels = 0; }
+let urlKeys = new Map(), allKeys = new Map(), panels = 0;
+export function resetUrlState() { urlKeys = new Map(); allKeys = new Map(); panels = 0; }
+// Every control's current value, defaults included (for saved settings).
+export const allSettings = () => Object.fromEntries([...allKeys].map(([k, get]) => [k, get()]));
 const hashParams = () => new URLSearchParams(location.hash.split('?')[1] || '');
 function writeUrl() {
   const p = new URLSearchParams();
@@ -105,6 +107,7 @@ export function controls(spec, onChange) {
     const fromUrl = parseParam(s, params.get(uk));
     state[key] = fromUrl !== undefined ? fromUrl : s.value;
     urlKeys.set(uk, () => (serialise(s, state[key]) === serialise(s, s.value) ? null : serialise(s, state[key])));
+    allKeys.set(uk, () => state[key]);
     let row;
     if (s.type === 'range') {
       const toPos = (v) => (s.log ? Math.log(v / s.min) / Math.log(s.max / s.min) : (v - s.min) / (s.max - s.min));
@@ -183,6 +186,7 @@ export function stage({ aspect = 16 / 9, draw, minH = 160, maxH = Infinity, labe
   // canvases are images to assistive technology; the numeric results live in the readouts
   const canvas = h('canvas', { role: 'img', 'aria-label': label || 'Chart' });
   const wrap = h('figure.stage' + (cls ? '.' + cls : ''), {}, canvas, label ? h('figcaption', {}, label) : null);
+  wrap.append(exportTools(canvas, label));
   const ctx = canvas.getContext('2d');
   const st = { canvas, ctx, el: wrap, w: 0, h: 0, dpr: 1, draw };
   const resize = () => {
@@ -198,6 +202,7 @@ export function stage({ aspect = 16 / 9, draw, minH = 160, maxH = Infinity, labe
   };
   st.redraw = () => {
     if (!st.w) return;
+    canvas._plots = [];
     ctx.setTransform(st.dpr, 0, 0, st.dpr, 0, 0);
     ctx.clearRect(0, 0, st.w, st.h);
     st.draw && st.draw(ctx, st.w, st.h, st);
@@ -235,3 +240,36 @@ export const theme = () => {
   const v = (n) => cs.getPropertyValue(n).trim();
   return { fg: v('--fg'), dim: v('--fg-dim'), faint: v('--fg-faint'), grid: v('--grid'), accent: v('--accent'), accent2: v('--accent-2'), accent3: v('--accent-3'), bg: v('--bg'), panel: v('--panel'), warn: v('--warn') };
 };
+
+// ── Export ─────────────────────────────────────────────────────────────────────────────────
+// Every stage gets small buttons to save its picture as PNG and, when it holds a chart, the
+// plotted data as CSV. File names start with the page id.
+const pageId = () => (location.hash.replace(/^#\/?/, '').split('?')[0] || 'home');
+const slug = (t) => (t || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+export function download(blob, name) {
+  const a = h('a', { href: URL.createObjectURL(blob), download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+// CSV in long format (series, x, y), one block per chart on the canvas.
+export function plotsToCSV(plots) {
+  const q = (v) => (/[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
+  const rows = [['chart', 'series', 'x: ' + (plots[0]?.x || 'x'), 'y: ' + (plots[0]?.y || 'y')]];
+  for (const p of plots) for (const s of p.series) for (const pt of s.data) if (pt && isFinite(pt[0]) && isFinite(pt[1])) rows.push([p.title, s.label, pt[0], pt[1]]);
+  return rows.map((r) => r.map(q).join(',')).join('\n') + '\n';
+}
+function exportTools(canvas, label) {
+  const name = () => `${pageId()}-${slug(label || canvas._plots?.[0]?.title) || 'figure'}`;
+  const png = h('button.st-btn', { type: 'button', title: 'Save this picture as PNG', onClick: () => {
+    // paint the page background behind transparent stages
+    const c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height;
+    const x = c.getContext('2d'); x.fillStyle = getComputedStyle(document.body).backgroundColor || '#07080d'; x.fillRect(0, 0, c.width, c.height); x.drawImage(canvas, 0, 0);
+    c.toBlob((b) => b && download(b, name() + '.png'), 'image/png');
+  } }, 'PNG');
+  const csv = h('button.st-btn', { type: 'button', title: 'Save the chart data as CSV', onClick: () => download(new Blob([plotsToCSV(canvas._plots || [])], { type: 'text/csv' }), name() + '.csv') }, 'CSV');
+  const box = h('div.stage-tools', {}, png, csv);
+  // show the CSV button only when the canvas holds a chart
+  const refresh = () => { csv.hidden = !(canvas._plots && canvas._plots.length); };
+  canvas.addEventListener('pointerenter', refresh); box.addEventListener('focusin', refresh); box.addEventListener('pointerenter', refresh);
+  return box;
+}
