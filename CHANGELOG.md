@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.20.0] - 2026-10-19
+
 ### Added
 - **3-D Scheimpflug geometry** (`js/lib/tilt3d.js`): the tilt–shift laboratory shows, at true scale, the sensor plane, the tilted lens plane and the plane of focus meeting in the Scheimpflug line, with the hinge line at J = f / sin α and the depth-of-field limits; and the plane of focus with its wedge over the toy town, seen from above the rooftop camera. `test/mesh3d.test.mjs` checks that the plane of focus passes through both lines.
 
@@ -702,7 +704,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.19.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.20.0...HEAD
+[1.20.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.19.0...v1.20.0
 [1.19.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.18.0...v1.19.0
 [1.18.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.16.0...v1.17.0
