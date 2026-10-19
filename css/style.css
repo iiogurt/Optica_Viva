@@ -499,3 +499,14 @@ dialog.glassmap::backdrop { background: rgba(0, 0, 0, 0.6); }
 .lang-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
 .lang-pick { width: auto; font-size: 0.85rem; padding: 3px 6px; }
 .lang-note { margin: -6px 0 18px; font-size: 0.85rem; }
+
+/* 3-D views (js/lib/gl3d.js) */
+.v3d canvas { display: block; width: 100%; touch-action: pan-y; cursor: grab; } /* one finger scrolls the page vertically, drags sideways rotate */
+.v3d canvas:active { cursor: grabbing; }
+.v3d canvas:focus-visible { outline: 2px solid var(--accent-2); outline-offset: -2px; }
+.v3d .v3d-overlay { position: absolute; inset: 0; pointer-events: none; cursor: auto; }
+.v3d-hint { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); padding: 4px 10px; border-radius: 999px; background: rgba(5, 6, 10, 0.7); color: var(--fg-dim); font: 500 11px/1.2 var(--font-sans); pointer-events: none; transition: opacity .6s; white-space: nowrap; }
+.v3d-hint.gone { opacity: 0; }
+.v3d-none { padding: 34px 16px 18px; }
+.v3d-msg { margin: 0; color: var(--fg-dim); font-size: 0.9rem; }
+.v3d-none canvas { display: none; }

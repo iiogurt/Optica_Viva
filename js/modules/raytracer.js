@@ -9,6 +9,8 @@ import { plot, range } from '../lib/plot.js';
 import { latest } from '../lib/compute.js';
 import { mtfDiffraction } from '../lib/pupil.js';
 import { lut } from '../lib/color.js';
+import { view3d } from '../lib/gl3d.js';
+import { lensScene } from '../lib/lens3d.js';
 
 
 const SPECTRA = {
@@ -47,6 +49,7 @@ export default function mount(root, meta) {
 
   let model = null;
   const layout = stage({ aspect: 2.25, label: 'Meridional ray trace', draw: drawLayout, minH: 260 });
+  const v3 = view3d({ label: '3-D view: skew rays through the real lens (on axis and at the chosen field)', aspect: 2.2, minH: 280 });
   const zoom = stage({ aspect: 2.6, label: 'Focus region (magnified, caustic)', draw: drawZoom, minH: 200 });
   const spot = stage({ aspect: 1, label: 'Spot diagram', draw: drawSpot });
   const fan = stage({ aspect: 1, label: '', draw: drawFan, cls: 'plain' });
@@ -57,7 +60,7 @@ export default function mount(root, meta) {
   const psfStage = stage({ aspect: 2, label: 'Wavefront (OPD) · diffraction PSF from the traced rays', draw: drawPSF, minH: 220 });
 
   root.append(lab([
-    layout.el, zoom.el,
+    layout.el, v3.el, zoom.el,
     h('div.grid-3', {}, spot.el, fan.el, chroma.el),
     h('div.card', { style: { padding: '6px' } }, seidSt.el),
     h('div.card', { style: { padding: '6px' } }, fieldSt.el),
@@ -173,6 +176,7 @@ export default function mount(root, meta) {
     layout.redraw(); zoom.redraw(); spot.redraw(); fan.redraw(); chroma.redraw(); seidSt.redraw(); fieldSt.redraw();
     computePSF();
     computeMTF();
+    update3d();
   }
 
   function autoFocus() {
@@ -483,6 +487,16 @@ export default function mount(root, meta) {
     });
   }
 
+  // 3-D view: rebuilt shortly after the controls settle; the camera stays where the reader put it
+  // unless the lens changed
+  let scene3dLens = null;
+  const update3d = debounce(() => {
+    const m = model; if (!m || !v3.ok) return;
+    const fields = m.theta > 0 ? [0, m.theta] : [0];
+    v3.setScene(lensScene(m.lens, { sd: m.sd, par: m.pd, zImg: m.zImg, fields }), scene3dLens === S.lens);
+    scene3dLens = S.lens;
+  }, 150);
+
   const psfJob = latest('lensPSF');
   const computePSF = debounce(() => {
     const m = model; if (!m) return;
@@ -765,5 +779,5 @@ export default function mount(root, meta) {
     'Zemax sample prescriptions "Cooke 40 degree field" and "Double Gauss 28 degree field" (classic textbook forms).',
   ]));
 
-  return () => { [layout, zoom, spot, fan, chroma, psfStage].forEach((s) => s.destroy()); };
+  return () => { [layout, zoom, spot, fan, chroma, psfStage].forEach((s) => s.destroy()); v3.destroy(); };
 }

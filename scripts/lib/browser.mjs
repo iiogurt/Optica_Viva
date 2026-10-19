@@ -19,7 +19,10 @@ export async function launch({ width = 1440, height = 1200 } = {}) {
   for (let attempt = 0; attempt < 2 && !target; attempt++) {
     profile = mkdtempSync(join(tmpdir(), 'optica-cdp-'));
     const port = 9300 + Math.floor(Math.random() * 600);
-    proc = spawn(exe, ['--headless=new', '--no-sandbox', '--disable-gpu', '--hide-scrollbars', `--remote-debugging-port=${port}`,
+    // SwiftShader gives headless Chromium WebGL 2 without a GPU (CI runners, the Pi) for the 3-D
+    // views; 2-D canvases and compositing stay in software, which is 3× faster than SwiftShader
+    proc = spawn(exe, ['--headless=new', '--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader',
+      '--disable-accelerated-2d-canvas', '--disable-gpu-compositing', '--hide-scrollbars', `--remote-debugging-port=${port}`,
       `--user-data-dir=${profile}`, `--window-size=${width},${height}`, 'about:blank'], { stdio: 'ignore' });
     for (let i = 0; i < 160 && !target; i++) {
       await sleep(250);

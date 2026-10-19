@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **3-D views** (`js/lib/gl3d.js`, `js/lib/mesh3d.js`): a dependency-free WebGL 2 renderer with an orbit camera (drag, wheel or pinch, shift-drag to pan, double-click or ⟲ to reset, arrow keys and +/− when focused), glass with a Fresnel rim, glowing anti-aliased lines, labels and PNG export; it renders only when something changes and says so where WebGL 2 is missing. First use: the **ray tracer's 3-D view** (`js/lib/lens3d.js`) shows the glass elements as solids, mirrors, the stop and the sensor, with real skew rays on axis and at the chosen field. ROADMAP v1.20 lists the researched 3-D views for the other laboratories. The headless browser of the tests now has WebGL 2 through SwiftShader (2-D canvases stay in software), and the smoke test checks that the 3-D view starts. `test/mesh3d.test.mjs` covers the geometry and the scene.
+
 ### Fixed
 - Figure captions stay on one line clear of the PNG/CSV buttons (the full caption unfolds on hover or keyboard focus); long captions no longer wrap into the drawing on the macro, panorama, polarisation, eye, tilt–shift and interferometry pages.
 - Ray tracer: glass names of thin neighbouring elements (e.g. the Biogon's cemented groups) are staggered instead of printed over each other.
