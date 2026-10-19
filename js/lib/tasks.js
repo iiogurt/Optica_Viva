@@ -4,8 +4,8 @@
 import { rasterAperture, psf, rescale, zernikeWavefront, rmsWavefront, zernike, segmentMap } from './pupil.js';
 import { spectralBasis, wavelengthRGB } from './color.js';
 import { fft2d } from './fft.js';
-import { paraxial, referenceSphere, opd, aimRay, trace } from './raytrace.js';
-import { optimise } from './optimise.js';
+import { paraxial, referenceSphere, opdRay, aimRay, trace } from './raytrace.js';
+import { optimise, solve } from './optimise.js';
 import { monteCarlo } from './tolerance.js';
 import { ghostSystem, renderGhosts } from './ghosts.js';
 import { bokehKernels } from './bokeh.js';
@@ -213,61 +213,128 @@ function segPhasing(p) {
 function lensPSF(p) {
   const f = lensPupil(p, 256, 128);
   if (!f) return { result: null, transfer: [] };
-  const { amp, W, n, lam, rmsW, pvW, maxStep, transmitted } = f;
+  const { amp, W, n, lam, rmsW, pvW, maxStep, transmitted, pupil } = f;
   const P = psf(amp, W, n, lam / 1000), P0 = psf(amp, null, n, lam / 1000);
   const ampC = amp.slice();
   return {
-    result: { I: P.I, n, Wmap: W, amp: ampC, rmsW, pvW, strehl: P.peak / P0.peak, aliased: maxStep > 0.5, N: p.N, lam, transmitted },
+    result: { I: P.I, n, Wmap: W, amp: ampC, rmsW, pvW, strehl: P.peak / P0.peak, aliased: maxStep > 0.5, N: p.N, lam, transmitted, pupil },
     transfer: [P.I.buffer, W.buffer, ampC.buffer],
   };
 }
 
-// Traced, vignetted exit-pupil field: OPD on a 41×41 grid (rays blocked by clear apertures
-// carry no light), interpolated onto an n×n grid with a Dpx-pixel pupil. µm of OPD.
+// Traced, vignetted exit-pupil field on an n×n grid with a Dpx-pixel pupil, in µm of OPD.
+// The OPD is traced on a 41×41 grid in normalised stop coordinates (px, py), but the FFT grid is
+// laid out in direction cosines on the exit-pupil reference sphere (seen from the image point)
+// relative to the chief ray, a = −(L − L₀)/NA, b = −(M − M₀)/NA with NA = 1/(2N). In these coordinates the Fraunhofer
+// (Debye) integral onto the sensor plane is exact, so off axis the pupil is foreshortened and
+// distorted as the image point sees it. A least-squares quartic maps (a, b) back to (px, py), and
+// the amplitude carries √|∂(px, py)/∂(a, b)| (uniform irradiance over the entrance pupil).
 function lensPupil(p, n, Dpx) {
   const { lens, theta, zImg, N, sd } = p, lam = 587.56;
   const par = paraxial(lens, lam);
   const ref = referenceSphere(lens, lam, theta, zImg, par);
   if (!ref) return null;
-  // OPD on a 41×41 pupil grid; `lit` marks rays that pass every clear aperture (vignetting)
-  const G = 41, grid = new Float64Array(G * G).fill(NaN), lit = new Float64Array(G * G);
-  let inPupil = 0, passed = 0;
+  const NA = 1 / (2 * Math.abs(N));
+  const E = ref.chief.p, tE = (par.zXP - E[2]) / ref.chief.d[2], C = ref.center; // chief ray on the sphere
+  const Q0 = [E[0] + tE * ref.chief.d[0], E[1] + tE * ref.chief.d[1], E[2] + tE * ref.chief.d[2]];
+  const d0 = [(C[0] - Q0[0]) / ref.R, (C[1] - Q0[1]) / ref.R];
+  // Samples just outside the stop (r ≤ 1.1) repeat the ray at their radial projection onto the rim,
+  // so bilinear interpolation holds up to the edge. `lit` marks rays that pass every clear aperture.
+  const G = 41, grid = new Float64Array(G * G).fill(NaN), lit = new Float64Array(G * G), pts = [];
+  let inPupil = 0, passed = 0, s = 0, s2 = 0;
   for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) {
-    const px = -1 + (2 * i) / (G - 1), py = 1 - (2 * j) / (G - 1);
-    if (px * px + py * py > 1.0001) continue;
-    inPupil++;
-    if (sd) { const a = aimRay(lens, lam, theta, px, py, par); if (!a || !trace(lens, lam, a.p, a.d, { sd, zv: par.zv }).ok) continue; }
-    const v = opd(lens, lam, theta, px, py, ref, par);
-    if (v != null) { grid[j * G + i] = v; lit[j * G + i] = 1; passed++; }
+    let px = -1 + (2 * i) / (G - 1), py = 1 - (2 * j) / (G - 1);
+    const r = Math.hypot(px, py), inside = r <= 1.0001;
+    if (r > 1.1) continue;
+    if (!inside) { px *= 0.9999 / r; py *= 0.9999 / r; }
+    if (inside) inPupil++;
+    const o = opdRay(lens, lam, theta, px, py, ref, par);
+    if (!o) continue;
+    const k = j * G + i;
+    grid[k] = o.w;
+    let ok = true;
+    if (sd) { const a = aimRay(lens, lam, theta, px, py, par); ok = !!a && trace(lens, lam, a.p, a.d, { sd, zv: par.zv }).ok; }
+    if (ok) lit[k] = 1;
+    if (!inside) continue;
+    pts.push([-(o.s[0] - d0[0]) / NA, -(o.s[1] - d0[1]) / NA, px, py]);
+    if (ok) { passed++; s += o.w; s2 += o.w * o.w; }
   }
   if (!passed) return null;
-  // remove piston; RMS
-  let s = 0, s2 = 0, c = 0, maxStep = 0;
-  for (let k = 0; k < G * G; k++) if (!isNaN(grid[k])) { s += grid[k]; s2 += grid[k] ** 2; c++; }
-  const mean = s / c, rmsW = Math.sqrt(s2 / c - mean * mean);
-  for (let k = 0; k < G * G; k++) if (!isNaN(grid[k])) grid[k] -= mean;
-  const amp = rasterAperture({ type: 'circle' }, n, Dpx, 3).slice(); // copy: the cached raster is shared
-  const W = new Float64Array(n * n);
-  let pv = [Infinity, -Infinity];
+  // remove piston; RMS over the transmitted rays
+  const mean = s / passed, rmsW = Math.sqrt(Math.max(0, s2 / passed - mean * mean));
+  for (let k = 0; k < G * G; k++) grid[k] -= mean;
+  const map = pupilMap(pts), m = new Float64Array(6);
+  const amp = new Float64Array(n * n), W = new Float64Array(n * n), h = Dpx / 2;
+  let lo = Infinity, hi = -Infinity, maxStep = 0;
   for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-    const k = y * n + x; if (!amp[k]) continue;
-    const u = ((x - n / 2) / (Dpx / 2) + 1) / 2 * (G - 1), v = ((y - n / 2) / (Dpx / 2) + 1) / 2 * (G - 1);
+    const a = (x - n / 2) / h, b = -(y - n / 2) / h;
+    if (a * a + b * b > map.rmax * map.rmax) continue;
+    map.at(a, b, m);
+    const px = m[0], py = m[1], J = m[2] * m[5] - m[3] * m[4], r = Math.hypot(px, py);
+    if (J * map.J0 <= 0 || r > 1.05) continue; // outside the pupil, or where the fit folds over
+    // soft stop edge, one FFT pixel wide: (1 − r) divided by |∇r| per pixel
+    const gr = Math.hypot(px * m[2] + py * m[4], px * m[3] + py * m[5]) / (r || 1) / h;
+    const edge = Math.min(1, Math.max(0, (1 - r) / (gr || 1e-9) + 0.5));
+    const u = (px + 1) / 2 * (G - 1), v = (1 - py) / 2 * (G - 1);
     const i0 = Math.max(0, Math.min(G - 2, Math.floor(u))), j0 = Math.max(0, Math.min(G - 2, Math.floor(v)));
     const fx = Math.min(1, Math.max(0, u - i0)), fy = Math.min(1, Math.max(0, v - j0));
-    const q = [grid[j0 * G + i0], grid[j0 * G + i0 + 1], grid[(j0 + 1) * G + i0], grid[(j0 + 1) * G + i0 + 1]];
-    const ok = q.map((t) => !isNaN(t));
-    // vignetting: amplitude = bilinear coverage of lit samples (anti-aliased pupil edge)
-    const cover = (lit[j0 * G + i0] * (1 - fx) + lit[j0 * G + i0 + 1] * fx) * (1 - fy) + (lit[(j0 + 1) * G + i0] * (1 - fx) + lit[(j0 + 1) * G + i0 + 1] * fx) * fy;
-    amp[k] *= Math.min(1, Math.max(0, (cover - 0.25) / 0.5));
-    if (!amp[k] || !ok.some(Boolean)) { amp[k] = 0; continue; }
-    let val;
-    if (ok.every(Boolean)) val = (q[0] * (1 - fx) + q[1] * fx) * (1 - fy) + (q[2] * (1 - fx) + q[3] * fx) * fy;
-    else { const v2 = q.filter((t, i) => ok[i]); val = v2.length ? v2.reduce((a, b) => a + b) / v2.length : 0; }
-    W[k] = val * lam / 1000; // µm of OPD
-    pv = [Math.min(pv[0], W[k]), Math.max(pv[1], W[k])];
+    const k0 = j0 * G + i0, k1 = k0 + 1, k2 = k0 + G, k3 = k2 + 1;
+    const w0 = (1 - fx) * (1 - fy), w1 = fx * (1 - fy), w2 = (1 - fx) * fy, w3 = fx * fy;
+    // vignetting: amplitude = bilinear coverage of lit samples (anti-aliased aperture edges)
+    const cover = lit[k0] * w0 + lit[k1] * w1 + lit[k2] * w2 + lit[k3] * w3;
+    const A = edge * Math.min(1, Math.max(0, (cover - 0.25) / 0.5));
+    if (!A) continue;
+    // bilinear OPD over the traced samples (untraceable corners drop out, weights renormalised)
+    let sw = 0, sv = 0;
+    if (!isNaN(grid[k0])) { sw += w0; sv += w0 * grid[k0]; }
+    if (!isNaN(grid[k1])) { sw += w1; sv += w1 * grid[k1]; }
+    if (!isNaN(grid[k2])) { sw += w2; sv += w2 * grid[k2]; }
+    if (!isNaN(grid[k3])) { sw += w3; sv += w3 * grid[k3]; }
+    if (!sw) continue;
+    const k = y * n + x;
+    amp[k] = A * Math.sqrt(J / map.J0);
+    W[k] = (sv / sw) * lam / 1000; // µm of OPD
+    if (W[k] < lo) lo = W[k];
+    if (W[k] > hi) hi = W[k];
     if (x > 0 && amp[k - 1]) maxStep = Math.max(maxStep, Math.abs(W[k] - W[k - 1]) / (lam / 1000));
   }
-  return { amp, W, n, lam, rmsW, pvW: (pv[1] - pv[0]) / (lam / 1000), maxStep, transmitted: passed / inPupil };
+  return { amp, W, n, lam, rmsW, pvW: (hi - lo) / (lam / 1000), maxStep, transmitted: passed / inPupil, pupil: map.extent };
+}
+
+// Least-squares quartic map from direction-cosine pupil coordinates (a, b) to stop coordinates
+// (px, py), with its partial derivatives. pts = [[a, b, px, py], …]. Falls back to the identity.
+function pupilMap(pts) {
+  const terms = [];
+  for (let i = 0; i <= 4; i++) for (let j = 0; i + j <= 4; j++) terms.push([i, j]);
+  const T = terms.length, A = terms.map(() => new Array(T).fill(0)), bx = new Array(T).fill(0), by = new Array(T).fill(0);
+  let rmax = 0, ext = [Infinity, -Infinity, Infinity, -Infinity];
+  for (const [a, b, px, py] of pts) {
+    const f = terms.map(([i, j]) => a ** i * b ** j);
+    for (let u = 0; u < T; u++) {
+      bx[u] += f[u] * px; by[u] += f[u] * py;
+      for (let w = 0; w < T; w++) A[u][w] += f[u] * f[w];
+    }
+    rmax = Math.max(rmax, Math.hypot(a, b));
+    ext = [Math.min(ext[0], a), Math.max(ext[1], a), Math.min(ext[2], b), Math.max(ext[3], b)];
+  }
+  const cx = pts.length > 2 * T ? solve(A, bx) : null, cy = cx && solve(A, by);
+  const extent = { a: ext[1] - ext[0], b: ext[3] - ext[2] };
+  if (!cx || !cy) return { at: (a, b, m) => m.set([a, b, 1, 0, 0, 1]), J0: 1, rmax: 2, extent };
+  const P = new Float64Array(6), Q = new Float64Array(6);
+  // m = [px, py, ∂px/∂a, ∂px/∂b, ∂py/∂a, ∂py/∂b]
+  const at = (a, b, m) => {
+    P[0] = Q[0] = 1;
+    for (let e = 1; e <= 5; e++) { P[e] = P[e - 1] * a; Q[e] = Q[e - 1] * b; }
+    m.fill(0);
+    for (let u = 0; u < T; u++) {
+      const i = terms[u][0], j = terms[u][1], mo = P[i] * Q[j];
+      const ma = i ? i * P[i - 1] * Q[j] : 0, mb = j ? j * P[i] * Q[j - 1] : 0;
+      m[0] += cx[u] * mo; m[1] += cy[u] * mo; m[2] += cx[u] * ma; m[3] += cx[u] * mb; m[4] += cy[u] * ma; m[5] += cy[u] * mb;
+    }
+  };
+  const c = new Float64Array(6);
+  at(0, 0, c);
+  return { at, J0: c[2] * c[5] - c[3] * c[4], rmax: rmax * 1.08, extent };
 }
 
 // MTF across the field of a traced lens: for each field angle, OTF = FFT(PSF of the traced,

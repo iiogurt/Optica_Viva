@@ -45,8 +45,8 @@ export function residuals(lens, cfg) {
 }
 const merit = (r) => Math.sqrt(r.reduce((s, v) => s + v * v, 0) / r.length);
 
-// Solve (A + μ diag A) x = b with Gaussian elimination (small systems)
-function solve(A, b) {
+// Solve A x = b by Gaussian elimination with partial pivoting (small systems)
+export function solve(A, b) {
   const n = b.length, M = A.map((row, i) => [...row, b[i]]);
   for (let i = 0; i < n; i++) {
     let p = i; for (let j = i + 1; j < n; j++) if (Math.abs(M[j][i]) > Math.abs(M[p][i])) p = j;

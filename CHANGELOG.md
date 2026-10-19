@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Fixed
+- Ray tracer PSF and MTF across the field: the pupil is now sampled in the direction cosines seen from the image point (the coordinates in which the Debye integral is exact), not in stop coordinates. Off axis the pupil is foreshortened tangentially (0.94 at the Cooke triplet's 20° edge) and distorted by pupil aberrations, so the PSF stretches along the field radius; the amplitude carries the Jacobian of the mapping. The stop rim is no longer clipped, so the Cooke's 14° OPD P-V reads 3.60 λ (a dense direct trace gives 3.62 λ) instead of 3.30 λ. Checked against the exact geometry of a flat rear stop to 2·10⁻⁴. The bokeh laboratory's small-disk diffraction test now uses the plano-hyperbolic singlet (no spherical aberration on axis), so that W₀₂₀ is pure defocus, and its tolerances are tighter.
+
 ### Added
 - **Mirrors in the ray tracer**: reflective surfaces (`glass: 'mirror'`, negative-index convention) in the exact tracer, paraxial analysis and Seidel sums, drawn as mirrors in the layout. Three telescopes: the **Hubble Space Telescope** as designed (Ritchey–Chrétien f/24), **Hubble in 1990** with its flawed primary (conic −1.0139), and a **classical Cassegrain** of the same layout. Solving the Seidel sums for zero spherical aberration and coma reproduces Hubble's design conic constants, and the flawed primary's edge comes out 2.2 µm too low, as in the 1990 failure report (`test/mirrors.test.mjs`). The field of view of a telescope is shown in arcminutes.
 
