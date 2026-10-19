@@ -1066,7 +1066,8 @@ Completed and planned milestones are tracked in **[ROADMAP.md](ROADMAP.md)**, to
 | ✅ **v1.15** | Test your own gear, real equipment presets, misconception checks, real images explained |
 | ✅ **v1.16** | Learning platform: guided tours, exercises with checked answers, export, embed mode, installable offline app |
 | ✅ **v1.17** | Lens design in depth: Tessar, Petzval, telephoto, retrofocus and Biogon; mirrors, Hubble and a JWST-style three-mirror anastigmat; exact off-axis diffraction pupil |
-| **v2.0** | Internationalisation, lab plugin API |
+| ✅ **v1.18** | 431-glass SCHOTT, OHARA and CDGM catalogue with a glass-map picker, decenter and tilt tolerancing, interface in German, French and Spanish |
+| **v2.0** | Translated explanations, lab plugin API |
 
 ---
 
