@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Three-mirror anastigmat** in the ray tracer: a Korsch-type telescope with the James Webb Space Telescope's first-order layout (6.5 m, f/20.2), designed for this project. The tertiary radius flattens the field (zero Petzval sum) and the three conics solve S_I = S_II = S_III = 0; the primary conic comes out at −0.99715, close to JWST's specified −0.99666 ± 0.0005. Strehl > 0.8 across ±0.15° at 588 nm (`test/mirrors.test.mjs`). The ray tracer now handles the negative focal length of an erect-image system and shows a flat field's Petzval radius as ∞.
+
 ### Fixed
 - Ray tracer PSF and MTF across the field: the pupil is now sampled in the direction cosines seen from the image point (the coordinates in which the Debye integral is exact), not in stop coordinates. Off axis the pupil is foreshortened tangentially (0.94 at the Cooke triplet's 20° edge) and distorted by pupil aberrations, so the PSF stretches along the field radius; the amplitude carries the Jacobian of the mapping. The stop rim is no longer clipped, so the Cooke's 14° OPD P-V reads 3.60 λ (a dense direct trace gives 3.62 λ) instead of 3.30 λ. Checked against the exact geometry of a flat rear stop to 2·10⁻⁴. The bokeh laboratory's small-disk diffraction test now uses the plano-hyperbolic singlet (no spherical aberration on axis), so that W₀₂₀ is pure defocus, and its tolerances are tighter.
 

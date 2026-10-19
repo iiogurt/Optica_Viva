@@ -324,7 +324,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P1 · M** **Prescription import/export**: JSON, simple `.len`, and a subset of Zemax `.zmx` (SURF, CURV, DISZ, GLAS, CONI, PARM). This follows the RayOptics and Open Optical Designer approach.
 - [x] **P2 · M** **More classic designs** (#113): Tessar, Petzval portrait, telephoto and retrofocus, designed with the built-in optimiser (new `minBfd` back-focus constraint).
 - [x] **P2 · M** **Mirrors in the ray tracer** (#114): reflective surfaces (negative-index convention, Zemax `MIRROR` import); the Hubble Space Telescope as designed and with its 1990 flaw, and a classical Cassegrain.
-- [ ] **P2 · M** A three-mirror anastigmat (Korsch type, as in JWST) and a Biogon-type symmetric wide angle.
+- [x] **P2 · M** **Three-mirror anastigmat** (Korsch type, JWST layout): flat field, conics solved from S_I = S_II = S_III = 0.
+- [ ] **P2 · M** A Biogon-type symmetric wide angle.
 - [x] **P2 · M** **Seidel sums per surface** (S_I–S_V and chromatic C_I, C_II) as bar charts. This shows where each aberration originates.
 - [x] **P2 · M** **Through-field analysis**: sagittal and tangential field curves and real-ray distortion. *The PSF pupil is now vignetted by the clear apertures (editable Semi-Ø), and MTF vs field (S/T at 10 and 30 lp/mm) is plotted. Traced relative illumination remains open.*
 - [x] **P2 · S** **Off-axis pupil shape** in the OPD/PSF path: the pupil is sampled in the direction cosines seen from the image point (Debye), so off-axis PSFs and MTFs include the foreshortened, distorted real exit pupil.

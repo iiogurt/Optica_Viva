@@ -58,3 +58,24 @@ test('Zemax MIRROR surfaces import as mirrors, and validation accepts negative d
   assert.deepEqual(validateLens(lens), []);
   assert.ok(validateLens({ ...lens, surfaces: [{ ...lens.surfaces[0], t: 400 }, lens.surfaces[1]] }).length, 'positive distance after one mirror is rejected');
 });
+
+test('three-mirror anastigmat: JWST first-order layout, flat field, S_I = S_II = S_III = 0', async () => {
+  const L = LENSES.tma, p = paraxial(L);
+  near(Math.abs(p.efl) / 1000, 131.4, 0.01, '|EFL| (m)');
+  near(Math.abs(p.efl) / L.epd, 20.2, 0.02, 'f-number');
+  near(p.petzval * 15880, 0, 1e-4, 'Petzval sum × R₁ (flat field: Petzval radius > 10⁴ R₁)');
+  // solve the three conics from the Seidel sums (linear in k), as for Hubble
+  const S = (k) => seidel({ ...L, surfaces: L.surfaces.map((s, i) => ({ ...s, k: k[i] })) }).total, T = ['SI', 'SII', 'SIII'];
+  const s0 = S([0, 0, 0]), cols = [0, 1, 2].map((i) => { const s = S([0, 1, 2].map((j) => +(i === j))); return T.map((t) => s[t] - s0[t]); });
+  const A = T.map((t, r) => [0, 1, 2].map((c) => cols[c][r])), b = T.map((t) => -s0[t]);
+  const det = (M) => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+  const k = [0, 1, 2].map((c) => det(A.map((row, r) => row.map((v, cc) => (cc === c ? b[r] : v)))) / det(A));
+  L.surfaces.forEach((s, i) => near(k[i], s.k, 1e-6, `conic ${i + 1}`));
+  near(k[0], -0.99666, 0.0006, 'primary conic vs the JWST specification −0.99666 ± 0.0005 (Stahl 2013)');
+  // real rays: diffraction-limited over the whole ±0.15° field, even at 588 nm
+  const { TASKS } = await import('../js/lib/tasks.js');
+  for (const th of [0, 0.1, 0.15]) {
+    const r = TASKS.lensPSF({ lens: L, theta: th, zImg: p.zImage, N: Math.abs(p.efl) / L.epd }).result;
+    assert.ok(r.strehl > 0.8, `Strehl at ${th}°: ${r.strehl}`);
+  }
+});
