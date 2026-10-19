@@ -8,15 +8,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [1.19.0] - 2026-10-19
 
-### Changed
-- **Seeing animation off the main thread**: the frozen-flow and adaptive-optics simulation (`js/lib/seeing.js`) runs as a session in a compute worker, which streams display-ready frames (PSF crops, residual pupil, screen) back one request at a time, so a slow machine shows fewer frames instead of freezing. The longest freeze on a Raspberry Pi 4 fell from 1.1 s to 0.22 s.
-- **Faster, freeze-free ray-cast laboratories on slow machines**: the projection, tilt–shift, perspective, depth-of-field and gravitational-lensing renders run in parallel row bands on a pool of up to four compute workers (`runOn`, `parallel`, `rowBands` in `js/lib/compute.js`), with their scenes moved to pure modules (`scenes.js`, `dofphoto.js`, `projection.js`, `lensing.js`, `perspective.js`). The tilt–shift town's depth map and blur stack are computed once per focal length and kept in a worker, so tilt, focus and aperture only re-blend. On a Raspberry Pi 4 the median main-thread freeze while dragging a slider fell from 3.2 s to 0.12 s (tilt–shift), 1.1 s to 0.27 s (depth of field), 0.94 s to 0.12 s (projection), 0.92 s to 0.10 s (lensing) and 0.54 s to 0.10 s (perspective).
-- Live-calculation equations are typeset 80 ms after the last change, so dragging a slider no longer re-runs KaTeX (60–90 ms on the Pi) on every step.
-- The tilt–shift toy town is laid out with the shared seeded generator (`js/lib/random.js`) instead of a local LCG, so its houses and trees moved.
-- `scripts/lib/browser.mjs` exposes `cdp()` for raw DevTools Protocol calls (CPU profiles).
+Every control in three more languages, and no more frozen pages on slow machines: the ray-cast laboratories render in parallel on a pool of workers and the seeing animation streams from one.
 
 ### Added
 - **Controls and readouts in German, French and Spanish**: `controls()`, `readouts()`, `stage()` and `liveCalc()` translate their labels, option texts, hints, readout names, figure captions and titles themselves, so every laboratory's control panel and results are translated (988 new strings per language). `test/lib/strings.mjs` finds these strings in the source (complete literals only; labels built from a literal and a number stay English) and `test/i18n.test.mjs` requires every locale to translate them.
+
+### Changed
+- **Faster, freeze-free ray-cast laboratories on slow machines**: the projection, tilt–shift, perspective, depth-of-field and gravitational-lensing renders run in parallel row bands on a pool of up to four compute workers (`runOn`, `parallel`, `rowBands` in `js/lib/compute.js`), with their scenes moved to pure modules (`scenes.js`, `dofphoto.js`, `projection.js`, `lensing.js`, `perspective.js`). The tilt–shift town's depth map and blur stack are computed once per focal length and kept in a worker, so tilt, focus and aperture only re-blend. On a Raspberry Pi 4 the median main-thread freeze while dragging a slider fell from 3.2 s to 0.12 s (tilt–shift), 1.1 s to 0.27 s (depth of field), 0.94 s to 0.12 s (projection), 0.92 s to 0.10 s (lensing) and 0.54 s to 0.10 s (perspective).
+- **Seeing animation off the main thread**: the frozen-flow and adaptive-optics simulation (`js/lib/seeing.js`) runs as a session in a compute worker, which streams display-ready frames (PSF crops, residual pupil, screen) back one request at a time, so a slow machine shows fewer frames instead of freezing. The longest freeze on a Raspberry Pi 4 fell from 1.1 s to 0.22 s.
+- Live-calculation equations are typeset 80 ms after the last change, so dragging a slider no longer re-runs KaTeX (60–90 ms on the Pi) on every step.
+- The tilt–shift toy town is laid out with the shared seeded generator (`js/lib/random.js`) instead of a local LCG, so its houses and trees moved.
+- `scripts/lib/browser.mjs` exposes `cdp()` for raw DevTools Protocol calls (CPU profiles).
 
 ## [1.18.0] - 2026-10-19
 
