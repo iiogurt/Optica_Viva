@@ -5,6 +5,7 @@ import { h, setControl } from './ui.js';
 import { uniform } from './random.js';
 import { hyperfocal, dofLimits } from './optics.js';
 import { SENSORS, diag } from './sensors.js';
+import { t } from './i18n.js';
 
 const pick = (u, a) => a[Math.floor(u() * a.length)];
 const C_FF = diag(SENSORS.ff) / 1500; // mm, the dof laboratory's default criterion
@@ -94,14 +95,14 @@ export function check(ex, v, typed) {
 
 function card(ex, seed0) {
   let seed = seed0, v, tries = 0;
-  const q = h('p.ex-q'), input = h('input.ex-in', { type: 'text', inputmode: 'decimal', autocomplete: 'off', 'aria-label': 'Your answer' });
+  const q = h('p.ex-q'), input = h('input.ex-in', { type: 'text', inputmode: 'decimal', autocomplete: 'off', 'aria-label': t('Your answer') });
   const verdict = h('p.ex-verdict', { 'aria-live': 'polite' }), sol = h('p.ex-sol');
-  const show = h('button.tour-btn', { type: 'button', onClick: () => { sol.textContent = ex.solution(v); sol.hidden = false; } }, 'Show solution');
-  const inLab = h('button.tour-btn', { type: 'button', title: 'Set the controls above so the readouts show this case', onClick: () => {
+  const show = h('button.tour-btn', { type: 'button', onClick: () => { sol.textContent = ex.solution(v); sol.hidden = false; } }, t('Show solution'));
+  const inLab = h('button.tour-btn', { type: 'button', title: t('Set the controls above so the readouts show this case'), onClick: () => {
     const s = ex.set(v);
     for (const [k, x] of Object.entries(s || {})) if (!setControl(k, x)) console.error(`exercise ${ex.id}: no control "${k}"`);
     (document.querySelector('figure.stage') || document.querySelector('.controls'))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } }, 'Set it up in the lab');
+  } }, t('Set it up in the lab'));
   function fresh() {
     v = ex.gen(uniform(seed));
     tries = 0; q.textContent = ex.q(v); input.value = ''; verdict.textContent = ''; verdict.className = 'ex-verdict';
@@ -110,23 +111,23 @@ function card(ex, seed0) {
   const submit = (e) => {
     e.preventDefault();
     const ok = check(ex, v, input.value);
-    if (ok === null) { verdict.textContent = 'Type a number.'; return; }
+    if (ok === null) { verdict.textContent = t('Type a number.'); return; }
     tries++;
     verdict.className = 'ex-verdict ' + (ok ? 'right' : 'wrong');
-    verdict.textContent = ok ? `Right: ${num(ex.answer(v), 4)} ${ex.unit}.` : tries === 1 ? 'Not yet. Hint: ' + ex.hint : 'Not yet. Try again, or look at the solution.';
+    verdict.textContent = ok ? t('Right: {value} {unit}.', { value: num(ex.answer(v), 4), unit: ex.unit }) : tries === 1 ? t('Not yet. Hint:') + ' ' + ex.hint : t('Not yet. Try again, or look at the solution.');
   };
   fresh();
   return h('div.ex', {}, h('h3', {}, ex.title), q,
-    h('form.ex-form', { onSubmit: submit }, input, h('span.ex-unit', {}, ex.unit), h('button.tour-btn.primary', { type: 'submit' }, 'Check')),
-    verdict, h('div.ex-tools', {}, show, inLab, h('button.tour-btn', { type: 'button', onClick: () => { seed = (seed + 0x9e3779b9) >>> 0; fresh(); } }, 'New numbers')), sol);
+    h('form.ex-form', { onSubmit: submit }, input, h('span.ex-unit', {}, ex.unit), h('button.tour-btn.primary', { type: 'submit' }, t('Check'))),
+    verdict, h('div.ex-tools', {}, show, inLab, h('button.tour-btn', { type: 'button', onClick: () => { seed = (seed + 0x9e3779b9) >>> 0; fresh(); } }, t('New numbers'))), sol);
 }
 
 // Called by the router after a page mounts; inserts the exercises before the rule of thumb.
 export function exercises(page, id, seed = (Date.now() >>> 0)) {
   const list = EXERCISES[id];
   if (!list) return;
-  const el = h('section.block.exercises', { 'aria-label': 'Exercises' }, h('h2', {}, 'Try it yourself'),
-    h('p.note', {}, 'Work it out on paper, type your answer, then check it in the laboratory.'),
+  const el = h('section.block.exercises', { 'aria-label': t('Exercises') }, h('h2', {}, t('Try it yourself')),
+    h('p.note', {}, t('Work it out on paper, type your answer, then check it in the laboratory.')),
     h('div.ex-grid', {}, ...list.map((ex, i) => card(ex, seed + i * 7919))));
   const before = page.querySelector('.rung-rule');
   if (before) before.before(el); else page.append(el);

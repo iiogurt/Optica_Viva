@@ -1,7 +1,8 @@
 // Page scaffolding shared by every module.
 import { h, prose, section, copyLink, download, allSettings, embedCode } from './ui.js';
+import { t, N_ } from './i18n.js';
 
-const TAG = { photo: 'Photography', video: 'Cinematography', space: 'Astronomy & space' };
+const TAG = { photo: N_('Photography'), video: N_('Cinematography'), space: N_('Astronomy & space') };
 
 // The page's settings (every control, plus extra URL state) with the page, time and app version, as JSON.
 export async function settingsJSON(meta) {
@@ -21,11 +22,11 @@ export function header(meta) {
     h('div.eyebrow', {}, meta.group),
     h('h1', {}, meta.title),
     meta.lede ? h('p.lede', {}, meta.lede) : null,
-    h('div.tags', {}, ...(meta.domains || []).map((d) => h('span.tag.' + d, {}, TAG[d] || d)),
-      h('button.tag.share', { type: 'button', title: 'Copy a link to this page with the current settings', onClick: (e) => copyLink(e.currentTarget.querySelector('span')),
-        html: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span>Copy link</span>' })),
-      h('button.tag.share', { type: 'button', title: 'Save the current settings of this page as a JSON file', onClick: () => saveSettings(meta) }, 'Save settings'),
-      h('button.tag.share.embed-code', { type: 'button', title: 'Copy HTML that embeds this laboratory, with its current settings, in a course page or blog', onClick: (e) => copyLink(e.currentTarget, embedCode(location.href, meta.title), 'Embed code copied ✓') }, 'Embed'),
+    h('div.tags', {}, ...(meta.domains || []).map((d) => h('span.tag.' + d, {}, t(TAG[d] || d))),
+      h('button.tag.share', { type: 'button', title: t('Copy a link to this page with the current settings'), onClick: (e) => copyLink(e.currentTarget.querySelector('span')),
+        html: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span>' + t('Copy link') + '</span>' })),
+      h('button.tag.share', { type: 'button', title: t('Save the current settings of this page as a JSON file'), onClick: () => saveSettings(meta) }, t('Save settings')),
+      h('button.tag.share.embed-code', { type: 'button', title: t('Copy HTML that embeds this laboratory, with its current settings, in a course page or blog'), onClick: (e) => copyLink(e.currentTarget, embedCode(location.href, meta.title), t('Embed code copied ✓')) }, t('Embed')),
   );
 }
 
@@ -37,7 +38,7 @@ export function lab(main, side, wide = false) {
   const card = side.find((n) => n.querySelector && n.querySelector('.controls'));
   if (card) {
     card.classList.add('ctl-sheet');
-    const handle = h('button.sheet-handle', { type: 'button', 'aria-expanded': 'false' }, h('span', {}, '⚙ Controls'), h('span.chev', { 'aria-hidden': 'true' }, '▲'));
+    const handle = h('button.sheet-handle', { type: 'button', 'aria-expanded': 'false' }, h('span', {}, t('⚙ Controls')), h('span.chev', { 'aria-hidden': 'true' }, '▲'));
     handle.addEventListener('click', () => {
       const open = card.classList.toggle('open');
       handle.setAttribute('aria-expanded', String(open));
@@ -55,14 +56,14 @@ export function lab(main, side, wide = false) {
 // simulation, ② a rule of thumb that says where it stops working, ③ the full model, ④ references.
 // Every rung is visible; ladder() adds the numbers and a strip to jump between them.
 export function idea(html, tries = []) {
-  return h('section.block.rung-idea', { 'data-rung': 'idea' }, h('h2', {}, 'The idea'),
+  return h('section.block.rung-idea', { 'data-rung': 'idea' }, h('h2', {}, t('The idea')),
     h('div.idea', {}, prose(html, 'idea-text'),
-      tries.length ? h('div.try', {}, h('div.calc-title', {}, 'Try it'), h('ol', {}, ...tries.map((t) => h('li', { html: t })))) : null));
+      tries.length ? h('div.try', {}, h('div.calc-title', {}, t('Try it')), h('ol', {}, ...tries.map((t) => h('li', { html: t })))) : null));
 }
 
 export function rule(html, limits) {
-  return h('section.block.rung-rule', { 'data-rung': 'rule' }, h('h2', {}, 'Rule of thumb'),
-    prose(html + (limits ? `<div class="callout blue"><strong>Where it stops working.</strong> ${limits}</div>` : '')));
+  return h('section.block.rung-rule', { 'data-rung': 'rule' }, h('h2', {}, t('Rule of thumb')),
+    prose(html + (limits ? `<div class="callout blue"><strong>${t('Where it stops working.')}</strong> ${limits}</div>` : '')));
 }
 
 export function theory(title, html) {
@@ -72,12 +73,12 @@ export function theory(title, html) {
 }
 
 export function references(items) {
-  const el = section('References', h('ol.refs', {}, ...items.map((r) => h('li', { html: r }))));
+  const el = section(t('References'), h('ol.refs', {}, ...items.map((r) => h('li', { html: r }))));
   el.dataset.rung = 'refs';
   return el;
 }
 
-const RUNGS = { idea: 'The idea', sim: 'Simulation', rule: 'Rule of thumb', full: 'Full model', refs: 'References' };
+const RUNGS = { idea: N_('The idea'), sim: N_('Simulation'), rule: N_('Rule of thumb'), full: N_('Full model'), refs: N_('References') };
 // Numbers the rungs and inserts the jump strip under the header. Returns a cleanup function.
 export function ladder(page) {
   const seen = new Set();
@@ -89,11 +90,11 @@ export function ladder(page) {
     const h2 = el.querySelector(':scope > h2');
     if (num && h2) h2.prepend(h('span.rung-n', { 'aria-hidden': 'true' }, num));
     const b = h('button', { type: 'button', onClick: () => el.scrollIntoView({ behavior: 'smooth', block: 'start' }) },
-      num ? h('span.rung-n', { 'aria-hidden': 'true' }, num) : h('span.rung-n.sim', { 'aria-hidden': 'true' }, '▶'), RUNGS[k]);
+      num ? h('span.rung-n', { 'aria-hidden': 'true' }, num) : h('span.rung-n.sim', { 'aria-hidden': 'true' }, '▶'), t(RUNGS[k]));
     return { el, b };
   });
-  const nav = h('nav.ladder', { 'aria-label': 'From the simple idea to the full model' },
-    h('span.ladder-k', {}, 'Simple → exact'), ...items.map((i) => i.b));
+  const nav = h('nav.ladder', { 'aria-label': t('From the simple idea to the full model') },
+    h('span.ladder-k', {}, t('Simple → exact')), ...items.map((i) => i.b));
   page.querySelector('.mod-head')?.after(nav);
   if (typeof IntersectionObserver !== 'function') return () => {};
   const vis = new Map();
@@ -109,7 +110,7 @@ export function ladder(page) {
 // Live-calculation card: returns {el, set(tex)}
 import { setTex } from './ui.js';
 // say(html) puts the result in plain words above the equations.
-export function liveCalc(title = 'Live calculation') {
+export function liveCalc(title = t('Live calculation')) {
   const words = h('p.calc-say'), body = h('div');
   const el = h('div.card.calc', {}, h('div.calc-title', {}, title), words, body);
   return { el, set: (src) => setTex(body, src, true), say: (html) => { words.innerHTML = html; } };
@@ -121,7 +122,7 @@ export function liveCalc(title = 'Live calculation') {
 export function missionStep(n, title, lab, labTitle) {
   const answer = h('div.mstep-answer'), why = h('p.mstep-why'), eq = h('div.mstep-eq');
   const el = h('section.mstep', {}, h('div.mstep-head', {}, h('span.mstep-n', { 'aria-hidden': 'true' }, String(n)), h('h3', {}, title)),
-    answer, why, eq, lab ? h('a.mstep-lab', { href: '#/' + lab }, 'Explore: ' + labTitle + ' →') : null);
+    answer, why, eq, lab ? h('a.mstep-lab', { href: '#/' + lab }, t('Explore: {lab} →', { lab: t(labTitle) })) : null);
   return { el, set: ({ answer: a, why: w, tex: t }) => { answer.innerHTML = a; why.innerHTML = w; if (t) setTex(eq, t, true); else eq.replaceChildren(); } };
 }
 
@@ -135,7 +136,7 @@ export function misconception(page, id, checks) {
   c.options.forEach((o, i) => list.append(h('button.check-option', { type: 'button', onClick: (e) => {
     list.querySelectorAll('button').forEach((b, j) => { b.disabled = true; b.classList.toggle('right', j === c.answer); });
     if (i !== c.answer) e.currentTarget.classList.add('wrong');
-    why.innerHTML = (i === c.answer ? '<strong>Right.</strong> ' : '<strong>Not quite.</strong> ') + c.why;
+    why.innerHTML = `<strong>${i === c.answer ? t('Right.') : t('Not quite.')}</strong> ` + c.why;
   } }, o)));
-  idea.after(h('section.block.check', { 'aria-label': 'Check your intuition' }, h('div.check-k', {}, 'Check your intuition'), h('p.check-q', {}, c.q), list, why));
+  idea.after(h('section.block.check', { 'aria-label': t('Check your intuition') }, h('div.check-k', {}, t('Check your intuition')), h('p.check-q', {}, c.q), list, why));
 }

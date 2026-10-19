@@ -1,4 +1,5 @@
 // Small DOM toolkit: element builder, controls, responsive hi-DPI canvases, KaTeX helpers.
+import { t } from './i18n.js';
 
 export function h(tag, props = {}, ...children) {
   const [name, ...classes] = tag.split('.');
@@ -136,8 +137,8 @@ export function controls(spec, onChange) {
       row = h('label.ctl.ctl-range', {}, h('span.ctl-label', {}, s.label, out), input);
     } else if (s.type === 'select') {
       const sel = h('select', {}, ...s.options.map((o) => {
-        const [v, t] = Array.isArray(o) ? o : [o, o];
-        return h('option', { value: v, selected: v === state[key] }, t);
+        const [v, text] = Array.isArray(o) ? o : [o, o];
+        return h('option', { value: v, selected: v === state[key] }, text);
       }));
       sel.addEventListener('change', () => { state[key] = sel.value; fire(); });
       api.set[key] = (v) => { state[key] = v; sel.value = v; writeUrlSoon(); };
@@ -149,8 +150,8 @@ export function controls(spec, onChange) {
       row = h('label.ctl.ctl-toggle', {}, cb, h('span.switch'), h('span.ctl-label', {}, s.label));
     } else if (s.type === 'seg') {
       const btns = s.options.map((o) => {
-        const [v, t] = Array.isArray(o) ? o : [o, o];
-        const b = h('button', { type: 'button', class: v === state[key] ? 'on' : '', 'aria-pressed': String(v === state[key]) }, t);
+        const [v, text] = Array.isArray(o) ? o : [o, o];
+        const b = h('button', { type: 'button', class: v === state[key] ? 'on' : '', 'aria-pressed': String(v === state[key]) }, text);
         b.addEventListener('click', () => { state[key] = v; btns.forEach((x) => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); }); b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); fire(); });
         b.dataset.v = v;
         return b;
@@ -177,16 +178,16 @@ export function rafThrottle(fn) {
 }
 
 // Copy the current URL (with its state), or other text, to the clipboard.
-export async function copyLink(btn, url = location.href, done = 'Link copied ✓') {
+export async function copyLink(btn, url = location.href, done = t('Link copied ✓')) {
   try { await navigator.clipboard.writeText(url); }
-  catch { const t = h('textarea', { style: { position: 'fixed', opacity: '0' } }, url); document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); }
+  catch { const ta = h('textarea', { style: { position: 'fixed', opacity: '0' } }, url); document.body.append(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
   const old = btn.textContent; btn.textContent = done; setTimeout(() => (btn.textContent = old), 1600);
 }
 
 // Defer heavy computations so slider dragging stays fluid.
 export function debounce(fn, ms = 60) {
-  let t;
-  return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+  let timer;
+  return (...a) => { clearTimeout(timer); timer = setTimeout(() => fn(...a), ms); };
 }
 
 // ── Canvas stage: responsive, hi-DPI, aspect-locked ──────────────────────────────────────
@@ -194,7 +195,7 @@ export const reducedMotion = () => typeof matchMedia === 'function' && matchMedi
 
 export function stage({ aspect = 16 / 9, draw, minH = 160, maxH = Infinity, label, cls = '' }) {
   // canvases are images to assistive technology; the numeric results live in the readouts
-  const canvas = h('canvas', { role: 'img', 'aria-label': label || 'Chart' });
+  const canvas = h('canvas', { role: 'img', 'aria-label': label || t('Chart') });
   const wrap = h('figure.stage' + (cls ? '.' + cls : ''), {}, canvas, label ? h('figcaption', {}, label) : null);
   wrap.append(exportTools(canvas, label));
   const ctx = canvas.getContext('2d');
@@ -235,7 +236,7 @@ export function imageCanvas(w, hgt) {
 
 // Readout grid: rows = [[label, valueNode|string]]
 export function readouts(rows) {
-  return h('dl.readouts', { role: 'group', 'aria-label': 'Results' }, ...rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)]));
+  return h('dl.readouts', { role: 'group', 'aria-label': t('Results') }, ...rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)]));
 }
 
 // Section scaffold shared by all modules.
@@ -255,7 +256,7 @@ export const theme = () => {
 // Every stage gets small buttons to save its picture as PNG and, when it holds a chart, the
 // plotted data as CSV. File names start with the page id.
 const pageId = () => (location.hash.replace(/^#\/?/, '').split('?')[0] || 'home');
-const slug = (t) => (t || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+const slug = (s) => (s || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
 export function download(blob, name) {
   const a = h('a', { href: URL.createObjectURL(blob), download: name });
   document.body.append(a); a.click(); a.remove();
@@ -270,13 +271,13 @@ export function plotsToCSV(plots) {
 }
 function exportTools(canvas, label) {
   const name = () => `${pageId()}-${slug(label || canvas._plots?.[0]?.title) || 'figure'}`;
-  const png = h('button.st-btn', { type: 'button', title: 'Save this picture as PNG', onClick: () => {
+  const png = h('button.st-btn', { type: 'button', title: t('Save this picture as PNG'), onClick: () => {
     // paint the page background behind transparent stages
     const c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height;
     const x = c.getContext('2d'); x.fillStyle = getComputedStyle(document.body).backgroundColor || '#07080d'; x.fillRect(0, 0, c.width, c.height); x.drawImage(canvas, 0, 0);
     c.toBlob((b) => b && download(b, name() + '.png'), 'image/png');
   } }, 'PNG');
-  const csv = h('button.st-btn', { type: 'button', title: 'Save the chart data as CSV', onClick: () => download(new Blob([plotsToCSV(canvas._plots || [])], { type: 'text/csv' }), name() + '.csv') }, 'CSV');
+  const csv = h('button.st-btn', { type: 'button', title: t('Save the chart data as CSV'), onClick: () => download(new Blob([plotsToCSV(canvas._plots || [])], { type: 'text/csv' }), name() + '.csv') }, 'CSV');
   const box = h('div.stage-tools', {}, png, csv);
   // show the CSV button only when the canvas holds a chart
   const refresh = () => { csv.hidden = !(canvas._plots && canvas._plots.length); };
