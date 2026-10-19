@@ -168,6 +168,20 @@ export const LENSES = {
       { R: -1358, k: -1.4689008, t: 6406.071, glass: 'mirror' },
     ],
   },
+  'tma': {
+    // A Korsch-type three-mirror anastigmat with the first-order layout of the James Webb Space
+    // Telescope (6.5 m, f/20.2, primary R = 15.88 m), designed for this project and unfolded (no
+    // fold mirror, on-axis field). The tertiary radius makes the Petzval sum zero
+    // (1/R₁ − 1/R₂ + 1/R₃ = 0, a flat field); the three conics solve S_I = S_II = S_III = 0.
+    // An intermediate image forms just behind the primary; the final image is erect.
+    name: 'Three-mirror anastigmat (Korsch type, JWST layout): 6.5 m f/20',
+    epd: 6500, field: 0.15,
+    surfaces: [
+      { R: -15880, k: -0.9971452, t: -7169, glass: 'mirror', stop: true },
+      { R: -1700, k: -1.4131293, t: 9866.36, glass: 'mirror' },
+      { R: -1903.81, k: -0.778158, t: -2416.026, glass: 'mirror' },
+    ],
+  },
 };
 
 // ── Geometry helpers ────────────────────────────────────────────────────────────────────

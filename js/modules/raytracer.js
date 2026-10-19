@@ -143,14 +143,14 @@ export default function mount(root, meta) {
   function update() {
     build();
     const m = model, pd = m.pd;
-    const N = m.pd.efl / m.lens.epd;
+    const N = Math.abs(m.pd.efl) / m.lens.epd;
     const airy = 1.22 * 0.58756 * N;
     ro.replaceChildren(readouts([
       ['Effective focal length', fmt(pd.efl, 5) + ' mm'],
       ['Back focal distance', fmt(pd.bfl, 5) + ' mm'],
       ['Working f-number', 'f/' + N.toFixed(2)],
       ['Entrance pupil (from S1)', fmt(pd.zEP, 4) + ' mm'],
-      ['Petzval radius', fmt(-1 / pd.petzval, 4) + ' mm'],
+      ['Petzval radius', Math.abs(pd.petzval) < 1e-8 ? '∞ (flat field)' : fmt(-1 / pd.petzval, 4) + ' mm'],
       ['Distortion at full field', fmt(m.distortion, 3) + ' %'],
       ['RMS spot radius', fmt(m.rms, 3) + ' µm'],
       ['GEO spot radius', fmt(m.geo, 3) + ' µm'],
@@ -160,11 +160,11 @@ export default function mount(root, meta) {
     const s0 = m.lens.surfaces[0];
     const n1 = mediaIndices(m.lens, 587.56)[0]; // −1 after a mirror
     const off = ctl.state.field * (m.lens.field || 1), offTxt = off < 1 && off > 0 ? `${(off * 60).toFixed(1)}′` : `${off.toFixed(1)}°`;
-    calc.say(`A ${fmt(pd.efl, 3)} mm ${hasMirrors(m.lens) ? 'telescope' : 'lens'} at f/${N.toFixed(1)}: rays from a point ${offTxt} off axis land in a spot of <strong>${fmt(m.rms, 3)} µm</strong> RMS radius, `
+    calc.say(`A ${fmt(Math.abs(pd.efl), 3)} mm ${hasMirrors(m.lens) ? 'telescope' : 'lens'} at f/${N.toFixed(1)}: rays from a point ${offTxt} off axis land in a spot of <strong>${fmt(m.rms, 3)} µm</strong> RMS radius, `
       + (m.rms > airy ? `${fmt(m.rms / airy, 2)} times the Airy radius (${fmt(airy, 2)} µm), so aberrations, not diffraction, limit the sharpness.` : `inside the Airy radius (${fmt(airy, 2)} µm), so it is diffraction-limited here.`));
     calc.set(String.raw`\begin{aligned}
     &f' = -1/M_{21} = ${texNum(pd.efl, 5)}\ \text{mm}\\
-    &N = f'/D_{EP} = ${texNum(pd.efl, 4)}/${texNum(m.lens.epd, 3)} = ${texNum(N, 3)}\\
+    &N = |f'|/D_{EP} = ${texNum(Math.abs(pd.efl), 4)}/${texNum(m.lens.epd, 3)} = ${texNum(N, 3)}\\
     &\phi_1 = (n'-n)c_1 = \tfrac{${texNum(n1, 5)} - 1}{${isFinite(s0.R) ? texNum(s0.R, 5) : '\\infty'}} = ${texNum((n1 - 1) / s0.R, 4)}\,\text{mm}^{-1}\\
     &r_\text{Airy} = 1.22\lambda N = ${texNum(airy, 3)}\ \mu\text{m}\\
     &\textstyle\sum \phi_k/(n_k n_k') = ${texNum(pd.petzval, 4)}\,\text{mm}^{-1}
@@ -329,7 +329,7 @@ export default function mount(root, meta) {
   function drawSpot(ctx, w, hh) {
     if (!model) return;
     const m = model;
-    const N = m.pd.efl / m.lens.epd;
+    const N = Math.abs(m.pd.efl) / m.lens.epd;
     const airy = 1.22 * 0.58756 * N;
     const R = Math.max(m.geo, airy) * 1.25;
     const sc = (Math.min(w, hh) / 2 - 16) / R;
@@ -455,13 +455,13 @@ export default function mount(root, meta) {
   let mtfData = null;
   const computeMTF = debounce(() => {
     const m = model; if (!m) return;
-    mtfJob('lensMTF', { lens: { ...m.lens, field: m.base.field }, sd: m.sd, zImg: m.zImg, N: m.pd.efl / m.lens.epd, efl: m.pd.efl, freqs: [10, 30], fields: 7 })
+    mtfJob('lensMTF', { lens: { ...m.lens, field: m.base.field }, sd: m.sd, zImg: m.zImg, N: Math.abs(m.pd.efl) / m.lens.epd, efl: Math.abs(m.pd.efl), freqs: [10, 30], fields: 7 })
       .then((r) => { mtfData = r; mtfSt.redraw(); }).catch(console.error);
   }, 250);
   function drawMTFField(ctx, w, hh) {
     if (!mtfData || !model) { ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '12px Inter, sans-serif'; ctx.fillText('computing MTF across the field…', 20, 30); return; }
     const rows = mtfData.rows, hmax = Math.max(1, ...rows.map((r) => r.h));
-    const N = model.pd.efl / model.lens.epd, nuc = 1 / (587.56e-6 * N);
+    const N = Math.abs(model.pd.efl) / model.lens.epd, nuc = 1 / (587.56e-6 * N);
     const dl = (nu) => mtfDiffraction(Math.min(1, nu / nuc));
     plot(ctx, w, hh, {
       title: `MTF across the field at the current image plane (588 nm, f/${N.toFixed(1)}): sagittal solid, tangential dashed`,
@@ -480,7 +480,7 @@ export default function mount(root, meta) {
   const psfJob = latest('lensPSF');
   const computePSF = debounce(() => {
     const m = model; if (!m) return;
-    psfJob('lensPSF', { lens: m.lens, sd: m.sd, theta: m.theta, zImg: m.zImg, N: m.pd.efl / m.lens.epd })
+    psfJob('lensPSF', { lens: m.lens, sd: m.sd, theta: m.theta, zImg: m.zImg, N: Math.abs(m.pd.efl) / m.lens.epd })
       .then((r) => { psfData = r; psfStage.redraw(); }).catch(console.error);
   }, 120);
 
@@ -710,6 +710,9 @@ export default function mount(root, meta) {
 <h3>Mirrors and the Hubble Space Telescope</h3>
 <p>A mirror is traced with the law of reflection, \(\hat d' = \hat d - 2(\hat d\cdot\hat n)\hat n\). Bookkeeping uses the usual negative-index convention: after a reflection light travels toward \(-z\), distances are negative and the medium's index changes sign, so a mirror of radius \(R\) has power \(\phi = (n'-n)/R = -2/R\) and the paraxial matrices, Seidel sums and optical path need no special cases. Mirrors have no chromatic aberration.</p>
 <p>The <strong>Hubble Space Telescope</strong> entries use its published design: a primary of radius \(-11\,040\) mm and a secondary of \(-1\,358\) mm, 4 906.071 mm apart, focusing 1 500 mm behind the primary at f/24 (\(f = 57.6\) m). A paraboloidal primary (conic \(K=-1\)) with a secondary that cancels spherical aberration is a <strong>classical Cassegrain</strong>: perfect on axis, with the coma of the paraboloid off axis. Making both mirrors hyperbolic so that spherical aberration and coma vanish together gives the <strong>Ritchey–Chrétien</strong>; solving \(S_I = S_{II} = 0\) from the Seidel sums of this page gives \(K_1 = -1.00230\) and \(K_2 = -1.4969\), Hubble's design values (\(-1.0022985\), \(-1.4963\)). The primary was polished to \(K_1 = -1.0139\): its edge is only 2.2 µm too low, yet the edge and centre of the beam focus about 4 cm apart, and a star's image became a halo some 30 times the Airy radius until corrective optics were installed in 1993. The central obstruction by the secondary is not part of this sequential model (see the PSF laboratory).</p>
+<h3>Three mirrors: the anastigmat of JWST</h3>
+<p>Two mirrors have two conic constants, enough to remove spherical aberration and coma but not astigmatism, and their field is curved. A third mirror adds a radius and a conic: the radii can make the Petzval sum vanish, \(1/R_1 - 1/R_2 + 1/R_3 = 0\) for a flat field, and the three conics then solve \(S_I = S_{II} = S_{III} = 0\), a linear system because each conic enters the Seidel sums linearly. Korsch (1977) gave the closed-form solution. The James Webb Space Telescope uses this form, with the field and the pupil off axis so that no mirror blocks the beam and a flat fold mirror sends the light to the instruments.</p>
+<p>The <em>three-mirror anastigmat</em> entry was designed for this project with JWST's first-order layout: a 6.5 m primary of radius 15.88 m, the secondary 7.169 m in front of it, and \(f = 131.4\) m (f/20.2). The secondary forms an intermediate image just behind the primary; the tertiary 2.7 m further back re-images it 0.28 m behind the primary vertex. Solving for the conics gives \(K_1 = -0.99715\), close to the \(-0.99666 \pm 0.0005\) specified for JWST's primary (Stahl 2013); its secondary and tertiary are our own choice, not JWST's. The real-ray Strehl ratio stays above 0.8 over the whole \(\pm 0.15^\circ\) field even at 588 nm, where a Ritchey–Chrétien of the same size would show astigmatism and a curved field. The model is rotationally symmetric and unfolded, so the final image sits inside the incoming beam; the real telescope avoids that with its off-axis field.</p>
 <h3>Domain notes</h3>
 <p><strong>Photography and cinema</strong> lenses are judged across the full field, which is why the Double-Gauss uses a near-symmetric layout to cancel coma, distortion and lateral colour. <strong>Space telescopes</strong> are reflective (no chromatic aberration). Their designs, such as Ritchey–Chrétien (Hubble) and the three-mirror anastigmat (JWST), use conic and aspheric surfaces to remove spherical aberration and coma together.</p>
 </div></div>`));
@@ -717,6 +720,8 @@ export default function mount(root, meta) {
     'W. J. Smith, <i>Modern Optical Engineering</i>, 4th ed., McGraw-Hill (2008): Cooke triplet and Double-Gauss forms.',
     'R. Kingslake, <i>A History of the Photographic Lens</i>, Academic Press (1989): Petzval, Tessar, telephoto and retrofocus.',
     'D. J. Schroeder, <i>Astronomical Optics</i>, 2nd ed., Academic Press (2000): Cassegrain and Ritchey–Chrétien telescopes.',
+    'D. Korsch, “Anastigmatic three-mirror telescope,” <i>Applied Optics</i> 16, 2074–2077 (1977).',
+    'H. P. Stahl, “Testing the James Webb Space Telescope primary mirror,” NASA NTRS 20140008580 (2013): primary conic −0.99666 ± 0.0005.',
     'L. Allen et al., <i>The Hubble Space Telescope Optical Systems Failure Report</i>, NASA TM-103443 (1990).',
     'D. C. O\'Shea, <i>Elements of Modern Optical Design</i>, Wiley (1985): ray-aiming and pupil analysis.',
     'G. H. Spencer &amp; M. V. R. K. Murty, "General ray-tracing procedure", JOSA 52, 672 (1962).',
