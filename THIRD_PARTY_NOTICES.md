@@ -46,6 +46,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Glass Sellmeier coefficients (SCHOTT AG data sheets; Malitson 1965), CIE colorimetric tables, and other constants cited on each laboratory page are factual reference data. Their sources are credited where they are used.
 
+The Biogon prescription in `js/lib/raytrace.js` is Example 2 of L. Bertele, US patent 2,721,499 (1955), an expired patent; the Hubble Space Telescope and JWST values are published design data (credited on the ray-tracer page).
+
 ## Photographs in *Phenomena in the wild* (`img/gallery/`)
 
 Resized and converted to WebP; otherwise unchanged.

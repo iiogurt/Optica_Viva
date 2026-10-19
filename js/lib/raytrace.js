@@ -137,6 +137,24 @@ export const LENSES = {
       { R: -13.1801, t: 39.9996, glass: 'air' },
     ],
   },
+  // Bertele's Biogon (US patent 2,721,499, 1955), Example 2 (f = 100 mm, f/4.5), scaled to the
+  // 38 mm of the Hasselblad Super Wide: nearly symmetric about the stop, thick cemented groups and
+  // negative outer menisci, ±45° with almost no distortion. The patent gives each glass only as
+  // n_d and V_d, so these are model glasses named by their six-digit glass code.
+  'biogon': (() => {
+    const g = (nd, vd) => ({ name: `${Math.round((nd - 1) * 1000)}${Math.round(vd * 10)}`, nd, vd });
+    const s = 0.38, rx = [
+      [109.14, 3.7, g(1.50380, 66.7)], [52.63, 13.2, 'air'], [110.25, 3.7, g(1.48697, 70.3)], [50.72, 35.0, 'air'],
+      [56.24, 29.3, g(1.72050, 50.3)], [25.37, 13.3, g(1.60739, 59.5)], [-194.92, 2.35, 'air'], [Infinity, 2.35, 'air'],
+      [-252.70, 2.8, g(1.56993, 57.5)], [30.59, 23.7, g(1.62500, 53.3)], [-25.51, 18.2, g(1.71966, 29.3)], [-57.38, 39.0, 'air'],
+      [-40.15, 9.8, g(1.64200, 58.1)], [-102.64, 49.36, 'air'],
+    ];
+    return {
+      name: 'Biogon type f/4.5, 38 mm (Bertele, US 2,721,499)',
+      epd: 38 / 4.5, field: 45,
+      surfaces: rx.map(([R, t, glass], i) => ({ R: R * s, t: t * s, glass, ...(i === 7 ? { stop: true } : {}) })),
+    };
+  })(),
   // Two-mirror telescopes. The Hubble Space Telescope's published design: primary R = −11 040 mm,
   // secondary R = −1 358 mm, 4 906.071 mm apart, focus 1 500 mm behind the primary vertex (f/24).
   // Its conic constants make it aplanatic (no spherical aberration, no coma): a Ritchey–Chrétien.
