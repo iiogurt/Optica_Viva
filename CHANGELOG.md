@@ -8,25 +8,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [1.17.0] - 2026-10-19
 
-### Added
-- **Biogon** in the ray tracer, bokeh and panorama laboratories: Bertele's symmetric wide angle (f/4.5, ±45°), Example 2 of US patent 2,721,499 as published, scaled to 38 mm. Its glasses are model glasses (n_d, V_d) named by their six-digit glass code. The prescription reproduces the patent's f = 100 mm to 0.06 %, and the real-ray distortion stays below 0.2 % to 45° (`test/classics.test.mjs`).
-- **Three-mirror anastigmat** in the ray tracer: a Korsch-type telescope with the James Webb Space Telescope's first-order layout (6.5 m, f/20.2), designed for this project. The tertiary radius flattens the field (zero Petzval sum) and the three conics solve S_I = S_II = S_III = 0; the primary conic comes out at −0.99715, close to JWST's specified −0.99666 ± 0.0005. Strehl > 0.8 across ±0.15° at 588 nm (`test/mirrors.test.mjs`). The ray tracer now handles the negative focal length of an erect-image system and shows a flat field's Petzval radius as ∞.
-
-### Fixed
-- Ray tracer PSF and MTF across the field: the pupil is now sampled in the direction cosines seen from the image point (the coordinates in which the Debye integral is exact), not in stop coordinates. Off axis the pupil is foreshortened tangentially (0.94 at the Cooke triplet's 20° edge) and distorted by pupil aberrations, so the PSF stretches along the field radius; the amplitude carries the Jacobian of the mapping. The stop rim is no longer clipped, so the Cooke's 14° OPD P-V reads 3.60 λ (a dense direct trace gives 3.62 λ) instead of 3.30 λ. Checked against the exact geometry of a flat rear stop to 2·10⁻⁴. The bokeh laboratory's small-disk diffraction test now uses the plano-hyperbolic singlet (no spherical aberration on axis), so that W₀₂₀ is pure defocus, and its tolerances are tighter.
-
-### Added
-- **Mirrors in the ray tracer**: reflective surfaces (`glass: 'mirror'`, negative-index convention) in the exact tracer, paraxial analysis and Seidel sums, drawn as mirrors in the layout. Three telescopes: the **Hubble Space Telescope** as designed (Ritchey–Chrétien f/24), **Hubble in 1990** with its flawed primary (conic −1.0139), and a **classical Cassegrain** of the same layout. Solving the Seidel sums for zero spherical aberration and coma reproduces Hubble's design conic constants, and the flawed primary's edge comes out 2.2 µm too low, as in the 1990 failure report (`test/mirrors.test.mjs`). The field of view of a telescope is shown in arcminutes.
-
-### Fixed
-- Zemax import: `MIRROR` surfaces were read as air; they are now mirrors, and validation accepts the negative distances that follow them.
+Lens design in depth: classic camera lenses from the Petzval portrait to Bertele's Biogon, mirrors with the Hubble Space Telescope and a JWST-style three-mirror anastigmat, and off-axis diffraction images computed in the exact exit-pupil coordinates.
 
 ### Added
 - **Four classic lens forms** in the ray tracer, bokeh and panorama laboratories: a Tessar type (f/5, 50 mm), a Petzval portrait type (f/4, 100 mm), a telephoto (f/5.6, 200 mm, 0.79 f long) and a retrofocus wide angle (f/6, 35 mm, back focus 40 mm). They were designed for this project with the built-in optimiser; the ray tracer's theory explains each form and the two-group formula behind telephoto and retrofocus. `test/classics.test.mjs` checks their first-order properties and that every field traces.
 - Optimiser: optional minimum back focal distance (`minBfd`), a one-sided penalty.
+- **Mirrors in the ray tracer**: reflective surfaces (`glass: 'mirror'`, negative-index convention) in the exact tracer, paraxial analysis and Seidel sums, drawn as mirrors in the layout. Three telescopes: the **Hubble Space Telescope** as designed (Ritchey–Chrétien f/24), **Hubble in 1990** with its flawed primary (conic −1.0139), and a **classical Cassegrain** of the same layout. Solving the Seidel sums for zero spherical aberration and coma reproduces Hubble's design conic constants, and the flawed primary's edge comes out 2.2 µm too low, as in the 1990 failure report (`test/mirrors.test.mjs`). The field of view of a telescope is shown in arcminutes.
+- **Three-mirror anastigmat** in the ray tracer: a Korsch-type telescope with the James Webb Space Telescope's first-order layout (6.5 m, f/20.2), designed for this project. The tertiary radius flattens the field (zero Petzval sum) and the three conics solve S_I = S_II = S_III = 0; the primary conic comes out at −0.99715, close to JWST's specified −0.99666 ± 0.0005. Strehl > 0.8 across ±0.15° at 588 nm (`test/mirrors.test.mjs`). The ray tracer now handles the negative focal length of an erect-image system and shows a flat field's Petzval radius as ∞.
+- **Biogon** in the ray tracer, bokeh and panorama laboratories: Bertele's symmetric wide angle (f/4.5, ±45°), Example 2 of US patent 2,721,499 as published, scaled to 38 mm. Its glasses are model glasses (n_d, V_d) named by their six-digit glass code. The prescription reproduces the patent's f = 100 mm to 0.06 %, and the real-ray distortion stays below 0.2 % to 45° (`test/classics.test.mjs`).
 
 ### Fixed
 - Ray tracer: the field-angle label now follows the chosen lens (it kept the Cooke triplet's degrees after a lens change or a shared link).
+- Zemax import: `MIRROR` surfaces were read as air; they are now mirrors, and validation accepts the negative distances that follow them.
+- Ray tracer PSF and MTF across the field: the pupil is now sampled in the direction cosines seen from the image point (the coordinates in which the Debye integral is exact), not in stop coordinates. Off axis the pupil is foreshortened tangentially (0.94 at the Cooke triplet's 20° edge) and distorted by pupil aberrations, so the PSF stretches along the field radius; the amplitude carries the Jacobian of the mapping. The stop rim is no longer clipped, so the Cooke's 14° OPD P-V reads 3.60 λ (a dense direct trace gives 3.62 λ) instead of 3.30 λ. Checked against the exact geometry of a flat rear stop to 2·10⁻⁴. The bokeh laboratory's small-disk diffraction test now uses the plano-hyperbolic singlet (no spherical aberration on axis), so that W₀₂₀ is pure defocus, and its tolerances are tighter.
 
 ## [1.16.0] - 2026-10-16
 
