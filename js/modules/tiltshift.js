@@ -1,8 +1,10 @@
-import { h, controls, stage, readouts, imageCanvas, texNum, fmt } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt, debounce } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { tiltedLens, tiltedObject } from '../lib/optics.js';
 import { TILT, SHIFT, BLUR_LEVELS, camH, camPitch } from '../lib/scenes.js';
 import { runOn, parallel, rowBands, poolSize } from '../lib/compute.js';
+import { view3d } from '../lib/gl3d.js';
+import { scheimpflugScene, townScene } from '../lib/tilt3d.js';
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['photo', 'video'] }));
@@ -28,7 +30,9 @@ export default function mount(root, meta) {
   const calc = liveCalc();
   const photo = stage({ aspect: 1.5, label: 'Simulated photograph', draw: drawPhoto, minH: 280 });
   const side = stage({ aspect: 2.2, label: 'Side view: sensor, lens and the plane of focus (not to scale)', draw: drawSide, minH: 220 });
-  root.append(lab([photo.el, side.el], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const camera3 = view3d({ label: '3-D, true scale: sensor, tilted lens and plane of focus meet in one line', aspect: 1.25, minH: 260, yaw: -1.32, pitch: 0.12 });
+  const town3 = view3d({ label: '3-D: the plane of focus and the depth-of-field wedge over the town', aspect: 1.25, minH: 260, yaw: -2.4, pitch: 0.45 });
+  root.append(lab([photo.el, side.el, h('div.grid-2', {}, camera3.el, town3.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   let IMG = null;
   // tilted-thin-lens imaging in camera coordinates (y up, z forward); lens axis tilted by α about x
@@ -101,7 +105,19 @@ export default function mount(root, meta) {
     &\frac{1}{u} + \frac{1}{u'} = \frac{1}{f}\ \text{along the tilted lens axis}
     \end{aligned}`);
     photo.redraw(); side.redraw();
+    show3d(st);
   }
+  // 3-D views of the tilt geometry (tilt mode only); cameras stay where the reader put them
+  let shown3d = false;
+  const show3d = debounce((st) => {
+    const on = st.mode === 'tilt';
+    camera3.el.hidden = town3.el.hidden = !on;
+    if (!on || !camera3.ok) return;
+    const p = { f: st.f, alpha: st.alpha, s: st.s, N: st.N };
+    camera3.setScene(scheimpflugScene(p), shown3d);
+    town3.setScene(townScene(p), shown3d);
+    shown3d = true;
+  }, 120);
 
   // plane of focus in the y–z (side) plane: image two sensor points back into object space
   const objOf = tiltedObject;
@@ -192,5 +208,5 @@ export default function mount(root, meta) {
     'H. M. Merklinger, <i>Focusing the View Camera</i> (1996): the hinge rule.',
     'L. Larmore, <i>Introduction to Photographic Principles</i>, Dover (1965), ch. 7.',
   ]));
-  return () => [photo, side].forEach((s) => s.destroy());
+  return () => { [photo, side].forEach((s) => s.destroy()); camera3.destroy(); town3.destroy(); };
 }

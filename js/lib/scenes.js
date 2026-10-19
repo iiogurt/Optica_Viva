@@ -33,6 +33,9 @@ function hitObj(O, o, d) {
   return t0 < t1 && t0 > 0 ? { t: t0, col: ax === 1 ? [O.col[0] * 0.75, O.col[1] * 0.45, O.col[2] * 0.4] : O.col, n: ax } : null;
 }
 // ray cast with a 2-D DDA over the cell grid (Amanatides & Woo), tested near-to-far
+// The town's objects: boxes { box: true, a, b, col } and trees { box: false, c, r } (metres).
+export const townObjects = () => [...CELLS.values()].flat();
+
 export function castTown(o, d) {
   const tGround = d[1] < 0 ? -o[1] / d[1] : Infinity;
   let gx = Math.floor(o[0] / CELL), gz = Math.floor(o[2] / CELL);

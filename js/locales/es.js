@@ -1239,4 +1239,6 @@ export default {
   "3-D: the star image as a relief, height = log brightness, in its own colours": "3D: la imagen de la estrella en relieve, altura = brillo logarítmico, en sus propios colores",
   "3-D: the electric field along the beam, through each element": "3D: el campo eléctrico a lo largo del haz, a través de cada elemento",
   "3-D: the Poincaré sphere, the state after each element": "3D: la esfera de Poincaré, el estado tras cada elemento",
+  "3-D, true scale: sensor, tilted lens and plane of focus meet in one line": "3D, a escala: sensor, objetivo basculado y plano de enfoque se cortan en una sola recta",
+  "3-D: the plane of focus and the depth-of-field wedge over the town": "3D: el plano de enfoque y la cuña de profundidad de campo sobre la ciudad",
 };

@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **3-D Scheimpflug geometry** (`js/lib/tilt3d.js`): the tilt–shift laboratory shows, at true scale, the sensor plane, the tilted lens plane and the plane of focus meeting in the Scheimpflug line, with the hinge line at J = f / sin α and the depth-of-field limits; and the plane of focus with its wedge over the toy town, seen from above the rooftop camera. `test/mesh3d.test.mjs` checks that the plane of focus passes through both lines.
+
+### Added
 - **3-D polarisation** (`js/lib/pol3d.js`): in the polarisers-in-series section, the electric field along the beam through each element (a flat wave for linear light, a helix for circular, a twisted ellipse otherwise, the unpolarised share as a ring, polarisers drawn with their transmission axis and wave plates with their fast axis), and the Poincaré sphere with the state after each element and the paths between them.
 
 ### Fixed

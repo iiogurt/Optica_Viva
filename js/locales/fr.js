@@ -1239,4 +1239,6 @@ export default {
   "3-D: the star image as a relief, height = log brightness, in its own colours": "3D : l’image de l’étoile en relief, hauteur = luminosité logarithmique, dans ses propres couleurs",
   "3-D: the electric field along the beam, through each element": "3D : le champ électrique le long du faisceau, à travers chaque élément",
   "3-D: the Poincaré sphere, the state after each element": "3D : la sphère de Poincaré, l’état après chaque élément",
+  "3-D, true scale: sensor, tilted lens and plane of focus meet in one line": "3D, à l’échelle : capteur, objectif basculé et plan de netteté se coupent selon une seule droite",
+  "3-D: the plane of focus and the depth-of-field wedge over the town": "3D : le plan de netteté et le coin de profondeur de champ au-dessus de la ville",
 };
