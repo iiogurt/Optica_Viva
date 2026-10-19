@@ -1,11 +1,16 @@
 import { h, reducedMotion } from '../lib/ui.js';
-import { MODULES, READY } from '../app.js';
+import { MODULES, READY, translated } from '../app.js';
 import { COUNT } from '../lib/phenomena.js';
-import { index } from '../lib/glass.js';
+import { index, GLASS_NAMES } from '../lib/glass.js';
+import { LENSES } from '../lib/raytrace.js';
+import { t, N_ } from '../lib/i18n.js';
 import { wavelengthRGB } from '../lib/color.js';
 import { PATH } from '../lib/path.js';
 import { TOURS } from '../lib/tours.js';
 
+// "How to read this laboratory" (HTML; translated as whole paragraphs)
+const READ_1 = N_('Every page climbs from simple to exact, and you can stop at any step. <strong>① The idea</strong> explains the phenomenon in plain words and suggests things to try. The <strong>simulation</strong> recomputes the physics as you move the sliders, and its <strong>live calculation</strong> states the result in a sentence, then shows the governing equations with your numbers substituted. <strong>② Rule of thumb</strong> gives the one formula worth remembering and where it stops working. <strong>③ Full model</strong> derives everything, with its assumptions and limits, and <strong>④ References</strong> lead to the primary literature. Dotted-underlined words have a short definition: hover over or tap them.');
+const READ_2 = N_('Models are chosen to be the most exact that can run interactively. Real lenses are traced with vector Snell\'s law through spherical and aspheric surfaces and mirrors, and glass dispersion uses manufacturer Sellmeier coefficients. Diffraction is the full Fraunhofer integral evaluated by FFT, with each wavelength computed separately. Coatings use the characteristic-matrix method for thin-film interference. Turbulence uses von Kármán phase screens. Where an approximation is used (paraxial ghost tracing, geometric bokeh), the page says so and explains when it breaks down.');
 
 // Hero: white light dispersed by an N-SF11 prism, traced exactly (Snell + TIR, Sellmeier n(λ)).
 function heroCanvas() {
@@ -123,45 +128,44 @@ export default function mount(root) {
     h('div.hero', {}, hero.canvas,
       h('div.hero-text', {},
         h('h1', { html: 'Optica <em>Viva</em>' }),
-        h('p', {}, 'A living laboratory of the optics behind every photograph, every film frame and every image from a space telescope. Each phenomenon is computed from first principles in your browser: exact ray tracing, Fourier diffraction, thin-film interference and turbulence statistics. Nothing is a canned animation.'))),
+        h('p', {}, t('A living laboratory of the optics behind every photograph, every film frame and every image from a space telescope. Each phenomenon is computed from first principles in your browser: exact ray tracing, Fourier diffraction, thin-film interference and turbulence statistics. Nothing is a canned animation.')))),
   );
-  const groups = [...new Set(MODULES.filter((m) => m.blurb).map((m) => m.group))];
+  const mods = MODULES.map(translated);
+  const groups = [...new Set(mods.filter((m) => m.blurb).map((m) => m.group))];
   root.append(h('section.block', { style: { marginTop: '38px' } },
     h('div.stat-row', {},
-      h('div.stat', {}, h('b', {}, `${[...READY].filter((id) => id !== 'home').length} / ${MODULES.length - 1}`), h('span', {}, READY.size >= MODULES.length ? 'interactive laboratories and reference pages' : 'laboratories live (the rest are in progress)')),
-      
-      h('div.stat', {}, h('b', {}, String(COUNT)), h('span', {}, 'catalogued phenomena with governing equations')),
-      h('div.stat', {}, h('b', {}, '12'), h('span', {}, 'real glasses (Sellmeier), 13 lens and telescope prescriptions')),
-      h('div.stat', {}, h('b', {}, '0'), h('span', {}, 'precomputed images: everything is simulated live')),
+      h('div.stat', {}, h('b', {}, `${[...READY].filter((id) => id !== 'home').length} / ${MODULES.length - 1}`), h('span', {}, READY.size >= MODULES.length ? t('interactive laboratories and reference pages') : t('laboratories live (the rest are in progress)'))),
+      h('div.stat', {}, h('b', {}, String(COUNT)), h('span', {}, t('catalogued phenomena with governing equations'))),
+      h('div.stat', {}, h('b', {}, String(GLASS_NAMES.length)), h('span', {}, t('real glasses (Sellmeier), {n} lens and telescope prescriptions', { n: Object.keys(LENSES).length }))),
+      h('div.stat', {}, h('b', {}, '0'), h('span', {}, t('precomputed images: everything is simulated live'))),
     )));
   let visited = new Set();
   try { visited = new Set(JSON.parse(localStorage.getItem('ov-visited') || '[]')); } catch { /* storage unavailable */ }
   let n = 0;
-  root.append(h('section.block.start-here', {}, h('h2', {}, 'Start here'),
-    h('p.lede', {}, 'New to optics? Follow this path from everyday photography to the research frontier. Each page starts with the idea in plain words and builds up to the full physics, so stop wherever you like; the order is only a suggestion.'),
+  root.append(h('section.block.start-here', {}, h('h2', {}, t('Start here')),
+    h('p.lede', {}, t('New to optics? Follow this path from everyday photography to the research frontier. Each page starts with the idea in plain words and builds up to the full physics, so stop wherever you like; the order is only a suggestion.')),
     h('div.path', {}, ...PATH.map((st) => h('div.path-stage', {},
-      h('div.path-head', {}, h('h3', {}, st.stage), h('span.note', {}, st.note)),
+      h('div.path-head', {}, h('h3', {}, t(st.stage)), h('span.note', {}, t(st.note))),
       h('ol.path-steps', { start: n + 1 }, ...st.steps.map(([id, q]) => {
         n++;
-        const m = MODULES.find((x) => x.id === id);
+        const m = mods.find((x) => x.id === id);
         return h('li', {}, h('a.path-step' + (visited.has(id) ? '.seen' : ''), { href: '#/' + id, style: { '--c': m.c } },
           h('span.path-n', { 'aria-hidden': 'true' }, visited.has(id) ? '✓' : String(n)),
-          h('span.path-t', {}, h('b', {}, m.title), h('span', {}, q)),
-          visited.has(id) ? h('span.sr-only', {}, ' (opened before)') : null));
+          h('span.path-t', {}, h('b', {}, m.title), h('span', {}, t(q))),
+          visited.has(id) ? h('span.sr-only', {}, ' ' + t('(opened before)')) : null));
       })))))));
-  root.append(h('section.block', {}, h('h2', {}, 'Guided tours'),
-    h('p.lede', {}, 'A few minutes each: the tour moves the controls for you, one step at a time, and says what to look at.'),
-    h('div.cards', {}, ...TOURS.map((t) => {
-      const m = MODULES.find((x) => x.id === t.lab);
-      return h('a.mcard', { href: `#/${t.lab}?tour=${t.id}`, style: { '--c': m.c } }, h('span.k', {}, `${m.title} · ${t.steps.length} steps`), h('h3', {}, t.title), h('p', {}, t.blurb));
+  root.append(h('section.block', {}, h('h2', {}, t('Guided tours')),
+    h('p.lede', {}, t('A few minutes each: the tour moves the controls for you, one step at a time, and says what to look at.')),
+    h('div.cards', {}, ...TOURS.map((tour) => {
+      const m = mods.find((x) => x.id === tour.lab);
+      return h('a.mcard', { href: `#/${tour.lab}?tour=${tour.id}`, style: { '--c': m.c } }, h('span.k', {}, t('{lab} · {n} steps', { lab: m.title, n: tour.steps.length })), h('h3', {}, t(tour.title)), h('p', {}, t(tour.blurb)));
     }))));
   for (const g of groups) {
     root.append(h('section.block', {}, h('h2', {}, g),
-      h('div.cards', {}, ...MODULES.filter((m) => m.group === g && m.blurb).map((m) =>
-        h('a.mcard' + (READY.has(m.id) ? '' : '.soon'), { href: '#/' + m.id, style: { '--c': m.c } }, h('span.k', {}, READY.has(m.id) ? m.group : m.group + ' · coming soon'), h('h3', {}, m.title), h('p', {}, m.blurb))))));
+      h('div.cards', {}, ...mods.filter((m) => m.group === g && m.blurb).map((m) =>
+        h('a.mcard' + (READY.has(m.id) ? '' : '.soon'), { href: '#/' + m.id, style: { '--c': m.c } }, h('span.k', {}, READY.has(m.id) ? m.group : m.group + ' · ' + t('coming soon')), h('h3', {}, m.title), h('p', {}, m.blurb))))));
   }
-  root.append(h('section.block', {}, h('h2', {}, 'How to read this laboratory'),
-    h('div.prose', { html: `<p>Every page climbs from simple to exact, and you can stop at any step. <strong>① The idea</strong> explains the phenomenon in plain words and suggests things to try. The <strong>simulation</strong> recomputes the physics as you move the sliders, and its <strong>live calculation</strong> states the result in a sentence, then shows the governing equations with your numbers substituted. <strong>② Rule of thumb</strong> gives the one formula worth remembering and where it stops working. <strong>③ Full model</strong> derives everything, with its assumptions and limits, and <strong>④ References</strong> lead to the primary literature. Dotted-underlined words have a short definition: hover over or tap them.</p>
-    <p>Models are chosen to be the most exact that can run interactively. Real lenses are traced with vector Snell's law through spherical surfaces, and glass dispersion uses manufacturer Sellmeier coefficients. Diffraction is the full Fraunhofer integral evaluated by FFT, with each wavelength computed separately. Coatings use the characteristic-matrix method for thin-film interference. Turbulence uses von Kármán phase screens. Where an approximation is used (paraxial ghost tracing, geometric bokeh), the page says so and explains when it breaks down.</p>` })));
+  root.append(h('section.block', {}, h('h2', {}, t('How to read this laboratory')),
+    h('div.prose', { html: `<p>${t(READ_1)}</p><p>${t(READ_2)}</p>` })));
   return () => hero.destroy();
 }

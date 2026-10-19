@@ -5,6 +5,7 @@ import { CHECKS } from './lib/misconceptions.js';
 import { glossary } from './lib/glossary.js';
 import { tours } from './lib/tours.js';
 import { exercises } from './lib/exercises.js';
+import { t, loadLocale, pickLang, setLang, LANGS, lang } from './lib/i18n.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
 export const READY = new Set(['home', 'gallery', 'gear', 'computational', 'autofocus', 'filters', 'underwater', 'mission-survey', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
@@ -81,13 +82,16 @@ const sidebar = document.getElementById('sidebar');
 const navToggle = document.getElementById('navToggle');
 navToggle.addEventListener('click', () => navToggle.setAttribute('aria-expanded', String(sidebar.classList.toggle('open'))));
 
+// Translated copy of a registry entry (the id and colour stay).
+export const translated = (m) => ({ ...m, title: t(m.title), group: t(m.group), blurb: m.blurb && t(m.blurb) });
+
 function buildNav() {
   const groups = [...new Set(MODULES.map((m) => m.group))];
   for (const g of groups) {
     nav.append(h('div.nav-group', {},
-      h('div.nav-group-title', {}, g),
+      h('div.nav-group-title', {}, t(g)),
       ...MODULES.filter((m) => m.group === g).map((m) =>
-        h('a.nav-link' + (READY.has(m.id) ? '' : '.soon'), { href: '#/' + (m.id === 'home' ? '' : m.id), 'data-id': m.id, style: { '--c': m.c } }, h('span.nav-dot'), m.title)),
+        h('a.nav-link' + (READY.has(m.id) ? '' : '.soon'), { href: '#/' + (m.id === 'home' ? '' : m.id), 'data-id': m.id, style: { '--c': m.c } }, h('span.nav-dot'), t(m.title))),
     ));
   }
 }
@@ -111,7 +115,7 @@ let lastId = null;
 let token = 0;
 async function route() {
   const id = (location.hash.replace(/^#\/?/, '').split('?')[0]) || 'home';
-  const meta = MODULES.find((m) => m.id === id) || MODULES[0];
+  const meta = translated(MODULES.find((m) => m.id === id) || MODULES[0]);
   document.querySelectorAll('.nav-link').forEach((a) => { const on = a.dataset.id === meta.id; a.classList.toggle('active', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   sidebar.classList.remove('open');
   navToggle.setAttribute('aria-expanded', 'false');
@@ -133,20 +137,21 @@ async function route() {
     const untour = tours(page, meta.id, wantedTour);
     // bound after mounting: an earlier URL write would drop the page's own settings from the link
     if (embed) bindUrlParam('embed', () => '1');
-    if (embed) page.append(h('a.embed-open', { href: '#/', target: '_blank', rel: 'noopener', onClick: (e) => { e.currentTarget.href = withEmbed(location.href, false); } }, 'Open the full laboratory in Optica Viva ↗'));
+    if (embed) page.append(h('a.embed-open', { href: '#/', target: '_blank', rel: 'noopener', onClick: (e) => { e.currentTarget.href = withEmbed(location.href, false); } }, t('Open the full laboratory in Optica Viva ↗')));
     const unladder = ladder(page);
-    const unglossary = meta.id === 'home' || meta.id === 'catalogue' ? () => {} : glossary(page, meta.id, (lab) => MODULES.find((m) => m.id === lab)?.title || lab);
+    if (lang !== 'en' && meta.id !== 'home') page.querySelector('.ladder, .mod-head')?.after(h('p.note.lang-note', {}, t('The interface is translated; the explanations on this page are still in English.')));
+    const unglossary = meta.id === 'home' || meta.id === 'catalogue' ? () => {} : glossary(page, meta.id, (lab) => t(MODULES.find((m) => m.id === lab)?.title || lab));
     cleanup = () => { untour(); unglossary(); unladder(); if (done) done(); };
   } catch (e) {
     console.error(e);
     const missing = /Failed to fetch|Importing a module script failed|error loading dynamically imported module/i.test(e.message);
     page.append(missing
       ? h('header.mod-head', {}, h('div.eyebrow', {}, meta.group), h('h1', {}, meta.title), h('p.lede', {}, meta.blurb || ''),
-        h('div.callout', { style: { marginTop: '24px' } }, 'This laboratory is under construction and will arrive in an upcoming release. See CHANGELOG.md for progress.'))
+        h('div.callout', { style: { marginTop: '24px' } }, t('This laboratory is under construction and will arrive in an upcoming release. See CHANGELOG.md for progress.')))
       : h('div.card', { role: 'alert', style: { marginTop: '24px' } },
-        h('h2', { style: { marginTop: 0 } }, 'This laboratory failed to load'),
-        h('p.note', {}, 'Please report it so it can be fixed. The link below pre-fills the error details.'),
-        h('a', { href: issueUrl(meta, e), target: '_blank', rel: 'noopener' }, 'Report this issue on GitHub →'),
+        h('h2', { style: { marginTop: 0 } }, t('This laboratory failed to load')),
+        h('p.note', {}, t('Please report it so it can be fixed. The link below pre-fills the error details.')),
+        h('a', { href: issueUrl(meta, e), target: '_blank', rel: 'noopener' }, t('Report this issue on GitHub →')),
         h('pre', { style: { color: 'var(--warn)', whiteSpace: 'pre-wrap', fontSize: '12px' } }, 'Failed to load module: ' + e.message + '\n' + (e.stack || ''))));
   }
   // remember opened laboratories for the "Start here" ticks (this browser only)
@@ -156,6 +161,18 @@ async function route() {
   lastId = meta.id;
 }
 
+// Interface language: the static shell in index.html, then a picker in the sidebar footer.
+await loadLocale(pickLang());
+function localiseShell() {
+  document.querySelector('.skip-link').textContent = t('Skip to content');
+  nav.setAttribute('aria-label', t('Laboratories'));
+  navToggle.setAttribute('aria-label', t('Toggle navigation'));
+  const foot = document.querySelector('.sidebar-foot');
+  const pick = h('select.lang-pick', { 'aria-label': t('Language') }, ...Object.entries(LANGS).map(([k, v]) => h('option', { value: k, selected: k === lang }, v)));
+  pick.addEventListener('change', () => setLang(pick.value));
+  foot.replaceChildren(t('Physically exact optics laboratory · all simulations computed live in your browser'), h('label.lang-row', {}, h('span', { 'aria-hidden': 'true' }, '🌐'), pick));
+}
+localiseShell();
 buildNav();
 // Offline use and installation (sw.js). A page that already had a worker asks it to refresh the
 // offline copy, which it does only when the version changed.

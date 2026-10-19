@@ -33,7 +33,7 @@ try {
   }
   // shareable state: a URL with parameters must restore the controls
   await page.goto(site.url + '#/psf?preset=hubble&band=white', 4000);
-  const ok = await page.eval(`document.querySelector('select').value === 'hubble' && [...document.querySelectorAll('.seg button')].some((b) => b.classList.contains('on') && /White/.test(b.textContent))`);
+  const ok = await page.eval(`document.querySelector('.controls select').value === 'hubble' && [...document.querySelectorAll('.seg button')].some((b) => b.classList.contains('on') && /White/.test(b.textContent))`);
   console.log(`${ok ? '✓' : '✗'} URL state restores controls`);
   if (!ok) failed++;
   // embed mode: no sidebar, results still render, and the page's own settings survive in the link

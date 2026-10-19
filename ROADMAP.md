@@ -456,7 +456,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P2 · M** **Exercises with checked answers**: compute the hyperfocal distance, predict the ghost count, and so on, using the live calculation engine (#109).
 - [x] **P2 · M** **Export**: PNG of any canvas, CSV of any chart, JSON of lab state (#107).
 - [x] **P3 · M** **Installable PWA** with service-worker caching (fonts included) (#111).
-- [ ] **P3 · L** **Internationalisation**, starting with the UI strings, then the theory text.
+- [ ] **P3 · L** **Internationalisation**, starting with the UI strings, then the theory text. *The interface is done: English, German, French and Spanish for navigation, laboratory titles and descriptions, page chrome, tours, exercises and the home page (`js/lib/i18n.js`, `js/locales/`, `test/i18n.test.mjs`). Open: the controls' labels and readouts, then the explanations.*
 - [x] **P3 · M** **Embed mode** (`?embed=1`) for courses and blogs (#110).
 - [ ] **P3 · L** Lab plugin API and documentation site generated from module metadata.
 

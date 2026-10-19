@@ -2,6 +2,7 @@
 // look at. A step's `set` adds to the settings of the steps before it, so Back restores a state
 // exactly. Start a tour from its laboratory or with a link: #/<lab>?tour=<id>.
 import { h, setControl, bindUrlParam } from './ui.js';
+import { t } from './i18n.js';
 
 export const TOURS = [
   {
@@ -72,12 +73,12 @@ function play(page, tour) {
   let k = 0;
   const n = tour.steps.length;
   const count = h('span.tour-count'), text = h('p.tour-text');
-  const back = h('button.tour-btn', { type: 'button', onClick: () => go(k - 1) }, '← Back');
-  const next = h('button.tour-btn.primary', { type: 'button', onClick: () => (k < n - 1 ? go(k + 1) : end()) }, 'Next →');
-  const el = h('aside.tour', { role: 'dialog', 'aria-label': 'Guided tour: ' + tour.title },
-    h('div.tour-head', {}, h('span.tour-k', {}, 'Guided tour'), count,
-      h('button.tour-x', { type: 'button', title: 'End the tour', 'aria-label': 'End the tour', onClick: () => end() }, '✕')),
-    h('h3', {}, tour.title), h('div', { 'aria-live': 'polite' }, text), h('div.tour-nav', {}, back, next));
+  const back = h('button.tour-btn', { type: 'button', onClick: () => go(k - 1) }, t('← Back'));
+  const next = h('button.tour-btn.primary', { type: 'button', onClick: () => (k < n - 1 ? go(k + 1) : end()) }, t('Next →'));
+  const el = h('aside.tour', { role: 'dialog', 'aria-label': t('Guided tour: {title}', { title: t(tour.title) }) },
+    h('div.tour-head', {}, h('span.tour-k', {}, t('Guided tour')), count,
+      h('button.tour-x', { type: 'button', title: t('End the tour'), 'aria-label': t('End the tour'), onClick: () => end() }, '✕')),
+    h('h3', {}, t(tour.title)), h('div', { 'aria-live': 'polite' }, text), h('div.tour-nav', {}, back, next));
   const end = () => { stop(); bindUrlParam('tour', () => null); };
   function go(i) {
     k = Math.max(0, Math.min(n - 1, i));
@@ -90,7 +91,7 @@ function play(page, tour) {
     count.textContent = `${k + 1} / ${n}`;
     text.textContent = tour.steps[k].say;
     back.disabled = k === 0;
-    next.textContent = k < n - 1 ? 'Next →' : 'Finish';
+    next.textContent = k < n - 1 ? t('Next →') : t('Finish');
   }
   player = { el };
   page.append(el);
@@ -102,14 +103,14 @@ function play(page, tour) {
 // Called by the router after a page mounts: offers the page's tours after the idea, and starts
 // `wanted` (the link's ?tour=, read before mounting rewrote the URL). Returns a cleanup function.
 export function tours(page, id, wanted) {
-  const mine = TOURS.filter((t) => t.lab === id);
+  const mine = TOURS.filter((tour) => tour.lab === id);
   if (!mine.length) return () => {};
-  const box = h('section.block.tour-offer', { 'aria-label': 'Guided tours' }, h('div.check-k', {}, 'Guided tour'),
-    ...mine.map((t) => h('div.tour-item', {}, h('div', {}, h('b', {}, t.title), h('span.note', {}, ' ' + t.blurb)),
-      h('button.tour-btn.primary', { type: 'button', onClick: () => play(page, t) }, `Start (${t.steps.length} steps)`))));
+  const box = h('section.block.tour-offer', { 'aria-label': t('Guided tours') }, h('div.check-k', {}, t('Guided tour')),
+    ...mine.map((tour) => h('div.tour-item', {}, h('div', {}, h('b', {}, t(tour.title)), h('span.note', {}, ' ' + t(tour.blurb))),
+      h('button.tour-btn.primary', { type: 'button', onClick: () => play(page, tour) }, t('Start ({n} steps)', { n: tour.steps.length })))));
   const anchor = page.querySelector('.check') || page.querySelector('.rung-idea') || page.querySelector('.mod-head');
   anchor?.after(box);
-  const want = mine.find((t) => t.id === wanted);
+  const want = mine.find((tour) => tour.id === wanted);
   // let the controls and first results settle before the tour moves them
   const timer = want ? setTimeout(() => play(page, want), 300) : 0;
   return () => { clearTimeout(timer); stop(); };
