@@ -1,41 +1,10 @@
 import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { angularDiameterDistance as DA, C_KMS as C } from '../lib/optics.js';
+import { FOV, SFOV } from '../lib/lensing.js';
+import { runOn, parallel, rowBands, poolSize } from '../lib/compute.js';
 
 const ARC = Math.PI / 180 / 3600;
-
-// deflection α(θ) in arcsec for a lens model; θ in arcsec
-function deflect(P, x, y) {
-  let ax = 0, ay = 0;
-  if (P.model === 'point') {
-    const r2 = x * x + y * y + 1e-12; ax = (P.b * P.b * x) / r2; ay = (P.b * P.b * y) / r2;
-  } else if (P.model === 'sis' || P.q > 0.999) {
-    const r = Math.hypot(x, y) + 1e-12; ax = (P.b * x) / r; ay = (P.b * y) / r;
-  } else {
-    // singular isothermal ellipsoid (Kormann, Schneider & Bartelmann 1994), major axis at angle pa
-    const c = Math.cos(P.pa), s = Math.sin(P.pa);
-    const xr = c * x + s * y, yr = -s * x + c * y;
-    const q = P.q, e = Math.sqrt(1 - q * q), psi = Math.sqrt(q * q * xr * xr + yr * yr) + 1e-12;
-    const k = (P.b * Math.sqrt(q)) / e;
-    const axr = k * Math.atan((e * xr) / psi), ayr = k * Math.atanh(Math.min(0.999999, (e * yr) / psi));
-    ax = c * axr - s * ayr; ay = s * axr + c * ayr;
-  }
-  if (P.gamma) {
-    const g1 = P.gamma * Math.cos(2 * P.gpa), g2 = P.gamma * Math.sin(2 * P.gpa);
-    ax += g1 * x + g2 * y; ay += g2 * x - g1 * y;
-  }
-  return [ax, ay];
-}
-
-// procedural spiral galaxy, β in arcsec relative to its centre → linear RGB
-function galaxy(bx, by, R) {
-  const r = Math.hypot(bx, by) / R, ph = Math.atan2(by, bx);
-  const bulge = 1.6 * Math.exp(-7.67 * (Math.pow(r / 0.12 + 1e-6, 0.25) - 1)) / 3000;
-  const arms = Math.pow(0.5 + 0.5 * Math.cos(2 * (ph - Math.log(r + 1e-3) / Math.tan(0.35))), 3);
-  const disk = Math.exp(-r / 0.3) * (0.25 + 1.4 * arms);
-  const knots = arms > 0.8 && r > 0.25 && r < 0.9 ? 0.6 * Math.exp(-r / 0.5) * (0.5 + 0.5 * Math.sin(37 * ph + 11 * r)) : 0;
-  return [bulge * 1.0 + disk * 0.3 + knots * 1.1, bulge * 0.75 + disk * 0.5 + knots * 0.35, bulge * 0.4 + disk * 1.05 + knots * 0.85];
-}
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['space'] }));
@@ -64,16 +33,14 @@ export default function mount(root, meta) {
   root.append(lab([h('div.grid-2', {}, img.el, src.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   let srcPos = [0.12, 0.06];
-  const FOV = 7; // arcsec across the image plane
-  const SFOV = 3.5; // source-plane panel
   let dragging = false;
-  const mv = (e) => { const r = src.canvas.getBoundingClientRect(); srcPos = [((e.clientX - r.left) / r.width - 0.5) * SFOV, (0.5 - (e.clientY - r.top) / r.height) * SFOV]; render(); };
+  const mv = (e) => { const r = src.canvas.getBoundingClientRect(); srcPos = [((e.clientX - r.left) / r.width - 0.5) * SFOV, (0.5 - (e.clientY - r.top) / r.height) * SFOV]; render().catch(console.error); };
   src.canvas.tabIndex = 0;
   src.canvas.setAttribute('aria-label', 'Source plane. Arrow keys move the background galaxy.');
   src.canvas.addEventListener('keydown', (e) => {
     const d = { ArrowLeft: [-0.05, 0], ArrowRight: [0.05, 0], ArrowUp: [0, 0.05], ArrowDown: [0, -0.05] }[e.key];
     if (!d) return;
-    e.preventDefault(); srcPos = [srcPos[0] + d[0], srcPos[1] + d[1]]; render();
+    e.preventDefault(); srcPos = [srcPos[0] + d[0], srcPos[1] + d[1]]; render().catch(console.error);
   });
   src.canvas.addEventListener('pointerdown', (e) => { dragging = true; src.canvas.setPointerCapture(e.pointerId); mv(e); });
   src.canvas.addEventListener('pointermove', (e) => dragging && mv(e));
@@ -82,80 +49,30 @@ export default function mount(root, meta) {
   let L = null;
   function params() { const st = ctl.state; return { model: st.model, b: st.b, q: st.q, pa: (st.pa * Math.PI) / 180, gamma: st.model === 'sie' ? st.gamma : 0, gpa: ((st.pa + 70) * Math.PI) / 180 }; }
 
-  function criticalCurves(P) {
-    // det A on a grid, marching squares for det = 0
-    const G = 220, s = FOV / G, det = new Float64Array((G + 1) * (G + 1)), hD = 1e-3;
-    for (let j = 0; j <= G; j++) for (let i = 0; i <= G; i++) {
-      const x = -FOV / 2 + i * s, y = FOV / 2 - j * s;
-      const [a1, b1] = deflect(P, x + hD, y), [a0, b0] = deflect(P, x - hD, y), [a2, b2] = deflect(P, x, y + hD), [a3, b3] = deflect(P, x, y - hD);
-      const A11 = 1 - (a1 - a0) / (2 * hD), A12 = -(a2 - a3) / (2 * hD), A21 = -(b1 - b0) / (2 * hD), A22 = 1 - (b2 - b3) / (2 * hD);
-      det[j * (G + 1) + i] = A11 * A22 - A12 * A21;
-    }
-    const segs = [];
-    const P0 = (i, j) => [-FOV / 2 + i * s, FOV / 2 - j * s];
-    for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) {
-      const v = [det[j * (G + 1) + i], det[j * (G + 1) + i + 1], det[(j + 1) * (G + 1) + i + 1], det[(j + 1) * (G + 1) + i]];
-      const c = [P0(i, j), P0(i + 1, j), P0(i + 1, j + 1), P0(i, j + 1)];
-      const pts = [];
-      for (let e = 0; e < 4; e++) {
-        const a = v[e], b = v[(e + 1) % 4];
-        if ((a > 0) !== (b > 0)) { const t = a / (a - b); pts.push([c[e][0] + t * (c[(e + 1) % 4][0] - c[e][0]), c[e][1] + t * (c[(e + 1) % 4][1] - c[e][1])]); }
-      }
-      if (pts.length >= 2) segs.push([pts[0], pts[1]]);
-      if (pts.length === 4) segs.push([pts[2], pts[3]]);
-    }
-    return segs;
-  }
-
-  let imgCanvas = null, srcCanvas = null;
-  function render() {
-    const st = ctl.state, P = L.P;
-    const N = 320, ss = 2, ic = imageCanvas(N, N);
-    let maxMu = 0;
-    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
-      let r = 0, g = 0, b = 0;
-      for (let sj = 0; sj < ss; sj++) for (let si = 0; si < ss; si++) {
-        const x = ((i + (si + 0.5) / ss) / N - 0.5) * FOV, y = (0.5 - (j + (sj + 0.5) / ss) / N) * FOV;
-        const [ax, ay] = deflect(P, x, y);
-        const c = galaxy(x - ax - srcPos[0], y - ay - srcPos[1], st.R);
-        r += c[0]; g += c[1]; b += c[2];
-        // lens-galaxy light: de Vaucouleurs profile, I_e = 0.07 at r_e = 0.9″
-        if (st.light) { const rr = Math.hypot(x, y * 1.3) / 0.9; const l = Math.min(4, 0.07 * Math.exp(-7.67 * (Math.pow(rr + 1e-4, 0.25) - 1))); r += l * 1.0; g += l * 0.72; b += l * 0.42; }
-      }
-      const k = (j * N + i) * 4, f = 1 / (ss * ss);
-      const tm = (v) => Math.round(255 * Math.pow(1 - Math.exp(-v * f * 1.1), 1 / 1.8));
-      ic.data[k] = tm(r); ic.data[k + 1] = tm(g); ic.data[k + 2] = tm(b); ic.data[k + 3] = 255;
-    }
-    ic.put(); imgCanvas = ic.c;
-    const sc = imageCanvas(N, N);
-    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
-      const x = (i / N - 0.5) * SFOV, y = (0.5 - j / N) * SFOV;
-      const c = galaxy(x - srcPos[0], y - srcPos[1], st.R);
-      const k = (j * N + i) * 4, tm = (v) => Math.round(255 * Math.pow(1 - Math.exp(-v * 1.1), 1 / 1.8));
-      sc.data[k] = tm(c[0]); sc.data[k + 1] = tm(c[1]); sc.data[k + 2] = tm(c[2]); sc.data[k + 3] = 255;
-    }
-    sc.put(); srcCanvas = sc.c;
-    // magnification of the source centre: count of images via local det near the solutions is complex; estimate total μ by area ratio
-    let srcArea = 0, imgArea = 0;
-    const thr = 0.05;
-    for (let j = 0; j < 160; j++) for (let i = 0; i < 160; i++) {
-      const x = (i / 160 - 0.5) * FOV, y = (0.5 - j / 160) * FOV;
-      const [ax, ay] = deflect(P, x, y);
-      const c = galaxy(x - ax - srcPos[0], y - ay - srcPos[1], st.R);
-      if (c[1] > thr) imgArea++;
-      const xs = (i / 160 - 0.5) * FOV, ys = (0.5 - j / 160) * FOV;
-      if (galaxy(xs - srcPos[0], ys - srcPos[1], st.R)[1] > thr) srcArea++;
-    }
-    L.mu = srcArea ? imgArea / srcArea : NaN;
+  // Renders run in the compute workers (js/lib/lensing.js): the image plane in parallel row bands,
+  // the source panel and magnification on another worker, and the critical curves and caustics only
+  // when the lens changes. A newer request makes older results stale.
+  let imgCanvas = null, srcCanvas = null, ticket = 0, curvesFor = '';
+  const toCanvas = (rgba, N) => { const c = imageCanvas(N, N); c.data.set(rgba); c.put(); return c.c; };
+  async function render() {
+    const my = ++ticket, st = ctl.state, P = L.P, N = 320, key = JSON.stringify(P);
+    const bands = parallel('lensRows', rowBands(N).map(([y0, y1]) => ({ p: { P, src: srcPos, R: st.R, light: st.light, N, ss: 2 }, y0, y1 })));
+    const side = runOn(poolSize() - 1, 'lensSide', { P, src: srcPos, R: st.R, N, curves: curvesFor !== key });
+    const [parts, extra] = await Promise.all([bands, side]);
+    if (my !== ticket) return;
+    const rgba = new Uint8ClampedArray(N * N * 4);
+    let off = 0;
+    for (const q of parts) { rgba.set(q, off); off += q.length; }
+    imgCanvas = toCanvas(rgba, N); srcCanvas = toCanvas(extra.img, N);
+    if (extra.crit) { L.crit = extra.crit; L.caus = extra.caus; curvesFor = key; }
+    L.mu = extra.mu;
     img.redraw(); src.redraw();
     const dd = ro.querySelectorAll('dd'); if (dd.length) dd[dd.length - 1].textContent = isFinite(L.mu) ? L.mu.toFixed(1) + '×' : '—';
   }
 
   function update() {
     const st = ctl.state, P = params();
-    const crit = criticalCurves(P);
-    const caus = crit.map(([a, b]) => [a, b].map(([x, y]) => { const [ax, ay] = deflect(P, x, y); return [x - ax, y - ay]; }));
-    L = { P, crit, caus };
+    L = { P, crit: L ? L.crit : [], caus: L ? L.caus : [] };
     const Dl = DA(0, st.zl), Ds = DA(0, Math.max(st.zs, st.zl + 0.01)), Dls = DA(st.zl, Math.max(st.zs, st.zl + 0.01));
     const Mpc = 3.0857e22, G = 6.674e-11, c = 2.998e8, Msun = 1.989e30;
     const tE = st.b * ARC;
@@ -176,7 +93,7 @@ export default function mount(root, meta) {
     \theta_E^\text{SIS} &= 4\pi\frac{\sigma_v^2}{c^2}\frac{D_{ls}}{D_s} \Rightarrow \sigma_v = ${texNum(sigma, 3)}\ \text{km/s}\\
     \mu &= \frac{1}{\det A},\quad A_{ij} = \delta_{ij} - \partial_j\alpha_i
     \end{aligned}`);
-    render();
+    render().catch(console.error);
   }
 
   function drawImage(ctx, w, hh) {
