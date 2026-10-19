@@ -333,6 +333,22 @@ export function paraxial(lens, lambda = 587.56) {
   return { efl, bfl, zImage, zEP, stopR, zXP, petzval: petz, fnum: efl / lens.epd, zv };
 }
 
+// ── Decentered and tilted surfaces ──────────────────────────────────────────────────────
+// A surface may carry dec: [dx, dy] (mm, its vertex moved off the axis) and tilt: [ax, ay]
+// (radians, rotations about the x and y axes through its vertex). The ray is carried into the
+// surface's own frame, intersected and refracted there, and carried back. Paraxial data stay
+// those of the nominal system.
+const isPerturbed = (s) => !!(s.dec || s.tilt);
+function frame(s) {
+  const [ax, ay] = s.tilt || [0, 0], [dx, dy] = s.dec || [0, 0];
+  const cx = Math.cos(ax), sx = Math.sin(ax), cy = Math.cos(ay), sy = Math.sin(ay);
+  // R = Rx(ax) · Ry(ay): local → global (columns are the local axes in global coordinates)
+  const R = [cy, 0, sy, sx * sy, cx, -sx * cy, -cx * sy, sx, cx * cy];
+  const toL = (v) => [R[0] * v[0] + R[3] * v[1] + R[6] * v[2], R[1] * v[0] + R[4] * v[1] + R[7] * v[2], R[2] * v[0] + R[5] * v[1] + R[8] * v[2]];
+  const toG = (v) => [R[0] * v[0] + R[1] * v[1] + R[2] * v[2], R[3] * v[0] + R[4] * v[1] + R[5] * v[2], R[6] * v[0] + R[7] * v[1] + R[8] * v[2]];
+  return { toL, toG, o: [dx, dy] };
+}
+
 // ── Exact 3-D ray trace ──────────────────────────────────────────────────────────────────
 // ray: {p:[x,y,z], d:[l,m,n] unit, opl}. Returns {path, p, d, opl, ok, blocked}.
 export function trace(lens, lambda, p0, d0, opts = {}) {
@@ -350,7 +366,12 @@ export function trace(lens, lambda, p0, d0, opts = {}) {
     const mirror = s.glass === 'mirror';
     if (mirror) sgn = -sgn;
     const n2 = mirror ? -n1 : sgn * index(s.glass, lambda);
-    const z0 = zv[i];
+    let z0 = zv[i], F = null;
+    if (isPerturbed(s)) {
+      // into the surface frame: origin at the moved vertex
+      F = frame(s);
+      p = F.toL([p[0] - F.o[0], p[1] - F.o[1], p[2] - z0]); d = F.toL(d); z0 = 0;
+    }
     let t, nrm;
     if (isAspheric(s)) {
       const hit = intersectAsphere(s, z0, p, d);
@@ -377,7 +398,7 @@ export function trace(lens, lambda, p0, d0, opts = {}) {
       nrm = [p[0] / R, p[1] / R, (p[2] - cz) / R]; // points against the propagation (−z side)
     }
     opl += Math.abs(n1) * t;
-    if (path) path.push(p.slice());
+    if (path) path.push(F ? (([x, y, z]) => [x + F.o[0], y + F.o[1], z + zv[i]])(F.toG(p)) : p.slice());
     const r = Math.hypot(p[0], p[1]);
     if (s.stop) { stopHit.x = p[0]; stopHit.y = p[1]; }
     if (clip && sds && r > sds[i] * 1.0000001) return { ok: false, blocked: i, path, p, d, opl };
@@ -393,6 +414,7 @@ export function trace(lens, lambda, p0, d0, opts = {}) {
       const f = mu * cosi - Math.sqrt(k);
       d = [mu * d[0] + f * nrm[0], mu * d[1] + f * nrm[1], mu * d[2] + f * nrm[2]];
     }
+    if (F) { const g = F.toG(p); p = [g[0] + F.o[0], g[1] + F.o[1], g[2] + zv[i]]; d = F.toG(d); }
     n1 = n2;
   }
   return { ok: true, p, d, opl, path, stopHit };

@@ -6,7 +6,7 @@ import { spectralBasis, wavelengthRGB } from './color.js';
 import { fft2d } from './fft.js';
 import { paraxial, referenceSphere, opdRay, aimRay, trace } from './raytrace.js';
 import { optimise, solve } from './optimise.js';
-import { monteCarlo } from './tolerance.js';
+import { monteCarlo, sensitivity } from './tolerance.js';
 import { ghostSystem, renderGhosts } from './ghosts.js';
 import { bokehKernels } from './bokeh.js';
 import { renderLake } from './polar.js';
@@ -367,7 +367,12 @@ function lensMTF(p) {
 function optimiseLens(p) { return { result: optimise(p.lens, p.opts || {}), transfer: [] }; }
 
 // Monte-Carlo tolerance analysis (see js/lib/tolerance.js).
-function tolerance(p) { return { result: monteCarlo(p.lens, p.tol, p.trials, p.seed), transfer: [] }; }
+function tolerance(p) {
+  const r = monteCarlo(p.lens, p.tol, p.trials, p.seed);
+  // per-element decenter/tilt sensitivity, when the run includes assembly errors
+  if (p.tol.decenterUm || p.tol.tiltArcmin) r.sensitivity = sensitivity(p.lens, p.tol);
+  return { result: r, transfer: [] };
+}
 
 // Real-ray lens-flare ghosts (see js/lib/ghosts.js). The prepared system (coating tables)
 // is cached between calls, so dragging the source only re-traces.
