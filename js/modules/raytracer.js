@@ -205,6 +205,7 @@ export default function mount(root, meta) {
     ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.setLineDash([6, 6]);
     ctx.beginPath(); ctx.moveTo(0, hh / 2); ctx.lineTo(w, hh / 2); ctx.stroke(); ctx.setLineDash([]);
     // elements
+    const labelRows = [-Infinity, -Infinity, -Infinity]; // right edge of the last glass name in each label row
     for (let i = 0; i < L.surfaces.length; i++) {
       const s = L.surfaces[i];
       if (s.glass === 'air') continue;
@@ -237,7 +238,11 @@ export default function mount(root, meta) {
       ctx.fillStyle = g; ctx.fill();
       ctx.strokeStyle = `rgba(${c},0.7)`; ctx.lineWidth = 1; ctx.stroke();
       ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText(typeof s.glass === 'string' ? s.glass : s.glass.name, X((zv[i] + zv[i + 1]) / 2), Y(-r) + 14);
+      // glass name under the element, moved down a row where it would overlap its neighbour's
+      const name = typeof s.glass === 'string' ? s.glass : s.glass.name, lx = X((zv[i] + zv[i + 1]) / 2), half = ctx.measureText(name).width / 2 + 3;
+      let row = 0; while (row < 3 && labelRows[row] > lx - half) row++;
+      labelRows[Math.min(row, 2)] = lx + half;
+      ctx.fillText(name, lx, Y(-r) + 14 + Math.min(row, 2) * 12);
     }
     // aperture stop
     const si = L.surfaces.findIndex((s) => s.stop);

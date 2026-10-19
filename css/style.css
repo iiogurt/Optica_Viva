@@ -108,6 +108,9 @@ main { min-width: 0; padding: 0 clamp(16px, 3.2vw, 48px) 80px; outline: none; }
 .stage { margin: 0; position: relative; border-radius: 12px; overflow: hidden; background: #05060a; border: 1px solid var(--line); }
 .stage canvas { display: block; width: 100%; touch-action: none; }
 .stage figcaption { position: absolute; left: 10px; top: 8px; font: 600 10.5px/1 var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); pointer-events: none; text-shadow: 0 1px 4px #000; }
+/* one line, clear of the PNG/CSV buttons; the full caption unfolds on hover or focus */
+.stage figcaption { right: 96px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25; padding: 1px 0; }
+.stage:hover figcaption, .stage:focus-within figcaption { white-space: normal; background: rgba(5, 6, 10, 0.88); border-radius: 6px; padding: 4px 6px; margin: -4px -6px; z-index: 1; }
 .stage.plain { background: transparent; }
 
 /* Controls */
