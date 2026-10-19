@@ -1229,4 +1229,10 @@ export default {
   "Your observation": "Deine Beobachtung",
   "Your plan": "Dein Plan",
   "Your satellite": "Dein Satellit",
+  // 3-D views
+  "3-D view: drag to rotate, scroll or pinch to zoom, double-click to reset.": "3-D-Ansicht: ziehen zum Drehen, scrollen oder mit zwei Fingern zoomen, Doppelklick setzt zurück.",
+  "Drag to rotate · scroll to zoom · double-click to reset": "Ziehen zum Drehen · scrollen zum Zoomen · Doppelklick setzt zurück",
+  "Reset the view": "Ansicht zurücksetzen",
+  "This 3-D view needs WebGL 2, which this browser does not provide. The 2-D figures show the same results.": "Diese 3-D-Ansicht braucht WebGL 2, das dieser Browser nicht bietet. Die 2-D-Abbildungen zeigen dieselben Ergebnisse.",
+  "3-D view: skew rays through the real lens (on axis and at the chosen field)": "3-D-Ansicht: windschiefe Strahlen durch das echte Objektiv (auf der Achse und beim gewählten Feldwinkel)",
 };

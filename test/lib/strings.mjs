@@ -1,6 +1,6 @@
 // Interface strings found statically in the source, for test/i18n.test.mjs: arguments of t() and
 // N_(), the laboratory registry, and the labels the UI toolkit translates by itself: control specs
-// (label, hint, option texts), readout names, figure captions and live-calculation titles.
+// (label, hint, option texts), readout names, figure captions (2-D and 3-D) and live-calculation titles.
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -78,8 +78,8 @@ export function interfaceStrings(files = walk('js').filter((f) => !f.startsWith(
       for (const el of elements(src.slice(a, matchEnd(src, a)))) if (el.trim().startsWith('[')) add(plain(elements(el.trim())[0] || ''));
     }
     for (const m of src.matchAll(new RegExp(String.raw`\bliveCalc\(\s*(${PLAIN})\s*\)`, 'g'))) add(m[1]);
-    for (const m of src.matchAll(/\bstage\(\{/g)) {
-      const a = m.index + 'stage('.length, obj = src.slice(a, matchEnd(src, a));
+    for (const m of src.matchAll(/\b(?:stage|view3d)\(\{/g)) {
+      const a = m.index + m[0].length - 1, obj = src.slice(a, matchEnd(src, a));
       const x = new RegExp(String.raw`\blabel: (${PLAIN})\s*[,}]`).exec(obj);
       if (x) add(x[1]);
     }

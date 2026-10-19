@@ -450,6 +450,30 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P2 · M** **Misconception checks** (PR #103): predict-then-reveal questions built on physics-education research (half-covered lens, f-number and depth of field, ISO and noise).
 - [ ] **P3 · M** **Validation against measurements**: simulated MTFs compared with published manufacturer curves for a few lenses.
 
+### v1.20 3-D views
+
+*Goal: show in three dimensions what flat diagrams can only hint at (skew rays, tilted planes, orbits, polarisation states, colour solids), with pleasant, light graphics that stay fluid on a Raspberry Pi 4.*
+
+Engine: `js/lib/gl3d.js`, dependency-free WebGL 2 (orbit camera, glass with a Fresnel rim, glowing anti-aliased lines, labels, PNG export, rendering only on change, a message instead of a view without WebGL 2); geometry in `js/lib/mesh3d.js`. Headless Chromium gets WebGL 2 from SwiftShader for the smoke test and screenshots.
+
+Audit of the existing 2-D spatial views (17 figures): all render without errors. Long captions ran into drawings and under the export buttons (fixed, #127), thin elements' glass names overlapped in the ray tracer (fixed, #127), and the tilt–shift side view mixes a true-scale image space with log object distances, which a 3-D view explains better.
+
+Candidates, in order of how much the third dimension adds:
+
+- [x] **P1 · M** **Ray tracer**: glass elements as solids, mirrors, the stop and the sensor, with real skew rays on axis and at the chosen field (#128). *Next: colour by wavelength, the sagittal and tangential foci, and a vignetted-ray view.*
+- [ ] **P1 · M** **Tilt–shift / Scheimpflug**: the sensor, the tilted lens plane and the plane of focus meeting on the hinge line, with the depth-of-field wedge over the toy town.
+- [ ] **P1 · M** **Polarisation**: the electric-field vector tracing linear, circular and elliptical paths along the beam, and the Poincaré sphere with the state after each element.
+- [ ] **P1 · S** **Wavefronts and PSFs as surfaces**: Zernike wavefronts and the log PSF as lit height fields (Zernike, PSF and seeing laboratories).
+- [ ] **P2 · M** **Depth of field**: the camera's view frustum with the near and far limits and the cards inside the sharp zone.
+- [ ] **P2 · M** **Projections**: the sphere of directions with Tissot circles, unrolled onto each projection's image plane.
+- [ ] **P2 · M** **Gravitational lensing**: rays bending past the lens galaxy between source and observer, with the Einstein ring as a cone.
+- [ ] **P2 · M** **Interferometry**: the rotating Earth with the array's baselines sweeping the u-v plane.
+- [ ] **P2 · M** **Orbits**: Earth observation (orbit, swath and push-broom footprint) and exoplanet transits (orbit, line of sight, impact parameter).
+- [ ] **P2 · S** **Colour science**: the CIE 1931 colour solid and display gamuts in xyY.
+- [ ] **P3 · M** **Starshade and coronagraph**: the telescope–starshade geometry to scale (tens of thousands of kilometres) and the shadow on the pupil.
+- [ ] **P3 · M** **Bokeh and defocus**: the cone of light from an out-of-focus point through the iris to the sensor, with cat's-eye clipping.
+- [ ] **P3 · M** **Flare**: real-ray ghost paths bouncing between surfaces inside the lens.
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).

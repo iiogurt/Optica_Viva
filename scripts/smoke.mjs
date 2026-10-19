@@ -31,6 +31,13 @@ try {
     console.log(`${problems.length ? '✗' : '✓'} ${id}${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
     if (problems.length) failed++;
   }
+  // 3-D views: WebGL 2 starts (SwiftShader in headless Chromium) and the ray tracer's scene is drawn
+  {
+    const errors = await page.goto(site.url + '#/raytracer', 6000);
+    const r = await page.eval(`!!document.querySelector('figure.v3d canvas') && !document.querySelector('.v3d-none')`);
+    console.log(`${r && !errors.length ? '✓' : '✗'} 3-D view (WebGL 2)${errors.length ? '  ' + errors.join(' | ').slice(0, 300) : ''}`);
+    if (!r || errors.length) failed++;
+  }
   // shareable state: a URL with parameters must restore the controls
   await page.goto(site.url + '#/psf?preset=hubble&band=white', 4000);
   const ok = await page.eval(`document.querySelector('.controls select').value === 'hubble' && [...document.querySelectorAll('.seg button')].some((b) => b.classList.contains('on') && /White/.test(b.textContent))`);
