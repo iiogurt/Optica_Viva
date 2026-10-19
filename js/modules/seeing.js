@@ -1,8 +1,7 @@
-import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, reducedMotion } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
-import { rasterAperture, psf } from '../lib/pupil.js';
-import { lut } from '../lib/color.js';
-import { phaseScreen } from '../lib/turbulence.js';
+import { NS, DP, CROP } from '../lib/seeing.js';
+import { runOn, poolSize } from '../lib/compute.js';
 
 
 export default function mount(root, meta) {
@@ -33,23 +32,24 @@ export default function mount(root, meta) {
   const dl = stage({ aspect: 1, label: 'Diffraction limit (space)', draw: (c, w, hh) => drawPSF(c, w, hh, 'ideal') });
   root.append(lab([scrSt.el, h('div.grid-3', {}, sp.el, lp.el, dl.el)], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '12px' } }, resetBtn)), h('div.card', {}, ro), calc.el]));
 
-  const NS = 512, DP = 64, n = 256; // screen 8D wide, pupil 64 px, PSF grid 256 (Q = 4)
-  const amp = rasterAperture({ type: 'circle', obstruction: 0.12 }, n, DP, 3);
-  const ideal = psf(amp, null, n, 1);
-  let screen = null, base = null, baseKey = '', seed = 7, t = 0, frame = 0, acc = null, accN = 0, hist = [], last = null, raf = 0, P = null;
-  const dt = 0.005; // s per animation step
+  // The simulation runs in a compute worker (js/lib/seeing.js): reset() starts a session there and
+  // the animation streams display-ready frames back, one request at a time, so a slow machine shows
+  // fewer frames instead of freezing. sid makes frames of an older session stale.
+  const WK = poolSize() - 1; // the worker that holds the session
+  let seed = 7, sid = 0, P = null, screenImg = null, idealImg = null, frame = null, busy = false, raf = 0;
+  const toCanvas = (rgba, w, hh) => { const c = imageCanvas(w, hh); c.data.set(rgba); c.put(); return c.c; };
 
   function reset(newSeed) {
     if (newSeed) seed = (seed * 48271) % 2147483647;
     const st = ctl.state;
-    const dx = st.D / DP;
-    // the screen depends only on D (pixel scale) and the seed; r₀ rescales it as r₀^(−5/6)
-    const key = st.D + ':' + seed;
-    if (key !== baseKey) { base = phaseScreen(NS, dx, 0.1, 25, seed); baseKey = key; }
-    const k = Math.pow(0.1 / (st.r0 / 100), 5 / 6);
-    screen = new Float64Array(base.length); for (let i = 0; i < base.length; i++) screen[i] = base[i] * k;
-    t = 0; acc = new Float64Array(n * n); accN = 0; hist = [];
-    P = { ...st, dx };
+    P = { D: st.D, r0: st.r0, lam: st.lam, v: st.v, ao: st.ao, nact: st.nact, lag: st.lag };
+    const my = ++sid;
+    runOn(WK, 'seeingReset', { p: P, seed, sid: my }).then((r) => {
+      if (my !== sid) return;
+      screenImg = toCanvas(r.screen, NS, NS); idealImg = toCanvas(r.ideal, CROP, CROP);
+      frame = null;
+      request(true);
+    }).catch(console.error);
     const lam = st.lam, r0l = (st.r0 / 100) * Math.pow(lam / 0.5, 6 / 5);
     const seeing = (0.98 * lam * 1e-6) / r0l * 206265;
     const dlim = (1.22 * lam * 1e-6) / st.D * 206265;
@@ -81,128 +81,52 @@ export default function mount(root, meta) {
     \sigma^2_\text{lag} &= (\tau/\tau_0)^{5/3} = ${texNum(sLag, 3)}\\
     \sigma^2_\text{uncorr} &= 1.03\,(D/r_0)^{5/3} = ${texNum(sTT, 3)}
     \end{aligned}`);
-    step(true);
   }
 
-  // sample the periodic screen with bilinear interpolation at an offset (frozen flow along x)
-  function pupilPhase(shift) {
-    const ph = new Float64Array(n * n);
-    const off = (n - DP) / 2;
-    const s0 = Math.floor(shift), f = shift - s0;
-    for (let y = 0; y < DP + 2; y++) for (let x = 0; x < DP + 2; x++) {
-      const sx = ((x + s0) % NS + NS) % NS, sx1 = (sx + 1) % NS, sy = (y + NS / 4) % NS;
-      const v = screen[sy * NS + sx] * (1 - f) + screen[sy * NS + sx1] * f;
-      if (y < DP + 2 && x < DP + 2 && off + y - 1 >= 0 && off + x - 1 >= 0) ph[(off + y - 1) * n + off + x - 1] = v;
-    }
-    return ph;
-  }
-
-  // deformable mirror: actuators on an (nact+1)² grid, bilinear influence functions
-  function dmFit(ph, nact) {
-    const off = (n - DP) / 2, pitch = DP / nact;
-    const A = [];
-    for (let j = 0; j <= nact; j++) { A.push([]); for (let i = 0; i <= nact; i++) { const x = Math.min(DP - 1, Math.round(i * pitch)), y = Math.min(DP - 1, Math.round(j * pitch)); A[j].push(ph[(off + y) * n + off + x]); } }
-    const dm = new Float64Array(n * n);
-    for (let y = 0; y < DP; y++) for (let x = 0; x < DP; x++) {
-      const u = x / pitch, v = y / pitch, i = Math.min(nact - 1, Math.floor(u)), j = Math.min(nact - 1, Math.floor(v)), fu = u - i, fv = v - j;
-      dm[(off + y) * n + off + x] = (A[j][i] * (1 - fu) + A[j][i + 1] * fu) * (1 - fv) + (A[j + 1][i] * (1 - fu) + A[j + 1][i + 1] * fu) * fv;
-    }
-    return dm;
-  }
-  function tiltFit(ph) {
-    let sx = 0, sy = 0, sxx = 0, syy = 0, s = 0, w = 0;
-    const c = n / 2;
-    for (let k = 0; k < n * n; k++) if (amp[k] > 0.5) { const x = (k % n) - c, y = Math.floor(k / n) - c; s += ph[k]; sx += ph[k] * x; sy += ph[k] * y; sxx += x * x; syy += y * y; w++; }
-    const out = new Float64Array(n * n), a = sx / sxx, b = sy / syy, m = s / w;
-    for (let k = 0; k < n * n; k++) if (amp[k] > 0) out[k] = m + a * ((k % n) - c) + b * (Math.floor(k / n) - c);
-    return out;
-  }
-
-  function step(force) {
-    if (!screen) return;
-    const st = P, lam = st.lam;
-    const shift = (st.v * t) / st.dx;
-    const raw = pupilPhase(shift); // radians at 500 nm
-    const toWaves = 0.5 / lam / (2 * Math.PI); // radians@500 → waves at λ (OPD achromatic)
-    let corr = null;
-    if (st.ao === 'tt') corr = tiltFit(raw);
-    if (st.ao === 'ao') corr = dmFit(raw, st.nact);
-    hist.push(corr);
-    const lagFrames = Math.round(st.lag / 1000 / dt);
-    while (hist.length > lagFrames + 1) hist.shift();
-    const applied = corr ? hist[0] : null;
-    const W = new Float64Array(n * n);
-    for (let k = 0; k < n * n; k++) if (amp[k] > 0) W[k] = (raw[k] - (applied ? applied[k] : 0)) * toWaves;
-    const { I } = psf(amp, W, n, 1);
-    for (let k = 0; k < n * n; k++) acc[k] += I[k];
-    accN++;
-    last = { I, raw, W, shift };
-    t += dt; frame++;
-    if (frame % 4 === 0 || force) {
-      let pk = 0; for (let k = 0; k < n * n; k++) pk = Math.max(pk, acc[k] / accN);
-      const dd = ro.querySelectorAll('dd'); if (dd.length) dd[dd.length - 1].textContent = (pk / ideal.peak).toExponential(2) + ` (${accN} frames)`;
+  // ask the worker for the next frame (2 time steps); force: also when the animation is paused
+  function request(force) {
+    if (busy || (!ctl.state.run && !force)) return;
+    busy = true;
+    const my = sid;
+    runOn(WK, 'seeingStep', { steps: 2, sid: my }).then((f) => {
+      busy = false;
+      if (!f || f.sid !== sid) return;
+      frame = { short: toCanvas(f.short, CROP, CROP), long: toCanvas(f.long, CROP, CROP), pupil: toCanvas(f.pupil, DP, DP), rms: f.rms, shift: f.shift };
+      const dd = ro.querySelectorAll('dd'); if (dd.length) dd[dd.length - 1].textContent = f.strehl.toExponential(2) + ` (${f.accN} frames)`;
       sp.redraw(); lp.redraw(); dl.redraw(); scrSt.redraw();
-    }
+    }, (e) => { busy = false; console.error(e); });
   }
-  const loop = () => { if (ctl.state.run) for (let i = 0; i < 2; i++) step(); raf = requestAnimationFrame(loop); };
+  const loop = () => { request(false); raf = requestAnimationFrame(loop); };
 
-  const INF = lut('inferno'), DIV = lut('diverging');
   function drawPSF(ctx, w, hh, kind) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
-    if (!last) return;
-    const data = kind === 'short' ? last.I : kind === 'long' ? acc : ideal.I;
-    const norm = kind === 'long' ? accN : 1;
-    const crop = 192, off = (n - crop) / 2, ic = imageCanvas(crop, crop);
-    let mx = 0; for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) mx = Math.max(mx, data[(y + off) * n + x + off] / norm);
-    for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-      const v = Math.max(0, 1 + Math.log10(data[(y + off) * n + x + off] / norm / mx + 1e-9) / 3.5);
-      const tt = Math.round(v * 255) * 3, o = (y * crop + x) * 4;
-      ic.data[o] = INF[tt]; ic.data[o + 1] = INF[tt + 1]; ic.data[o + 2] = INF[tt + 2]; ic.data[o + 3] = 255;
-    }
-    ic.put();
+    const img = kind === 'ideal' ? idealImg : frame && frame[kind];
+    if (!img) return;
     const side = Math.min(w, hh);
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);
-    const arcsec = (crop / 4) * (P.lam * 1e-6 / P.D) * 206265;
+    ctx.drawImage(img, (w - side) / 2, (hh - side) / 2, side, side);
+    const arcsec = (CROP / 4) * (P.lam * 1e-6 / P.D) * 206265;
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
     ctx.fillText(`${arcsec.toFixed(2)}″ field · log`, w - 10, hh - 10);
   }
 
   function drawScreen(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
-    if (!screen || !last) return;
-    // left: full screen; right: residual wavefront in the pupil
-    const ic = imageCanvas(NS, NS);
-    let mx = 1e-9; for (let k = 0; k < NS * NS; k++) mx = Math.max(mx, Math.abs(screen[k]));
-    for (let k = 0; k < NS * NS; k++) { const tt = Math.round((screen[k] / mx * 0.5 + 0.5) * 255) * 3; ic.data[k * 4] = DIV[tt]; ic.data[k * 4 + 1] = DIV[tt + 1]; ic.data[k * 4 + 2] = DIV[tt + 2]; ic.data[k * 4 + 3] = 255; }
-    ic.put();
+    if (!screenImg || !frame) return;
+    // left: the screen (central band of rows holding the pupil track), drawn twice to show the
+    // periodic frozen flow; right: residual wavefront in the pupil
     const H = hh - 16, scale = H / (NS / 2);
     const W2 = Math.min(w * 0.62, NS * scale);
-    // draw the screen twice horizontally to show periodic frozen flow
     ctx.save(); ctx.beginPath(); ctx.rect(8, 8, W2, H); ctx.clip();
-    const sh = (last.shift % NS) * scale;
-    // show the central band of rows that contains the pupil track
-    ctx.drawImage(ic.c, 0, NS / 4 - 30, NS, NS / 2, 8 - sh, 8, NS * scale, H);
-    ctx.drawImage(ic.c, 0, NS / 4 - 30, NS, NS / 2, 8 - sh + NS * scale, 8, NS * scale, H);
+    const sh = (frame.shift % NS) * scale;
+    ctx.drawImage(screenImg, 0, NS / 4 - 30, NS, NS / 2, 8 - sh, 8, NS * scale, H);
+    ctx.drawImage(screenImg, 0, NS / 4 - 30, NS, NS / 2, 8 - sh + NS * scale, 8, NS * scale, H);
     ctx.restore();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(8 + (DP / 2) * scale, 8 + (NS / 4 - (NS / 4 - 30) + DP / 2) * scale, (DP / 2) * scale, 0, 7); ctx.stroke();
-    // residual pupil phase
-    const off = (n - DP) / 2, ip = imageCanvas(DP, DP);
-    let rm = 1e-9; for (let y = 0; y < DP; y++) for (let x = 0; x < DP; x++) rm = Math.max(rm, Math.abs(last.W[(off + y) * n + off + x]));
-    let s2 = 0, s1 = 0, c = 0;
-    for (let y = 0; y < DP; y++) for (let x = 0; x < DP; x++) {
-      const k = (off + y) * n + off + x, o = (y * DP + x) * 4;
-      if (amp[k] < 0.5) { ip.data[o + 3] = 0; continue; }
-      const v = last.W[k]; s1 += v; s2 += v * v; c++;
-      const tt = Math.round((v / Math.max(rm, 0.5) * 0.5 + 0.5) * 255) * 3;
-      ip.data[o] = DIV[tt]; ip.data[o + 1] = DIV[tt + 1]; ip.data[o + 2] = DIV[tt + 2]; ip.data[o + 3] = 255;
-    }
-    ip.put();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(8 + (DP / 2) * scale, 8 + (30 + DP / 2) * scale, (DP / 2) * scale, 0, 7); ctx.stroke();
     const ps = H, px0 = 8 + W2 + (w - W2 - 8 - ps) / 2;
-    ctx.imageSmoothingEnabled = true; ctx.drawImage(ip.c, px0, 8, ps, ps);
-    const rms = Math.sqrt(Math.max(0, s2 / c - (s1 / c) ** 2));
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(frame.pupil, px0, 8, ps, ps);
     ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
-    ctx.fillText(`residual ${rms.toFixed(2)} λ RMS`, px0, hh - 4);
+    ctx.fillText(`residual ${frame.rms.toFixed(2)} λ RMS`, px0, hh - 4);
   }
 
   reset();

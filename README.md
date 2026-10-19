@@ -769,7 +769,7 @@ flowchart TB
     LIB --> KATEX["vendor/katex"]
 ```
 
-Heavy FFT and ray work (PSF, Zernike and JWST phasing, MTF, coronagraph, the ray tracer's wavefront PSF, the real-ray flare ghosts and the traced bokeh kernels) runs in a **module Web Worker** (`js/workers/compute.js`), so the page stays responsive: the longest main-thread freeze during a 5-wavelength JWST PSF dropped from about 1 s to 16 ms. `latest(channel)` drops superseded requests while you drag, and the PSF lab shows a 256² preview before the 512² render. The per-pixel ray casters (projection, tilt–shift, perspective, depth of field and gravitational lensing) render in **parallel row bands on a pool of up to four workers**; the tilt–shift town keeps its depth map and blur stack in a worker, so only a focal-length change recomputes them. On the Raspberry Pi 4 the median main-thread freeze while dragging a slider fell from 3.2 s to 0.12 s (tilt–shift), 1.1 s to 0.27 s (depth of field), 0.94 s to 0.12 s (projection), 0.92 s to 0.10 s (lensing) and 0.54 s to 0.10 s (perspective). Live-calculation equations are typeset when a drag pauses.
+Heavy FFT and ray work (PSF, Zernike and JWST phasing, MTF, coronagraph, the ray tracer's wavefront PSF, the real-ray flare ghosts and the traced bokeh kernels) runs in a **module Web Worker** (`js/workers/compute.js`), so the page stays responsive: the longest main-thread freeze during a 5-wavelength JWST PSF dropped from about 1 s to 16 ms. `latest(channel)` drops superseded requests while you drag, and the PSF lab shows a 256² preview before the 512² render. The per-pixel ray casters (projection, tilt–shift, perspective, depth of field and gravitational lensing) render in **parallel row bands on a pool of up to four workers**; the tilt–shift town keeps its depth map and blur stack in a worker, so only a focal-length change recomputes them. On the Raspberry Pi 4 the median main-thread freeze while dragging a slider fell from 3.2 s to 0.12 s (tilt–shift), 1.1 s to 0.27 s (depth of field), 0.94 s to 0.12 s (projection), 0.92 s to 0.10 s (lensing) and 0.54 s to 0.10 s (perspective). The seeing animation streams frames from a worker that holds the simulation. Live-calculation equations are typeset when a drag pauses.
 
 Each laboratory module exports a single `mount(root, meta)` function. It builds controls, canvases, live calculations and theory, and returns a cleanup function. The router calls that cleanup when you navigate away, to stop animations and disconnect `ResizeObserver`s.
 
@@ -820,6 +820,7 @@ Optica_Viva/
 │   │   ├── projection.js      Lens projections and the hall scene of the projection laboratory
 │   │   ├── lensing.js         Lens deflection (point, SIS, SIE + shear), source galaxy, critical curves, renders
 │   │   ├── perspective.js     Portrait scene of the perspective laboratory
+│   │   ├── seeing.js          Frozen-flow turbulence + AO session for the seeing laboratory (runs in a worker)
 │   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
 │   │   ├── shake.js           Hand-held shake model, type-2 stabiliser servo with gyro random walk, Monte-Carlo sharpness
 │   │   ├── stacking.js        CCD equation for stacks, sky brightness from Bortle class, sky-limited sub length
