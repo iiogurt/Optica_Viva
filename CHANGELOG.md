@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Fixed
+- Figure captions stay on one line clear of the PNG/CSV buttons (the full caption unfolds on hover or keyboard focus); long captions no longer wrap into the drawing on the macro, panorama, polarisation, eye, tilt–shift and interferometry pages.
+- Ray tracer: glass names of thin neighbouring elements (e.g. the Biogon's cemented groups) are staggered instead of printed over each other.
+- Perspective: the top view's pillar note moved below the drawing, out from under the export buttons.
+
 ## [1.19.0] - 2026-10-19
 
 Every control in three more languages, and no more frozen pages on slow machines: the ray-cast laboratories render in parallel on a pool of workers and the seeing animation streams from one.

@@ -115,7 +115,7 @@ export default function mount(root, meta) {
     ctx.fillStyle = '#e4b696'; ctx.beginPath(); ctx.arc(X(0), Y(0), Math.max(3, 0.11 * sc), 0, 7); ctx.fill();
     for (const B of BOX.slice(1)) { ctx.fillStyle = 'rgba(200,190,170,0.85)'; ctx.fillRect(X(B.a[2]), Y(B.b[0]), (B.b[2] - B.a[2]) * sc, (B.b[0] - B.a[0]) * sc); }
     ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
-    ctx.fillText('camera', X(-st.d) - 10, Y(0) + 22); ctx.fillText('pillars at 4, 8, 12, 16 m', X(4), 16);
+    ctx.fillText('camera', X(-st.d) - 10, Y(0) + 22); ctx.fillText('pillars at 4, 8, 12, 16 m', X(4), hh - 10);
   }
   function drawGrid(ctx, w, hh) {
     ctx.fillStyle = '#07080d'; ctx.fillRect(0, 0, w, hh);
