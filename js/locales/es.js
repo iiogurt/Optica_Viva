@@ -1235,4 +1235,6 @@ export default {
   "Reset the view": "Restablecer la vista",
   "This 3-D view needs WebGL 2, which this browser does not provide. The 2-D figures show the same results.": "Esta vista 3D necesita WebGL 2, que este navegador no ofrece. Las figuras 2D muestran los mismos resultados.",
   "3-D view: skew rays through the real lens (on axis and at the chosen field)": "Vista 3D: rayos oblicuos a través del objetivo real (en el eje y en el campo elegido)",
+  "3-D: the wavefront over the pupil (left) and the star image it makes, log brightness (right)": "3D: el frente de onda sobre la pupila (izquierda) y la imagen de estrella que produce, brillo logarítmico (derecha)",
+  "3-D: the star image as a relief, height = log brightness, in its own colours": "3D: la imagen de la estrella en relieve, altura = brillo logarítmico, en sus propios colores",
 };

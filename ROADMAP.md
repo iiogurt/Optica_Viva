@@ -463,7 +463,7 @@ Candidates, in order of how much the third dimension adds:
 - [x] **P1 · M** **Ray tracer**: glass elements as solids, mirrors, the stop and the sensor, with real skew rays on axis and at the chosen field (#128). *Next: colour by wavelength, the sagittal and tangential foci, and a vignetted-ray view.*
 - [ ] **P1 · M** **Tilt–shift / Scheimpflug**: the sensor, the tilted lens plane and the plane of focus meeting on the hinge line, with the depth-of-field wedge over the toy town.
 - [ ] **P1 · M** **Polarisation**: the electric-field vector tracing linear, circular and elliptical paths along the beam, and the Poincaré sphere with the state after each element.
-- [ ] **P1 · S** **Wavefronts and PSFs as surfaces**: Zernike wavefronts and the log PSF as lit height fields (Zernike, PSF and seeing laboratories).
+- [x] **P1 · S** **Wavefronts and PSFs as surfaces** (#129): the Zernike wavefront over a round pupil next to its PSF's log relief, and the PSF laboratory's star image as a relief in its own colours (JWST's six spikes in near-infrared colour). *The seeing phase screen remains.*
 - [ ] **P2 · M** **Depth of field**: the camera's view frustum with the near and far limits and the cards inside the sharp zone.
 - [ ] **P2 · M** **Projections**: the sphere of directions with Tissot circles, unrolled onto each projection's image plane.
 - [ ] **P2 · M** **Gravitational lensing**: rays bending past the lens galaxy between source and observer, with the Einstein ring as a cone.

@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **3-D wavefronts and PSFs** (`js/lib/surf3d.js`): the Zernike laboratory shows the wavefront as a coloured relief over a round pupil next to the log relief of the star image it makes, and the PSF laboratory shows its star image as a relief in its own colours. The 3-D engine gained per-vertex colours.
+
+### Added
 - **3-D views** (`js/lib/gl3d.js`, `js/lib/mesh3d.js`): a dependency-free WebGL 2 renderer with an orbit camera (drag, wheel or pinch, shift-drag to pan, double-click or ⟲ to reset, arrow keys and +/− when focused), glass with a Fresnel rim, glowing anti-aliased lines, labels and PNG export; it renders only when something changes and says so where WebGL 2 is missing. First use: the **ray tracer's 3-D view** (`js/lib/lens3d.js`) shows the glass elements as solids, mirrors, the stop and the sensor, with real skew rays on axis and at the chosen field. ROADMAP v1.20 lists the researched 3-D views for the other laboratories. The headless browser of the tests now has WebGL 2 through SwiftShader (2-D canvases stay in software), and the smoke test checks that the 3-D view starts. `test/mesh3d.test.mjs` covers the geometry and the scene.
 
 ### Fixed

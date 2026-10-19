@@ -4,6 +4,8 @@ import { rasterAperture, ZERNIKE_NAMES } from '../lib/pupil.js';
 import { lut } from '../lib/color.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
+import { view3d } from '../lib/gl3d.js';
+import { wavefrontMesh, psfMesh, ring } from '../lib/surf3d.js';
 
 const MODES = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 22];
 const PRESETS = {
@@ -57,7 +59,8 @@ export default function mount(root, meta) {
   const ps = stage({ aspect: 1, label: 'PSF', draw: (c, w, hh) => drawMap(c, w, hh, 'psf') });
   const tf = stage({ aspect: 5, label: 'Through focus: −1, −½, 0, +½, +1 λ of added defocus', draw: drawThrough, minH: 130 });
   const sp = stage({ aspect: 2.4, label: '', draw: drawStrehl, cls: 'plain', minH: 220 });
-  root.append(lab([h('div.grid-3', {}, wf.el, ifg.el, ps.el), tf.el, h('div.card', { style: { padding: '8px' } }, sp.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D: the wavefront over the pupil (left) and the star image it makes, log brightness (right)', aspect: 2.3, minH: 260, yaw: -0.5, pitch: 0.55 });
+  root.append(lab([h('div.grid-3', {}, wf.el, ifg.el, ps.el), v3.el, tf.el, h('div.card', { style: { padding: '8px' } }, sp.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   const coeffs = () => { const c = {}; for (const j of MODES) c[j] = ctl.state['z' + j]; return c; };
 
@@ -84,6 +87,24 @@ export default function mount(root, meta) {
     calc.say(`The wavefront deviates by <strong>${rms.toFixed(3)} waves RMS</strong> (${(mx - mn).toFixed(2)} peak to valley), so the star's peak is <strong>${(D.strehl * 100).toFixed(0)} %</strong> as bright as with a perfect lens` + (D.strehl >= 0.8 ? ': diffraction-limited by the Maréchal criterion.' : '.'));
     calc.set(String.raw`\begin{aligned}\sigma_W^2 &= \textstyle\sum_{j\ge4} a_j^2 = ${terms}\\ \sigma_W &= ${texNum(rms, 4)}\,\lambda\\ S &\approx e^{-(2\pi\sigma_W)^2} = ${texNum(sm, 4)}\\ S_\text{exact} &= \frac{\max|\mathcal F\{Pe^{i2\pi W}\}|^2}{\max|\mathcal F\{P\}|^2} = ${texNum(D.strehl, 4)}\end{aligned}`);
     [wf, ifg, ps, tf, sp].forEach((s) => s.redraw());
+    show3d(r);
+  }
+
+  // 3-D: wavefront relief (height ∝ W, scaled so the largest |W| is fixed) and the PSF's log relief
+  let shown3d = false;
+  function show3d(r) {
+    if (!v3.ok) return;
+    const wf3 = wavefrontMesh(r.W, r.n, r.Dpx, { cx: -1.25 }), psf3 = psfMesh(r.I, r.n, { crop: 64, cx: 1.25 });
+    const sq = [[0.25, 0, -1], [2.25, 0, -1], [2.25, 0, 1], [0.25, 0, 1], [0.25, 0, -1]];
+    v3.setScene({
+      meshes: [{ mesh: wf3.mesh }, { mesh: psf3 }],
+      lines: [{ points: ring(1, -1.25), color: [1, 1, 1, 0.35], width: 1 }, { points: sq, color: [1, 1, 1, 0.25], width: 1 }],
+      labels: [
+        { p: [-1.25, 0.75, -1.15], text: `W(ρ, θ), height ±${wf3.wmax.toFixed(2)} λ` },
+        { p: [1.25, 1.15, -1.15], text: `PSF, log brightness · Strehl ${r.strehl.toFixed(3)}` },
+      ],
+    }, shown3d);
+    shown3d = true;
   }
 
   const DIV = lut('diverging'), INF = lut('inferno');
@@ -253,5 +274,5 @@ export default function mount(root, meta) {
     'J. Rigby et al., "The science performance of JWST as characterized in commissioning", PASP 135, 048001 (2023).',
     'D. S. Acton et al., "Wavefront sensing and controls for the James Webb Space Telescope", Proc. SPIE 8442 (2012).',
   ]));
-  return () => [wf, ifg, ps, tf, sp, segPupil, segPsf].forEach((s) => s.destroy());
+  return () => { [wf, ifg, ps, tf, sp, segPupil, segPsf].forEach((s) => s.destroy()); v3.destroy(); };
 }

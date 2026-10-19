@@ -52,3 +52,22 @@ test('ray tracer scene: real rays end on the image plane; a mirror stop has no i
   const T = LENSES.tma, pt = paraxial(T), st = lensScene(T, { sd: autoSemiDiameters(T), par: pt, zImg: pt.zImage, fields: [0] });
   assert.equal(st.meshes.filter((m) => !m.glass && m.opacity === undefined).length, 0, 'no opaque iris ring for the mirror stop');
 });
+
+test('wavefront and PSF surfaces: heights scale to the extremes; the PSF peak is the summit', async () => {
+  const { wavefrontMesh, psfMesh } = await import('../js/lib/surf3d.js');
+  const { TASKS } = await import('../js/lib/tasks.js');
+  const r = TASKS.zernikeLab({ coeffs: { 8: 0.25 }, n: 128, Dpx: 32 }).result;
+  const w = wavefrontMesh(r.W, r.n, r.Dpx, { height: 0.5 });
+  let hi = -Infinity, lo = Infinity;
+  for (let i = 1; i < w.mesh.positions.length; i += 3) { hi = Math.max(hi, w.mesh.positions[i]); lo = Math.min(lo, w.mesh.positions[i]); }
+  near(Math.max(hi, -lo), 0.5, 1e-6, 'largest |W| drawn at the full height');
+  assert.ok(w.wmax > 0.25 && w.wmax < 1, `coma 0.25 λ RMS peaks near ±${w.wmax.toFixed(2)} λ`);
+  assert.equal(w.mesh.colors.length, w.mesh.positions.length, 'a colour per vertex');
+  // a perfect lens: the peak sits on the axis (coma would move it)
+  const r0 = TASKS.zernikeLab({ coeffs: {}, n: 128, Dpx: 32 }).result;
+  const p = psfMesh(r0.I, r0.n, { crop: 32, height: 0.9, res: 32 });
+  let top = 0, at = -1;
+  for (let i = 1; i < p.positions.length; i += 3) if (p.positions[i] > top) { top = p.positions[i]; at = i; }
+  near(top, 0.9, 0.02, 'the PSF peak reaches the full height');
+  near(Math.hypot(p.positions[at - 1], p.positions[at + 1]), 0, 0.15, 'near the centre');
+});
