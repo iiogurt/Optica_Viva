@@ -75,6 +75,7 @@
     "js/lib/spectro.js",
     "js/lib/stacking.js",
     "js/lib/starshade.js",
+    "js/lib/surf3d.js",
     "js/lib/survey.js",
     "js/lib/tasks.js",
     "js/lib/thinfilm.js",

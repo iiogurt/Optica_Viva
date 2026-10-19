@@ -4,6 +4,8 @@ import { airy, besselJ1 as besselJ1x } from '../lib/pupil.js';
 import { latest } from '../lib/compute.js';
 import { oetf, linspace } from '../lib/color.js';
 import { plot } from '../lib/plot.js';
+import { view3d } from '../lib/gl3d.js';
+import { psfMesh } from '../lib/surf3d.js';
 
 const PRESETS = {
   circle: { label: 'Circular (ideal lens)', spec: { type: 'circle' } },
@@ -55,7 +57,8 @@ export default function mount(root, meta) {
   const pup = stage({ aspect: 1, label: 'Pupil P(x,y)', draw: drawPupil });
   const prof = stage({ aspect: 1, label: '', draw: drawProfile, cls: 'plain' });
   const ee = stage({ aspect: 1, label: '', draw: drawEE, cls: 'plain' });
-  root.append(lab([main.el, h('div.grid-3', {}, pup.el, prof.el, ee.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D: the star image as a relief, height = log brightness, in its own colours', aspect: 1.8, minH: 260, yaw: -0.6, pitch: 0.6 });
+  root.append(lab([main.el, v3.el, h('div.grid-3', {}, pup.el, prof.el, ee.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   // Heavy work runs in the compute worker. While controls move, a 256² preview (same field of
   // view, Q = 2) answers quickly; the full 512² render (Q = 4) follows once input settles.
@@ -67,7 +70,7 @@ export default function mount(root, meta) {
     if (spec.type === 'polygon') { spec.blades = st.blades; spec.curvature = st.curvature; }
     const band = BANDS[st.band];
     const args = { spec, lambdas: band.lambdas, ref: band.ref, defocus: st.defocus, falseColor: !!band.falseColor };
-    const show = (r, preview) => { data = { ...r, P, spec, band, preview }; update(); };
+    const show = (r, preview) => { data = { ...r, P, spec, band, preview }; update(); if (!preview) show3d(); };
     clearTimeout(fullTimer);
     job('psfLab', { ...args, n: 256, Dpx: 128 }).then((r) => show(r, true)).catch(console.error);
     fullTimer = setTimeout(() => job('psfLab', { ...args, n: 512, Dpx: 128 }).then((r) => show(r, false)).catch(console.error), 300);
@@ -98,6 +101,16 @@ export default function mount(root, meta) {
       ? String.raw`\begin{aligned}\theta_R &= 1.22\,\lambda/D\\ &= 1.22\times\frac{${texNum(band.ref / 1000, 3)}\,\mu\text{m}}{${D}\ \text{m}}\\ &= ${texNum((1.22 * lam / D) * 206265 * 1000, 4)}\ \text{mas}\\ \text{PSF}(\boldsymbol\theta) &= \Big|\mathcal F\{P\,e^{i2\pi W/\lambda}\}\Big|^2_{\,\mathbf f=\boldsymbol\theta/\lambda}\end{aligned}`
       : String.raw`\begin{aligned}I(v) &= \left[\frac{2J_1(v)}{v}\right]^2,\quad v = \frac{\pi r}{\lambda N}\\ r_\text{Airy} &= 1.22\,\lambda N = 1.22\times${texNum(band.ref / 1000, 3)}\times${texNum(st.N, 3)}\\ &= ${texNum(1.22 * band.ref / 1000 * st.N, 3)}\ \mu\text{m}\end{aligned}`);
     main.redraw(); pup.redraw(); prof.redraw(); ee.redraw();
+  }
+
+  // 3-D relief of the zoomed field (the full render only), in the PSF's own colours
+  let shown3d = false;
+  function show3d() {
+    if (!v3.ok || !data) return;
+    // the central third of the 2-D field, sampled about once per pixel
+    const { n } = data, crop = Math.max(48, Math.round(n / ctl.state.zoom / 3));
+    v3.setScene({ meshes: [{ mesh: psfMesh(data.Lm, n, { crop, res: Math.min(170, crop), height: 0.8, decades: 4, rgb: [data.R, data.G, data.B] }) }], lines: [], labels: [] }, shown3d);
+    shown3d = true;
   }
 
   function drawPSF(ctx, w, hh) {
@@ -218,7 +231,7 @@ export default function mount(root, meta) {
     'M. D. Perrin et al., "Updated point spread function simulations for JWST with WebbPSF", Proc. SPIE 9143 (2014).',
     'J. E. Krist, R. N. Hook &amp; F. Stoehr, "20 years of Hubble Space Telescope optical modeling using Tiny Tim", Proc. SPIE 8127 (2011).',
   ]));
-  return () => [main, pup, prof, ee].forEach((s) => s.destroy());
+  return () => { [main, pup, prof, ee].forEach((s) => s.destroy()); v3.destroy(); };
 }
 
 // Bessel J0 and J1 (polynomial approximations, Abramowitz & Stegun 9.4) for the EE curve.

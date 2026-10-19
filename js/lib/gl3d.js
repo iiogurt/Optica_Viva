@@ -33,16 +33,17 @@ function mul(a, b) {
 
 // ── shaders ───────────────────────────────────────────────────────────────────────────────
 const MESH_VS = `#version 300 es
-in vec3 p; in vec3 n;
+in vec3 p; in vec3 n; in vec3 c;
 uniform mat4 mvp;
-out vec3 vN; out vec3 vP;
-void main() { vN = n; vP = p; gl_Position = mvp * vec4(p, 1.0); }`;
+out vec3 vN; out vec3 vP; out vec3 vC;
+void main() { vN = n; vP = p; vC = c; gl_Position = mvp * vec4(p, 1.0); }`;
 const MESH_FS = `#version 300 es
 precision highp float;
-in vec3 vN; in vec3 vP;
-uniform vec3 color; uniform float opacity; uniform vec3 eye; uniform int glass;
+in vec3 vN; in vec3 vP; in vec3 vC;
+uniform float opacity; uniform vec3 eye; uniform int glass;
 out vec4 o;
 void main() {
+  vec3 color = vC; // per-vertex colour, or the mesh colour as a constant attribute
   vec3 N = normalize(vN), V = normalize(eye - vP);
   if (dot(N, V) < 0.0) N = -N; // light both sides
   vec3 L1 = normalize(vec3(0.45, 0.8, -0.4)), L2 = normalize(vec3(-0.6, -0.2, 0.7));
@@ -105,7 +106,8 @@ function program(gl, vs, fs) {
 
 // view3d({ label, aspect, minH, maxH, yaw, pitch }) → { el, setScene(scene, keepCamera), redraw(), destroy() }
 // scene = {
-//   meshes: [{ mesh, color: [r, g, b] (0–1), opacity = 1, glass = false }],
+//   meshes: [{ mesh, color: [r, g, b] (0–1), opacity = 1, glass = false }] (mesh.colors, if present:
+//           per-vertex RGB, replacing color),
 //   lines:  [{ points: [[x, y, z], …], color: [r, g, b, a], width = 1.5 (px), glow = true }],
 //   labels: [{ p: [x, y, z], text, color = '#fff' }],
 //   frame:  optional { centre, size } to aim the camera at (default: everything)
@@ -130,7 +132,7 @@ export function view3d({ label = '', aspect = 2, minH = 260, maxH = 620, yaw = -
   let objs = [], lineVAO = null, lineCount = 0, lineBufs = [], labels = [], dirty = true, raf = 0, W = 1, H = 1, M = null;
 
   function release() {
-    for (const o of objs) { gl.deleteBuffer(o.pb); gl.deleteBuffer(o.nb); gl.deleteBuffer(o.ib); gl.deleteVertexArray(o.vao); }
+    for (const o of objs) { gl.deleteBuffer(o.pb); gl.deleteBuffer(o.nb); if (o.cb) gl.deleteBuffer(o.cb); gl.deleteBuffer(o.ib); gl.deleteVertexArray(o.vao); }
     for (const b of lineBufs) gl.deleteBuffer(b);
     if (lineVAO) gl.deleteVertexArray(lineVAO);
     objs = []; lineBufs = []; lineVAO = null; lineCount = 0;
@@ -143,10 +145,13 @@ export function view3d({ label = '', aspect = 2, minH = 260, maxH = 620, yaw = -
       let loc = gl.getAttribLocation(mesh.p, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
       const nb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, nb); gl.bufferData(gl.ARRAY_BUFFER, m.mesh.normals, gl.STATIC_DRAW);
       loc = gl.getAttribLocation(mesh.p, 'n'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
+      let cb = null;
+      loc = gl.getAttribLocation(mesh.p, 'c');
+      if (m.mesh.colors) { cb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, cb); gl.bufferData(gl.ARRAY_BUFFER, m.mesh.colors, gl.STATIC_DRAW); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0); }
       const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, m.mesh.indices, gl.STATIC_DRAW);
       gl.bindVertexArray(null);
       const c = bounds([m.mesh]).centre;
-      objs.push({ vao, pb, nb, ib, count: m.mesh.indices.length, color: m.color || [0.8, 0.8, 0.8], opacity: m.opacity ?? 1, glass: !!m.glass, centre: c });
+      objs.push({ vao, pb, nb, cb, ib, count: m.mesh.indices.length, color: m.color || [0.8, 0.8, 0.8], opacity: m.opacity ?? 1, glass: !!m.glass, centre: c, loc });
     }
     // all polylines in one buffer: per segment 4 vertices (a, b, side/end, colour), 6 indices
     const segs = [];
@@ -203,7 +208,8 @@ export function view3d({ label = '', aspect = 2, minH = 260, maxH = 620, yaw = -
     gl.uniformMatrix4fv(mesh.u.mvp, false, M.mvp); gl.uniform3fv(mesh.u.eye, M.eye);
     const d2 = (o) => (o.centre[0] - M.eye[0]) ** 2 + (o.centre[1] - M.eye[1]) ** 2 + (o.centre[2] - M.eye[2]) ** 2;
     const opaque = objs.filter((o) => !o.glass && o.opacity >= 1), clear = objs.filter((o) => o.glass || o.opacity < 1).sort((a, b) => d2(b) - d2(a));
-    const draw = (o) => { gl.uniform3fv(mesh.u.color, o.color); gl.uniform1f(mesh.u.opacity, o.opacity); gl.uniform1i(mesh.u.glass, o.glass ? 1 : 0); gl.bindVertexArray(o.vao); gl.drawElements(gl.TRIANGLES, o.count, gl.UNSIGNED_INT, 0); };
+    // without per-vertex colours the attribute is disabled in the VAO and takes this constant
+    const draw = (o) => { if (!o.cb) gl.vertexAttrib3f(o.loc, o.color[0], o.color[1], o.color[2]); gl.uniform1f(mesh.u.opacity, o.opacity); gl.uniform1i(mesh.u.glass, o.glass ? 1 : 0); gl.bindVertexArray(o.vao); gl.drawElements(gl.TRIANGLES, o.count, gl.UNSIGNED_INT, 0); };
     gl.depthMask(true); opaque.forEach(draw);
     gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
     clear.forEach(draw);
