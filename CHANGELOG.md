@@ -6,12 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.18.0] - 2026-10-19
+
+Glass, assembly and language: a 431-glass catalogue from SCHOTT, OHARA and CDGM with a glass-map picker, element decenter and tilt traced exactly in the tolerance analysis, and the interface in German, French and Spanish.
+
 ### Added
-- **Interface in German, French and Spanish** (`js/lib/i18n.js`, `js/locales/`): navigation, laboratory titles and descriptions, the page chrome (ladder, header buttons, export, live-calculation title), guided-tour and exercise controls, the Start-here path and the home page. Strings are keyed by their English text, so anything untranslated falls back to English; the browser's language is the default and a picker at the foot of the sidebar changes it. Laboratory explanations stay English for now, which translated pages say. `test/i18n.test.mjs` collects every interface string (`t()`, `N_()`, the laboratory registry, tours and the path) and requires every locale to translate it with the same placeholders.
-- Home page: the glass and prescription counts are computed (437 glasses, 15 prescriptions) instead of the stale "12 glasses, 13 prescriptions".
-- **Decenter and tilt** in the exact ray tracer: a surface may carry `dec: [dx, dy]` and `tilt: [ax, ay]`, traced in its own frame. The Monte-Carlo tolerance analysis now adds element decenter and tilt (singlets and cemented groups move as one, tilting about their first vertex), samples both sides of the field, and draws a per-element sensitivity chart; in the Cooke triplet the negative middle element is the most sensitive. Checked against the exact displacement of a tilted plate, the 2α deviation of a tilted mirror and a laterally moved lens (`test/decenter.test.mjs`).
 - **Glass catalogue**: 431 current glasses from SCHOTT (105 N- and P- glasses), OHARA (145 recommended S- glasses) and CDGM (181 H- glasses), three-term Sellmeier fits from the makers' Zemax catalogues via the public-domain refractiveindex.info database. `scripts/glasscat.mjs` generates `js/lib/glasscat.js`; `index()` looks every name up, Zemax import recognises them, and glasses get six-digit codes and a crown/flint family. `test/glass.test.mjs` checks every fit against its catalogue n_d (to 10⁻⁵) and V_d (to 0.01), and SCHOTT's ΔP_g,F.
 - **Glass-map picker** in the ray tracer's prescription editor: a *map* button next to each glass opens an Abbe diagram (n_d or P_g,F against V_d) of the whole catalogue, filtered by maker or searched by name or glass code; hover shows a glass's data, click uses it. The colour laboratory's Abbe and partial-dispersion diagrams show the catalogue behind the reference glasses.
+- **Decenter and tilt** in the exact ray tracer: a surface may carry `dec: [dx, dy]` and `tilt: [ax, ay]`, traced in its own frame. The Monte-Carlo tolerance analysis now adds element decenter and tilt (singlets and cemented groups move as one, tilting about their first vertex), samples both sides of the field, and draws a per-element sensitivity chart; in the Cooke triplet the negative middle element is the most sensitive. Checked against the exact displacement of a tilted plate, the 2α deviation of a tilted mirror and a laterally moved lens (`test/decenter.test.mjs`).
+- **Interface in German, French and Spanish** (`js/lib/i18n.js`, `js/locales/`): navigation, laboratory titles and descriptions, the page chrome (ladder, header buttons, export, live-calculation title), guided-tour and exercise controls, the Start-here path and the home page. Strings are keyed by their English text, so anything untranslated falls back to English; the browser's language is the default and a picker at the foot of the sidebar changes it. Laboratory explanations stay English for now, which translated pages say. `test/i18n.test.mjs` collects every interface string (`t()`, `N_()`, the laboratory registry, tours and the path) and requires every locale to translate it with the same placeholders.
+
+### Fixed
+- Home page: the glass and prescription counts are computed (437 glasses, 15 prescriptions) instead of the stale "12 glasses, 13 prescriptions".
 
 ## [1.17.0] - 2026-10-19
 
@@ -662,7 +668,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.17.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.18.0...HEAD
+[1.18.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.14.0...v1.15.0
