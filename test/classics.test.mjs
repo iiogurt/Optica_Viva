@@ -2,7 +2,7 @@
 // every field traces, and the optimiser's back-focus constraint.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LENSES, paraxial, aimRay, trace, vertices } from '../js/lib/raytrace.js';
+import { LENSES, paraxial, aimRay, trace, toPlane, vertices } from '../js/lib/raytrace.js';
 import { optimise } from '../js/lib/optimise.js';
 
 const near = (a, e, tol, msg) => assert.ok(Math.abs(a - e) <= tol, `${msg}: ${a} vs ${e} ± ${tol}`);
@@ -25,7 +25,7 @@ test('telephoto is shorter than its focal length; retrofocus focuses farther bac
 });
 
 test('every classic form traces across its whole field at full aperture', () => {
-  for (const k of ['tessar', 'petzval', 'telephoto', 'retrofocus']) {
+  for (const k of ['tessar', 'petzval', 'telephoto', 'retrofocus', 'biogon']) {
     const L = LENSES[k], par = paraxial(L);
     for (const f of [0, 0.5, 1]) for (const [px, py] of [[0, 0], [0, 1], [0, -1], [1, 0]]) {
       const a = aimRay(L, 587.56, f * L.field, px, py, par);
@@ -38,4 +38,16 @@ test('optimiser: minimum back focal distance is respected', () => {
   const r = optimise(LENSES.cooke, { iterations: 8, minBfd: 46, bfdWeight: 5 });
   assert.ok(bfd(r.lens) > 45.5, `back focus ${bfd(r.lens)}`);
   near(r.efl, 50, 0.5, 'focal length held');
+});
+
+test('Biogon: Bertele\'s patent example reproduces its focal length; distortion stays below 0.3 % to ±45°', () => {
+  const L = LENSES.biogon, p = paraxial(L);
+  near(p.efl / 0.38, 100, 0.1, 'patent example 2: f = 100 mm (before scaling to 38 mm)');
+  near(p.efl / L.epd, 4.5, 0.01, 'f-number');
+  near(p.bfl, L.surfaces.at(-1).t, 0.01, 'image at the paraxial focus');
+  for (const th of [20, 35, 45]) {
+    const a = aimRay(L, 587.56, th, 0, 0, p), y = toPlane(trace(L, 587.56, a.p, a.d, { zv: p.zv }), p.zImage)[1];
+    const dist = (Math.abs(y) / (p.efl * Math.tan((th * Math.PI) / 180)) - 1) * 100;
+    assert.ok(Math.abs(dist) < 0.3, `distortion at ${th}°: ${dist.toFixed(3)} %`);
+  }
 });

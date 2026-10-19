@@ -188,7 +188,7 @@ Real photographs explained by the laboratories: Hubble before and after its repa
 **Real-lens ray tracing** · `#/raytracer`<br>
 <img src="docs/screenshots/raytracer.webp" alt="Ray tracer: Cooke triplet with caustic, spot diagram, ray fan and diffraction PSF">
 
-Exact 3-D ray tracing through a plano-convex singlet (both orientations), an **aspheric** plano-hyperbolic singlet with zero spherical aberration, a BK7/F2 achromat designed for this project, the Cooke triplet and the Double-Gauss, plus four classic forms designed here with the built-in optimiser: a **Tessar**, a **Petzval** portrait lens, a **telephoto** (0.79 f long) and a **retrofocus** wide angle (back focus longer than the focal length). **Mirrors** are traced too: the **Hubble Space Telescope** as designed (Ritchey–Chrétien), with its 1990 flawed primary, and a classical Cassegrain of the same layout, plus a **three-mirror anastigmat** (Korsch type) with the James Webb Space Telescope's first-order layout and a flat, diffraction-limited field. Includes real-ray aiming at the stop, a magnified caustic, spot diagram, ray fans, chromatic focal shift, best-focus search, and the **diffraction PSF of the traced wavefront** (OPD → FFT). Seidel sums per surface, exact field curves and **MTF across the field** show where image quality is won and lost. A **prescription editor** lets you modify any design surface by surface, **optimise** it (damped least squares), run a **Monte-Carlo tolerance analysis**, or import a Zemax `.zmx`; custom lenses are shareable by link.
+Exact 3-D ray tracing through a plano-convex singlet (both orientations), an **aspheric** plano-hyperbolic singlet with zero spherical aberration, a BK7/F2 achromat designed for this project, the Cooke triplet and the Double-Gauss, plus four classic forms designed here with the built-in optimiser: a **Tessar**, a **Petzval** portrait lens, a **telephoto** (0.79 f long) and a **retrofocus** wide angle (back focus longer than the focal length). The **Biogon** f/4.5 symmetric wide angle (±45°) is traced from Bertele's patent example. **Mirrors** are traced too: the **Hubble Space Telescope** as designed (Ritchey–Chrétien), with its 1990 flawed primary, and a classical Cassegrain of the same layout, plus a **three-mirror anastigmat** (Korsch type) with the James Webb Space Telescope's first-order layout and a flat, diffraction-limited field. Includes real-ray aiming at the stop, a magnified caustic, spot diagram, ray fans, chromatic focal shift, best-focus search, and the **diffraction PSF of the traced wavefront** (OPD → FFT). Seidel sums per surface, exact field curves and **MTF across the field** show where image quality is won and lost. A **prescription editor** lets you modify any design surface by surface, **optimise** it (damped least squares), run a **Monte-Carlo tolerance analysis**, or import a Zemax `.zmx`; custom lenses are shareable by link.
 
 </td>
 <td width="50%" valign="top">
@@ -904,6 +904,7 @@ The numerical core was checked against published or analytically known values. E
 | Hubble Space Telescope focal length, f-number | 57.60 m, f/24.00 | 57.6 m, f/24 |
 | Hubble aplanatic conic constants from S<sub>I</sub> = S<sub>II</sub> = 0 | −1.0022985, −1.4969 | design: −1.0022985, −1.4963 |
 | Hubble 1990 primary (K = −1.0139): edge error at 1.2 m | 2.23 µm | failure report: ≈ 2.2 µm |
+| Biogon, US 2,721,499 Example 2: focal length; real-ray distortion at 20°, 35°, 45° | 100.06 mm; below 0.2 % | patent: f = 100 mm; Biogon: practically distortion-free |
 | Three-mirror anastigmat (JWST layout, flat field): primary conic from S<sub>I</sub> = S<sub>II</sub> = S<sub>III</sub> = 0 | −0.99715 | JWST primary specification −0.99666 ± 0.0005 (Stahl 2013) |
 | Off-axis PSF pupil widths (singlet, flat rear stop, 25°): sagittal, tangential | 1.7740, 1.3964 (in units of 1/(2N)) | flat-disk geometry: 1.7740, 1.3964 |
 | Cooke triplet 14°: OPD P-V of the PSF pupil | 3.60 λ | direct trace of 401² rays: 3.62 λ |
@@ -1119,7 +1120,7 @@ Each laboratory page lists its own additional references.
 
 - [KaTeX](https://katex.org/) 0.16.11 (MIT licence) is vendored in `vendor/katex/` with its licence file.
 - CIE colorimetric tables (1931 observer, daylight, illuminants, test colour samples) were generated from the [colour-science](https://github.com/colour-science/colour) datasets (BSD-3-Clause).
-- Glass data from SCHOTT AG optical glass data sheets. Lens prescriptions follow classic textbook forms (Cooke triplet, Double-Gauss).
+- Glass data from SCHOTT AG optical glass data sheets. Lens prescriptions follow classic textbook forms (Cooke triplet, Double-Gauss); the Biogon is Example 2 of US patent 2,721,499 (Bertele, 1955).
 - Colormap polynomial fits after M. Zucker; matplotlib colormaps by S. van der Walt and N. Smith.
 
 **Licence:** [MIT](LICENSE) © 2026 iiogurt. Third-party components keep their own licences (KaTeX: MIT; CIE tables derived from colour-science: BSD-3-Clause); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
