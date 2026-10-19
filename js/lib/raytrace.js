@@ -447,6 +447,14 @@ export function referenceSphere(lens, lambda, thetaDeg, zImg, par) {
 
 // OPD (in waves) of a ray w.r.t. the reference sphere; positive = ray path longer.
 export function opd(lens, lambda, thetaDeg, px, py, ref, par) {
+  const r = opdRay(lens, lambda, thetaDeg, px, py, ref, par);
+  return r ? r.w : null;
+}
+
+// The same, also returning s, the unit vector from the ray's point Q on the reference sphere to
+// its centre. Its direction cosines (s[0], s[1]) are the pupil coordinates of the Debye integral;
+// the ray's own direction would count the transverse aberration twice.
+export function opdRay(lens, lambda, thetaDeg, px, py, ref, par) {
   const a = aimRay(lens, lambda, thetaDeg, px, py, par);
   if (!a) return null;
   const r = trace(lens, lambda, a.p, a.d, { clip: false, opl0: a.opl0, zv: par.zv });
@@ -458,7 +466,8 @@ export function opd(lens, lambda, thetaDeg, px, py, ref, par) {
   const disc = b * b - c;
   if (disc < 0) return null;
   const t = -b - Math.sqrt(disc); // intersection on the exit-pupil side of the sphere
-  return (r.opl + t - ref.oplChief) / (lambda * 1e-6);
+  const s = [-(q[0] + t * r.d[0]) / ref.R, -(q[1] + t * r.d[1]) / ref.R, -(q[2] + t * r.d[2]) / ref.R];
+  return { w: (r.opl + t - ref.oplChief) / (lambda * 1e-6), s };
 }
 
 // ── Seidel (third-order) aberration sums, Welford's formulation ──────────────────────────

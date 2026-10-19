@@ -55,14 +55,16 @@ test('longitudinal colour: singlet violet behind focus; achromat green behind, m
 
 test('diffraction of a small defocused disk: on-axis intensity follows sinc²(W020/λ) (Born & Wolf §8.8)', async () => {
   const { TASKS } = await import('../js/lib/tasks.js');
-  const lens = { ...LENSES['double-gauss'], epd: LENSES['double-gauss'].epd / 4 }, sd = autoSemiDiameters(LENSES['double-gauss']);
+  // the plano-hyperbolic singlet has no spherical aberration on axis, so the defocus is pure
+  // (a real lens's residual spherical aberration adds its own best-fit defocus to W020)
+  const lens = LENSES['plano-hyperbolic'], sd = autoSemiDiameters(lens);
   const at = (w020) => TASKS.defocusPSF({ lens, sd, w020, lambdas: [550], ref: 550 }).result;
   const sinc2 = (w) => (Math.sin(Math.PI * w) / (Math.PI * w)) ** 2;
-  for (const w of [0.25, 0.5, 1.5]) near(at(w).centre, sinc2(w), 0.03, `W020 = ${w}`);
+  for (const w of [0.25, 0.5, 1.5]) near(at(w).centre, sinc2(w), 0.02, `W020 = ${w}`);
   for (const w of [1, 2]) assert.ok(at(w).centre < 0.005, `W020 = ${w}: dark centre`);
   // large defocus approaches the geometric disk: RMS radius → R/√2
   const r = at(6);
   let s = 0, s2 = 0;
   r.prof.forEach((v, b) => { const a = 2 * Math.PI * Math.max(b, 0.25); s += v * a; s2 += v * a * b * b; });
-  near(Math.sqrt((2 * s2) / s) / r.Rgeo, 1, 0.06, 'W020 = 6: RMS radius / geometric');
+  near(Math.sqrt((2 * s2) / s) / r.Rgeo, 1, 0.03, 'W020 = 6: RMS radius / geometric');
 });

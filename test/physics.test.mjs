@@ -173,10 +173,29 @@ test('worker tasks reproduce the laboratories\' reference results', async () => 
   near(seg.strehl, 0.217, 0.002, 'stacked-segment Strehl');
   const L = { ...LENSES.cooke }, p = paraxial(L);
   const lp = TASKS.lensPSF({ lens: L, theta: 14, zImg: p.zImage, N: p.efl / L.epd }).result;
-  near(lp.pvW, 3.30, 0.01, 'Cooke 14° OPD P-V (waves)');
-  near(lp.strehl, 0.061, 0.002, 'Cooke 14° Strehl');
+  near(lp.pvW, 3.60, 0.01, 'Cooke 14° OPD P-V (waves; a 401² direct trace gives 3.62)');
+  near(lp.strehl, 0.0594, 0.002, 'Cooke 14° Strehl');
   const z = TASKS.zernikeLab({ coeffs: { 8: 0.25 }, n: 128, Dpx: 32 }).result;
   near(z.rms, 0.25, 0.005, 'Zernike RMS equals the coma coefficient');
+});
+
+test('off-axis PSF pupil: Debye directions match the exact geometry of a flat rear stop', async () => {
+  // With the stop behind the lens, the exit pupil is the stop itself: a flat disk of radius ρ a
+  // distance D in front of the image plane. Seen from an image point at height h, it spans
+  // ΔL = 2ρ/√(ρ² + h² + D²) sagittally and ΔM = M(−ρ) − M(ρ), M(y) = (h − y)/√((h − y)² + D²), tangentially.
+  const { TASKS } = await import('../js/lib/tasks.js');
+  const { referenceSphere } = await import('../js/lib/raytrace.js');
+  const L = { epd: 4, field: 25, surfaces: [{ R: 51.5, t: 3.6, glass: 'N-BK7' }, { R: Infinity, t: 5, glass: 'air' }, { R: Infinity, t: 92, glass: 'air', stop: true }] };
+  const p = paraxial(L), N = p.efl / L.epd, NA = 1 / (2 * N), D = p.zImage - p.zXP, rho = p.stopR;
+  for (const th of [0, 10, 25]) {
+    const h = referenceSphere(L, 587.56, th, p.zImage, p).center[1];
+    const M = (y) => (h - y) / Math.hypot(h - y, D);
+    const r = TASKS.lensPSF({ lens: L, theta: th, zImg: p.zImage, N }).result;
+    near(r.pupil.a, 2 * rho / Math.hypot(rho, h, D) / NA, 2e-4, `sagittal pupil width at ${th}°`);
+    near(r.pupil.b, (M(-rho) - M(rho)) / NA, 2e-4, `tangential pupil width at ${th}°`);
+  }
+  const r = TASKS.lensPSF({ lens: L, theta: 25, zImg: p.zImage, N }).result;
+  assert.ok(r.pupil.b / r.pupil.a < 0.8, 'at 25° the pupil is foreshortened by more than 20 %');
 });
 
 test('aspheres: hyperbolic surface (k = −n²) removes spherical aberration exactly', async () => {

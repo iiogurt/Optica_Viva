@@ -904,6 +904,8 @@ The numerical core was checked against published or analytically known values. E
 | Hubble Space Telescope focal length, f-number | 57.60 m, f/24.00 | 57.6 m, f/24 |
 | Hubble aplanatic conic constants from S<sub>I</sub> = S<sub>II</sub> = 0 | −1.0022985, −1.4969 | design: −1.0022985, −1.4963 |
 | Hubble 1990 primary (K = −1.0139): edge error at 1.2 m | 2.23 µm | failure report: ≈ 2.2 µm |
+| Off-axis PSF pupil widths (singlet, flat rear stop, 25°): sagittal, tangential | 1.7740, 1.3964 (in units of 1/(2N)) | flat-disk geometry: 1.7740, 1.3964 |
+| Cooke triplet 14°: OPD P-V of the PSF pupil | 3.60 λ | direct trace of 401² rays: 3.62 λ |
 | Cooke triplet EFL | 50.02 mm | design value 50 mm |
 | Double-Gauss EFL | 99.50 mm | design value ≈ 100 mm |
 | Uncoated crown reflectance | 4.26 % | ((n−1)/(n+1))² = 4.26 % |
@@ -916,7 +918,7 @@ The numerical core was checked against published or analytically known values. E
 | Hyperfocal, 50 mm f/2.8, c = 0.029 mm | 31 m | f²/(Nc) + f = 31.0 m |
 | cos⁴ at 37.7° (28 mm FF corner) | −1.35 EV | log₂ cos⁴θ = −1.351 EV |
 | Traced bokeh disk at 4 EV down: Ø and flux (3 lenses) | within 1 % and 0.5 % | paraxial 2 r<sub>EP</sub> Δz / f; π r<sub>EP</sub>² |
-| Defocused PSF centre, W₀₂₀ = 0.25, 0.5, 1, 1.5, 2 λ | sinc²(W₀₂₀/λ) within 0.03; dark at 1 and 2 λ | Born & Wolf §8.8 |
+| Defocused PSF centre (plano-hyperbolic singlet, no spherical aberration), W₀₂₀ = 0.25, 0.5, 1, 1.5, 2 λ | 0.818, 0.423, 0.000, 0.048, 0.001 | Born & Wolf §8.8: sinc²(W₀₂₀/λ) = 0.811, 0.405, 0, 0.045, 0 |
 | Traced bokeh colour fringes | singlet: violet behind, red in front; achromat: green behind, magenta in front | longitudinal colour and secondary spectrum |
 | Real-ray flare ghosts, Double-Gauss at f/18, 0.57° (4 paths) | position within 3 %, size within 2 %, flux within 3 % | y–nu ghost matrices: (B − AD/C)θ, \|A/C\| r<sub>stop</sub>, R<sub>i</sub>R<sub>j</sub> π(r<sub>stop</sub>/C)² |
 | Brewster angle, water and N-BK7 | 53.12°, 56.60° | arctan n = 53.12°, 56.60° |
@@ -990,7 +992,7 @@ Every page states its model's assumptions. The main simplifications are:
 
 | Lab | Approximation | Consequence |
 |---|---|---|
-| Ray tracer (PSF) | Off-axis pupil treated as circular in normalised stop coordinates | Ignores the ≈ cos θ pupil anamorphosis |
+| Ray tracer (PSF) | Scalar Debye integral over the exit-pupil reference sphere, pupil sampled in direction cosines from the image point | Fresnel losses and the obliquity factor neglected; the pupil map is a least-squares quartic |
 | Flare | Real-ray ghosts at 8 wavelengths on a 33 × 33 ray grid; diffraction at the iris only in the source's starburst | Ghost edges are geometric (no Fresnel ringing); ghosts below 10⁻⁶ of the source irradiance are skipped |
 | Bokeh | Geometric optics for the scene kernels; FFT diffraction of the traced pupil for single small disks | Scene disks have no Fresnel ringing; drawn on a 3 × 3 grid of field positions; dispersion of the OPD neglected in the diffraction panel |
 | Depth of field, tilt-shift | Thin-lens model; exact disk kernels, blended between 11 radii in tilt-shift | Blur radius interpolated between stack levels in tilt-shift; disks above r = 8 px blurred at reduced resolution (edge softer by ≤ r/4 px) |
