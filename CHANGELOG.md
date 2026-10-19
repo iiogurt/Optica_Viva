@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **3-D polarisation** (`js/lib/pol3d.js`): in the polarisers-in-series section, the electric field along the beam through each element (a flat wave for linear light, a helix for circular, a twisted ellipse otherwise, the unpolarised share as a ring, polarisers drawn with their transmission axis and wave plates with their fast axis), and the Poincaré sphere with the state after each element and the paths between them.
+
+### Fixed
+- Polarisation: the sky map no longer throws while its figure is still being laid out (a negative arc radius).
+
+### Added
 - **3-D wavefronts and PSFs** (`js/lib/surf3d.js`): the Zernike laboratory shows the wavefront as a coloured relief over a round pupil next to the log relief of the star image it makes, and the PSF laboratory shows its star image as a relief in its own colours. The 3-D engine gained per-vertex colours.
 
 ### Added

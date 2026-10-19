@@ -1237,4 +1237,6 @@ export default {
   "3-D view: skew rays through the real lens (on axis and at the chosen field)": "Vista 3D: rayos oblicuos a través del objetivo real (en el eje y en el campo elegido)",
   "3-D: the wavefront over the pupil (left) and the star image it makes, log brightness (right)": "3D: el frente de onda sobre la pupila (izquierda) y la imagen de estrella que produce, brillo logarítmico (derecha)",
   "3-D: the star image as a relief, height = log brightness, in its own colours": "3D: la imagen de la estrella en relieve, altura = brillo logarítmico, en sus propios colores",
+  "3-D: the electric field along the beam, through each element": "3D: el campo eléctrico a lo largo del haz, a través de cada elemento",
+  "3-D: the Poincaré sphere, the state after each element": "3D: la esfera de Poincaré, el estado tras cada elemento",
 };

@@ -848,6 +848,7 @@ Optica_Viva/
 │   │   ├── mesh3d.js          3-D geometry: solids of revolution, lens elements, spheres, height fields
 │   │   ├── lens3d.js          The ray tracer's 3-D scene: elements, mirrors, stop, sensor and skew rays
 │   │   ├── surf3d.js          3-D wavefront (polar grid over the pupil) and PSF reliefs with per-vertex colours
+│   │   ├── pol3d.js           3-D electric field along a beam through polarisers and wave plates; Poincaré sphere
 │   │   ├── i18n.js            Interface translation: t(), N_(), language choice and loading
 │   │   ├── transit.js         Transit light curves with limb darkening, orbits, photometric noise
 │   │   ├── ledset.js          LED mission: flicker-free shutter angles, PWM banding, safe wall distance
