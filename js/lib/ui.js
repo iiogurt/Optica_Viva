@@ -101,6 +101,8 @@ export function withEmbed(url, on) {
 export const embedCode = (url, title) => `<iframe src="${withEmbed(url, true).replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" title="${title.replace(/"/g, '&quot;')} (Optica Viva)" width="100%" height="760" style="border:0;border-radius:12px" loading="lazy"></iframe>`;
 
 // spec: { key: {type:'range'|'select'|'toggle'|'seg', label, ...} } → {el, state}
+// Labels, hints and option texts are translated here (js/lib/i18n.js).
+const tr = (s) => (typeof s === 'string' ? t(s) : s);
 export function controls(spec, onChange) {
   const state = {};
   const el = h('div.controls');
@@ -112,7 +114,7 @@ export function controls(spec, onChange) {
   const api = { el, state, set: {} };
   const params = hashParams();
   for (const [key, s] of Object.entries(spec)) {
-    if (s.type === 'heading') { el.append(h('div.ctl-heading', {}, s.label)); continue; }
+    if (s.type === 'heading') { el.append(h('div.ctl-heading', {}, tr(s.label))); continue; }
     // URL key: plain, or prefixed when a second control panel on the page reuses the name
     const uk = urlKeys.has(key) ? `p${panel}.${key}` : key;
     const fromUrl = parseParam(s, params.get(uk));
@@ -128,38 +130,38 @@ export function controls(spec, onChange) {
         if (s.log) v = +v.toPrecision(3);
         return v;
       };
-      const input = h('input', { type: 'range', min: 0, max: 1000, step: 1, value: Math.round(toPos(state[key]) * 1000), 'aria-label': s.label });
+      const input = h('input', { type: 'range', min: 0, max: 1000, step: 1, value: Math.round(toPos(state[key]) * 1000), 'aria-label': tr(s.label) });
       const out = h('output');
       const show = () => { out.textContent = (s.fmt ? s.fmt(state[key]) : fmt(state[key])) + (s.unit ? ' ' + s.unit : ''); };
       input.addEventListener('input', () => { state[key] = fromPos(+input.value / 1000); show(); fire(); });
       api.set[key] = (v) => { state[key] = v; input.value = Math.round(toPos(v) * 1000); show(); writeUrlSoon(); };
       show();
-      row = h('label.ctl.ctl-range', {}, h('span.ctl-label', {}, s.label, out), input);
+      row = h('label.ctl.ctl-range', {}, h('span.ctl-label', {}, tr(s.label), out), input);
     } else if (s.type === 'select') {
       const sel = h('select', {}, ...s.options.map((o) => {
         const [v, text] = Array.isArray(o) ? o : [o, o];
-        return h('option', { value: v, selected: v === state[key] }, text);
+        return h('option', { value: v, selected: v === state[key] }, tr(text));
       }));
       sel.addEventListener('change', () => { state[key] = sel.value; fire(); });
       api.set[key] = (v) => { state[key] = v; sel.value = v; writeUrlSoon(); };
-      row = h('label.ctl', {}, h('span.ctl-label', {}, s.label), sel);
+      row = h('label.ctl', {}, h('span.ctl-label', {}, tr(s.label)), sel);
     } else if (s.type === 'toggle') {
       const cb = h('input', { type: 'checkbox', checked: !!state[key] });
       cb.addEventListener('change', () => { state[key] = cb.checked; fire(); });
       api.set[key] = (v) => { state[key] = v; cb.checked = v; writeUrlSoon(); };
-      row = h('label.ctl.ctl-toggle', {}, cb, h('span.switch'), h('span.ctl-label', {}, s.label));
+      row = h('label.ctl.ctl-toggle', {}, cb, h('span.switch'), h('span.ctl-label', {}, tr(s.label)));
     } else if (s.type === 'seg') {
       const btns = s.options.map((o) => {
         const [v, text] = Array.isArray(o) ? o : [o, o];
-        const b = h('button', { type: 'button', class: v === state[key] ? 'on' : '', 'aria-pressed': String(v === state[key]) }, text);
+        const b = h('button', { type: 'button', class: v === state[key] ? 'on' : '', 'aria-pressed': String(v === state[key]) }, tr(text));
         b.addEventListener('click', () => { state[key] = v; btns.forEach((x) => { x.classList.remove('on'); x.setAttribute('aria-pressed', 'false'); }); b.classList.add('on'); b.setAttribute('aria-pressed', 'true'); fire(); });
         b.dataset.v = v;
         return b;
       });
       api.set[key] = (v) => { state[key] = v; btns.forEach((x) => { x.classList.toggle('on', x.dataset.v == v); x.setAttribute('aria-pressed', String(x.dataset.v == v)); }); writeUrlSoon(); };
-      row = h('div.ctl', {}, s.label ? h('span.ctl-label', {}, s.label) : null, h('div.seg', {}, ...btns));
+      row = h('div.ctl', {}, s.label ? h('span.ctl-label', {}, tr(s.label)) : null, h('div.seg', {}, ...btns));
     }
-    if (s.hint) row.title = s.hint;
+    if (s.hint) row.title = tr(s.hint);
     if (api.set[key]) setters.set(uk, { row, set: (v) => { api.set[key](v); fire(); } });
     if (s.when) conditional.push([row, s.when]);
     el.append(row);
@@ -195,8 +197,8 @@ export const reducedMotion = () => typeof matchMedia === 'function' && matchMedi
 
 export function stage({ aspect = 16 / 9, draw, minH = 160, maxH = Infinity, label, cls = '' }) {
   // canvases are images to assistive technology; the numeric results live in the readouts
-  const canvas = h('canvas', { role: 'img', 'aria-label': label || t('Chart') });
-  const wrap = h('figure.stage' + (cls ? '.' + cls : ''), {}, canvas, label ? h('figcaption', {}, label) : null);
+  const canvas = h('canvas', { role: 'img', 'aria-label': label ? tr(label) : t('Chart') });
+  const wrap = h('figure.stage' + (cls ? '.' + cls : ''), {}, canvas, label ? h('figcaption', {}, tr(label)) : null);
   wrap.append(exportTools(canvas, label));
   const ctx = canvas.getContext('2d');
   const st = { canvas, ctx, el: wrap, w: 0, h: 0, dpr: 1, draw };
@@ -236,7 +238,7 @@ export function imageCanvas(w, hgt) {
 
 // Readout grid: rows = [[label, valueNode|string]]
 export function readouts(rows) {
-  return h('dl.readouts', { role: 'group', 'aria-label': t('Results') }, ...rows.flatMap(([k, v]) => [h('dt', {}, k), h('dd', {}, v)]));
+  return h('dl.readouts', { role: 'group', 'aria-label': t('Results') }, ...rows.flatMap(([k, v]) => [h('dt', {}, tr(k)), h('dd', {}, v)]));
 }
 
 // Section scaffold shared by all modules.

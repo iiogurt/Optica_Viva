@@ -1,23 +1,22 @@
-// Interface translation: every string passed to t() or marked with N_(), every laboratory title,
-// group and blurb, the guided tours' titles and blurbs and the Start-here path must have a
-// translation in every locale, with the same {placeholders}; locales hold no unused strings.
+// Interface translation: every string passed to t() or marked with N_(), every control label, hint
+// and option, readout name and figure caption, every laboratory title, group and blurb, the guided
+// tours' titles and blurbs and the Start-here path must have a translation in every locale, with
+// the same {placeholders}; locales hold no unused strings.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { interfaceStrings } from './lib/strings.mjs';
 import { LANGS, t, loadLocale } from '../js/lib/i18n.js';
 import { TOURS } from '../js/lib/tours.js';
 import { PATH } from '../js/lib/path.js';
 
-const walk = (d) => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : p.endsWith('.js') ? [p] : []; });
-const decode = (lit) => new Function('return ' + lit)();
 const STR = String.raw`'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|\x60(?:[^\x60\\$]|\\.)*\x60`;
+const decode = (lit) => new Function('return ' + lit)();
 
-export function interfaceStrings() {
-  const keys = new Set();
-  for (const f of walk('js').filter((f) => !f.startsWith(join('js', 'locales')))) {
-    for (const m of readFileSync(f, 'utf8').matchAll(new RegExp(String.raw`(?<![\w.$])(?:t|N_)\(\s*(${STR})`, 'g'))) keys.add(decode(m[1]));
-  }
+// Source strings (test/lib/strings.mjs), plus the registry's titles, groups and blurbs, the tours'
+// titles and blurbs and the Start-here path.
+function allStrings() {
+  const keys = interfaceStrings();
   const app = readFileSync('js/app.js', 'utf8');
   const reg = app.slice(app.indexOf('export const MODULES'), app.indexOf('];', app.indexOf('export const MODULES')));
   for (const m of reg.matchAll(new RegExp(String.raw`\b(?:title|group|blurb): (${STR})`, 'g'))) keys.add(decode(m[1]));
@@ -28,7 +27,7 @@ export function interfaceStrings() {
 const holes = (s) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(',');
 
 test('every interface string is translated in every locale, with the same placeholders', async () => {
-  const keys = interfaceStrings();
+  const keys = allStrings();
   assert.ok(keys.size > 150, `${keys.size} interface strings found`);
   for (const l of Object.keys(LANGS).filter((l) => l !== 'en')) {
     const dict = (await import(`../js/locales/${l}.js`)).default;

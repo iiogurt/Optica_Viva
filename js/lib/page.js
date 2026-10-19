@@ -110,9 +110,9 @@ export function ladder(page) {
 // Live-calculation card: returns {el, set(tex)}
 import { setTex } from './ui.js';
 // say(html) puts the result in plain words above the equations.
-export function liveCalc(title = t('Live calculation')) {
+export function liveCalc(title = N_('Live calculation')) {
   const words = h('p.calc-say'), body = h('div');
-  const el = h('div.card.calc', {}, h('div.calc-title', {}, title), words, body);
+  const el = h('div.card.calc', {}, h('div.calc-title', {}, t(title)), words, body);
   return { el, set: (src) => setTex(body, src, true), say: (html) => { words.innerHTML = html; } };
 }
 
