@@ -32,6 +32,8 @@
     "js/lib/gear.js",
     "js/lib/ghosts.js",
     "js/lib/glass.js",
+    "js/lib/glasscat.js",
+    "js/lib/glassmap.js",
     "js/lib/glossary.js",
     "js/lib/hdr.js",
     "js/lib/ifilter.js",

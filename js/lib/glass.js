@@ -2,6 +2,9 @@
 //   n²(λ) − 1 = Σ_i B_i λ² / (λ² − C_i),   λ in µm.
 // Coefficients from the Schott catalogue (N- and classic lead glasses) and
 // Malitson (1965) for fused silica and CaF₂.
+// GLASSES is the core set used across the laboratories; CATALOGUE (js/lib/glasscat.js, generated)
+// adds 431 SCHOTT, OHARA and CDGM glasses. Both are looked up by name.
+import { CATALOGUE } from './glasscat.js';
 
 export const GLASSES = {
   'N-BK7':   { B: [1.03961212, 0.231792344, 1.01046945], C: [0.00600069867, 0.0200179144, 103.560653], type: 'crown' },
@@ -21,9 +24,35 @@ export const GLASSES = {
 // Fraunhofer lines (nm)
 export const LINES = { i: 365.01, h: 404.66, g: 435.83, F: 486.13, e: 546.07, d: 587.56, C: 656.27, r: 706.52 };
 
+// Crown or flint by the usual Abbe-diagram boundary: V_d > 50 below n_d = 1.60, V_d > 55 above.
+const family = (nd, vd) => ((nd < 1.6 ? vd > 50 : vd > 55) ? 'crown' : 'flint');
+
+// Every glass name: the core set first, then the catalogue.
+export const GLASS_NAMES = [...new Set([...Object.keys(GLASSES), ...Object.keys(CATALOGUE)])];
+
+// { B, C, type, maker, range: [λmin, λmax] µm } for a glass name, or undefined.
+const cache = new Map();
+export function glassData(name) {
+  if (GLASSES[name]) return GLASSES[name];
+  if (cache.has(name)) return cache.get(name);
+  const c = CATALOGUE[name];
+  if (!c) return undefined;
+  const G = { B: c.slice(1, 4), C: c.slice(4, 7), maker: c[0], range: [c[7], c[8]] };
+  cache.set(name, G);
+  G.type = family(index(G, LINES.d), abbe(G));
+  return G;
+}
+
+// Six-digit glass code: the first three decimals of n_d and 10 V_d, rounded (N-BK7 → 517642,
+// n_d = 2.003 → 003…).
+export const glassCode = (glass) => {
+  const n = Math.round((index(glass, LINES.d) - 1) * 1000) % 1000, v = Math.round(abbe(glass) * 10);
+  return String(n).padStart(3, '0') + String(v).padStart(3, '0');
+};
+
 export function index(glass, lambdaNm) {
   if (!glass || glass === 'air') return 1.0;
-  const G = typeof glass === 'string' ? GLASSES[glass] : glass;
+  const G = typeof glass === 'string' ? glassData(glass) : glass;
   if (!G) throw new Error('unknown glass ' + glass);
   // perturbed glass for tolerancing: { base, dn } shifts the whole dispersion curve by dn
   if (G.base !== undefined) return index(G.base, lambdaNm) + (G.dn || 0);
@@ -54,4 +83,16 @@ export function groupIndex(glass, lambdaNm) {
   const h = 0.5;
   const dn = (index(glass, lambdaNm + h) - index(glass, lambdaNm - h)) / (2 * h);
   return index(glass, lambdaNm) - lambdaNm * dn;
+}
+
+// One row per glass for glass maps: n_d, V_d, P_g,F and its departure from the normal line
+// P_g,F = 0.6438 − 0.001682 V_d (anomalous partial dispersion, the apochromat's lever).
+let table = null;
+export function glassTable() {
+  if (table) return table;
+  table = GLASS_NAMES.map((name) => {
+    const G = glassData(name), nd = index(name, LINES.d), vd = abbe(name), pgf = partialDispersion(name);
+    return { name, maker: CATALOGUE[name]?.[0] || 'core', nd, vd, pgf, dpgf: pgf - (0.6438 - 0.001682 * vd), code: glassCode(name), type: G.type || family(nd, vd), range: G.range || (CATALOGUE[name] ? CATALOGUE[name].slice(7, 9) : null) };
+  });
+  return table;
 }

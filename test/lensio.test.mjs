@@ -40,7 +40,7 @@ test('JSON and URL encodings round-trip every built-in lens', () => {
 });
 
 test('unknown glasses become (n_d, V_d) model glasses that keep both numbers', () => {
-  const { glass, warning } = resolveGlass('S-LAH66', 1.7725, 49.6);
+  const { glass, warning } = resolveGlass('ACME-LAK1', 1.7725, 49.6); // S-LAH66 is in the catalogue now
   assert.ok(warning);
   near(index(glass, 587.56), 1.7725, 1e-9, 'model n_d');
   near(abbe(glass), 49.6, 1e-9, 'model V_d');

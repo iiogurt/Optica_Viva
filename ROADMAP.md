@@ -62,7 +62,7 @@ flowchart LR
     end
     subgraph Next["Planned"]
         direction TB
-        N11["glass catalogue · decenter/tilt"] --> N10["MTF validation"] --> N7["v2.0 i18n · plugin API"]
+        N11["decenter/tilt tolerancing"] --> N10["MTF validation"] --> N7["v2.0 i18n · plugin API"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -73,7 +73,7 @@ flowchart LR
 |---|---|---|
 | Laboratories | 59 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 228, each with details and a worked example | link every new lab |
-| Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | a larger glass catalogue with a glass-map picker |
+| Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | decenter and tilt tolerancing |
 | Automated tests | 286 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
@@ -315,7 +315,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 ### v1.3 Lens-design depth
 
-✅ **Released as v1.3.0 and v1.4.0** (optimiser, tolerancing and MTF vs field shipped in v1.4.0; classic designs, mirrors, the three-mirror anastigmat and the off-axis pupil in v1.17.0). Still open: a larger glass catalogue, and decenter/tilt tolerancing.
+✅ **Released as v1.3.0 and v1.4.0** (optimiser, tolerancing and MTF vs field shipped in v1.4.0; classic designs, mirrors, the three-mirror anastigmat and the off-axis pupil in v1.17.0). Still open: decenter/tilt tolerancing (the glass catalogue followed after v1.17.0).
 
 *Goal: the ray tracer becomes a credible teaching tool for lens design (A9, A10).*
 
@@ -331,7 +331,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P2 · S** **Off-axis pupil shape** in the OPD/PSF path: the pupil is sampled in the direction cosines seen from the image point (Debye), so off-axis PSFs and MTFs include the foreshortened, distorted real exit pupil.
 - [x] **P3 · L** **Optimiser**: damped least squares on a merit function (spot RMS, EFL target, F/C focus), demonstrated on the achromat.
 - [x] **P3 · M** **Monte-Carlo tolerancing**: radius, thickness and index perturbations with refocus compensation and a yield histogram. *Decenter and tilt need non-rotational tracing and remain open.*
-- [ ] **P3 · M** Glass catalogue expansion (Schott, Ohara, CDGM subsets) with a glass-map picker.
+- [x] **P3 · M** **Glass catalogue** (431 SCHOTT, OHARA and CDGM glasses, checked against the catalogue n_d, V_d) with a **glass-map picker** in the prescription editor.
 
 ### v1.5 Higher-fidelity rendering
 

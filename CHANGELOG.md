@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Glass catalogue**: 431 current glasses from SCHOTT (105 N- and P- glasses), OHARA (145 recommended S- glasses) and CDGM (181 H- glasses), three-term Sellmeier fits from the makers' Zemax catalogues via the public-domain refractiveindex.info database. `scripts/glasscat.mjs` generates `js/lib/glasscat.js`; `index()` looks every name up, Zemax import recognises them, and glasses get six-digit codes and a crown/flint family. `test/glass.test.mjs` checks every fit against its catalogue n_d (to 10⁻⁵) and V_d (to 0.01), and SCHOTT's ΔP_g,F.
+- **Glass-map picker** in the ray tracer's prescription editor: a *map* button next to each glass opens an Abbe diagram (n_d or P_g,F against V_d) of the whole catalogue, filtered by maker or searched by name or glass code; hover shows a glass's data, click uses it. The colour laboratory's Abbe and partial-dispersion diagrams show the catalogue behind the reference glasses.
+
 ## [1.17.0] - 2026-10-19
 
 Lens design in depth: classic camera lenses from the Petzval portrait to Bertele's Biogon, mirrors with the Hubble Space Telescope and a JWST-style three-mirror anastigmat, and off-axis diffraction images computed in the exact exit-pupil coordinates.

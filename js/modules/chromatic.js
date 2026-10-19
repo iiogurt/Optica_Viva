@@ -1,6 +1,6 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
-import { GLASSES, index, abbe, partialDispersion, LINES } from '../lib/glass.js';
+import { GLASSES, index, abbe, partialDispersion, LINES, glassTable } from '../lib/glass.js';
 import { wavelengthCSS, spectralBasis, linspace, oetf } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
 import { fft2d } from '../lib/fft.js';
@@ -262,13 +262,19 @@ export default function mount(root, meta) {
     });
   }
 
+  // the SCHOTT, OHARA and CDGM catalogues as faint dots behind the labelled reference glasses
+  function catalogueDots(ctx, X, Y, yOf) {
+    ctx.fillStyle = 'rgba(200,206,225,0.22)';
+    for (const g of glassTable()) if (g.maker !== 'core') { ctx.beginPath(); ctx.arc(X(g.vd), Y(yOf(g)), 1.8, 0, 7); ctx.fill(); }
+  }
   function drawAbbe(ctx, w, hh) {
     const pts = GL.map((g) => [abbe(g), index(g, LINES.d), g]);
     const { X, Y } = plot(ctx, w, hh, {
-      title: 'Abbe diagram (V_d axis reversed)', x: { min: 100, max: 20, label: 'Abbe number V_d' }, y: { min: 1.4, max: 1.82, label: 'n_d' },
+      title: `Abbe diagram · ${glassTable().filter((g) => g.maker !== 'core').length} glasses`, x: { min: 100, max: 15, label: 'Abbe number V_d' }, y: { min: 1.4, max: 2.06, label: 'n_d' },
       bands: [{ x: [100, 50], color: 'rgba(106,215,255,0.04)' }],
       vlines: [{ x: 50, color: 'rgba(255,255,255,0.25)', label: 'crowns │ flints' }],
     });
+    catalogueDots(ctx, X, Y, (g) => g.nd);
     ctx.font = '10px Inter, sans-serif';
     for (const [v, n, g] of pts) {
       ctx.fillStyle = GLASSES[g].type.includes('flint') ? '#ffb547' : '#6ad7ff';
@@ -279,10 +285,11 @@ export default function mount(root, meta) {
   function drawPgF(ctx, w, hh) {
     const pts = GL.map((g) => [abbe(g), partialDispersion(g), g]);
     const { X, Y } = plot(ctx, w, hh, {
-      title: 'Partial dispersion P_g,F vs V_d', x: { min: 100, max: 20, label: 'Abbe number V_d' }, y: { min: 0.51, max: 0.63, label: 'P_g,F' },
-      series: [{ data: [[100, 0.6438 - 0.001682 * 100], [20, 0.6438 - 0.001682 * 20]], color: 'rgba(255,255,255,0.4)', dash: [5, 4], width: 1, label: 'normal line' }],
+      title: 'Partial dispersion P_g,F vs V_d', x: { min: 100, max: 15, label: 'Abbe number V_d' }, y: { min: 0.51, max: 0.67, label: 'P_g,F' },
+      series: [{ data: [[100, 0.6438 - 0.001682 * 100], [15, 0.6438 - 0.001682 * 15]], color: 'rgba(255,255,255,0.4)', dash: [5, 4], width: 1, label: 'normal line' }],
       legend: true, legendX: w - 130, legendY: hh - 60,
     });
+    catalogueDots(ctx, X, Y, (g) => g.pgf);
     ctx.font = '10px Inter, sans-serif';
     for (const [v, p, g] of pts) {
       const dev = p - (0.6438 - 0.001682 * v);
@@ -314,6 +321,7 @@ export default function mount(root, meta) {
 <p>Bringing three wavelengths to one focus requires materials that sit <em>off</em> the normal line: fluorite (CaF₂), FK51A-type "ED" glasses, and KzFS short flints. With three thin elements the conditions are linear in the powers:</p>
 \[\sum_i\phi_i = \phi,\qquad \sum_i\phi_i\,\frac{n_{i,C} - n_{i,F}}{n_{i,d}-1} = 0,\qquad \sum_i\phi_i\,\frac{n_{i,F} - n_{i,g}}{n_{i,d}-1} = 0.\]
 <p>This page solves that 3×3 system for the chosen glasses, using their Sellmeier equations at every wavelength. The residual is the tertiary spectrum.</p>
+<p>The faint dots in the two glass maps are 431 current glasses from the SCHOTT, OHARA and CDGM catalogues (three-term Sellmeier fits from the makers' Zemax files, via the public-domain refractiveindex.info database; every fit reproduces its catalogue \(n_d\) to \(10^{-5}\) and \(V_d\) to 0.01). They fill a band, the "glass line", bounded above by the lanthanum and niobium glasses and below by the crowns. The few that sit well above the normal line in \(P_{g,F}\), the fluorophosphate crowns such as S-FPL53 (\(V_d = 95\)), are the apochromat designer's tools. In the ray tracer's prescription editor, the <em>map</em> button next to each glass opens the same diagram to pick from.</p>
 <h3>What you see in images</h3>
 <p><strong>LoCA</strong> appears only out of focus, so it changes with focus distance. In an achromat, red and blue share a focus slightly behind green (the parabola above). For an object in front of the focal plane, green is therefore the sharpest colour and red plus blue form the larger blur, so edges take a magenta fringe. Behind focus green is blurred most and the fringe turns green. That is the "magenta front, green back" signature of fast portrait lenses. A singlet behaves differently: its focus is monotonic in wavelength, so the fringes run from red to blue. The render convolves a scene with a uniform defocus disk at each of 15 wavelengths, using the exact OTF \(2J_1(\pi c\nu)/(\pi c\nu)\) in Fourier space, then integrates over CIE colour-matching functions.</p>
 <p><strong>LaCA</strong> is a wavelength-dependent magnification, \(m(\lambda) = m_d\,[1 + \kappa\,(n(\lambda)-n_d)/(n_F-n_C)]\). It grows linearly with field height, does not depend on aperture, and can be removed in software by rescaling the colour channels. LoCA cannot be removed that way, because it is a blur rather than a displacement.</p>

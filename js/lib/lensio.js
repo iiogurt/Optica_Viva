@@ -1,6 +1,6 @@
 // Lens prescription import/export: JSON and a practical subset of Zemax .zmx (sequential,
 // STANDARD and EVENASPH surfaces). Pure functions, no DOM.
-import { GLASSES } from './glass.js';
+import { GLASS_NAMES, glassData } from './glass.js';
 
 const ALIASES = { BK7: 'N-BK7', BAK4: 'N-BAK4', SF5: 'N-SF5', SF11: 'N-SF11', FK51: 'N-FK51A', FK51A: 'N-FK51A', SILICA: 'Fused silica', F_SILICA: 'Fused silica', CAF2: 'CaF2' };
 
@@ -9,7 +9,7 @@ export function resolveGlass(name, nd, vd) {
   if (!name || /^AIR$/i.test(name)) return { glass: 'air' };
   if (/^MIRROR$/i.test(name)) return { glass: 'mirror' };
   const up = name.toUpperCase();
-  const hit = Object.keys(GLASSES).find((k) => k.toUpperCase() === up) || ALIASES[up];
+  const hit = GLASS_NAMES.find((k) => k.toUpperCase() === up) || ALIASES[up];
   if (hit) return { glass: hit };
   if (nd > 1 && vd > 0) return { glass: { name, nd, vd }, warning: `${name}: not in the catalogue, modelled from n_d = ${nd}, V_d = ${vd}` };
   return { glass: 'N-BK7', warning: `${name}: unknown glass without n_d/V_d, substituted N-BK7` };
@@ -93,7 +93,7 @@ export function validateLens(lens) {
     if (s.glass === 'mirror') dir = -dir;
     if (!(s.t * dir >= 0)) errs.push(`surface ${i + 1}: thickness must be ${dir > 0 ? '≥ 0' : '≤ 0 after an odd number of mirrors'}`);
     if (s.sd !== undefined && !(s.sd > 0)) errs.push(`surface ${i + 1}: semi-diameter must be positive`);
-    if (typeof s.glass === 'string' && s.glass !== 'air' && s.glass !== 'mirror' && !GLASSES[s.glass]) errs.push(`surface ${i + 1}: unknown glass ${s.glass}`);
+    if (typeof s.glass === 'string' && s.glass !== 'air' && s.glass !== 'mirror' && !glassData(s.glass)) errs.push(`surface ${i + 1}: unknown glass ${s.glass}`);
   });
   if (lens.surfaces.filter((s) => s.stop).length !== 1) errs.push('exactly one surface must be the stop');
   return errs;

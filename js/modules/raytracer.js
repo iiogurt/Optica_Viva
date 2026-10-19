@@ -2,7 +2,8 @@ import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, readU
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag, seidel, fieldCurves, mediaIndices, hasMirrors } from '../lib/raytrace.js';
 import { parseZmx, lensToJSON, lensFromJSON, validateLens, encodeLens, decodeLens } from '../lib/lensio.js';
-import { GLASSES, abbe, index } from '../lib/glass.js';
+import { GLASSES, abbe, index, glassData } from '../lib/glass.js';
+import { openGlassMap } from '../lib/glassmap.js';
 import { wavelengthCSS } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
 import { latest } from '../lib/compute.js';
@@ -229,7 +230,7 @@ export default function mount(root, meta) {
       for (let k = 0; k <= 40; k++) { const y = r2 - (2 * r2 * k) / 40; const z = zv[i + 1] + surfaceSag(s2, y); ctx.lineTo(X(z), Y(Math.abs(y) >= r2 - 1e-9 ? Math.sign(y) * r : y)); }
       ctx.lineTo(X(zv[i] + surfaceSag(s, -r1)), Y(-r));
       ctx.closePath();
-      const flint = (GLASSES[s.glass]?.type || '').includes('flint');
+      const flint = typeof s.glass === 'string' ? (glassData(s.glass)?.type || '').includes('flint') : s.glass.vd < 50;
       const g = ctx.createLinearGradient(0, Y(r), 0, Y(-r));
       const c = flint ? '150,120,255' : '120,200,255';
       g.addColorStop(0, `rgba(${c},0.10)`); g.addColorStop(0.5, `rgba(${c},0.22)`); g.addColorStop(1, `rgba(${c},0.10)`);
@@ -525,7 +526,8 @@ export default function mount(root, meta) {
   }
 
   // ── Prescription editor ───────────────────────────────────────────────────────────────
-  const GLASS_OPTIONS = ['air', 'mirror', ...Object.keys(GLASSES)]; // every catalogue glass, or the select would mis-display one
+  // the select lists the reference set (plus the surface's own glass); the glass map holds the full catalogue
+  const GLASS_OPTIONS = ['air', 'mirror', ...Object.keys(GLASSES)];
   const msg = h('div.note', { role: 'status' });
   const tableWrap = h('div', { style: { overflowX: 'auto' } });
   const fileIn = h('input', { type: 'file', accept: '.zmx,.json,.txt', style: { display: 'none' } });
@@ -565,9 +567,10 @@ export default function mount(root, meta) {
       h('td', {}, String(i + 1)),
       h('td', {}, numIn(fmtR(sf.R), (v) => editSurface(i, 'R', v), { 'aria-label': `Surface ${i + 1} radius` })),
       h('td', {}, numIn(sf.t, (v) => editSurface(i, 't', v), { 'aria-label': `Surface ${i + 1} thickness` })),
-      h('td', {}, typeof sf.glass === 'string'
-        ? (() => { const sel = h('select.rx-glass', { 'aria-label': `Surface ${i + 1} glass` }, ...GLASS_OPTIONS.map((g) => h('option', { value: g, selected: g === sf.glass }, g))); sel.addEventListener('change', () => editSurface(i, 'glass', sel.value)); return sel; })()
-        : h('span', { title: `model glass n_d = ${sf.glass.nd}, V_d = ${sf.glass.vd}` }, sf.glass.name + ' (model)')),
+      h('td', { style: { whiteSpace: 'nowrap' } }, typeof sf.glass === 'string'
+        ? (() => { const opts = GLASS_OPTIONS.includes(sf.glass) ? GLASS_OPTIONS : [...GLASS_OPTIONS, sf.glass]; const sel = h('select.rx-glass', { 'aria-label': `Surface ${i + 1} glass` }, ...opts.map((g) => h('option', { value: g, selected: g === sf.glass }, g))); sel.addEventListener('change', () => editSurface(i, 'glass', sel.value)); return sel; })()
+        : h('span', { title: `model glass n_d = ${sf.glass.nd}, V_d = ${sf.glass.vd}` }, sf.glass.name + ' (model)'),
+        sf.glass === 'mirror' ? null : h('button.btn.rx-map', { type: 'button', title: 'Choose from the glass map (SCHOTT, OHARA, CDGM)', 'aria-label': `Surface ${i + 1}: choose glass from the glass map`, onclick: () => openGlassMap({ current: typeof sf.glass === 'string' ? sf.glass : null, title: `Glass after surface ${i + 1}`, onPick: (g) => editSurface(i, 'glass', g) }) }, 'map')),
       h('td', {}, numIn(sf.sd || '', (v) => editSurface(i, 'sd', v), { 'aria-label': `Surface ${i + 1} clear semi-diameter`, placeholder: 'auto' })),
       h('td', {}, numIn(sf.k || 0, (v) => editSurface(i, 'k', v), { 'aria-label': `Surface ${i + 1} conic` })),
       h('td', {}, numIn(sf.a ? sf.a[0] : 0, (v) => editSurface(i, 'a4', v), { 'aria-label': `Surface ${i + 1} a4` })),
