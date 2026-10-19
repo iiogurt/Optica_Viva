@@ -16,6 +16,7 @@ import { groundRows } from './dofphoto.js';
 import { projectionRows } from './projection.js';
 import { lensRows, sourceAndMagnification, criticalCurves, deflect } from './lensing.js';
 import { perspectiveRows } from './perspective.js';
+import { seeingSession } from './seeing.js';
 import { renderRuler } from './macro.js';
 import { createLoop, pyramidWFS } from './wfs.js';
 import { renderPanorama } from './panorama.js';
@@ -591,6 +592,21 @@ function lensSide(p) {
   return { result: r, transfer: [r.img.buffer] };
 }
 function perspectiveTask(p) { const r = perspectiveRows(p.p, p.y0, p.y1); return { result: r, transfer: [r.buffer] }; }
+// Seeing laboratory: one simulation session per worker. seeingReset starts it (sid tags the
+// session), seeingStep advances it and returns a display frame, or null for a stale sid.
+let seeing = null, seeingSid = -1;
+function seeingReset(p) {
+  seeing = seeing || seeingSession();
+  const r = seeing.reset(p.p, p.seed);
+  seeingSid = p.sid;
+  return { result: r, transfer: [r.screen.buffer, r.ideal.buffer] };
+}
+function seeingStep(p) {
+  if (!seeing || p.sid !== seeingSid) return { result: null, transfer: [] };
+  const f = seeing.step(p.steps);
+  f.sid = p.sid;
+  return { result: f, transfer: [f.short.buffer, f.long.buffer, f.pupil.buffer] };
+}
 function shiftTask(p) { const r = shiftRows(p.st, p.y0, p.y1); return { result: r, transfer: [r.buffer] }; }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask };
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };

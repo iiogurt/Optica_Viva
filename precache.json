@@ -66,6 +66,7 @@
     "js/lib/raytrace.js",
     "js/lib/satellite.js",
     "js/lib/scenes.js",
+    "js/lib/seeing.js",
     "js/lib/sensors.js",
     "js/lib/shake.js",
     "js/lib/spectro.js",
