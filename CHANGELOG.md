@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.19.0] - 2026-10-19
+
 ### Changed
 - **Seeing animation off the main thread**: the frozen-flow and adaptive-optics simulation (`js/lib/seeing.js`) runs as a session in a compute worker, which streams display-ready frames (PSF crops, residual pupil, screen) back one request at a time, so a slow machine shows fewer frames instead of freezing. The longest freeze on a Raspberry Pi 4 fell from 1.1 s to 0.22 s.
 - **Faster, freeze-free ray-cast laboratories on slow machines**: the projection, tilt–shift, perspective, depth-of-field and gravitational-lensing renders run in parallel row bands on a pool of up to four compute workers (`runOn`, `parallel`, `rowBands` in `js/lib/compute.js`), with their scenes moved to pure modules (`scenes.js`, `dofphoto.js`, `projection.js`, `lensing.js`, `perspective.js`). The tilt–shift town's depth map and blur stack are computed once per focal length and kept in a worker, so tilt, focus and aperture only re-blend. On a Raspberry Pi 4 the median main-thread freeze while dragging a slider fell from 3.2 s to 0.12 s (tilt–shift), 1.1 s to 0.27 s (depth of field), 0.94 s to 0.12 s (projection), 0.92 s to 0.10 s (lensing) and 0.54 s to 0.10 s (perspective).
@@ -678,7 +680,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.18.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.19.0...HEAD
+[1.19.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.18.0...v1.19.0
 [1.18.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.15.0...v1.16.0
