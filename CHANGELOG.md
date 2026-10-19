@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.17.0] - 2026-10-19
+
 ### Added
 - **Biogon** in the ray tracer, bokeh and panorama laboratories: Bertele's symmetric wide angle (f/4.5, ±45°), Example 2 of US patent 2,721,499 as published, scaled to 38 mm. Its glasses are model glasses (n_d, V_d) named by their six-digit glass code. The prescription reproduces the patent's f = 100 mm to 0.06 %, and the real-ray distortion stays below 0.2 % to 45° (`test/classics.test.mjs`).
 - **Three-mirror anastigmat** in the ray tracer: a Korsch-type telescope with the James Webb Space Telescope's first-order layout (6.5 m, f/20.2), designed for this project. The tertiary radius flattens the field (zero Petzval sum) and the three conics solve S_I = S_II = S_III = 0; the primary conic comes out at −0.99715, close to JWST's specified −0.99666 ± 0.0005. Strehl > 0.8 across ±0.15° at 588 nm (`test/mirrors.test.mjs`). The ray tracer now handles the negative focal length of an erect-image system and shows a flat field's Petzval radius as ∞.
@@ -659,7 +661,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.16.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.17.0...HEAD
+[1.17.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.13.0...v1.14.0
