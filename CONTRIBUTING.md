@@ -46,7 +46,7 @@ Controls created with `controls()` are automatically shareable through the URL, 
 - Pages climb from simple to exact, all visible: `idea()` explains the phenomenon in plain words (no math, at most 120 words, every term explained) with one to three things to try; `calc.say()` states the live result in a sentence; `rule()` gives one formula, a worked number and where it stops working; `theory()` holds the full model.
 - Theory text goes in `String.raw` templates, with `\( … \)` and `\[ … \]` for math (never `$`).
 - Never put a `//` comment inside a one-line `{ … }` block; it swallows the closing brace.
-- Interface text (buttons, headings, labels shared across pages, laboratory titles and descriptions) goes through `t('English text')` from `js/lib/i18n.js`, or `N_('…')` where it is defined and `t(variable)` where it is shown, and gets a translation in every file of `js/locales/`; `npm test` lists what is missing. Explanations inside a laboratory stay English for now.
+- Interface text (buttons, headings, labels shared across pages, laboratory titles and descriptions) goes through `t('English text')` from `js/lib/i18n.js`, or `N_('…')` where it is defined and `t(variable)` where it is shown, and gets a translation in every file of `js/locales/`; `npm test` lists what is missing. Control labels, options and hints, readout names, figure captions and `liveCalc()` titles are translated by the toolkit itself, so they only need the locale entries; write them as complete string literals. Explanations inside a laboratory stay English for now.
 
 ## Reporting problems
 

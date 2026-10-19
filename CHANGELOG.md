@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Controls and readouts in German, French and Spanish**: `controls()`, `readouts()`, `stage()` and `liveCalc()` translate their labels, option texts, hints, readout names, figure captions and titles themselves, so every laboratory's control panel and results are translated (988 new strings per language). `test/lib/strings.mjs` finds these strings in the source (complete literals only; labels built from a literal and a number stay English) and `test/i18n.test.mjs` requires every locale to translate them.
+
 ## [1.18.0] - 2026-10-19
 
 Glass, assembly and language: a 431-glass catalogue from SCHOTT, OHARA and CDGM with a glass-map picker, element decenter and tilt traced exactly in the tolerance analysis, and the interface in German, French and Spanish.
