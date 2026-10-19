@@ -618,22 +618,44 @@ export default function mount(root, meta) {
     radiusPct: { type: 'range', label: 'Radius error σ', min: 0, max: 1, step: 0.01, value: 0.1, unit: '%' },
     thicknessUm: { type: 'range', label: 'Thickness error σ', min: 0, max: 200, step: 5, value: 25, unit: 'µm' },
     indexE4: { type: 'range', label: 'Index error σ', min: 0, max: 20, step: 0.5, value: 3, fmt: (v) => v + '×10⁻⁴' },
+    decenterUm: { type: 'range', label: 'Element decenter σ', min: 0, max: 100, step: 5, value: 20, unit: 'µm' },
+    tiltArcmin: { type: 'range', label: 'Element tilt σ', min: 0, max: 10, step: 0.5, value: 2, unit: '′' },
     trials: { type: 'range', label: 'Monte-Carlo trials', min: 10, max: 200, step: 10, value: 40 },
   }, () => {});
-  const tolRo = h('div.note', { role: 'status' }, 'Random manufacturing errors are applied to the current lens; each trial is refocused (image distance as compensator) and scored by the RMS ray error over fields 0, 0.7, 1 and F, d, C.');
+  const tolRo = h('div.note', { role: 'status' }, 'Random manufacturing errors (radii, thicknesses, indices) and assembly errors (each element or cemented group decentered and tilted about its first vertex) are applied to the current lens; each trial is refocused (image distance as compensator) and scored by the RMS ray error over F, d, C and fields 0, ±0.7, ±1 (only +0.7, +1 without assembly errors, which keep the lens symmetric).');
   const tolHist = stage({ aspect: 2.6, label: '', draw: drawTol, cls: 'plain', minH: 200 });
+  const sensSt = stage({ aspect: 2.6, label: '', draw: drawSens, cls: 'plain', minH: 180 });
   const tolJob = latest('tolerance');
   let tolData = null;
   const tolBtn = h('button.btn', { type: 'button', onClick: () => {
     const st = tolCtl.state;
     tolBtn.disabled = true; tolRo.textContent = `Running ${st.trials} trials in the background…`;
-    tolJob('tolerance', { lens: clone(LENSES[ctl.state.lens]), tol: { radiusPct: st.radiusPct, thicknessUm: st.thicknessUm, indexDelta: st.indexE4 * 1e-4 }, trials: st.trials, seed: 7 })
+    tolJob('tolerance', { lens: clone(LENSES[ctl.state.lens]), tol: { radiusPct: st.radiusPct, thicknessUm: st.thicknessUm, indexDelta: st.indexE4 * 1e-4, decenterUm: st.decenterUm, tiltArcmin: st.tiltArcmin }, trials: st.trials, seed: 7 })
       .then((r) => {
-        tolData = r; tolHist.redraw();
+        tolData = r; tolHist.redraw(); sensSt.redraw();
         tolRo.textContent = `Nominal ${(r.nominal * 1000).toFixed(2)} µm · median ${(r.median * 1000).toFixed(2)} µm · 90th percentile ${(r.p90 * 1000).toFixed(2)} µm (${(r.p90 / r.nominal).toFixed(2)}× nominal)${r.failed ? ` · ${r.failed} trials failed to trace` : ''}.`;
       }).catch((e) => { tolRo.textContent = 'Tolerance run failed: ' + e.message; })
       .finally(() => { tolBtn.disabled = false; });
   } }, 'Run tolerance analysis');
+  // per-element sensitivity: growth of the refocused RMS error for one σ of decenter or tilt alone
+  function drawSens(ctx, w, hh) {
+    const s = tolData?.sensitivity;
+    if (!s || !s.rows.length) return;
+    const rows = s.rows, pct = (v) => (100 * v) / s.nominal, mx = Math.max(...rows.flatMap((r) => [pct(r.decenter), pct(r.tilt)]), 0.1) * 1.15;
+    const { X, Y } = plot(ctx, w, hh, {
+      title: `Sensitivity per element: one σ of decenter (${tolCtl.state.decenterUm} µm) or tilt (${tolCtl.state.tiltArcmin}′)`,
+      x: { min: 0, max: rows.length, step: 1, fmt: () => '', label: 'element (surfaces)' }, y: { min: 0, max: mx, label: 'RMS error growth (%)' }, padB: 44,
+    });
+    ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'center';
+    rows.forEach((r, i) => {
+      const x0 = X(i + 0.18), bw = (X(1) - X(0)) * 0.3;
+      ctx.fillStyle = 'rgba(106,215,255,0.8)'; ctx.fillRect(x0, Y(pct(r.decenter)), bw, Y(0) - Y(pct(r.decenter)));
+      ctx.fillStyle = 'rgba(255,181,71,0.8)'; ctx.fillRect(x0 + bw, Y(pct(r.tilt)), bw, Y(0) - Y(pct(r.tilt)));
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillText(r.first === r.last ? `S${r.first + 1}` : `S${r.first + 1}–${r.last + 1}`, X(i + 0.5), Y(0) + 14);
+    });
+    ctx.textAlign = 'left'; ctx.fillStyle = '#6ad7ff'; ctx.fillText('■ decenter', X(0) + 6, Y(mx) + 14); ctx.fillStyle = '#ffb547'; ctx.fillText('■ tilt', X(0) + 80, Y(mx) + 14);
+  }
   function drawTol(ctx, w, hh) {
     if (!tolData || !tolData.scores.length) return;
     const sc = tolData.scores.map((v) => v * 1000), lo = Math.min(...sc, tolData.nominal * 1000), hi = Math.max(...sc) * 1.05 + 1e-6;
@@ -667,7 +689,7 @@ export default function mount(root, meta) {
         fileIn),
       tableWrap, msg),
     h('div.card', { style: { marginTop: '14px' } }, h('h3', { style: { margin: '0 0 10px', font: '500 17px var(--font-serif)' } }, 'Tolerance analysis'),
-      h('div.grid-2', {}, h('div', {}, tolCtl.el, h('div', { style: { marginTop: '10px' } }, tolBtn), h('div', { style: { marginTop: '10px' } }, tolRo)), tolHist.el))));
+      h('div.grid-2', {}, h('div', {}, tolCtl.el, h('div', { style: { marginTop: '10px' } }, tolBtn), h('div', { style: { marginTop: '10px' } }, tolRo)), h('div', {}, tolHist.el, sensSt.el)))));
   bindUrlParam('rx', () => (ctl.state.lens === 'custom' ? encodeLens(LENSES.custom) : null));
   renderTable();
 
@@ -718,6 +740,9 @@ export default function mount(root, meta) {
 <h3>Three mirrors: the anastigmat of JWST</h3>
 <p>Two mirrors have two conic constants, enough to remove spherical aberration and coma but not astigmatism, and their field is curved. A third mirror adds a radius and a conic: the radii can make the Petzval sum vanish, \(1/R_1 - 1/R_2 + 1/R_3 = 0\) for a flat field, and the three conics then solve \(S_I = S_{II} = S_{III} = 0\), a linear system because each conic enters the Seidel sums linearly. Korsch (1977) gave the closed-form solution. The James Webb Space Telescope uses this form, with the field and the pupil off axis so that no mirror blocks the beam and a flat fold mirror sends the light to the instruments.</p>
 <p>The <em>three-mirror anastigmat</em> entry was designed for this project with JWST's first-order layout: a 6.5 m primary of radius 15.88 m, the secondary 7.169 m in front of it, and \(f = 131.4\) m (f/20.2). The secondary forms an intermediate image just behind the primary; the tertiary 2.7 m further back re-images it 0.28 m behind the primary vertex. Solving for the conics gives \(K_1 = -0.99715\), close to the \(-0.99666 \pm 0.0005\) specified for JWST's primary (Stahl 2013); its secondary and tertiary are our own choice, not JWST's. The real-ray Strehl ratio stays above 0.8 over the whole \(\pm 0.15^\circ\) field even at 588 nm, where a Ritchey–Chrétien of the same size would show astigmatism and a curved field. The model is rotationally symmetric and unfolded, so the final image sits inside the incoming beam; the real telescope avoids that with its off-axis field.</p>
+<h3>Tolerancing: what manufacture and assembly do to a design</h3>
+<p>No lens is built as drawn. The Monte-Carlo analysis draws Gaussian errors for every radius (a fraction of \(R\)), thickness, index and, for assembly, every element's decenter and tilt; it then refocuses each trial (the image distance is the compensator a camera's focusing provides) and scores it with the optimiser's merit, the RMS ray error over field and wavelength. The 90th percentile tells a designer what nine lenses in ten will reach.</p>
+<p>A decentered or tilted element breaks the rotational symmetry, so these surfaces are traced in their own frames: the ray is carried into the frame of the moved surface \(\mathbf p' = R^{\mathsf T}(\mathbf p - \mathbf o)\), \(\hat d' = R^{\mathsf T}\hat d\) with \(R = R_x(a_x)R_y(a_y)\), intersected and refracted there, and carried back. A singlet or a cemented group moves as one, tilting about its first vertex. A symmetric lens then images the two sides of the field differently, so the merit samples fields \(0, \pm0.7, \pm1\). Decenter adds coma even on axis, and tilt adds a tilted image plane and astigmatism. The sensitivity chart moves each element alone by one \(\sigma\): in the Cooke triplet the strong negative middle element dominates, which is why it is the element a lens maker centres most carefully. The paraxial data stay those of the nominal lens, and the tracer is checked against the exact displacement of a tilted plate, \(T\sin\theta\,(1 - \cos\theta/\sqrt{n^2-\sin^2\theta})\), and the \(2\alpha\) deviation of a tilted mirror.</p>
 <h3>Domain notes</h3>
 <p><strong>Photography and cinema</strong> lenses are judged across the full field, which is why the Double-Gauss uses a near-symmetric layout to cancel coma, distortion and lateral colour. <strong>Space telescopes</strong> are reflective (no chromatic aberration). Their designs, such as Ritchey–Chrétien (Hubble) and the three-mirror anastigmat (JWST), use conic and aspheric surfaces to remove spherical aberration and coma together.</p>
 </div></div>`));
