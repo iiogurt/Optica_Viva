@@ -461,7 +461,7 @@ Audit of the existing 2-D spatial views (17 figures): all render without errors.
 Candidates, in order of how much the third dimension adds:
 
 - [x] **P1 · M** **Ray tracer**: glass elements as solids, mirrors, the stop and the sensor, with real skew rays on axis and at the chosen field (#128). *Next: colour by wavelength, the sagittal and tangential foci, and a vignetted-ray view.*
-- [ ] **P1 · M** **Tilt–shift / Scheimpflug**: the sensor, the tilted lens plane and the plane of focus meeting on the hinge line, with the depth-of-field wedge over the toy town.
+- [x] **P1 · M** **Tilt–shift / Scheimpflug** (#131): at true scale in the camera, the sensor, lens and focus planes meeting in the Scheimpflug line, with the hinge line at J = f / sin α; and the plane of focus with its depth-of-field wedge over the toy town.
 - [x] **P1 · M** **Polarisation** (#130): the electric field along the beam through each polariser and wave plate (flat waves, helices, ellipses, with the unpolarised share as a ring), and the Poincaré sphere with the state after each element.
 - [x] **P1 · S** **Wavefronts and PSFs as surfaces** (#129): the Zernike wavefront over a round pupil next to its PSF's log relief, and the PSF laboratory's star image as a relief in its own colours (JWST's six spikes in near-infrared colour). *The seeing phase screen remains.*
 - [ ] **P2 · M** **Depth of field**: the camera's view frustum with the near and far limits and the cards inside the sharp zone.

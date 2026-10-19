@@ -52,21 +52,44 @@ export function flip(m) {
   return { positions: m.positions, normals: nrm, indices: idx };
 }
 
-// Concatenate meshes into one.
+// Concatenate meshes into one (with per-vertex colours when every mesh has them).
 export function merge(list) {
   const nv = list.reduce((s, m) => s + m.positions.length, 0), ni = list.reduce((s, m) => s + m.indices.length, 0);
   const positions = new Float32Array(nv), normals = new Float32Array(nv), indices = new Uint32Array(ni);
+  const colors = list.length && list.every((m) => m.colors) ? new Float32Array(nv) : null;
   let pv = 0, pi = 0;
   for (const m of list) {
     positions.set(m.positions, pv); normals.set(m.normals, pv);
+    if (colors) colors.set(m.colors, pv);
     for (let i = 0; i < m.indices.length; i++) indices[pi + i] = m.indices[i] + pv / 3;
     pv += m.positions.length; pi += m.indices.length;
   }
-  return { positions, normals, indices };
+  return colors ? { positions, normals, colors, indices } : { positions, normals, indices };
 }
 
 // Annulus in the plane z = z0 (normal −z towards incoming light), radii rIn…rOut.
 export function annulus(rIn, rOut, z0, seg = 72) { return flip(lathe([[rIn, z0], [rOut, z0]], seg)); }
+
+// The same mesh with every vertex coloured rgb (for merging coloured meshes).
+export const tint = (m, rgb) => ({ ...m, colors: new Float32Array(Array.from({ length: m.positions.length / 3 }, () => rgb).flat()) });
+
+// Axis-aligned box from corner a to corner b (flat-shaded faces), optionally coloured.
+export function box(a, b, rgb = null) {
+  const P = [], N = [], I = [];
+  const faces = [[0, -1], [0, 1], [1, -1], [1, 1], [2, -1], [2, 1]];
+  for (const [ax, sg] of faces) {
+    const u = (ax + 1) % 3, v = (ax + 2) % 3, base = P.length / 3;
+    for (const [su, sv] of [[0, 0], [1, 0], [1, 1], [0, 1]]) {
+      const p = [0, 0, 0]; p[ax] = sg < 0 ? a[ax] : b[ax]; p[u] = su ? b[u] : a[u]; p[v] = sv ? b[v] : a[v];
+      const n = [0, 0, 0]; n[ax] = sg;
+      P.push(...p); N.push(...n);
+    }
+    I.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  }
+  const m = { positions: new Float32Array(P), normals: new Float32Array(N), indices: new Uint32Array(I) };
+  if (rgb) m.colors = new Float32Array(Array.from({ length: P.length / 3 }, () => rgb).flat());
+  return m;
+}
 
 // Sphere of radius r at c.
 export function sphere(r, c = [0, 0, 0], seg = 32, rings = 16) {

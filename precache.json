@@ -80,6 +80,7 @@
     "js/lib/survey.js",
     "js/lib/tasks.js",
     "js/lib/thinfilm.js",
+    "js/lib/tilt3d.js",
     "js/lib/tolerance.js",
     "js/lib/tours.js",
     "js/lib/transit.js",

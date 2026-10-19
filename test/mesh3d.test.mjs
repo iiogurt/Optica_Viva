@@ -87,3 +87,17 @@ test('polarisation 3-D: the field tip is a flat wave for linear light and a heli
   near(centres[1][0], 1, 1e-3, 'horizontal linear at S₁ = +1');
   near(centres[2][1], 1, 1e-3, 'circular at the pole S₃ = +1');
 });
+
+test('Scheimpflug 3-D: the plane of focus passes through the Scheimpflug line and the hinge line', async () => {
+  const { planeOfFocus, scheimpflugScene, townScene } = await import('../js/lib/tilt3d.js');
+  const { tiltedLens } = await import('../js/lib/optics.js');
+  for (const st of [{ f: 65, alpha: 8, s: 52, N: 2.8 }, { f: 90, alpha: -3, s: 30, N: 8 }]) {
+    const G = tiltedLens(st.f / 1000, st.alpha, st.s, st.N), L = planeOfFocus(st);
+    const yAt = (z) => L.p[0] + ((z - L.p[1]) / L.d[1]) * L.d[0];
+    near(yAt(-G.v), G.v / Math.tan(G.a), 1e-6, `Scheimpflug line (sensor ∩ lens plane) at α = ${st.alpha}°`);
+    near(yAt(0), G.f / Math.sin(G.a), 1e-6, `hinge line J = f / sin α at α = ${st.alpha}°`);
+    const s = scheimpflugScene(st);
+    assert.ok(s.labels.some((l) => l.text.startsWith('hinge line')) && s.labels.some((l) => l.text === 'Scheimpflug line'));
+  }
+  assert.ok(townScene({ f: 65, alpha: 8, s: 52, N: 2.8 }).meshes.length >= 3, 'town, camera and plane of focus');
+});
