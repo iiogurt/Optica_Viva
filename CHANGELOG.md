@@ -6,25 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
-### Added
-- **3-D Scheimpflug geometry** (`js/lib/tilt3d.js`): the tilt–shift laboratory shows, at true scale, the sensor plane, the tilted lens plane and the plane of focus meeting in the Scheimpflug line, with the hinge line at J = f / sin α and the depth-of-field limits; and the plane of focus with its wedge over the toy town, seen from above the rooftop camera. `test/mesh3d.test.mjs` checks that the plane of focus passes through both lines.
+## [1.20.0] - 2026-10-19
 
-### Added
-- **3-D polarisation** (`js/lib/pol3d.js`): in the polarisers-in-series section, the electric field along the beam through each element (a flat wave for linear light, a helix for circular, a twisted ellipse otherwise, the unpolarised share as a ring, polarisers drawn with their transmission axis and wave plates with their fast axis), and the Poincaré sphere with the state after each element and the paths between them.
-
-### Fixed
-- Polarisation: the sky map no longer throws while its figure is still being laid out (a negative arc radius).
-
-### Added
-- **3-D wavefronts and PSFs** (`js/lib/surf3d.js`): the Zernike laboratory shows the wavefront as a coloured relief over a round pupil next to the log relief of the star image it makes, and the PSF laboratory shows its star image as a relief in its own colours. The 3-D engine gained per-vertex colours.
+Optics in three dimensions: a dependency-free WebGL 2 engine with skew rays through real lenses, wavefront and PSF reliefs, the electric field and the Poincaré sphere, and the Scheimpflug planes over the toy town; plus tidier figure captions.
 
 ### Added
 - **3-D views** (`js/lib/gl3d.js`, `js/lib/mesh3d.js`): a dependency-free WebGL 2 renderer with an orbit camera (drag, wheel or pinch, shift-drag to pan, double-click or ⟲ to reset, arrow keys and +/− when focused), glass with a Fresnel rim, glowing anti-aliased lines, labels and PNG export; it renders only when something changes and says so where WebGL 2 is missing. First use: the **ray tracer's 3-D view** (`js/lib/lens3d.js`) shows the glass elements as solids, mirrors, the stop and the sensor, with real skew rays on axis and at the chosen field. ROADMAP v1.20 lists the researched 3-D views for the other laboratories. The headless browser of the tests now has WebGL 2 through SwiftShader (2-D canvases stay in software), and the smoke test checks that the 3-D view starts. `test/mesh3d.test.mjs` covers the geometry and the scene.
+- **3-D wavefronts and PSFs** (`js/lib/surf3d.js`): the Zernike laboratory shows the wavefront as a coloured relief over a round pupil next to the log relief of the star image it makes, and the PSF laboratory shows its star image as a relief in its own colours. The 3-D engine gained per-vertex colours.
+- **3-D polarisation** (`js/lib/pol3d.js`): in the polarisers-in-series section, the electric field along the beam through each element (a flat wave for linear light, a helix for circular, a twisted ellipse otherwise, the unpolarised share as a ring, polarisers drawn with their transmission axis and wave plates with their fast axis), and the Poincaré sphere with the state after each element and the paths between them.
+- **3-D Scheimpflug geometry** (`js/lib/tilt3d.js`): the tilt–shift laboratory shows, at true scale, the sensor plane, the tilted lens plane and the plane of focus meeting in the Scheimpflug line, with the hinge line at J = f / sin α and the depth-of-field limits; and the plane of focus with its wedge over the toy town, seen from above the rooftop camera. `test/mesh3d.test.mjs` checks that the plane of focus passes through both lines.
 
 ### Fixed
-- Figure captions stay on one line clear of the PNG/CSV buttons (the full caption unfolds on hover or keyboard focus); long captions no longer wrap into the drawing on the macro, panorama, polarisation, eye, tilt–shift and interferometry pages.
-- Ray tracer: glass names of thin neighbouring elements (e.g. the Biogon's cemented groups) are staggered instead of printed over each other.
 - Perspective: the top view's pillar note moved below the drawing, out from under the export buttons.
+- Ray tracer: glass names of thin neighbouring elements (e.g. the Biogon's cemented groups) are staggered instead of printed over each other.
+- Figure captions stay on one line clear of the PNG/CSV buttons (the full caption unfolds on hover or keyboard focus); long captions no longer wrap into the drawing on the macro, panorama, polarisation, eye, tilt–shift and interferometry pages.
+- Polarisation: the sky map no longer throws while its figure is still being laid out (a negative arc radius).
 
 ## [1.19.0] - 2026-10-19
 
@@ -702,7 +698,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.19.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.20.0...HEAD
+[1.20.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.19.0...v1.20.0
 [1.19.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.18.0...v1.19.0
 [1.18.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.16.0...v1.17.0
