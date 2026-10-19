@@ -110,10 +110,14 @@ export function ladder(page) {
 // Live-calculation card: returns {el, set(tex)}
 import { setTex } from './ui.js';
 // say(html) puts the result in plain words above the equations.
+// The equations are typeset 80 ms after the last set(): KaTeX costs 60–90 ms on a Raspberry Pi 4,
+// so while a slider is dragged only the sentence updates, and the equations follow when it pauses.
 export function liveCalc(title = N_('Live calculation')) {
   const words = h('p.calc-say'), body = h('div');
   const el = h('div.card.calc', {}, h('div.calc-title', {}, t(title)), words, body);
-  return { el, set: (src) => setTex(body, src, true), say: (html) => { words.innerHTML = html; } };
+  let src = null, timer = 0;
+  const set = (s) => { src = s; clearTimeout(timer); timer = setTimeout(() => setTex(body, src, true), 80); };
+  return { el, set, say: (html) => { words.innerHTML = html; } };
 }
 
 // ── Missions ─────────────────────────────────────────────────────────────────────────────

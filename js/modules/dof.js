@@ -1,17 +1,16 @@
 import { h, controls, stage, readouts, fmt, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS, diag, pitchUm } from '../lib/sensors.js';
-import { besselJ1 } from '../lib/pupil.js';
 import { plot, logRange } from '../lib/plot.js';
 import { blurDiameter as blur, hyperfocal, dofLimits } from '../lib/optics.js';
 import { blurredCanvas, diskBlurredCanvas } from '../lib/blur.js';
+import { runOn, parallel, rowBands } from '../lib/compute.js';
 
 const LAMBDA = 0.00055; // mm
 const CARDS = [0.7, 1, 1.5, 2.2, 3.3, 5, 8, 12, 20, 35];
 // receding diagonal: near cards to the left, far cards toward the right of centre
 const cardAngle = (i) => (-9 + (i * 14) / (CARDS.length - 1)) * Math.PI / 180;
 
-const diskMTF = (x) => (Math.abs(x) < 1e-6 ? 1 : (2 * besselJ1(Math.PI * x)) / (Math.PI * x));
 
 // Draw `img` convolved with a uniform disk of radius r (px). Up to ~1.2 Mpx (padded) the exact,
 // anti-aliased pillbox of js/lib/blur.js is used. Larger images (very near cards at long focal
@@ -135,66 +134,77 @@ D_N &= \frac{s f^2}{f^2 + Nc(s-f)} = ${texNum(Dn / 1000, 4)}\ \text{m}\\[2pt]
 D_F &= \frac{s f^2}{f^2 - Nc(s-f)} = ${isFinite(Df) ? texNum(Df / 1000, 4) + '\\ \\text{m}' : '\\infty\\ (s \\ge H)'}\\[2pt]
 c(d) &= \frac{f}{N}\cdot\frac{f\,|d-s|}{d\,(s-f)}
 \end{aligned}`);
-    photo.redraw(); dia.redraw(); bp.redraw();
+    renderPhoto(M).catch(console.error); dia.redraw(); bp.redraw();
   }
 
-  function drawPhoto(ctx, w, hh) {
-    if (!M) return;
-    const { sen, f, N, s } = M;
-    // keep sensor aspect inside the stage
-    const ar = sen.w / sen.h;
-    let W = w, H = Math.round(w / ar);
-    if (H > hh) { H = hh; W = Math.round(hh * ar); }
-    const ox = Math.round((w - W) / 2), oy = Math.round((hh - H) / 2);
-    const R = Math.min(1, 720 / W); // internal render scale
-    const IW = Math.round(W * R), IH = Math.round(H * R);
+  // The photograph renders off the main thread: the ground in parallel row bands, and each layer's
+  // disk blur as its own job on the worker pool; the layers are then composited far to near. It is
+  // rendered at a fixed internal width and scaled to the stage. A newer request makes older
+  // results stale.
+  let IMG = null, ticket = 0;
+  const RW = 720;
+  // disk-blur a canvas on pool worker i into a padded canvas (as diskBlurredCanvas in js/lib/blur.js)
+  async function diskBlurAsync(src, r, i) {
+    const pad = Math.ceil(r) + 2, c = document.createElement('canvas');
+    c.width = src.width + 2 * pad; c.height = src.height + 2 * pad;
+    const g = c.getContext('2d');
+    g.drawImage(src, pad, pad);
+    const im = g.getImageData(0, 0, c.width, c.height);
+    const out = await runOn(i, 'diskBlur', { data: im.data, w: c.width, h: c.height, r }, [im.data.buffer]);
+    g.putImageData(new ImageData(out, c.width, c.height), 0, 0);
+    return { canvas: c, pad };
+  }
+  // A function that draws `img` blurred by a disk of radius r at (x, y). Sharp layers are drawn
+  // directly, and very large ones use diskBlit's Vogel-spiral fallback on the main thread.
+  function layer(img, x, y, r, i) {
+    if (r < 0.6 || (img.width + 2 * r) * (img.height + 2 * r) > 1.2e6) return Promise.resolve((g) => diskBlit(g, img, x, y, r));
+    return diskBlurAsync(img, r, i).then(({ canvas, pad }) => (g) => g.drawImage(canvas, x - pad, y - pad));
+  }
+  async function renderPhoto(m) {
+    const my = ++ticket;
+    const { sen, f, N, s } = m;
+    const IW = RW, IH = Math.round(RW / (sen.w / sen.h));
     const pxmm = IW / sen.w; // pixels per sensor-mm
     const hc = 450; // camera height (mm): a low, tabletop viewpoint
     const hz = IH * 0.32; // horizon row: the sensor is shifted down (shift-lens framing, verticals stay vertical)
-    const cv = document.createElement('canvas'); cv.width = IW; cv.height = IH;
-    const g = cv.getContext('2d');
-    const img = g.createImageData(IW, IH), D = img.data;
-    const P = 250; // ground tile period (mm)
-    const pmm = 1 / pxmm;
-    for (let y = 0; y < IH; y++) {
-      const ymm = (y + 0.5 - hz) * pmm;
-      for (let x = 0; x < IW; x++) {
-        const o = (y * IW + x) * 4;
-        if (ymm <= 0.0001) { // sky
-          const t = Math.min(1, Math.sqrt(-ymm / (hz * pmm)));
-          D[o] = 236 - 214 * t; D[o + 1] = 150 - 120 * t; D[o + 2] = 120 - 60 * t; D[o + 3] = 255;
-          continue;
-        }
-        const Z = (f * hc) / ymm;
-        const xmm = (x + 0.5 - IW / 2) * pmm;
-        const X = (xmm * Z) / f;
-        const nx = f / (Z * P), nz = (f * hc) / (Z * Z * P);
-        const nu = Math.hypot(nx, nz);
-        const c = blur(f, N, s, Z);
-        let mtf = diskMTF(nu * c);
-        if (M.diff) { const v = nu * LAMBDA * M.Nw; mtf *= v < 1 ? (2 / Math.PI) * (Math.acos(v) - v * Math.sqrt(1 - v * v)) : 0; }
-        const nyq = 0.5 / pmm;
-        const aa = nu > nyq ? 0 : Math.max(0, 1 - nu / nyq);
-        const tex = 0.5 + 0.5 * mtf * aa * Math.cos((2 * Math.PI * X) / P) * Math.cos((2 * Math.PI * Z) / P);
-        const haze = 1 - Math.exp(-Z / 200000);
-        const r = 38 + 52 * tex, gg = 52 + 58 * tex, b = 40 + 30 * tex;
-        D[o] = r + (200 - r) * haze; D[o + 1] = gg + (128 - gg) * haze; D[o + 2] = b + (110 - b) * haze; D[o + 3] = 255;
-      }
-    }
-    g.putImageData(img, 0, 0);
-    // distant hills (Z = 800 m) and lamps (Z = 120–300 m)
+    const ground = parallel('dofGround', rowBands(IH).map(([y0, y1]) => ({ p: { IW, IH, hz, pmm: 1 / pxmm, f, N, s, diff: m.diff, Nw: m.Nw }, y0, y1 })));
+    // distant hills (Z = 800 m)
     const hills = document.createElement('canvas'); hills.width = IW; hills.height = Math.ceil(hz) + 4;
     const hg = hills.getContext('2d');
     const Zh = 800000;
     hg.fillStyle = '#3b3550';
     hg.beginPath(); hg.moveTo(0, hills.height);
     for (let x = 0; x <= IW; x += 2) {
-      const X = ((x - IW / 2) * pmm * Zh) / f;
+      const X = ((x - IW / 2) * Zh) / (f * pxmm);
       const Y = 30000 + 18000 * Math.sin(X / 90000) + 9000 * Math.sin(X / 23000 + 1.3) + 4000 * Math.sin(X / 7000);
       hg.lineTo(x, hz - ((f * (Y - hc)) / Zh) * pxmm);
     }
     hg.lineTo(IW, hills.height); hg.closePath(); hg.fill();
-    diskBlit(g, hills, 0, 0, (blur(f, N, s, Zh) * pxmm) / 2);
+    const hillLayer = layer(hills, 0, 0, (blur(f, N, s, Zh) * pxmm) / 2, 0);
+    // cards, far to near (painter's algorithm); include a subject card at the focus distance
+    const items = CARDS.map((d, i) => ({ Z: d * 1000, X: d * 1000 * Math.tan(cardAngle(i)), label: d + ' m' }));
+    items.push({ Z: s, X: s * Math.tan(2 * Math.PI / 180), label: '◎', subject: true });
+    items.sort((a, b) => b.Z - a.Z);
+    const cardLayers = [];
+    for (const it of items) {
+      if (it.Z <= f * 1.2) continue;
+      const cw = 120, chh = 300; // card 0.12 m wide, 0.30 m tall incl. post
+      const wpx = ((f * cw) / it.Z) * pxmm, hpx = ((f * chh) / it.Z) * pxmm;
+      if (wpx < 1.5 || wpx > IW * 3) continue;
+      const x = IW / 2 + ((f * (it.X - cw / 2)) / it.Z) * pxmm;
+      const yb = hz + ((f * hc) / it.Z) * pxmm; // ground contact
+      cardLayers.push(layer(cardImage(wpx, hpx, it.label, it.subject), x, yb - hpx, (blur(f, N, s, it.Z) * pxmm) / 2, cardLayers.length + 1));
+    }
+    const [parts, drawHills, ...drawCards] = await Promise.all([ground, hillLayer, ...cardLayers]);
+    if (my !== ticket) return;
+    const cv = document.createElement('canvas'); cv.width = IW; cv.height = IH;
+    const g = cv.getContext('2d');
+    const img = g.createImageData(IW, IH);
+    let off = 0;
+    for (const p of parts) { img.data.set(p, off); off += p.length; }
+    g.putImageData(img, 0, 0);
+    drawHills(g);
+    // lamps (Z = 60–200 m)
     g.globalCompositeOperation = 'lighter';
     for (let i = 0; i < 70; i++) {
       const Z = 60000 + ((i * 7919) % 140000);
@@ -208,20 +218,19 @@ c(d) &= \frac{f}{N}\cdot\frac{f\,|d-s|}{d\,(s-f)}
       g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
     }
     g.globalCompositeOperation = 'source-over';
-    // cards, far to near (painter's algorithm); include a subject card at the focus distance
-    const items = CARDS.map((d, i) => ({ Z: d * 1000, X: d * 1000 * Math.tan(cardAngle(i)), label: d + ' m' }));
-    items.push({ Z: s, X: s * Math.tan(2 * Math.PI / 180), label: '◎', subject: true });
-    items.sort((a, b) => b.Z - a.Z);
-    for (const it of items) {
-      if (it.Z <= f * 1.2) continue;
-      const cw = 120, chh = 300; // card 0.12 m wide, 0.30 m tall incl. post
-      const wpx = ((f * cw) / it.Z) * pxmm, hpx = ((f * chh) / it.Z) * pxmm;
-      if (wpx < 1.5 || wpx > IW * 3) continue;
-      const x = IW / 2 + ((f * (it.X - cw / 2)) / it.Z) * pxmm;
-      const yb = hz + ((f * hc) / it.Z) * pxmm; // ground contact
-      const im = cardImage(wpx, hpx, it.label, it.subject);
-      diskBlit(g, im, x, yb - hpx, (blur(f, N, s, it.Z) * pxmm) / 2);
-    }
+    for (const d of drawCards) d(g);
+    IMG = { cv, f, N, sen };
+    photo.redraw();
+  }
+
+  function drawPhoto(ctx, w, hh) {
+    if (!IMG) return;
+    const { cv, sen, f, N } = IMG;
+    // keep sensor aspect inside the stage
+    const ar = sen.w / sen.h;
+    let W = w, H = Math.round(w / ar);
+    if (H > hh) { H = hh; W = Math.round(hh * ar); }
+    const ox = Math.round((w - W) / 2), oy = Math.round((hh - H) / 2);
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(cv, ox, oy, W, H);
     ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.strokeRect(ox + 0.5, oy + 0.5, W - 1, H - 1);

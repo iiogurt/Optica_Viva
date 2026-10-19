@@ -10,6 +10,12 @@ import { monteCarlo, sensitivity } from './tolerance.js';
 import { ghostSystem, renderGhosts } from './ghosts.js';
 import { bokehKernels } from './bokeh.js';
 import { renderLake } from './polar.js';
+import { tiltScene, tiltBlend, shiftRows, TILT } from './scenes.js';
+import { diskBlurRGBA } from './blur.js';
+import { groundRows } from './dofphoto.js';
+import { projectionRows } from './projection.js';
+import { lensRows, sourceAndMagnification, criticalCurves, deflect } from './lensing.js';
+import { perspectiveRows } from './perspective.js';
 import { renderRuler } from './macro.js';
 import { createLoop, pyramidWFS } from './wfs.js';
 import { renderPanorama } from './panorama.js';
@@ -554,4 +560,37 @@ function autofocus(p) {
   return { result: { ...r, left: Float32Array.from(r.left), right: Float32Array.from(r.right) }, transfer: [] };
 }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus };
+
+// ── Tilt–shift laboratory (js/lib/scenes.js): parallel row bands, a blur stack split by level,
+// and a blend that reuses the depth map and stack kept in this worker for the current focal length.
+function tiltSceneTask(p) { const r = tiltScene(p.f, p.y0, p.y1); return { result: r, transfer: [r.rgb.buffer, r.depth.buffer] }; }
+function blurLevels(p) {
+  const imgs = p.levels.map((r) => diskBlurRGBA(p.rgba, p.W, p.H, r));
+  return { result: imgs, transfer: imgs.map((x) => x.buffer) };
+}
+let tiltCache = null;
+function tiltStore(p) { tiltCache = { f: p.f, depth: p.depth, stack: p.stack }; return { result: true, transfer: [] }; }
+function tiltBlendTask(p) {
+  if (!tiltCache || tiltCache.f !== p.st.f) return { result: null, transfer: [] };
+  const img = tiltBlend(p.st, tiltCache.depth, tiltCache.stack);
+  return { result: img, transfer: [img.buffer] };
+}
+// Depth-of-field laboratory: ground rows of the synthetic photograph, and any RGBA disk blur.
+function dofGround(p) { const r = groundRows(p.p, p.y0, p.y1); return { result: r, transfer: [r.buffer] }; }
+function diskBlurTask(p) { const r = diskBlurRGBA(p.data, p.w, p.h, p.r); return { result: r, transfer: [r.buffer] }; }
+function projectionTask(p) { const r = projectionRows(p.p, p.y0, p.y1); return { result: r, transfer: [r.buffer] }; }
+// Gravitational lensing laboratory: image-plane bands, and the source panel, magnification and
+// (when the lens changed) critical curves with their caustics.
+function lensRowsTask(p) { const r = lensRows(p.p, p.y0, p.y1); return { result: r, transfer: [r.buffer] }; }
+function lensSide(p) {
+  const r = sourceAndMagnification(p);
+  if (p.curves) {
+    r.crit = criticalCurves(p.P);
+    r.caus = r.crit.map(([a, b]) => [a, b].map(([x, y]) => { const [ax, ay] = deflect(p.P, x, y); return [x - ax, y - ay]; }));
+  }
+  return { result: r, transfer: [r.img.buffer] };
+}
+function perspectiveTask(p) { const r = perspectiveRows(p.p, p.y0, p.y1); return { result: r, transfer: [r.buffer] }; }
+function shiftTask(p) { const r = shiftRows(p.st, p.y0, p.y1); return { result: r, transfer: [r.buffer] }; }
+
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask };

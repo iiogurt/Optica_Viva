@@ -46,6 +46,7 @@ export async function launch({ width = 1440, height = 1200 } = {}) {
     async size(w, h) { await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false }); },
     async goto(url, waitMs = 4000) { errors = []; await send('Page.navigate', { url }); await sleep(waitMs); return errors.slice(); },
     errors: () => errors.slice(), // console errors since the last goto
+    cdp: send, // raw DevTools Protocol call, e.g. cdp('Profiler.start')
     async eval(expression) {
       const r = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
       if (r.result?.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text);
