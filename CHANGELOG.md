@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.18.0] - 2026-10-19
+
 ### Added
 - **Interface in German, French and Spanish** (`js/lib/i18n.js`, `js/locales/`): navigation, laboratory titles and descriptions, the page chrome (ladder, header buttons, export, live-calculation title), guided-tour and exercise controls, the Start-here path and the home page. Strings are keyed by their English text, so anything untranslated falls back to English; the browser's language is the default and a picker at the foot of the sidebar changes it. Laboratory explanations stay English for now, which translated pages say. `test/i18n.test.mjs` collects every interface string (`t()`, `N_()`, the laboratory registry, tours and the path) and requires every locale to translate it with the same placeholders.
 - Home page: the glass and prescription counts are computed (437 glasses, 15 prescriptions) instead of the stale "12 glasses, 13 prescriptions".
@@ -662,7 +664,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.17.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.18.0...HEAD
+[1.18.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.17.0...v1.18.0
 [1.17.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.16.0...v1.17.0
 [1.16.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.14.0...v1.15.0
