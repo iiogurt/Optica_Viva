@@ -61,6 +61,7 @@
     "js/lib/phenomena-details.js",
     "js/lib/phenomena.js",
     "js/lib/plot.js",
+    "js/lib/pol3d.js",
     "js/lib/polar.js",
     "js/lib/portrait.js",
     "js/lib/projection.js",

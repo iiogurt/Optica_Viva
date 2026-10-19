@@ -4,6 +4,8 @@ import { run } from '../lib/compute.js';
 import { plot, range } from '../lib/plot.js';
 import { oetf, colormap, wavelengthRGB } from '../lib/color.js';
 import { polariser, retarder, mapply, ellipse, fresnelAmp, brewster, rayleighDoP, diskStress, principal, retardation, michelLevy, CRYSTALS, walkOff, maxWalkOff } from '../lib/polar.js';
+import { view3d } from '../lib/gl3d.js';
+import { beamScene, poincareScene } from '../lib/pol3d.js';
 
 const D2R = Math.PI / 180;
 
@@ -138,6 +140,7 @@ export default function mount(root, meta) {
   function drawSky(ctx, w, hh) {
     ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
     const st = ctl.state, cx = w / 2, cy = hh / 2 + 10, R = Math.min(w, hh) / 2 - 30;
+    if (R < 4) return; // a figure still being laid out
     const sEl = st.sunEl * D2R, sAz = st.sunAz * D2R;
     const s = [Math.cos(sEl) * Math.sin(sAz), Math.cos(sEl) * Math.cos(sAz), Math.sin(sEl)];
     const dirAt = (x, y) => {
@@ -229,7 +232,9 @@ export default function mount(root, meta) {
   const pcalc = liveCalc();
   const chainView = stage({ aspect: 3.4, label: 'State of polarisation after each element (ellipse = polarised part, circle = unpolarised part)', draw: drawChain, minH: 150 });
   const malus = stage({ aspect: 2.4, label: '', draw: drawMalus, cls: 'plain', minH: 210 });
-  sec.append(lab([chainView.el, h('div.card', { style: { padding: '6px' } }, malus.el)], [h('div.card', {}, pctl.el), h('div.card', {}, pro), pcalc.el]));
+  const beam3 = view3d({ label: '3-D: the electric field along the beam, through each element', aspect: 1.5, minH: 260, yaw: -0.9, pitch: 0.3 });
+  const sphere3 = view3d({ label: '3-D: the Poincaré sphere, the state after each element', aspect: 1.1, minH: 260, yaw: -0.6, pitch: 0.35 });
+  sec.append(lab([chainView.el, h('div.grid-2', {}, beam3.el, sphere3.el), h('div.card', { style: { padding: '6px' } }, malus.el)], [h('div.card', {}, pctl.el), h('div.card', {}, pro), pcalc.el]));
   root.append(sec);
 
   let C = null;
@@ -257,6 +262,16 @@ export default function mount(root, meta) {
     I_\text{out} &= ${texNum(S[3][0], 4)}${st.mid === 'pol' ? String.raw`\\ &= I_1\cos^2(\theta_2-\theta_1)\cos^2(\theta_3-\theta_2)` : ''}
     \end{aligned}`);
     chainView.redraw(); malus.redraw();
+    show3d(st, S);
+  }
+  // 3-D: the field along the beam and the path on the Poincaré sphere; cameras stay put after the first scene
+  let shown3d = false;
+  const MID_NAME = { pol: 'polariser 2', qwp: 'λ/4 plate', hwp: 'λ/2 plate', none: '' };
+  function show3d(st, S) {
+    const els = [{ kind: 'pol', angle: st.a1 * D2R, name: `polariser 1 · ${st.a1}°` }, { kind: st.mid, angle: st.a2 * D2R, name: `${MID_NAME[st.mid]} · ${st.a2}°` }, { kind: 'pol', angle: st.a3 * D2R, name: `analyser · ${st.a3}°` }];
+    beam3.setScene(beamScene(S, els), shown3d);
+    sphere3.setScene(poincareScene(S), shown3d);
+    shown3d = true;
   }
 
   function drawChain(ctx, w, hh) {
@@ -576,5 +591,5 @@ export default function mount(root, meta) {
     'R. M. Pope &amp; E. S. Fry, “Absorption spectrum (380–700 nm) of pure water. II”, <em>Appl. Opt.</em> 36, 8710 (1997).',
   ]));
 
-  return () => { alive = false; [scene, skymap, fplot, chainView, malus, diskView, mlBar, side, wplot, spots].forEach((s) => s.destroy()); };
+  return () => { alive = false; [scene, skymap, fplot, chainView, malus, diskView, mlBar, side, wplot, spots].forEach((s) => s.destroy()); beam3.destroy(); sphere3.destroy(); };
 }

@@ -71,3 +71,19 @@ test('wavefront and PSF surfaces: heights scale to the extremes; the PSF peak is
   near(top, 0.9, 0.02, 'the PSF peak reaches the full height');
   near(Math.hypot(p.positions[at - 1], p.positions[at + 1]), 0, 0.15, 'near the centre');
 });
+
+test('polarisation 3-D: the field tip is a flat wave for linear light and a helix of constant radius for circular', async () => {
+  const { fieldTip, poincareScene } = await import('../js/lib/pol3d.js');
+  const lin = fieldTip([1, 1, 0, 0], 0, 2), circ = fieldTip([1, 0, 0, 1], 0, 2);
+  for (const p of lin) near(p[1], 0, 1e-12, 'horizontal linear light stays in the x–z plane');
+  // same intensity: linear light peaks at √I, circular light keeps |E| = √(I/2) all along
+  near(Math.max(...lin.map((p) => Math.abs(p[0]))), 1, 1e-3, 'linear amplitude √I');
+  for (const p of circ) near(Math.hypot(p[0], p[1]), Math.SQRT1_2, 1e-12, 'circular |E| = √(I/2)');
+  const half = fieldTip([0.5, 0, 0, 0.5], 0, 1);
+  for (const p of half) near(Math.hypot(p[0], p[1]), 0.5, 1e-12, 'half the intensity: √(0.5/2)');
+  const s = poincareScene([[1, 0, 0, 0], [0.5, 0.5, 0, 0], [0.5, 0, 0, 0.5]]);
+  const centres = s.meshes.slice(1).map((m) => bounds([m.mesh]).centre);
+  near(Math.hypot(...centres[0]), 0, 1e-3, 'unpolarised light at the centre');
+  near(centres[1][0], 1, 1e-3, 'horizontal linear at S₁ = +1');
+  near(centres[2][1], 1, 1e-3, 'circular at the pole S₃ = +1');
+});

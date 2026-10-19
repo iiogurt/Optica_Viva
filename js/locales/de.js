@@ -1237,4 +1237,6 @@ export default {
   "3-D view: skew rays through the real lens (on axis and at the chosen field)": "3-D-Ansicht: windschiefe Strahlen durch das echte Objektiv (auf der Achse und beim gewählten Feldwinkel)",
   "3-D: the wavefront over the pupil (left) and the star image it makes, log brightness (right)": "3-D: die Wellenfront über der Pupille (links) und das Sternbild, das sie erzeugt, logarithmische Helligkeit (rechts)",
   "3-D: the star image as a relief, height = log brightness, in its own colours": "3-D: das Sternbild als Relief, Höhe = logarithmische Helligkeit, in seinen eigenen Farben",
+  "3-D: the electric field along the beam, through each element": "3-D: das elektrische Feld entlang des Strahls, durch jedes Element",
+  "3-D: the Poincaré sphere, the state after each element": "3-D: die Poincaré-Kugel, der Zustand nach jedem Element",
 };
