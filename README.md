@@ -1073,6 +1073,7 @@ Completed and planned milestones are tracked in **[ROADMAP.md](ROADMAP.md)**, to
 | ✅ **v1.16** | Learning platform: guided tours, exercises with checked answers, export, embed mode, installable offline app |
 | ✅ **v1.17** | Lens design in depth: Tessar, Petzval, telephoto, retrofocus and Biogon; mirrors, Hubble and a JWST-style three-mirror anastigmat; exact off-axis diffraction pupil |
 | ✅ **v1.18** | 431-glass SCHOTT, OHARA and CDGM catalogue with a glass-map picker, decenter and tilt tolerancing, interface in German, French and Spanish |
+| ✅ **v1.19** | Controls, readouts and captions in German, French and Spanish; parallel ray casters and a streamed seeing animation (no more freezes on a Raspberry Pi 4) |
 | **v2.0** | Translated explanations, lab plugin API |
 
 ---
@@ -1087,7 +1088,7 @@ In short: branch from `main` → `npm run ci` → pull request → green CI (`ch
 
 ## 🏷 Versioning and releases
 
-Version **1.18.0** · [all releases](https://github.com/iiogurt/Optica_Viva/releases) · [changelog](CHANGELOG.md)
+Version **1.19.0** · [all releases](https://github.com/iiogurt/Optica_Viva/releases) · [changelog](CHANGELOG.md)
 
 The project follows [Semantic Versioning](https://semver.org/): a new laboratory or capability is a **minor** release, and fixes and documentation are **patch** releases. `main` is protected: every change, including the version bump, arrives through a pull request with green CI, and releases only push a tag.
 
