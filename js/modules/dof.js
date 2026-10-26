@@ -5,11 +5,10 @@ import { plot, logRange } from '../lib/plot.js';
 import { blurDiameter as blur, hyperfocal, dofLimits } from '../lib/optics.js';
 import { blurredCanvas, diskBlurredCanvas } from '../lib/blur.js';
 import { runOn, parallel, rowBands } from '../lib/compute.js';
+import { view3d } from '../lib/gl3d.js';
+import { dofScene, sceneDepth, CARDS, cardAngle } from '../lib/dof3d.js';
 
 const LAMBDA = 0.00055; // mm
-const CARDS = [0.7, 1, 1.5, 2.2, 3.3, 5, 8, 12, 20, 35];
-// receding diagonal: near cards to the left, far cards toward the right of centre
-const cardAngle = (i) => (-9 + (i * 14) / (CARDS.length - 1)) * Math.PI / 180;
 
 
 // Draw `img` convolved with a uniform disk of radius r (px). Up to ~1.2 Mpx (padded) the exact,
@@ -91,7 +90,8 @@ export default function mount(root, meta) {
   const photo = stage({ aspect: 1.5, label: 'Simulated photograph', draw: drawPhoto, minH: 260 });
   const dia = stage({ aspect: 4.2, label: '', draw: drawDiagram, minH: 150, cls: 'plain' });
   const bp = stage({ aspect: 2.6, label: '', draw: drawBlurPlot, minH: 220, cls: 'plain' });
-  root.append(lab([photo.el, h('div.card', { style: { padding: '8px' } }, dia.el), h('div.card', { style: { padding: '8px' } }, bp.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const view = view3d({ label: '3-D, true scale: what the camera sees, the plane of focus and the sharp zone', aspect: 1.9, minH: 260, yaw: -2.35, pitch: 0.38 });
+  root.append(lab([photo.el, h('div.card', { style: { padding: '8px' } }, dia.el), view.el, h('div.card', { style: { padding: '8px' } }, bp.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   function model() {
     const st = ctl.state, sen = SENSORS[st.sensor];
@@ -135,6 +135,14 @@ D_F &= \frac{s f^2}{f^2 - Nc(s-f)} = ${isFinite(Df) ? texNum(Df / 1000, 4) + '\\
 c(d) &= \frac{f}{N}\cdot\frac{f\,|d-s|}{d\,(s-f)}
 \end{aligned}`);
     renderPhoto(M).catch(console.error); dia.redraw(); bp.redraw();
+    show3d(M);
+  }
+  // 3-D: the camera stays where the reader put it, unless the scene's depth changes more than 2×
+  let depth3d = 0;
+  function show3d(m) {
+    const D = sceneDepth(m.s / 1000, m.Df / 1000), keep = depth3d > 0 && D / depth3d < 2 && depth3d / D < 2;
+    view.setScene(dofScene(m), keep);
+    if (!keep) depth3d = D;
   }
 
   // The photograph renders off the main thread: the ground in parallel row bands, and each layer's
@@ -329,5 +337,5 @@ c(d) &= \frac{f}{N}\cdot\frac{f\,|d-s|}{d\,(s-f)}
     'H. M. Merklinger, <i>The INs and OUTs of FOCUS</i> (1992): an object-field view of depth of field.',
     'Zeiss, "Depth of Field and Bokeh", Camera Lens News 35 (2010): the d/1730 criterion.',
   ]));
-  return () => [photo, dia, bp].forEach((s) => s.destroy());
+  return () => [photo, dia, view, bp].forEach((s) => s.destroy());
 }

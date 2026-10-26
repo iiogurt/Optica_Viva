@@ -137,3 +137,37 @@ test('colour solid: optimal colours pair up to white, contain every real surface
   near(bounds([solid]).max[1], 1.3, 1e-6, 'white at the top of the solid');
   assert.equal(s.meshes.filter((m) => !m.glass && m.opacity === undefined).length, 14, 'the 14 test colour samples');
 });
+
+test('depth-of-field 3-D: the frustum matches the photograph, and cards are green exactly inside the sharp zone', async () => {
+  const { dofScene, section, sceneDepth, CARDS, CAM_H, HORIZON } = await import('../js/lib/dof3d.js');
+  const { dofLimits, blurDiameter } = await import('../js/lib/optics.js');
+  const sen = { w: 36, h: 24 };
+  // cross-section at 10 m for 50 mm: 7.2 m wide; the bottom edge meets the ground where the
+  // photograph's lowest row sees it, Z = h_c f / ((1 − horizon) h)
+  const q = section(sen, 50, 10);
+  near(q[1][0] - q[0][0], 7.2, 1e-9, 'width at 10 m');
+  near(q[0][1], (10 * HORIZON * 24) / 50, 1e-9, 'top edge (shifted framing)');
+  const zGround = (CAM_H * 50) / ((1 - HORIZON) * 24), g = section(sen, 50, zGround);
+  near(g[3][1], -CAM_H, 1e-9, 'bottom edge reaches the ground');
+  for (const [f, N, s] of [[85, 1.8, 2200], [24, 11, 4000], [200, 4, 20000]]) {
+    const c = 0.029, { near: Dn, far: Df } = dofLimits(f, N, c, s);
+    const sc = dofScene({ sen, f, N, s, c, Dn, Df }), D = sceneDepth(s / 1000, Df / 1000);
+    const slab = sc.meshes.find((m) => m.glass && m.opacity === 0.16), z = [];
+    for (let i = 2; i < slab.mesh.positions.length; i += 3) z.push(slab.mesh.positions[i]);
+    near(Math.min(...z), Dn / 1000, 1e-6, `sharp zone starts at the near limit (f = ${f})`);
+    near(Math.max(...z), Math.min(Df / 1000, D), 1e-6, 'and ends at the far limit or the scene depth');
+    const fp = sc.meshes.find((m) => m.glass && m.opacity === 0.2);
+    near(fp.mesh.positions[2], s / 1000, 1e-6, 'plane of focus at s');
+    // the cards drawn (boxes with a colour per vertex, past the camera) are sharp iff blur ≤ c
+    const cards = sc.meshes.filter((m) => m.mesh.colors && m.mesh.positions[2] > 0.3);
+    assert.ok(cards.length >= 2, 'cards drawn');
+    for (const k of cards) {
+      const d = (k.mesh.positions[2] + 0.01) * 1000, gold = k.color[0] === 1 && k.color[1] === 0.71;
+      if (gold) continue;
+      const sharp = k.color[0] === 0.42 && k.color[1] === 0.89;
+      assert.equal(sharp, blurDiameter(f, N, s, d) <= c, `card at ${d / 1000} m`);
+      assert.ok(CARDS.some((x) => Math.abs(x * 1000 - d) < 0.01), 'a card from the photograph (float32 positions)');
+    }
+  }
+  assert.ok(sceneDepth(100, 120) >= 100, 'a focus at 100 m stays in the scene');
+});

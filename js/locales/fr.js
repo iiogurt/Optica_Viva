@@ -1248,4 +1248,5 @@ export default {
   "Display gamut, share of all chromaticities": "Gamut d’écran, part de toutes les chromaticités",
   "Test colours the display cannot show": "Couleurs test que l’écran ne peut pas afficher",
   "3-D: every surface colour possible under this light, in CIE xyY, with a display gamut": "3-D : toutes les couleurs de surface possibles sous cette lumière, en CIE xyY, avec un gamut d’écran",
+  "3-D, true scale: what the camera sees, the plane of focus and the sharp zone": "3-D, à l’échelle : ce que voit l’appareil, le plan de netteté et la zone nette",
 };
