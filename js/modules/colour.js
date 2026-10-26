@@ -3,6 +3,8 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot } from '../lib/plot.js';
 import { oetf, wavelengthCSS } from '../lib/color.js';
 import { ILLUMINANTS, TCS, CMF } from '../lib/colordata.js';
+import { view3d } from '../lib/gl3d.js';
+import { colourSolidScene, gamutCoverage, samplesOutside } from '../lib/colour3d.js';
 import { LAMBDA, xyz, chromaticity, uv1960, blackbody, daylight, cri, sampleSRGB, planck, CAMERAS, EXTRA_PATCHES, cameraColour, wbGains, lutherResidual, metamer, xyzToSRGB, lab as cielab, adapt, deltaE00, D65_XYZ } from '../lib/colorsci.js';
 
 const css = (rgb) => `rgb(${rgb.map((v) => Math.round(255 * oetf(Math.min(1, Math.max(0, v))))).join(',')})`;
@@ -20,6 +22,7 @@ export default function mount(root, meta) {
   const ctl = controls({
     src: { type: 'select', label: 'Light source', value: 'LED-B3', options: [['bb', 'Black body (incandescent, candle)'], ['day', 'CIE daylight (D series)'], ...Object.entries(ILLUMINANTS).map(([k, v]) => [k, v.name])] },
     T: { type: 'range', label: 'Temperature', min: 1500, max: 12000, log: true, value: 3200, unit: 'K', when: (st) => st.src === 'bb' || st.src === 'day' },
+    gamut: { type: 'seg', label: 'Display gamut in 3-D', value: 'srgb', options: [['srgb', 'sRGB'], ['p3', 'Display P3'], ['rec2020', 'Rec. 2020']] },
   }, () => update());
   const ro = h('div');
   const calc = liveCalc();
@@ -27,7 +30,8 @@ export default function mount(root, meta) {
   const swatches = h('div.card', { style: { padding: '12px' } });
   const bars = stage({ aspect: 1.45, label: '', draw: drawBars, cls: 'plain', minH: 260 });
   const diagram = stage({ aspect: 1.45, label: 'CIE 1960 (u, v) with the Planckian locus', draw: drawUV, minH: 260 });
-  root.append(lab([h('div.card', { style: { padding: '6px' } }, spdView.el), swatches, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, bars.el), diagram.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const solid3 = view3d({ label: '3-D: every surface colour possible under this light, in CIE xyY, with a display gamut', aspect: 1.6, minH: 280, yaw: -0.35, pitch: 0.42 });
+  root.append(lab([h('div.card', { style: { padding: '6px' } }, spdView.el), swatches, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, bars.el), diagram.el), solid3.el], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   let C = null;
   function source(st) {
@@ -50,6 +54,8 @@ export default function mount(root, meta) {
       ['Saturated red R9', r.R[8].toFixed(1)],
       ['Skin tone R13', r.R[12].toFixed(1)],
       ['Luminous efficacy of radiation', ler.toFixed(0) + ' lm/W'],
+      ['Display gamut, share of all chromaticities', (100 * gamutCoverage(st.gamut)).toFixed(1) + ' %'],
+      ['Test colours the display cannot show', `${samplesOutside(S.spd, st.gamut)} of 14`],
     ]));
     calc.say(`This light has a colour temperature of <strong>${r.cct.toFixed(0)} K</strong> and a colour rendering index of <strong>${r.Ra.toFixed(0)}</strong> (100 means colours look as under the reference light)` + (r.R[8] < 50 ? `; saturated red scores only ${r.R[8].toFixed(0)}, so reds look dull.` : '.'));
     calc.set(String.raw`\begin{aligned}
@@ -64,6 +70,15 @@ export default function mount(root, meta) {
         h('div', { style: { fontSize: '10.5px', padding: '3px 4px', fontFamily: '"JetBrains Mono", monospace', color: r.R[i] < 50 ? 'var(--warn)' : 'var(--fg-dim)' } }, `R${i + 1} ${r.R[i].toFixed(0)}`)))),
     );
     [spdView, bars, diagram].forEach((x) => x.redraw());
+    show3d(st, S);
+  }
+  // 3-D: rebuilt only when the light or the gamut changes; the camera stays put after the first scene
+  let shown3d = '';
+  function show3d(st, S) {
+    const k = `${S.name}|${st.gamut}`;
+    if (k === shown3d) return;
+    solid3.setScene(colourSolidScene(S.spd, st.gamut), !!shown3d);
+    shown3d = k;
   }
 
   function drawSPD(ctx, w, hh) {
@@ -284,6 +299,9 @@ export default function mount(root, meta) {
 \[R_i = 100 - 4.6\,\Delta E_i,\qquad R_a = \frac18\sum_{i=1}^{8}R_i .\]
 <p>Ra averages only eight pastel samples, so a lamp can score in the 80s while rendering saturated red (R9) or skin (R13) poorly. That is the classic weakness of blue-pumped phosphor LEDs, which lack deep red. Film and video lighting is therefore specified with R9, with the TM-30 fidelity and gamut indices, or with the camera-based TLCI (EBU Tech 3355), which replaces the eye with a model camera. This page computes CRI exactly as published. It reproduces the CIE's own values for the FL series: FL2 64, FL7 90 and FL11 83.</p>
 <p>The swatches show each sample as an observer adapted to the lamp would see it, transformed to the sRGB display by a Bradford adaptation. Differences between the two halves are what the indices measure.</p>
+<h3>The colour solid</h3>
+<p>No surface reflects more than all the light falling on it, so a light source bounds the colours that objects can have under it. For each chromaticity, the brightest possible surface reflects everything in one band of wavelengths and nothing outside it, or nothing in one band for the purples (Schrödinger 1920). These <em>optimal colours</em> enclose every real surface colour; their outline at each lightness is called the MacAdam limit (MacAdam 1935). The 3-D view draws them in CIE xyY: chromaticity \((x, y)\) on the floor, luminance factor \(Y\) upwards, the perfect white reflector at \(Y = 100\) on top. Each band is built from the 5 nm samples, so the surface is a polyhedron of 81 bands around. Colours are shown as an observer adapted to the source sees them (Bradford to D65). Bradford is linear in XYZ, so under a strongly coloured source the solid's lower edge can stray slightly past the spectral locus drawn on the floor, which belongs to the unadapted observer.</p>
+<p>A display's gamut is the image of its RGB cube: the triangle of its primaries on the floor, with walls above each side and a roof at the brightest mixtures. Its share of all chromaticities is the triangle's area over the area inside the spectral locus in \((x, y)\). That diagram is not perceptually uniform, so the shares overstate wide gamuts compared with \((u', v')\). A colour can be unreachable even when its chromaticity lies inside the triangle, because it is too bright for that hue. A narrow-band source such as the high-pressure sodium lamp shrinks the solid towards a thin sliver: almost nothing can look saturated under it.</p>
 </div></div>`));
   root.append(theory('How a camera sees colour', String.raw`
 <div class="theory-cols"><div>
@@ -305,8 +323,10 @@ export default function mount(root, meta) {
     'R. Luther, “Aus dem Gebiet der Farbreizmetrik”, <em>Z. Tech. Phys.</em> 8, 540 (1927); H. E. Ives, “The transformation of color-mixture equations from one system to another”, <em>J. Franklin Inst.</em> 180, 673 (1915).',
     'G. D. Finlayson &amp; M. S. Drew, “Constrained least-squares regression in color spaces”, <em>J. Electron. Imaging</em> 6, 484 (1997): white-point-preserving colour correction.',
     'G. Sharma, W. Wu &amp; E. N. Dalal, “The CIEDE2000 color-difference formula: implementation notes, supplementary test data, and mathematical observations”, <em>Color Res. Appl.</em> 30, 21 (2005).',
+    'E. Schrödinger, “Theorie der Pigmente von größter Leuchtkraft”, <em>Ann. Phys.</em> 62, 603 (1920); D. L. MacAdam, “Maximum visual efficiency of colored materials”, <em>J. Opt. Soc. Am.</em> 25, 249 (1935): optimal colours.',
+    'IEC 61966-2-1:1999, <em>Default RGB colour space: sRGB</em>; ITU-R BT.2020-2, <em>Parameter values for ultra-high definition television systems</em> (2015); SMPTE EG 432-1:2010 (P3 primaries).',
     'ANSI/IES TM-30-20, <em>Method for evaluating light source color rendition</em>; EBU Tech 3355, <em>Method for the assessment of the colorimetric properties of luminaires: the Television Lighting Consistency Index (TLCI-2012)</em>.',
   ]));
 
-  return () => [spdView, bars, diagram, sensView, mspec].forEach((s) => s.destroy());
+  return () => [spdView, bars, diagram, solid3, sensView, mspec].forEach((s) => s.destroy());
 }

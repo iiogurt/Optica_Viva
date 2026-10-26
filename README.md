@@ -384,7 +384,7 @@ Row-timed propeller rendering with exposure integration, comparing rolling and g
 **Colour science** · `#/colour`<br>
 <img src="docs/screenshots/colour.webp" alt="Spectrum of a phosphor LED, test colour samples under reference and LED, colour rendering indices" width="70%">
 
-Colorimetry from **CIE tables** (1931 observer, D-series, A, FL, HP and the CIE 15:2018 **LED** illuminants): tristimulus values, correlated colour temperature and **Duv** by search along the Planckian locus. The page computes the **CIE 13.3 colour rendering index** R1–R14 and Ra, reproducing the CIE's own values for the FL series, and shows the 14 test colours side by side under the reference and the test source with Bradford adaptation. It is clear why phosphor LEDs fail **R9**. A camera section models **spectral sensitivities** (typical CMOS, narrow-band, broad, Luther–Ives ideal), **white balance** and a white-preserving **colour matrix** fitted by least squares, with CIEDE2000 errors per patch. A **metamerism** demo builds a metamer that matches exactly in daylight and splits under other lamps and for the camera.
+Colorimetry from **CIE tables** (1931 observer, D-series, A, FL, HP and the CIE 15:2018 **LED** illuminants): tristimulus values, correlated colour temperature and **Duv** by search along the Planckian locus. The page computes the **CIE 13.3 colour rendering index** R1–R14 and Ra, reproducing the CIE's own values for the FL series, and shows the 14 test colours side by side under the reference and the test source with Bradford adaptation. It is clear why phosphor LEDs fail **R9**. A camera section models **spectral sensitivities** (typical CMOS, narrow-band, broad, Luther–Ives ideal), **white balance** and a white-preserving **colour matrix** fitted by least squares, with CIEDE2000 errors per patch. A **metamerism** demo builds a metamer that matches exactly in daylight and splits under other lamps and for the camera. A **3-D view** shows the **colour solid** in CIE xyY: every surface colour possible under the chosen light (the optimal colours, or MacAdam limits), with the sRGB, Display P3 or Rec. 2020 gamut as a glass solid and the 14 test colours inside it.
 
 </td>
 </tr>
@@ -850,6 +850,7 @@ Optica_Viva/
 │   │   ├── surf3d.js          3-D wavefront (polar grid over the pupil) and PSF reliefs with per-vertex colours
 │   │   ├── pol3d.js           3-D electric field along a beam through polarisers and wave plates; Poincaré sphere
 │   │   ├── tilt3d.js          3-D Scheimpflug geometry at true scale, and the plane of focus over the toy town
+│   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
 │   │   ├── i18n.js            Interface translation: t(), N_(), language choice and loading
 │   │   ├── transit.js         Transit light curves with limb darkening, orbits, photometric noise
 │   │   ├── ledset.js          LED mission: flicker-free shutter angles, PWM banding, safe wall distance
@@ -998,6 +999,9 @@ The numerical core was checked against published or analytically known values. E
 | CIEDE2000, Sharma test pairs 1, 3, 7, 17 | 2.0425, 1.0000, 2.3669, 27.1492 | Sharma, Wu & Dalal (2005), same |
 | Luther–Ives camera (sensitivities = x̄ȳz̄), matrix fitted under A | ΔE₀₀ < 10⁻⁴ on all 24 patches | colorimetric by construction |
 | Constructed metamer of TCS13 (skin) | ΔE₀₀ = 0 in D65; > 5 under FL11 | metameric black ⟂ S x̄, S ȳ, S z̄ |
+| sRGB primaries → XYZ matrix (D65, Y = 100) | 41.24 35.76 18.05 / 21.26 71.52 7.22 / 1.93 11.92 95.05 | IEC 61966-2-1: identical |
+| Rec. 2020 primaries on the spectral locus | within 0.003 in (x, y) of 630, 532, 467 nm | ITU-R BT.2020: monochromatic primaries |
+| Optimal colours (colour solid) | every band + its complement = white; all 14 test colours inside under D65, A and HP1 | Schrödinger 1920, MacAdam 1935 |
 | Zernike fitting error after 21 modes, D/r₀ = 10 (24 phase screens) | within 15 % of Noll | Δ₂₁ = 0.0208 (D/r₀)^5/3 rad² (Noll 1976) |
 | Shack–Hartmann reconstruction of Z₄, Z₇, Z₁₁, Z₂₂ | coefficients within 4 %, cross-talk < 6 % | input mode |
 | Closed AO loop (10 × 10 lenslets, 35 modes, bright star) | residual within 0.8–1.6 × the Noll fitting error | σ<sub>fit</sub> = √Δ₃₆ (D/r₀)^5/6 |

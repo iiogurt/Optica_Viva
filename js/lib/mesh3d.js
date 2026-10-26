@@ -140,3 +140,21 @@ export function bounds(meshes = [], lines = []) {
   const centre = min.map((v, i) => (v + max[i]) / 2), size = Math.hypot(max[0] - min[0], max[1] - min[1], max[2] - min[2]);
   return { min, max, centre, size };
 }
+
+// Smooth vertex normals of an indexed mesh: the area-weighted sum of the adjacent faces' normals
+// (degenerate faces add nothing; a vertex with none gets +y).
+export function normalsFrom(positions, indices) {
+  const n = new Float32Array(positions.length);
+  for (let t = 0; t < indices.length; t += 3) {
+    const [a, b, c] = [indices[t] * 3, indices[t + 1] * 3, indices[t + 2] * 3];
+    const ux = positions[b] - positions[a], uy = positions[b + 1] - positions[a + 1], uz = positions[b + 2] - positions[a + 2];
+    const vx = positions[c] - positions[a], vy = positions[c + 1] - positions[a + 1], vz = positions[c + 2] - positions[a + 2];
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    for (const k of [a, b, c]) { n[k] += nx; n[k + 1] += ny; n[k + 2] += nz; }
+  }
+  for (let k = 0; k < n.length; k += 3) {
+    const L = Math.hypot(n[k], n[k + 1], n[k + 2]);
+    if (L > 0) { n[k] /= L; n[k + 1] /= L; n[k + 2] /= L; } else n[k + 1] = 1;
+  }
+  return n;
+}

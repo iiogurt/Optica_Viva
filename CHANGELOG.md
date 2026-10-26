@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **3-D colour solid** (`js/lib/colour3d.js`): the colour-science laboratory shows, in CIE xyY, every surface colour possible under the chosen light (the optimal colours of Schrödinger and MacAdam, as an observer adapted to the source sees them), the spectral locus on the floor, the sRGB, Display P3 or Rec. 2020 gamut as a glass solid, and the 14 test colours inside. New readouts give the gamut's share of all chromaticities and how many test colours the display cannot show. `normalsFrom()` in `js/lib/mesh3d.js` gives smooth normals for any indexed mesh. Tests check that bands and their complements add up to white, that real surfaces lie inside the solid, and the sRGB matrix against IEC 61966-2-1.
+
 ### Changed
 - ROADMAP brought up to date: completed entries for v1.15–v1.20, v1.20 in the contents, v1.14 and v1.20 status notes; WebGPU and traced relative illumination, which had no home, moved to the Backlog; the MTF validation is marked as waiting for data.
 

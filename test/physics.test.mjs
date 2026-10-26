@@ -288,3 +288,14 @@ test('Monte-Carlo tolerancing: zero errors reproduce nominal; fast lenses are mo
   assert.ok(c.p90 >= c.nominal && d.p90 >= d.nominal, 'errors never improve the 90th percentile below nominal');
   assert.ok(d.p90 / d.nominal > c.p90 / c.nominal, `f/3 Double-Gauss (${(d.p90 / d.nominal).toFixed(2)}×) more sensitive than f/5 Cooke (${(c.p90 / c.nominal).toFixed(2)}×)`);
 });
+
+test('display primaries reproduce the IEC 61966-2-1 sRGB matrix; Rec. 2020 primaries lie on the spectral locus', async () => {
+  const { rgbToXYZ, GAMUTS, LOCUS } = await import('../js/lib/colour3d.js');
+  const M = rgbToXYZ('srgb'), IEC = [[41.24, 35.76, 18.05], [21.26, 71.52, 7.22], [1.93, 11.92, 95.05]];
+  M.forEach((r, i) => r.forEach((v, j) => near(v, IEC[i][j], 0.006, `sRGB M[${i}][${j}]`)));
+  // ITU-R BT.2020 primaries are monochromatic: 630, 532 and 467 nm (interpolated in the 5 nm table)
+  for (const [[x, y], nm] of GAMUTS.rec2020.xy.map((p, k) => [p, [630, 532, 467][k]])) {
+    const f = (nm - 380) / 5, i = Math.floor(f), t = f - i, lx = LOCUS[i][0] * (1 - t) + LOCUS[i + 1][0] * t, ly = LOCUS[i][1] * (1 - t) + LOCUS[i + 1][1] * t;
+    near(Math.hypot(x - lx, y - ly), 0, 3e-3, `Rec. 2020 primary at ${nm} nm`);
+  }
+});
