@@ -135,5 +135,5 @@ test('colour solid: optimal colours pair up to white, contain every real surface
   assert.equal(solid.colors.length, solid.positions.length, 'a colour per vertex');
   unitNormals(solid); indicesValid(solid);
   near(bounds([solid]).max[1], 1.3, 1e-6, 'white at the top of the solid');
-  assert.equal(s.meshes.filter((m) => !m.glass && m !== s.meshes[0]).length, 14, 'the 14 test colour samples');
+  assert.equal(s.meshes.filter((m) => !m.glass && m.opacity === undefined).length, 14, 'the 14 test colour samples');
 });

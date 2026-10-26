@@ -113,7 +113,8 @@ export function colourSolidScene(spd, key = 'srgb') {
   // rings L = 1 … N − 1, a skirt down to the floor below L = 1, and the white pole on top
   const skirt = ring[1].map(([X, Y, Z]) => { const s = X + Y + Z; return [X / s * 1e-9, Y / s * 1e-9, Z / s * 1e-9]; });
   const rows = [skirt, ...ring.slice(1, N), ring[N]];
-  meshes.push({ mesh: gridMesh(rows, true), color: [1, 1, 1] });
+  // a coloured glass shell, so the display gamut and the samples inside stay visible
+  meshes.push({ mesh: gridMesh(rows, true), color: [1, 1, 1], opacity: 0.32, glass: true });
   // spectral locus on the floor, each 5 nm segment in its own colour, and the line of purples
   for (let i = 0; i + 1 < N; i++) lines.push({ points: [floor(LOCUS[i]), floor(LOCUS[i + 1])], color: [...wavelengthRGB(LAMBDA[i] + 2.5), 0.9], width: 1.8 });
   lines.push({ points: [floor(LOCUS[N - 1]), floor(LOCUS[0])], color: [0.8, 0.4, 0.9, 0.6], width: 1.2 });
@@ -121,9 +122,9 @@ export function colourSolidScene(spd, key = 'srgb') {
     const [x, y] = LOCUS[(l - 380) / 5], dx = x - WHITE_XY[0], dy = y - WHITE_XY[1], r = Math.hypot(dx, dy);
     labels.push({ p: floor([x + (0.06 * dx) / r, y + (0.06 * dy) / r]), text: `${l} nm`, color: 'rgba(255,255,255,0.6)' });
   }
-  // display gamut: glass faces, edges, the triangle on the floor
+  // display gamut: its faces in the colours it shows, edges, the triangle on the floor
   const G = GAMUTS[key], g = gamutSolid(key);
-  for (const f of g.faces) meshes.push({ mesh: f, color: G.color, opacity: 0.1, glass: true });
+  for (const f of g.faces) meshes.push({ mesh: f, color: G.color, opacity: 0.5 });
   for (const e of g.edges) lines.push({ points: e, color: [...G.color, 0.75], width: 1.3 });
   lines.push({ points: [...G.xy, G.xy[0]].map(floor), color: [...G.color, 0.6], width: 1.1 });
   labels.push({ p: [g.top[1][0], g.top[1][1] + 0.08, g.top[1][2]], text: G.name, color: `rgb(${G.color.map((c) => Math.round(c * 255)).join(',')})` });
@@ -131,5 +132,6 @@ export function colourSolidScene(spd, key = 'srgb') {
   lines.push({ points: [[0, 0, 0], [0, HT, 0]], color: [1, 1, 1, 0.25], width: 1 });
   labels.push({ p: [0, HT + 0.09, 0], text: 'white, Y = 100', color: 'rgba(255,255,255,0.8)' });
   for (const r of TCS) { const p = seen(r, spd); meshes.push({ mesh: sphere(0.028, toScene(p), 12, 6), color: display(p) }); }
-  return { meshes, lines, labels };
+  // aim at the whole solid, floor included
+  return { meshes, lines, labels, frame: { centre: [0.1, 0.45, -0.17], size: 3.3 } };
 }
