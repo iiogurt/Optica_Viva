@@ -9,6 +9,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Changed
 - ROADMAP brought up to date: completed entries for v1.15–v1.20, v1.20 in the contents, v1.14 and v1.20 status notes; WebGPU and traced relative illumination, which had no home, moved to the Backlog; the MTF validation is marked as waiting for data.
 
+### Fixed
+- Local browser automation (`npm run smoke`, `npm run screenshots`) no longer hangs in a desktop session: headless Chromium waited for the desktop keyring over D-Bus before its first request; it now uses `--password-store=basic`.
+
 ## [1.20.0] - 2026-10-19
 
 Optics in three dimensions: a dependency-free WebGL 2 engine with skew rays through real lenses, wavefront and PSF reliefs, the electric field and the Poincaré sphere, and the Scheimpflug planes over the toy town; plus tidier figure captions.
