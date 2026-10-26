@@ -75,7 +75,7 @@ flowchart LR
 | Laboratories | 59 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 228, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 307 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 308 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -518,7 +518,7 @@ Candidates, in order of how much the third dimension adds:
 - [x] **P1 · M** **Tilt–shift / Scheimpflug** (#131): at true scale in the camera, the sensor, lens and focus planes meeting in the Scheimpflug line, with the hinge line at J = f / sin α; and the plane of focus with its depth-of-field wedge over the toy town.
 - [x] **P1 · M** **Polarisation** (#130): the electric field along the beam through each polariser and wave plate (flat waves, helices, ellipses, with the unpolarised share as a ring), and the Poincaré sphere with the state after each element.
 - [x] **P1 · S** **Wavefronts and PSFs as surfaces** (#129): the Zernike wavefront over a round pupil next to its PSF's log relief, and the PSF laboratory's star image as a relief in its own colours (JWST's six spikes in near-infrared colour). *The seeing phase screen remains.*
-- [ ] **P2 · M** **Depth of field**: the camera's view frustum with the near and far limits and the cards inside the sharp zone.
+- [x] **P2 · M** **Depth of field**: at true scale, the camera's view frustum (the photograph's sensor, height and shifted framing), the plane of focus, the sharp zone as a glass slab and the cards coloured by their blur.
 - [ ] **P2 · M** **Projections**: the sphere of directions with Tissot circles, unrolled onto each projection's image plane.
 - [ ] **P2 · M** **Gravitational lensing**: rays bending past the lens galaxy between source and observer, with the Einstein ring as a cone.
 - [ ] **P2 · M** **Interferometry**: the rotating Earth with the array's baselines sweeping the u-v plane.

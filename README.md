@@ -198,7 +198,7 @@ Exact 3-D ray tracing through a plano-convex singlet (both orientations), an **a
 **Depth of field** · `#/dof`<br>
 <img src="docs/screenshots/dof.webp" alt="Depth of field: physically framed synthetic photograph with disk bokeh">
 
-A synthetic photograph framed by the real camera geometry. Ground texture is attenuated by the exact defocus OTF 2J₁(πcν)/(πcν), which goes negative and produces contrast reversal. Cards and lights are convolved with a true disk kernel. Hyperfocal distance and near/far limits update live.
+A synthetic photograph framed by the real camera geometry. Ground texture is attenuated by the exact defocus OTF 2J₁(πcν)/(πcν), which goes negative and produces contrast reversal. Cards and lights are convolved with a true disk kernel. Hyperfocal distance and near/far limits update live. A **3-D view** shows the same scene at true scale: the camera's view frustum, the plane of focus, the sharp zone and the cards coloured by their blur.
 
 </td>
 </tr>
@@ -850,6 +850,7 @@ Optica_Viva/
 │   │   ├── surf3d.js          3-D wavefront (polar grid over the pupil) and PSF reliefs with per-vertex colours
 │   │   ├── pol3d.js           3-D electric field along a beam through polarisers and wave plates; Poincaré sphere
 │   │   ├── tilt3d.js          3-D Scheimpflug geometry at true scale, and the plane of focus over the toy town
+│   │   ├── dof3d.js           3-D depth of field: the camera's frustum, plane of focus, sharp zone and cards at true scale
 │   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
 │   │   ├── i18n.js            Interface translation: t(), N_(), language choice and loading
 │   │   ├── transit.js         Transit light curves with limb darkening, orbits, photometric noise

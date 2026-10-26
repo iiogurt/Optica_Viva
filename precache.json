@@ -19,6 +19,7 @@
     "js/lib/computational.js",
     "js/lib/compute.js",
     "js/lib/detectors.js",
+    "js/lib/dof3d.js",
     "js/lib/dofphoto.js",
     "js/lib/earthobs.js",
     "js/lib/eclipse.js",
