@@ -35,6 +35,7 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.12 Missions: optics for real tasks](#v112-missions-optics-for-real-tasks)
   - [v1.13 New laboratories: light, water and worlds](#v113-new-laboratories-light-water-and-worlds)
   - [v1.14 Your own gear and real images](#v114-your-own-gear-and-real-images)
+  - [v1.20 3-D views](#v120-3-d-views)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -62,7 +63,7 @@ flowchart LR
     end
     subgraph Next["Planned"]
         direction TB
-        N12["more 3-D views"] --> N10["MTF validation"] --> N7["v2.0 translated text · plugin API"]
+        N12["more 3-D views"] --> N7["v2.0 translated text · plugin API"] --> N10["MTF validation<br/>(needs data)"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -82,6 +83,55 @@ flowchart LR
 ## Completed milestones
 
 <details open>
+<summary><b>v1.20.0 3-D views, first four</b> (2026-10-19, PRs #127–#131)</summary>
+
+- [x] Dependency-free WebGL 2 engine (`js/lib/gl3d.js`, `js/lib/mesh3d.js`) and the ray tracer's 3-D view with real skew rays (#128)
+- [x] Zernike wavefront and PSF reliefs (#129), the electric field along the beam and the Poincaré sphere (#130), Scheimpflug geometry at true scale (#131)
+- [x] One-line figure captions clear of the export buttons; staggered glass labels (#127)
+
+</details>
+
+<details>
+<summary><b>v1.19.0 Translated controls and parallel workers</b> (2026-10-19, PRs #123–#125)</summary>
+
+- [x] Every control label, option, hint, readout, caption and live-calculation title in German, French and Spanish (#123)
+- [x] Parallel row-band ray casters on a pool of up to four workers (#124); the seeing animation streamed from a worker (#125)
+
+</details>
+
+<details>
+<summary><b>v1.18.0 Glass catalogue, decenter/tilt, three languages</b> (2026-10-19, PRs #119–#121)</summary>
+
+- [x] 431-glass SCHOTT, OHARA and CDGM catalogue with a glass-map picker (#119)
+- [x] Element decenter and tilt, traced exactly, in the tolerance analysis (#120)
+- [x] Interface in German, French and Spanish (#121)
+
+</details>
+
+<details>
+<summary><b>v1.17.0 Classic lenses, mirrors, telescopes</b> (2026-10-19, PRs #113–#117)</summary>
+
+- [x] Tessar, Petzval, telephoto and retrofocus designs (#113); mirrors, Hubble and a classical Cassegrain (#114)
+- [x] Off-axis PSF pupil in Debye direction cosines (#115); a three-mirror anastigmat (#116); the Biogon (#117)
+
+</details>
+
+<details>
+<summary><b>v1.16.0 Learning tools</b> (2026-10-16, PRs #107–#111)</summary>
+
+- [x] Export of PNG, CSV and settings JSON (#107), guided tours (#108), exercises with checked answers (#109), embed mode (#110), installable offline app (#111)
+
+</details>
+
+<details>
+<summary><b>v1.15.0 Your own gear and real images</b> (2026-10-16, PRs #100–#105)</summary>
+
+- [x] Test your own gear from photographs (#100), real equipment presets (#102), misconception checks (#103), phenomena in the wild (#104)
+- [x] CI on Node 24 (#101); `release.sh` runs the test suite (#105)
+
+</details>
+
+<details>
 <summary><b>v1.13 New laboratories: light, water and worlds</b> (released in v1.12.0 and v1.14.0, PRs #81–#83, #94–#97)</summary>
 
 - [x] Lighting (#81), exoplanet transits (#82), Earth observation from orbit (#83)
@@ -310,13 +360,13 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P2 · M** **Seeing animation in a worker**: the simulation session (phase screen, servo history, long-exposure sum) lives in a compute worker, which streams display-ready frames one request at a time. *Longest freeze on the Pi 1.1 s → 0.22 s.*
 - [x] **P1 · S** **Cache pupil rasters** per aperture and size; the JWST raster alone costs 184 ms on the Pi.
 - [x] **P2 · M** **Progressive rendering**: low-resolution preview while a slider is dragging, full resolution on release. *Done in the PSF lab (256² preview, then 512²); extend alongside the worker migration.*
-- [ ] **P2 · L** *(deferred to v1.5)* **WebGPU compute path** for FFTs, phase screens and per-pixel ray casting, with CPU fallback. WebGPU now ships in Chrome, Safari 26 and recent Firefox, but Android coverage is incomplete, so the fallback stays mandatory. *Deferred because it can't yet be verified: neither the reference Raspberry Pi 4 (headless Chromium) nor the GitHub-hosted CI runners expose a WebGPU adapter. The worker and the faster FFT already remove the main-thread freezes.*
+- [ ] **P2 · L** *(deferred to the Backlog)* **WebGPU compute path** for FFTs, phase screens and per-pixel ray casting, with CPU fallback. WebGPU now ships in Chrome, Safari 26 and recent Firefox, but Android coverage is incomplete, so the fallback stays mandatory. *Deferred because it can't yet be verified: neither the reference Raspberry Pi 4 (headless Chromium) nor the GitHub-hosted CI runners expose a WebGPU adapter. The worker and the faster FFT already remove the main-thread freezes.*
 - [x] **P2 · M** **Faster FFT**: a cache-blocked transpose replaces strided column passes, 1.4× faster at 512² on the Pi. *A real-input FFT was dropped: nearly every PSF field is complex because of its phase, so the half-complex trick rarely applies.*
 - [x] **P3 · S** Performance report in CI: `npm run bench` publishes kernel timings to the run summary. *It is informational rather than a failing budget, because shared runners are too noisy for a 25 % threshold.*
 
 ### v1.3 Lens-design depth
 
-✅ **Released as v1.3.0 and v1.4.0** (optimiser, tolerancing and MTF vs field shipped in v1.4.0; classic designs, mirrors, the three-mirror anastigmat and the off-axis pupil in v1.17.0). The glass catalogue and decenter/tilt tolerancing followed after v1.17.0; nothing remains open.
+✅ **Released as v1.3.0 and v1.4.0** (optimiser, tolerancing and MTF vs field shipped in v1.4.0; classic designs, mirrors, the three-mirror anastigmat and the off-axis pupil in v1.17.0). The glass catalogue and decenter/tilt tolerancing followed in v1.18.0; only traced relative illumination remains, in the Backlog.
 
 *Goal: the ray tracer becomes a credible teaching tool for lens design (A9, A10).*
 
@@ -328,10 +378,10 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [x] **P2 · M** **Three-mirror anastigmat** (Korsch type, JWST layout): flat field, conics solved from S_I = S_II = S_III = 0.
 - [x] **P2 · M** **Biogon** symmetric wide angle (f/4.5, ±45°) from Bertele's patent example, with model glasses.
 - [x] **P2 · M** **Seidel sums per surface** (S_I–S_V and chromatic C_I, C_II) as bar charts. This shows where each aberration originates.
-- [x] **P2 · M** **Through-field analysis**: sagittal and tangential field curves and real-ray distortion. *The PSF pupil is now vignetted by the clear apertures (editable Semi-Ø), and MTF vs field (S/T at 10 and 30 lp/mm) is plotted. Traced relative illumination remains open.*
+- [x] **P2 · M** **Through-field analysis**: sagittal and tangential field curves and real-ray distortion. *The PSF pupil is now vignetted by the clear apertures (editable Semi-Ø), and MTF vs field (S/T at 10 and 30 lp/mm) is plotted. Traced relative illumination moved to the Backlog.*
 - [x] **P2 · S** **Off-axis pupil shape** in the OPD/PSF path: the pupil is sampled in the direction cosines seen from the image point (Debye), so off-axis PSFs and MTFs include the foreshortened, distorted real exit pupil.
 - [x] **P3 · L** **Optimiser**: damped least squares on a merit function (spot RMS, EFL target, F/C focus), demonstrated on the achromat.
-- [x] **P3 · M** **Monte-Carlo tolerancing**: radius, thickness and index perturbations with refocus compensation and a yield histogram. *Element decenter and tilt followed after v1.17.0, with surfaces traced in their own frames and a per-element sensitivity chart.*
+- [x] **P3 · M** **Monte-Carlo tolerancing**: radius, thickness and index perturbations with refocus compensation and a yield histogram. *Element decenter and tilt followed in v1.18.0, with surfaces traced in their own frames and a per-element sensitivity chart.*
 - [x] **P3 · M** **Glass catalogue** (431 SCHOTT, OHARA and CDGM glasses, checked against the catalogue n_d, V_d) with a **glass-map picker** in the prescription editor.
 
 ### v1.5 Higher-fidelity rendering
@@ -444,6 +494,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 ### v1.14 Your own gear and real images
 
+✅ **Released as v1.15.0** except the validation against manufacturer curves, which waits for a usable data source.
+
 - [x] **P1 · L** **Test your own gear** (PR #100, processed locally, never uploaded): slanted-edge MTF (ISO 12233), vignetting from a flat field, distortion from a grid, lateral colour.
 - [x] **P2 · M** **Real equipment presets** (PR #102): sensors, phones and telescopes with focal lengths, apertures and pixel sizes, shared by all laboratories and missions.
 - [x] **P2 · M** **Phenomena in the wild** (PR #104): a gallery of real images explained by the laboratories (Hubble before and after 1993, JWST spikes, the EHT ring, rolling-shutter propellers, the green flash), public-domain or CC BY with attribution in THIRD_PARTY_NOTICES.md.
@@ -451,6 +503,8 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 - [ ] **P3 · M** **Validation against measurements**: simulated MTFs compared with published manufacturer curves for a few lenses.
 
 ### v1.20 3-D views
+
+🚧 **In progress**: the engine and four views were released in v1.20.0; the others follow in later releases.
 
 *Goal: show in three dimensions what flat diagrams can only hint at (skew rays, tilted planes, orbits, polarisation states, colour solids), with pleasant, light graphics that stay fluid on a Raspberry Pi 4.*
 
@@ -491,6 +545,8 @@ Candidates, in order of how much the third dimension adds:
 
 Ideas worth keeping but not yet scheduled:
 
+- *(from v1.2)* **WebGPU compute path** for FFTs, phase screens and per-pixel ray casting, with a mandatory CPU fallback; waits until the Raspberry Pi 4 or the CI runners expose a WebGPU adapter to test it on.
+- *(from v1.3)* Traced relative illumination across the field (real-ray pupil area and cos⁴ projection) in the ray tracer.
 - *(from v1.5)* **Spectral scene renderer**: render a whole scene per wavelength through the PSF, the colour-matching functions and the sensor's spectral response.
 - *(from v1.5)* Smooth ghost irradiance (Hullin's vertex averaging) and Fresnel ringing at ghost edges.
 
