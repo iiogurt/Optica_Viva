@@ -15,6 +15,7 @@
     "js/lib/color.js",
     "js/lib/colordata.js",
     "js/lib/colorsci.js",
+    "js/lib/colour3d.js",
     "js/lib/computational.js",
     "js/lib/compute.js",
     "js/lib/detectors.js",

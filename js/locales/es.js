@@ -1241,4 +1241,11 @@ export default {
   "3-D: the Poincaré sphere, the state after each element": "3D: la esfera de Poincaré, el estado tras cada elemento",
   "3-D, true scale: sensor, tilted lens and plane of focus meet in one line": "3D, a escala: sensor, objetivo basculado y plano de enfoque se cortan en una sola recta",
   "3-D: the plane of focus and the depth-of-field wedge over the town": "3D: el plano de enfoque y la cuña de profundidad de campo sobre la ciudad",
+  "Display gamut in 3-D": "Gama de pantalla en 3-D",
+  "sRGB": "sRGB",
+  "Display P3": "Display P3",
+  "Rec. 2020": "Rec. 2020",
+  "Display gamut, share of all chromaticities": "Gama de pantalla, fracción de todas las cromaticidades",
+  "Test colours the display cannot show": "Colores de prueba que la pantalla no puede mostrar",
+  "3-D: every surface colour possible under this light, in CIE xyY, with a display gamut": "3-D: todos los colores de superficie posibles con esta luz, en CIE xyY, con una gama de pantalla",
 };

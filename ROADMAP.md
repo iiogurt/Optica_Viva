@@ -75,7 +75,7 @@ flowchart LR
 | Laboratories | 59 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 228, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 305 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 307 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -523,7 +523,7 @@ Candidates, in order of how much the third dimension adds:
 - [ ] **P2 · M** **Gravitational lensing**: rays bending past the lens galaxy between source and observer, with the Einstein ring as a cone.
 - [ ] **P2 · M** **Interferometry**: the rotating Earth with the array's baselines sweeping the u-v plane.
 - [ ] **P2 · M** **Orbits**: Earth observation (orbit, swath and push-broom footprint) and exoplanet transits (orbit, line of sight, impact parameter).
-- [ ] **P2 · S** **Colour science**: the CIE 1931 colour solid and display gamuts in xyY.
+- [x] **P2 · S** **Colour science**: the colour solid in CIE xyY (the optimal colours under the chosen light, adapted to D65), with the sRGB, Display P3 or Rec. 2020 gamut and the 14 test colours. *A perceptual (CIELAB) version and gamut volumes remain.*
 - [ ] **P3 · M** **Starshade and coronagraph**: the telescope–starshade geometry to scale (tens of thousands of kilometres) and the shadow on the pupil.
 - [ ] **P3 · M** **Bokeh and defocus**: the cone of light from an out-of-focus point through the iris to the sensor, with cat's-eye clipping.
 - [ ] **P3 · M** **Flare**: real-ray ghost paths bouncing between surfaces inside the lens.

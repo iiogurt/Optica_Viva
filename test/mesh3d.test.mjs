@@ -101,3 +101,39 @@ test('Scheimpflug 3-D: the plane of focus passes through the Scheimpflug line an
   }
   assert.ok(townScene({ f: 65, alpha: 8, s: 52, N: 2.8 }).meshes.length >= 3, 'town, camera and plane of focus');
 });
+
+test('colour solid: optimal colours pair up to white, contain every real surface, and start on the spectral locus', async () => {
+  const { optimalColours, colourSolidScene, LOCUS, gamutCoverage, samplesOutside } = await import('../js/lib/colour3d.js');
+  const { daylight, blackbody, xyz, adapt, D65_XYZ } = await import('../js/lib/colorsci.js');
+  const { TCS, ILLUMINANTS } = await import('../js/lib/colordata.js');
+  for (const spd of [daylight(6504), blackbody(2856), ILLUMINANTS.HP1.spd]) {
+    const ring = optimalColours(spd), N = ring[0].length, W = ring[N][0];
+    for (const v of [0, 1, 2]) near(W[v], D65_XYZ[v], 1e-3, 'the white reflector maps to D65, Y = 100');
+    // a band and its complement add up to white
+    for (const [a, L] of [[0, 1], [10, 30], [70, 25], [40, 80]]) {
+      const P = ring[L][a], Q = ring[N - L][(a + L) % N];
+      for (const v of [0, 1, 2]) near(P[v] + Q[v], W[v], 1e-6, `band (${a}, ${L}) + complement`);
+    }
+    // the solid is a zonoid: its support in direction n is Σ max(0, n·c_i); every reflectance in
+    // [0, 1] (the test colour samples) lies inside it
+    const c = ring[1], Wsrc = xyz(spd), k = 100 / Wsrc[1];
+    for (const n of [[1, 0, 0], [0, -1, 0], [0.3, -0.8, 0.5], [-0.6, 0.2, 0.77], [0.1, 0.1, -1]]) {
+      const h = c.reduce((s, q) => s + Math.max(0, n[0] * q[0] + n[1] * q[1] + n[2] * q[2]), 0);
+      for (const r of TCS) {
+        const p = adapt(xyz(spd.map((s, i) => s * r[i])).map((q) => q * k), Wsrc.map((q) => q * k), D65_XYZ);
+        assert.ok(n[0] * p[0] + n[1] * p[1] + n[2] * p[2] <= h + 1e-6, 'test sample inside the optimal solid');
+      }
+    }
+  }
+  // under D65 the one-sample bands are monochromatic: on the spectral locus
+  const one = optimalColours(daylight(6504))[1];
+  for (let i = 10; i < 60; i += 7) { const [X, Y, Z] = one[i], s = X + Y + Z; near(X / s, LOCUS[i][0], 2e-3, `x at ${380 + 5 * i} nm`); near(Y / s, LOCUS[i][1], 2e-3, `y at ${380 + 5 * i} nm`); }
+  assert.ok(gamutCoverage('srgb') < gamutCoverage('p3') && gamutCoverage('p3') < gamutCoverage('rec2020') && gamutCoverage('rec2020') < 1, 'gamuts nest by area');
+  assert.equal(samplesOutside(daylight(6504), 'rec2020'), 0, 'Rec. 2020 shows all 14 test colours in daylight');
+  const s = colourSolidScene(daylight(6504), 'p3');
+  const solid = s.meshes[0].mesh;
+  assert.equal(solid.colors.length, solid.positions.length, 'a colour per vertex');
+  unitNormals(solid); indicesValid(solid);
+  near(bounds([solid]).max[1], 1.3, 1e-6, 'white at the top of the solid');
+  assert.equal(s.meshes.filter((m) => !m.glass && m !== s.meshes[0]).length, 14, 'the 14 test colour samples');
+});

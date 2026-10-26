@@ -54,6 +54,8 @@ export const GLOSSARY = [
   { term: 'ISO', match: ['ISO'], lab: 'noise', def: 'The camera setting that amplifies the signal; it does not collect more light.' },
   { term: 'Photon', match: ['photons?'], lab: 'noise', def: 'A single packet of light energy. Light is detected one photon at a time.' },
   { term: 'Rolling shutter', match: ['rolling shutters?'], lab: 'motion', def: 'A sensor that reads its picture line by line, so fast motion is recorded at slightly different times in different lines.' },
+  { term: 'Gamut', match: ['gamuts?'], lab: 'colour', def: 'The range of colours a display, a printer or a set of lights can produce; colours outside it can only be approximated.' },
+  { term: 'Chromaticity', match: ['chromaticit(?:y|ies)'], lab: 'colour', def: 'The hue and saturation of a colour without its brightness, given as two numbers (x, y) on the CIE diagram.' },
   { term: 'Metamerism', match: ['metamerism'], lab: 'colour', def: 'Two different spectra that look like the same colour to one viewer or light but not to another.' },
   { term: 'Colour temperature', match: ['colou?r temperatures?'], lab: 'colour', def: 'How warm (orange) or cool (blue) a white light looks, given as the temperature of a glowing body of that colour.' },
   { term: 'Coating', match: ['coatings?'], lab: 'flare', def: 'Thin layers on a lens surface that make reflected light cancel itself, so less light is reflected.' },
