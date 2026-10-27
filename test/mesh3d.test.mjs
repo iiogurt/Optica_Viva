@@ -330,3 +330,29 @@ test('bokeh 3-D: the iris shape, a round disc on axis as big as the thin lens pr
   assert.equal(tight.fps[0].passed, tight.fps[0].total);
   assert.ok(tight.fps[1].passed < 0.95 * co.passed, `corner light ${tight.fps[1].passed} of ${co.passed}`);
 });
+
+test('flare 3-D: a ghost path hits the surfaces in order, turns back at j and forward at i, and recording it changes nothing', async () => {
+  const { ghostSystem, makeGhostTracer } = await import('../js/lib/ghosts.js');
+  const { traceGrid, rankGhosts, flareScene } = await import('../js/lib/flare3d.js');
+  const L0 = LENSES['double-gauss'], lens = { ...L0, epd: L0.epd / 2 }, sd = autoSemiDiameters(L0), par = paraxial(lens);
+  const sys = ghostSystem(lens, { lambdas: [587.56], coat: 'mgf2', sd, stopR: par.stopR, blades: 7, zImg: par.zImage });
+  const tr = makeGhostTracer(sys, 0), N = lens.surfaces.length, theta = [0.05, 0.03];
+  const ranked = rankGhosts(sys, theta);
+  assert.ok(ranked.length >= 3);
+  for (let k = 1; k < ranked.length; k++) assert.ok(ranked[k - 1].E >= ranked[k].E, 'brightest first');
+  const { i, j } = ranked[0], g = traceGrid(sys, tr, i, j, theta, 17, true);
+  assert.ok(g.rays.length > 0);
+  for (const r of g.rays) {
+    // N + 2(j − i) + 1 points: forward to j, back to i, forward to the last surface, then the sensor
+    assert.equal(r.pts.length / 3, N + 2 * (j - i) + 1);
+    const z = (k) => r.pts[3 * k + 2];
+    assert.ok(z(j) > z(j - 1) && z(j + 1) < z(j), 'turns back at surface j');
+    assert.ok(z(2 * j - i) < z(2 * j - i - 1) && z(2 * j - i + 1) > z(2 * j - i), 'turns forward at surface i');
+    near(z(r.pts.length / 3 - 1), par.zImage, 1e-12, 'ends on the sensor');
+  }
+  // the same ray without recording lands in the same place
+  const plain = traceGrid(sys, tr, i, j, theta, 17, false);
+  plain.rays.forEach((r, k) => { near(r.land[0], g.rays[k].land[0], 0, 'x'); near(r.land[1], g.rays[k].land[1], 0, 'y'); });
+  const sc = flareScene({ lens, sd, coat: 'mgf2', blades: 7, theta });
+  assert.equal(sc.ranked.length, 3);
+});

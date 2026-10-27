@@ -348,7 +348,7 @@ A lake scene **rendered per pixel in Stokes vectors**. Skylight from a single-sc
 **Flare, ghosts & coatings** · `#/flare`<br>
 <img src="docs/screenshots/flare.webp" alt="Sun flare with heptagonal ghosts and diffraction starburst">
 
-**Real-ray ghost tracing** (Hullin et al.'s full method) of every two-reflection path through the real Double-Gauss and Cooke lenses, at 8 wavelengths: aberrated, vignetted ghosts with caustics, with angle-dependent coating reflectance and total internal reflection. Runs in the worker, with an instant paraxial preview while you drag. Coatings are solved by the transfer-matrix method (uncoated, MgF₂, QHQ and graded-index moth-eye). Drag the sun.
+**Real-ray ghost tracing** (Hullin et al.'s full method) of every two-reflection path through the real Double-Gauss and Cooke lenses, at 8 wavelengths: aberrated, vignetted ghosts with caustics, with angle-dependent coating reflectance and total internal reflection. Runs in the worker, with an instant paraxial preview while you drag. Coatings are solved by the transfer-matrix method (uncoated, MgF₂, QHQ and graded-index moth-eye). Drag the sun. A **3-D view** draws the exact paths of the three brightest ghosts for the sun's position, bouncing back at one surface and forward again at another, with their spots on the sensor and their brightness relative to the sun.
 
 </td>
 <td width="50%" valign="top">
@@ -853,6 +853,7 @@ Optica_Viva/
 │   │   ├── dof3d.js           3-D depth of field: the camera's frustum, plane of focus, sharp zone and cards at true scale
 │   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
 │   │   ├── earthobs3d.js      3-D Earth observation at true scale: orbit, swath, push-broom footprint and imaged strip
+│   │   ├── flare3d.js         3-D flare: exact paths of the brightest ghosts through the lens, ranked by irradiance
 │   │   ├── bokeh3d.js         3-D bokeh: rays round the iris through the traced lens, axial and corner footprints
 │   │   ├── starshade3d.js     3-D starshade geometry: petals, separation, IWA line of sight, the shadow on the pupil
 │   │   ├── transit3d.js       3-D transit geometry at true scale: star, tilted orbit, sight-line cylinder, chord, b

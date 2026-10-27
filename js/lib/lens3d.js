@@ -20,9 +20,10 @@ function pupilPattern(rim = 16, fan = 4) {
 
 // lens: prescription (with epd); sd: clear semi-diameters; par: paraxial data at 587.56 nm;
 // zImg: image plane; fields: field angles (degrees) to trace; lambda: wavelength (nm); pupil:
-// the rays per field as normalised stop coordinates [[px, py], …] (default: rim and fans).
+// the rays per field as normalised stop coordinates [[px, py], …] (default: rim and fans); half:
+// the image plane's half-width and half-height (default: just large enough for the traced images).
 // Returns { meshes, lines, labels } in millimetres, optical axis along z.
-export function lensScene(lens, { sd, par, zImg, fields = [0], lambda = 587.56, pupil = pupilPattern() }) {
+export function lensScene(lens, { sd, par, zImg, fields = [0], lambda = 587.56, pupil = pupilPattern(), half = null }) {
   const S = lens.surfaces, zv = par.zv, meshes = [], lines = [], labels = [];
   const name = (g) => (typeof g === 'string' ? g : g.name);
   for (let i = 0; i < S.length; i++) {
@@ -73,7 +74,7 @@ export function lensScene(lens, { sd, par, zImg, fields = [0], lambda = 587.56, 
     l.points[0] = [p1[0] - (d[0] / L) * (L + lead), p1[1] - (d[1] / L) * (L + lead), p1[2] - (d[2] / L) * (L + lead)];
   }
   // the image plane as a 3 : 2 sensor just large enough for the traced images
-  const hp = Math.max(hMax * 1.15, bb.size * 0.015), wp = hp * 1.5;
+  const hp = half ? half[1] : Math.max(hMax * 1.15, bb.size * 0.015), wp = half ? half[0] : hp * 1.5;
   meshes.push({ mesh: quad([0, 0, zImg], [1, 0, 0], [0, 1, 0], wp, hp), color: [0.75, 0.8, 0.9], opacity: 0.08, glass: true });
   lines.push({ points: [[-wp, -hp, zImg], [wp, -hp, zImg], [wp, hp, zImg], [-wp, hp, zImg], [-wp, -hp, zImg]], color: [0.9, 0.92, 1, 0.55], width: 1 });
   labels.push({ p: [0, hp * 1.15, zImg], text: 'image plane', color: 'rgba(255,255,255,0.75)' });
