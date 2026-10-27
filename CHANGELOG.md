@@ -12,6 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **3-D starshade** (`js/lib/starshade3d.js`): the starshade laboratory shows the telescope and the petalled starshade at their true separation (across the line of sight everything is enlarged by one round factor, shown in the view), the starlight passing beside the starshade and its geometric shadow, the line of sight to a planet at the inner working angle, and the computed shadow on the telescope's plane (log intensity) with the pupil in it. A test checks the petal widths against the apodisation profile.
 
 ### Fixed
+- Eighteen pages (the missions, gallery, catalogue, foundations, autofocus, computational photography, filters, gear, lighting and underwater) returned no cleanup function, and the ray tracer forgot five of its charts, so their figures' resize observers outlived the page (and the catalogue's search timer could fire after leaving it). Every page now releases what it creates, and a test checks that each page's cleanup destroys every figure it declares.
 - A comment in `js/lib/ghosts.js` said the iris has a blade vertex at the top; the formula puts the middle of a blade's edge there (the shape itself is unchanged).
 
 ## [1.22.0] - 2026-10-27

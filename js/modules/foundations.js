@@ -126,4 +126,5 @@ export default function mount(root, meta) {
     'I. H. Malitson, "Interspecimen comparison of the refractive index of fused silica", JOSA 55, 1205 (1965).',
     'SCHOTT AG, Optical Glass Data Sheets (Sellmeier coefficients).',
   ]));
+  return () => {};
 }

@@ -153,4 +153,5 @@ export default function mount(root, meta) {
   }
   render();
   if (state.e) requestAnimationFrame(() => document.getElementById('entry-' + state.e)?.scrollIntoView({ block: 'center' }));
+  return () => clearTimeout(typing);
 }

@@ -97,4 +97,5 @@ export default function mount(root, meta) {
     'H. A. Macleod, <i>Thin-Film Optical Filters</i>, 4th ed., CRC Press (2010): band-pass filters and their angle shift.',
     'P. W. Baumeister, <i>Optical Coating Technology</i>, SPIE Press (2004).',
   ]));
+  return () => [specSt, nSt].forEach((s) => s.destroy());
 }

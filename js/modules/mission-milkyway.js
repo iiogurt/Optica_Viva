@@ -145,4 +145,5 @@ and the average of \(N\) aligned frames \(\sqrt N\) times more. The plan asks fo
     'S. B. Howell, <i>Handbook of CCD Astronomy</i>, 2nd ed., Cambridge (2006), ch. 4: the CCD equation.',
     'R. N. Clark, clarkvision.com: digital camera sensor analysis (read noise against ISO).',
   ]));
+  return () => [pix, snrPlot].forEach((s) => s.destroy());
 }

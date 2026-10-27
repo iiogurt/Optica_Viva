@@ -15,4 +15,5 @@ export default function mount(root, meta) {
       h('div.gk', {}, 'The physics'), h('p', {}, g.physics),
       h('div.glabs', {}, ...g.labs.map(([href, label]) => h('a.btn', { href: '#/' + href }, label + ' →')))),
   ))));
+  return () => {};
 }

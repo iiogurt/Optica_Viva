@@ -229,4 +229,5 @@ export default function mount(root, meta) {
     'P. D. Burns, "Slanted-edge MTF for digital camera and scanner analysis", Proc. IS&amp;T PICS Conference, 135 (2000).',
     'A. W. Fitzgibbon, "Simultaneous linear estimation of multiple view geometry and lens distortion", Proc. IEEE CVPR (2001): the division model.',
   ]));
+  return () => [view, chart].forEach((s) => s.destroy());
 }

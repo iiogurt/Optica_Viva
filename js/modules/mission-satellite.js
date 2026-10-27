@@ -103,4 +103,5 @@ export default function mount(root, meta) {
     'R. D. Fiete, "Image quality and λFN/p for remote sensing systems", Optical Engineering 38, 1229 (1999).',
     'W. J. Larson and J. R. Wertz (eds.), <i>Space Mission Analysis and Design</i>, 3rd ed., Microcosm (1999).',
   ]));
+  return () => [view].forEach((s) => s.destroy());
 }

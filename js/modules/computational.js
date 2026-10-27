@@ -94,4 +94,5 @@ export default function mount(root, meta) {
     'B. Wronski et al., "Handheld multi-frame super-resolution", ACM Trans. Graph. 38(4), 28 (2019).',
     'N. Wadhwa et al., "Synthetic depth-of-field with a single-camera mobile phone", ACM Trans. Graph. 37(4), 64 (2018).',
   ]));
+  return () => [night, port].forEach((s) => s.destroy());
 }

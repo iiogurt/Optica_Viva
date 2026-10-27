@@ -147,4 +147,5 @@ export default function mount(root, meta) {
     'ISO 12312-2:2015, <i>Eye and face protection — Filters for direct observation of the sun</i>.',
     'J. M. Pasachoff and M. Covington, <i>Cambridge Eclipse Photography Guide</i>, Cambridge University Press (1993).',
   ]));
+  return () => [view, chart].forEach((s) => s.destroy());
 }

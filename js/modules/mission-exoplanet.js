@@ -118,4 +118,5 @@ export default function mount(root, meta) {
     'C. C. Stark et al., "Maximizing the exoEarth candidate yield from a future direct imaging mission", Astrophys. J. 795, 122 (2014).',
     'LUVOIR and HabEx final reports (2019); NASA Habitable Worlds Observatory studies (2023 onwards).',
   ]));
+  return () => [sky, curve].forEach((s) => s.destroy());
 }
