@@ -28,7 +28,7 @@ export default function mount(root, meta) {
   const views = Object.fromEntries(Object.keys(names).map((k) => [k, stage({ aspect: 1, label: names[k], draw: (c, w, hh) => drawImg(c, w, hh, k), minH: 150 })]));
   const hist = stage({ aspect: 2.2, label: '', draw: drawHist, cls: 'plain', minH: 200 });
   const curve = stage({ aspect: 2.2, label: '', draw: drawCurve, cls: 'plain', minH: 200 });
-  const note = h('p.note', {}, 'Simulating frames in the worker…');
+  const note = h('p.note', {}, t('Simulating frames in the worker…'));
   root.append(lab([h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' } }, ...Object.values(views).map((v) => v.el)), note, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, hist.el), h('div.card', { style: { padding: '6px' } }, curve.el))], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   const job = latest('lucky');
@@ -38,7 +38,7 @@ export default function mount(root, meta) {
     note.textContent = t('Simulating frames in the worker…');
     job('lucky', { Dr0: st.Dr0, frames: Math.round(st.frames), keep: st.keep, Np: 32, N: 64, step: 4, seed: 7 }).then((r) => {
       R = { st: { ...st }, ...r };
-      note.textContent = `${Math.round(st.frames)} frames of a ${(32 / st.Dr0).toFixed(1)}-pixel r₀ through a 32-pixel pupil; ${r.nKeep} kept. Images are normalised to the diffraction-limited peak (Strehl).`;
+      note.textContent = t('{n} frames of a {r0}-pixel r₀ through a 32-pixel pupil; {kept} kept. Images are normalised to the diffraction-limited peak (Strehl).', { n: Math.round(st.frames), r0: (32 / st.Dr0).toFixed(1), kept: r.nKeep });
       ro.replaceChildren(readouts([
         ['Strehl: long exposure', r.strehl.long.toFixed(3)],
         ['Strehl: shift-and-add, all frames', r.strehl.tt.toFixed(3)],

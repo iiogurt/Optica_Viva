@@ -37,7 +37,7 @@ export default function mount(root, meta) {
   const map = stage({ aspect: 1, label: 'Shadow at the telescope (log intensity)', draw: drawMap, minH: 200 });
   const prof = stage({ aspect: 2.1, label: '', draw: drawProf, cls: 'plain', minH: 220 });
   const spec = stage({ aspect: 2.1, label: '', draw: drawSpec, cls: 'plain', minH: 220 });
-  const note = h('p.note', {}, 'Computing the Fresnel integrals in the worker…');
+  const note = h('p.note', {}, t('Computing the Fresnel integrals in the worker…'));
   const v3 = view3d({ label: '3-D: the telescope, the starshade tens of thousands of kilometres away, and its shadow on the telescope', aspect: 1.9, minH: 260, yaw: -0.7, pitch: 0.35 });
   root.append(lab([h('div.grid-2', {}, shape.el, map.el), note, v3.el, h('div.card', { style: { padding: '6px' } }, prof.el), h('div.card', { style: { padding: '6px' } }, spec.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
@@ -77,7 +77,7 @@ export default function mount(root, meta) {
         ['Band with suppression < 10⁻¹⁰', band(r.specSupp, 1e-10)],
       ]));
       calc.say(`At ${fmt(st.z / 1000, 3)} thousand km the starshade dims the starlight over the telescope to <strong>${fmt(sp, 2)}</strong> of its unblocked level, against ${fmt(r.diskSupp, 2)} for a plain disc of the same size. Planets can be seen from <strong>${th.toFixed(0)} mas</strong> from the star outwards.`);
-      note.textContent = `Shadow of a hypergaussian starshade (a = ${st.a} m, b = ${st.b} m, n = ${st.n}) at ${st.z.toLocaleString('en')} km. The telescope aperture is the dashed circle. Scalar Fresnel diffraction, azimuthally averaged petals.`;
+      note.textContent = t('Shadow of a hypergaussian starshade (a = {a} m, b = {b} m, n = {n}) at {z} km. The telescope aperture is the dashed circle. Scalar Fresnel diffraction, azimuthally averaged petals.', { a: st.a, b: st.b, n: st.n, z: st.z.toLocaleString('en') });
       [map, prof, spec].forEach((x) => x.redraw());
       show3d(st, z, r.rhos, r.prof[k]);
     });

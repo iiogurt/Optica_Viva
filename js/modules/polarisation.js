@@ -63,7 +63,7 @@ export default function mount(root, meta) {
       scene.redraw();
       if (want) pump();
       else if (job.draft) request(false);
-      note.textContent = `${img.W}×${img.H} px (${img.draft ? 'draft' : 'full'}), ${img.ms.toFixed(0)} ms in the worker. Reflected skylight at the image centre through the filter: ${(Math.log2(Math.max(img.stats.centreGlare, 1e-6))).toFixed(2)} EV, over the whole water surface ${(Math.log2(Math.max(img.stats.glareRatio, 1e-6))).toFixed(2)} EV (relative to a neutral filter of the same density).`;
+      note.textContent = (img.draft ? t('{W}×{H} px (draft), {ms} ms in the worker. Reflected skylight at the image centre through the filter: {c} EV, over the whole water surface {w} EV (relative to a neutral filter of the same density).', { W: img.W, H: img.H, ms: img.ms.toFixed(0), c: (Math.log2(Math.max(img.stats.centreGlare, 1e-6))).toFixed(2), w: (Math.log2(Math.max(img.stats.glareRatio, 1e-6))).toFixed(2) }) : t('{W}×{H} px (full), {ms} ms in the worker. Reflected skylight at the image centre through the filter: {c} EV, over the whole water surface {w} EV (relative to a neutral filter of the same density).', { W: img.W, H: img.H, ms: img.ms.toFixed(0), c: (Math.log2(Math.max(img.stats.centreGlare, 1e-6))).toFixed(2), w: (Math.log2(Math.max(img.stats.glareRatio, 1e-6))).toFixed(2) }));
     }, (e) => { busy = false; note.textContent = t('Render failed: {msg}', { msg: e.message }); });
   }
 

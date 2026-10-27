@@ -41,11 +41,9 @@ export default function mount(root, meta) {
   const mosaic = stage({ aspect: 1, label: 'PSFs across the field, with Strehl', draw: drawMosaic, minH: 260 });
   const map = stage({ aspect: 1, label: 'RMS wavefront error over the field', draw: drawMap, minH: 260 });
   const curve = stage({ aspect: 2.2, label: '', draw: drawCurve, cls: 'plain', minH: 220 });
-  const note = h('p.note', {}, 'Computing PSFs in the worker…');
+  const note = h('p.note', {}, t('Computing PSFs in the worker…'));
   root.append(lab([h('div.grid-2', {}, mosaic.el, map.el), note, h('div.card', { style: { padding: '6px' } }, curve.el)], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '8px' } }, hubble)), h('div.card', {}, ro), calc.el]));
 
-  // translated here: inside update(), t is the two-mirror telescope
-  const COMPUTING = t('Computing PSFs in the worker…');
   const job = latest('fieldPSF');
   let R = null, S = null;
   function model(st) {
@@ -56,7 +54,7 @@ export default function mount(root, meta) {
   function update() {
     const st = ctl.state;
     S = model(st);
-    const { T, t, K1, K2, sd, mis, hmax } = S, lam = st.lam * 1e-9;
+    const { T, t: tel, K1, K2, sd, mis, hmax } = S, lam = st.lam * 1e-9; // tel: the two-mirror design (t is the translator)
     // field map: RMS on a grid, computed here (polynomial, cheap)
     const G = 41, rms = new Float64Array(G * G);
     for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) rms[j * G + i] = rmsPoly(fieldPoly(sd, [(-1 + (2 * i) / (G - 1)) * hmax, (1 - (2 * j) / (G - 1)) * hmax], mis, st.curved), T.eps, 12, 24);
@@ -68,7 +66,7 @@ export default function mount(root, meta) {
     const lamD = (lam / T.D) * 206265e3;
     ro.replaceChildren(readouts([
       ['Conic constants K₁, K₂', `${K1.toFixed(4)}, ${K2.toFixed(3)}`],
-      ['Secondary: magnification, distance', `${t.m.toFixed(2)}, ${t.d.toFixed(3)} m`],
+      ['Secondary: magnification, distance', `${tel.m.toFixed(2)}, ${tel.d.toFixed(3)} m`],
       ['Diffraction limit λ/D', lamD.toFixed(1) + ' mas'],
       ['Diffraction-limited field (RMS < λ/14)', dlField(st, lam) ],
       ['Coma-free point', S.comaZero ? `(${(S.comaZero[0] * THREF / ARCMIN).toFixed(1)}′, ${(S.comaZero[1] * THREF / ARCMIN).toFixed(1)}′)` : 'none: coma is the same everywhere'],
@@ -82,11 +80,11 @@ export default function mount(root, meta) {
     &\quad(H = ${texNum(st.field, 3)}'\text{, field edge})
     \end{aligned}`);
     map.redraw(); curve.redraw();
-    note.textContent = COMPUTING;
-    job('fieldPSF', { tel: t, K1, K2, dz: st.dz * 1e-6, mis, field: st.field * ARCMIN, grid: 5, lam, eps: T.eps, spiders: 4, n: 128, Dpx: 48, crop: 64, curved: st.curved }).then((r) => {
+    note.textContent = t('Computing PSFs in the worker…');
+    job('fieldPSF', { tel, K1, K2, dz: st.dz * 1e-6, mis, field: st.field * ARCMIN, grid: 5, lam, eps: T.eps, spiders: 4, n: 128, Dpx: 48, crop: 64, curved: st.curved }).then((r) => {
       R = r;
       const alias = Math.max(...r.pts.map((p) => p.grad)) > 0.5;
-      note.textContent = `5 × 5 field points, ±${st.field}′. Each stamp spans ${(64 * 48 / 128).toFixed(0)} λ/D; Strehl relative to the unaberrated pupil.` + (alias ? ' Some wavefronts are too steep to sample even at 96 pupil pixels (over half a wave per pixel): those PSFs are only indicative.' : '');
+      note.textContent = t('5 × 5 field points, ±{f}′. Each stamp spans {s} λ/D; Strehl relative to the unaberrated pupil.', { f: st.field, s: (64 * 48 / 128).toFixed(0) }) + (alias ? ' ' + t('Some wavefronts are too steep to sample even at 96 pupil pixels (over half a wave per pixel): those PSFs are only indicative.') : '');
       mosaic.redraw();
     });
   }

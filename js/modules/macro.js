@@ -70,7 +70,7 @@ export default function mount(root, meta) {
       if (r.crop) imgs.crop = { ...r.crop, c: null };
       view.redraw(); crop.redraw();
       const s = r.full.stats;
-      note.textContent = `Visible depth of the ruler ${s.depth.toFixed(1)} mm; largest blur ${(2 * s.rMax * (36 / r.full.W) * 1000).toFixed(0)} µm on the sensor; diffraction σ ${(s.sigma * 36 / r.full.W * 1000).toFixed(1)} µm. ${s.foci > 1 ? s.foci + ' frames stacked.' : 'Single frame.'} ${(performance.now() - t0).toFixed(0)} ms in the worker${job.draft ? ' (draft)' : ''}.`;
+      note.textContent = t('Visible depth of the ruler {depth} mm; largest blur {blur} µm on the sensor; diffraction σ {sigma} µm.', { depth: s.depth.toFixed(1), blur: (2 * s.rMax * (36 / r.full.W) * 1000).toFixed(0), sigma: (s.sigma * 36 / r.full.W * 1000).toFixed(1) }) + ' ' + (s.foci > 1 ? t('{n} frames stacked.', { n: s.foci }) : t('Single frame.')) + ' ' + (job.draft ? t('{ms} ms in the worker (draft).', { ms: (performance.now() - t0).toFixed(0) }) : t('{ms} ms in the worker.', { ms: (performance.now() - t0).toFixed(0) }));
       if (want) pump();
       else if (job.draft) request(false);
     }, (e) => { busy = false; note.textContent = t('Render failed: {msg}', { msg: e.message }); });

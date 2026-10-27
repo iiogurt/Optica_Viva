@@ -7,7 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Changed
-- The laboratories' own buttons (new exposure, load your photo, find best focus, optimise, import and export, pause and run, …), their status notes (“Computing … in the worker…”, the demo descriptions) and their error messages are translated into German, French and Spanish: 40 more interface strings.
+- The laboratories' own buttons (new exposure, load your photo, find best focus, optimise, import and export, pause and run, …), their status notes (“Computing … in the worker…”, the demo descriptions), their result notes (traced kernels, ghost paths, tolerance statistics, the starshade's shadow, the wavefront-sensor loop, …) with their values as placeholders, the gear page's instructions, the prescription editor's help and their error messages are translated into German, French and Spanish: 67 more interface strings.
 
 ## [1.23.0] - 2026-10-27
 

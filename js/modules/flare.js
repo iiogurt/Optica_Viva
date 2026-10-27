@@ -93,7 +93,7 @@ export default function mount(root, meta) {
       view.redraw();
       if (want) pump();
       else if (job.draft && !dragging) requestRays(false);
-      if (!busy) rayNote.textContent = `Real-ray ghosts (${rays.draft ? 'draft' : 'refined'}): ${rays.stats.paths} visible paths × ${LAMS.length} wavelengths, ${(rays.stats.rays / 1000).toFixed(0)} k rays, ${rays.stats.culled} paths too faint to show, ${(rays.ms / 1000).toFixed(1)} s.`;
+      if (!busy) rayNote.textContent = (rays.draft ? t('Real-ray ghosts (draft): {paths} visible paths × {n} wavelengths, {k} k rays, {culled} paths too faint to show, {s} s.', { paths: rays.stats.paths, n: LAMS.length, k: (rays.stats.rays / 1000).toFixed(0), culled: rays.stats.culled, s: (rays.ms / 1000).toFixed(1) }) : t('Real-ray ghosts (refined): {paths} visible paths × {n} wavelengths, {k} k rays, {culled} paths too faint to show, {s} s.', { paths: rays.stats.paths, n: LAMS.length, k: (rays.stats.rays / 1000).toFixed(0), culled: rays.stats.culled, s: (rays.ms / 1000).toFixed(1) }));
     }, (e) => { busy = false; rayNote.textContent = t('Ghost tracing failed: {msg}', { msg: e.message }); });
   }
   // ghost image × gain, added to the display values like the paraxial ghosts' alpha (same
