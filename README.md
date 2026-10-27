@@ -623,7 +623,7 @@ The dip in starlight as a planet crosses its star: depth (R_p/R★)², limb dark
 **Earth observation from orbit** · `#/earthobs`<br>
 <img src="docs/screenshots/earthobs.webp" alt="A city block at 10 cm resolution and as recorded from orbit by a very-high-resolution satellite, with the system MTF">
 
-Ground sample distance, push-broom scanning at 7 km/s, time-delay integration, diffraction against pixel size (Q) and the system MTF, with a city block rendered as a CubeSat, a mapping satellite or a very-high-resolution satellite records it.
+Ground sample distance, push-broom scanning at 7 km/s, time-delay integration, diffraction against pixel size (Q) and the system MTF, with a city block rendered as a CubeSat, a mapping satellite or a very-high-resolution satellite records it. A **3-D view** at true scale shows the orbit over the curved Earth, the fan of view down to the swath, the detector line's footprint and the strip imaged in the last minute.
 
 </td>
 </tr>
@@ -852,6 +852,7 @@ Optica_Viva/
 │   │   ├── tilt3d.js          3-D Scheimpflug geometry at true scale, and the plane of focus over the toy town
 │   │   ├── dof3d.js           3-D depth of field: the camera's frustum, plane of focus, sharp zone and cards at true scale
 │   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
+│   │   ├── earthobs3d.js      3-D Earth observation at true scale: orbit, swath, push-broom footprint and imaged strip
 │   │   ├── interf3d.js        3-D aperture synthesis: the turning Earth, stations, and the baselines' u-v tracks
 │   │   ├── lensing3d.js       3-D lensing: comoving planes, light paths of every image, critical curves, caustics, ring cone
 │   │   ├── projection3d.js    3-D sphere of directions with Tissot circles, the image plane and the sensor's field

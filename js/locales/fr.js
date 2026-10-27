@@ -1249,6 +1249,7 @@ export default {
   "Test colours the display cannot show": "Couleurs test que l’écran ne peut pas afficher",
   "3-D: every surface colour possible under this light, in CIE xyY, with a display gamut": "3-D : toutes les couleurs de surface possibles sous cette lumière, en CIE xyY, avec un gamut d’écran",
   "3-D, true scale: what the camera sees, the plane of focus and the sharp zone": "3-D, à l’échelle : ce que voit l’appareil, le plan de netteté et la zone nette",
+  "3-D, true scale: the orbit, the swath and the strip a push-broom camera images in a minute": "3-D, à l’échelle : l’orbite, la fauchée et la bande qu’une caméra push-broom image en une minute",
   "3-D: the Earth turns under the source, and each baseline, as the source sees it, traces its track in the u-v plane": "3-D : la Terre tourne sous la source, et chaque ligne de base, telle que la source la voit, trace sa piste dans le plan u-v",
   "Moment shown in 3-D (hour angle)": "Instant montré en 3-D (angle horaire)",
   "3-D: the light paths from the source galaxy past the lens to the telescope, with the Einstein ring as a cone": "3-D : les trajets de la lumière de la galaxie source, autour de la lentille, jusqu’au télescope, avec l’anneau d’Einstein en cône",

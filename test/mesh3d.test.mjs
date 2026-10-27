@@ -245,3 +245,24 @@ test('interferometry 3-D: the turning Earth projected onto the u-v plane reprodu
   const E = sc.meshes[0].mesh.positions;
   for (let i = 0; i < E.length; i += 3) near(Math.hypot(E[i], E[i + 1], E[i + 2]), 1, 1e-6, 'Earth radius');
 });
+
+test('Earth observation 3-D: the satellite flies at H, the swath is pixels × GSD, the strip is a minute of ground track', async () => {
+  const { design, RE } = await import('../js/lib/earthobs.js');
+  const { earthobsScene, onSphere } = await import('../js/lib/earthobs3d.js');
+  const d = { H: 786e3, D: 0.15, f: 0.6, p: 7.5e-6 }, r = design(d);
+  const sc = earthobsScene({ H: d.H, gsd: r.gsd, v: r.v, ground: r.ground });
+  const R = RE / 1e6, dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  // the satellite marker sits at the orbit height above nadir
+  const sat = sc.meshes[1].mesh.positions;
+  let cy = 0; for (let i = 1; i < sat.length; i += 3) cy += sat[i];
+  near(cy / (sat.length / 3), d.H / 1e6, 1e-6, 'satellite height (Mm)');
+  // the detector line's footprint (the thickest line) spans 12 000 pixels × GSD
+  const foot = sc.lines.reduce((a, l) => ((l.width || 0) > (a.width || 0) ? l : a));
+  near(dist(...foot.points) * 1e6, 12000 * r.gsd, 1, 'swath (m)');
+  // the strip's edges run along the ground for ground speed × 60 s, on the Earth's surface
+  const edge = sc.lines.find((l) => l.points.length === 49);
+  let len = 0; for (let i = 1; i < edge.points.length; i++) len += dist(edge.points[i], edge.points[i - 1]);
+  near(len * 1e6, r.ground * 60, r.ground * 60 * 1e-3, 'strip length (m)');
+  for (const p of edge.points) near(Math.hypot(p[0], p[1] + R, p[2]), R + 0.0015, 1e-9, 'on the ground');
+  near(dist(onSphere(0, 0), [0, 0, 0]), 0, 1e-12, 'nadir at the origin');
+});
