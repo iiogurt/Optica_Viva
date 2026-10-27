@@ -74,7 +74,7 @@ export function uvCoverage(arr, dec, hours, steps = 48, minEl = (15 * Math.PI) /
         if (!visible[i] || !visible[j]) continue;
         const X = xyz[j][0] - xyz[i][0], Y = xyz[j][1] - xyz[i][1], Z = xyz[j][2] - xyz[i][2];
         if (Math.hypot(X, Y, Z) < 1000) continue; // co-located stations (ALMA–APEX, JCMT–SMA) add only short spacings
-        const [u, v] = uvOf(X, Y, Z, -HG);
+        const [u, v] = uvOf(X, Y, Z, HG);
         pts.push([u, v], [-u, -v]);
       }
     }
