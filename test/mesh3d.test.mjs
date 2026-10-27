@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { lathe, lensSolid, sphere, quad, heightField, merge, bounds } from '../js/lib/mesh3d.js';
 import { lensScene } from '../js/lib/lens3d.js';
-import { LENSES, paraxial, autoSemiDiameters } from '../js/lib/raytrace.js';
+import { LENSES, paraxial, autoSemiDiameters, stopIndex } from '../js/lib/raytrace.js';
 
 const near = (a, e, tol, msg) => assert.ok(Math.abs(a - e) <= tol, `${msg}: ${a} vs ${e} ± ${tol}`);
 const unitNormals = (m) => { for (let i = 0; i < m.normals.length; i += 3) near(Math.hypot(m.normals[i], m.normals[i + 1], m.normals[i + 2]), 1, 1e-5, 'unit normal'); };
@@ -312,4 +312,21 @@ test('starshade 3-D: the outline matches the apodisation, the planet line grazes
   const lum = (i) => sh.mesh.colors[i * 73 * 3] + sh.mesh.colors[i * 73 * 3 + 1] + sh.mesh.colors[i * 73 * 3 + 2];
   const iMin = r.prof[0].indexOf(Math.min(...r.prof[0])), iMax = r.prof[0].indexOf(Math.max(...r.prof[0]));
   assert.ok(lum(iMin) < lum(iMax), 'dark where the shadow is deep');
+});
+
+test('bokeh 3-D: the iris shape, a round disc on axis as big as the thin lens predicts, and the barrel cutting a cat\'s eye in the corner', async () => {
+  const { irisRadius, hull, bokehScene } = await import('../js/lib/bokeh3d.js');
+  // straight blades: an edge's middle at the top, cos(π/N); circumradius 1 at a vertex, π/N round from it
+  near(irisRadius(Math.PI / 2, 9, 0), Math.cos(Math.PI / 9), 1e-12, 'mid-edge'); near(irisRadius(Math.PI / 2 + Math.PI / 9, 9, 0), 1, 1e-12, 'vertex');
+  near(irisRadius(0.3, 9, 1), 1, 1e-12, 'round blades'); near(irisRadius(1.1, 0, 0), 1, 0, 'circular iris');
+  assert.deepEqual(hull([[0, 0], [1, 0], [1, 1], [0, 1], [0.5, 0.5], [0.2, 0.7]]), [[0, 0], [1, 0], [1, 1], [0, 1]]);
+  const L = LENSES['double-gauss'], sd = autoSemiDiameters(L), par = paraxial(L);
+  const open = bokehScene({ lens: L, sd, focus: 1500, stop: 0, blades: 0, round: 0 });
+  const [ax, co] = open.fps, xs = ax.pts.map((p) => p[0]);
+  assert.equal(ax.passed, ax.total, 'nothing vignetted on axis');
+  near(Math.max(...xs) - Math.min(...xs), (par.efl ** 2) / (par.fnum * (1500 - par.efl)), 0.06 * 2.37, 'disc diameter vs f²/(N(s − f))');
+  // closing the barrel's clear apertures by 30 % cuts the corner beam, not the axial one
+  const si = stopIndex(L), tight = bokehScene({ lens: L, sd: sd.map((v, k) => (k === si ? v : v * 0.7)), focus: 1500, stop: 0, blades: 0, round: 0 });
+  assert.equal(tight.fps[0].passed, tight.fps[0].total);
+  assert.ok(tight.fps[1].passed < 0.95 * co.passed, `corner light ${tight.fps[1].passed} of ${co.passed}`);
 });

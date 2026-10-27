@@ -19,9 +19,10 @@ function pupilPattern(rim = 16, fan = 4) {
 }
 
 // lens: prescription (with epd); sd: clear semi-diameters; par: paraxial data at 587.56 nm;
-// zImg: image plane; fields: field angles (degrees) to trace; lambda: wavelength (nm).
+// zImg: image plane; fields: field angles (degrees) to trace; lambda: wavelength (nm); pupil:
+// the rays per field as normalised stop coordinates [[px, py], …] (default: rim and fans).
 // Returns { meshes, lines, labels } in millimetres, optical axis along z.
-export function lensScene(lens, { sd, par, zImg, fields = [0], lambda = 587.56 }) {
+export function lensScene(lens, { sd, par, zImg, fields = [0], lambda = 587.56, pupil = pupilPattern() }) {
   const S = lens.surfaces, zv = par.zv, meshes = [], lines = [], labels = [];
   const name = (g) => (typeof g === 'string' ? g : g.name);
   for (let i = 0; i < S.length; i++) {
@@ -50,7 +51,7 @@ export function lensScene(lens, { sd, par, zImg, fields = [0], lambda = 587.56 }
   }
   // rays: chief-ray image heights fix the size of the image plane
   let hMax = 0;
-  const pattern = pupilPattern();
+  const pattern = pupil;
   const allPts = [], rays = [];
   fields.forEach((th, fi) => {
     const col = FIELD_COLOURS[fi % FIELD_COLOURS.length];

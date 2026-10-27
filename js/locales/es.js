@@ -1249,6 +1249,7 @@ export default {
   "Test colours the display cannot show": "Colores de prueba que la pantalla no puede mostrar",
   "3-D: every surface colour possible under this light, in CIE xyY, with a display gamut": "3-D: todos los colores de superficie posibles con esta luz, en CIE xyY, con una gama de pantalla",
   "3-D, true scale: what the camera sees, the plane of focus and the sharp zone": "3-D, a escala: lo que ve la cámara, el plano de enfoque y la zona nítida",
+  "3-D: real rays from two background points through the iris and the barrel, and where they land on the sensor": "3-D: rayos reales de dos puntos del fondo a través del diafragma y la montura, y dónde llegan al sensor",
   "3-D: the telescope, the starshade tens of thousands of kilometres away, and its shadow on the telescope": "3-D: el telescopio, el parasol estelar a decenas de miles de kilómetros y su sombra sobre el telescopio",
   "3-D, true scale: the orbit, the sight lines through the star and the transit chord": "3-D, a escala: la órbita, las líneas de visión a través de la estrella y la cuerda del tránsito",
   "3-D, true scale: the orbit, the swath and the strip a push-broom camera images in a minute": "3-D, a escala: la órbita, la franja de barrido y la banda que una cámara push-broom capta en un minuto",
