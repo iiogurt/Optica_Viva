@@ -497,7 +497,7 @@ von Kármán phase screens built by FFT with **Lane subharmonics**, under Taylor
 **Space telescopes** · `#/telescope`<br>
 <img src="docs/screenshots/telescope.webp" alt="Lyot coronagraph revealing an exoplanet">
 
-Resolution and Nyquist sampling for eight real cameras, Planck thermal emission, and collecting area. A **Lyot coronagraph** (pupil → mask → Lyot stop) images an exoplanet against a wavefront-error speckle floor.
+Resolution and Nyquist sampling for eight real cameras, Planck thermal emission, and collecting area. A **Lyot coronagraph** (pupil → mask → Lyot stop) images an exoplanet against a wavefront-error speckle floor. A **3-D view** lays the coronagraph out along the beam as a 4f relay, with the computed field on each plane: the pupil, the star's image under the occulting mask, the Lyot plane's bright ring at the pupil edge inside the stop, and the final image, with the starlight stopping at the mask and the planet's light reaching its image.
 
 </td>
 </tr>
@@ -851,6 +851,7 @@ Optica_Viva/
 │   │   ├── pol3d.js           3-D electric field along a beam through polarisers and wave plates; Poincaré sphere
 │   │   ├── tilt3d.js          3-D Scheimpflug geometry at true scale, and the plane of focus over the toy town
 │   │   ├── dof3d.js           3-D depth of field: the camera's frustum, plane of focus, sharp zone and cards at true scale
+│   │   ├── coronagraph3d.js   3-D Lyot coronagraph: pupil, mask, Lyot plane and stop, final image along the beam
 │   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
 │   │   ├── earthobs3d.js      3-D Earth observation at true scale: orbit, swath, push-broom footprint and imaged strip
 │   │   ├── seeing3d.js        3-D seeing: the frozen-flow phase screen as a relief, the pupil, the residual above it

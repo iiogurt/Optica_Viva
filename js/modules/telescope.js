@@ -5,6 +5,8 @@ import { fft2d } from '../lib/fft.js';
 import { lut } from '../lib/color.js';
 import { latest } from '../lib/compute.js';
 import { plot, logRange } from '../lib/plot.js';
+import { view3d } from '../lib/gl3d.js';
+import { coronagraphScene } from '../lib/coronagraph3d.js';
 
 const SCOPES = [
   { name: 'Hubble', D: 2.4, color: '#6ad7ff', band: [0.115, 2.5], space: true },
@@ -98,11 +100,12 @@ export default function mount(root, meta) {
   const coro = stage({ aspect: 1, label: 'Coronagraphic image (same stretch)', draw: (c, w, hh) => drawImg(c, w, hh, 'coro') });
   const planes = stage({ aspect: 3, label: 'Pupil · focal-plane mask · Lyot plane (|E|, log)', draw: drawPlanes, minH: 160 });
   const prof = stage({ aspect: 2.4, label: '', draw: drawProf, cls: 'plain', minH: 220 });
-  sec.append(lab([h('div.grid-2', {}, direct.el, coro.el), planes.el, h('div.card', { style: { padding: '6px' } }, prof.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D: the coronagraph along the beam, with the computed field on each plane', aspect: 2.2, minH: 240, yaw: -1.05, pitch: 0.25 });
+  sec.append(lab([h('div.grid-2', {}, direct.el, coro.el), planes.el, v3.el, h('div.card', { style: { padding: '6px' } }, prof.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
   root.append(sec);
 
   const n = 256, Dp = 64, Q = n / Dp;
-  let C = null;
+  let C = null, shown3d = false;
   // 12 FFTs per update (star and planet, with and without the coronagraph) run in the worker
   const job = latest('coronagraph');
   const runCoro = debounce(() => {
@@ -112,6 +115,8 @@ export default function mount(root, meta) {
   function presentCoro(st, r) {
     const { throughput, starAt, snrRatio } = r;
     C = { ...r, st };
+    v3.setScene(coronagraphScene(r, st, n, Dp), shown3d);
+    shown3d = true;
     ro.replaceChildren(readouts([
       ['Inner working angle ≈ mask radius', st.mask.toFixed(1) + ' λ/D = ' + fmt((st.mask * st.lam * 1e-6 / 6.5) * 206265 * 1000, 3) + ' mas (JWST)'],
       ['Planet throughput (peak)', (throughput * 100).toFixed(1) + ' %'],
@@ -204,6 +209,7 @@ export default function mount(root, meta) {
 \[E_\text{focal} = \mathcal F\{P\},\quad E_\text{Lyot} = \mathcal F^{-1}\{(1-M)\,E_\text{focal}\},\quad E_\text{final} = \mathcal F\{L\cdot E_\text{Lyot}\}.\]
 <p>The occulting mask \(M\) blocks the core of the star's PSF. The light it misses has lost its low frequencies, so in the re-imaged pupil (Lyot plane) it concentrates in bright rings at the pupil edges. An undersized Lyot stop \(L\) blocks those rings. An off-axis planet's light misses the mask and passes through mostly intact. The <em>inner working angle</em> is roughly the mask radius.</p>
 <h3>The speckle floor</h3>
+<p>The 3-D view draws the instrument as a 4f relay: each lens one focal length from the planes on either side, so the focal plane holds the Fourier transform of the pupil and the Lyot plane an image of the pupil. Each plane carries the field computed for the 2-D figures. The starlight's rays end at the mask, and what the mask diffracts shows up as the bright ring at the pupil's edge in the Lyot plane, where the stop takes it out. The rays are schematic; the fields on the planes are computed.</p>
 <p>Wavefront errors scatter starlight into speckles that look exactly like planets. A sinusoidal surface ripple of height \(h\) creates a pair of speckles with contrast \((\pi h/\lambda)^2\). Reaching \(10^{-10}\) in the visible requires wavefront stability at the <strong>picometre</strong> level. That is why the Roman Coronagraph and the planned Habitable Worlds Observatory pair coronagraphs with deformable mirrors running "dark hole" control loops. Raise the wavefront-error slider to watch the planet disappear into the speckles.</p>
 </div></div>`));
   root.append(references([
@@ -213,5 +219,5 @@ export default function mount(root, meta) {
     'J. P. Gardner et al., "The James Webb Space Telescope Mission", PASP 135, 068001 (2023).',
     'J. Rigby et al., "The science performance of JWST as characterized in commissioning", PASP 135, 048001 (2023).',
   ]));
-  return () => [resChart, thermal, area, direct, coro, planes, prof].forEach((s) => s.destroy());
+  return () => [resChart, thermal, area, direct, coro, planes, prof, v3].forEach((s) => s.destroy());
 }
