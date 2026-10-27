@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.21.0] - 2026-10-27
+
 ### Added
 - **3-D depth of field** (`js/lib/dof3d.js`): the depth-of-field laboratory shows, at true scale, the camera's view frustum (the same sensor, height and shifted framing as the simulated photograph), the plane of focus, the sharp zone between the near and far limits as a glass slab, and the distance cards, green while their blur stays within the circle of confusion and fading to red beyond it. The card layout moved to that module so the photograph and the 3-D scene share it.
 - **3-D colour solid** (`js/lib/colour3d.js`): the colour-science laboratory shows, in CIE xyY, every surface colour possible under the chosen light (the optimal colours of Schrödinger and MacAdam, as an observer adapted to the source sees them), the spectral locus on the floor, the sRGB, Display P3 or Rec. 2020 gamut as a glass solid, and the 14 test colours inside. New readouts give the gamut's share of all chromaticities and how many test colours the display cannot show. `normalsFrom()` in `js/lib/mesh3d.js` gives smooth normals for any indexed mesh. Tests check that bands and their complements add up to white, that real surfaces lie inside the solid, and the sRGB matrix against IEC 61966-2-1.
@@ -709,7 +711,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.20.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.21.0...HEAD
+[1.21.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.19.0...v1.20.0
 [1.19.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.18.0...v1.19.0
 [1.18.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.17.0...v1.18.0
