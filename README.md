@@ -950,6 +950,7 @@ The numerical core was checked against published or analytically known values. E
 | Real-ray flare ghosts, Double-Gauss at f/18, 0.57° (4 paths) | position within 3 %, size within 2 %, flux within 3 % | y–nu ghost matrices: (B − AD/C)θ, \|A/C\| r<sub>stop</sub>, R<sub>i</sub>R<sub>j</sub> π(r<sub>stop</sub>/C)² |
 | Brewster angle, water and N-BK7 | 53.12°, 56.60° | arctan n = 53.12°, 56.60° |
 | Three ideal polarisers at 0°, 45°, 90° (unpolarised input) | 1/8 | ½ · cos²45° · cos²45° = 0.125 |
+| EHT 2017 on M87 (δ = 12.4°, 1.3 mm), longest projected baseline | 10 875 km, λ/B = 24.7 µas | ≈ 10 700 km, ≈ 25 µas (EHT Collaboration 2019, Paper II) |
 | Lensed images, SIS and point mass (θE = 1.4″, β = 0.5″) | within 10⁻⁶″ | β ± θE; (β ± √(β² + 4θE²))/2 |
 | Comoving distances, flat ΛCDM | (1 + z<sub>s</sub>) D<sub>ls</sub> = χ<sub>s</sub> − χ<sub>l</sub> to 10⁻⁵ Gpc | flat space: comoving distances add |
 | Tissot area ratio, equisolid fisheye (5° circles up to 140° off axis) | 1 within 0.2 % | equal-area projection: hk = f² |

@@ -14,6 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - The Tissot area ratio is measured against the image of the same 24-sided polygon under the equal-area mapping, so the polygon's own area deficit (1.1 %) cancels: an equisolid fisheye now reads 1.000.
 
 ### Fixed
+- Interferometry: the u-v coverage of Earth-sized arrays (EHT) projected each baseline at the opposite hour angle to the one used to check that both stations see the source, so the dirty beam, dirty image and CLEAN map used the wrong parts of each u-v track (223 of 229 baselines at M87's declination had a station below 15°). The longest projected baseline on M87 is now 10 875 km and λ/B = 24.7 µas, as published (≈ 10 700 km, ≈ 25 µas). A new test derives the coverage from vector geometry and station elevations.
 - `scripts/release.sh publish` tags the release PR's merge commit instead of the tip of `main`, so pull requests merged between the release PR and publishing are no longer swept into the tag; the release notes come from that commit's CHANGELOG.
 
 ## [1.21.0] - 2026-10-27
