@@ -644,18 +644,18 @@ export default function mount(root, meta) {
     tiltArcmin: { type: 'range', label: 'Element tilt σ', min: 0, max: 10, step: 0.5, value: 2, unit: '′' },
     trials: { type: 'range', label: 'Monte-Carlo trials', min: 10, max: 200, step: 10, value: 40 },
   }, () => {});
-  const tolRo = h('div.note', { role: 'status' }, 'Random manufacturing errors (radii, thicknesses, indices) and assembly errors (each element or cemented group decentered and tilted about its first vertex) are applied to the current lens; each trial is refocused (image distance as compensator) and scored by the RMS ray error over F, d, C and fields 0, ±0.7, ±1 (only +0.7, +1 without assembly errors, which keep the lens symmetric).');
+  const tolRo = h('div.note', { role: 'status' }, t('Random manufacturing errors (radii, thicknesses, indices) and assembly errors (each element or cemented group decentered and tilted about its first vertex) are applied to the current lens; each trial is refocused (image distance as compensator) and scored by the RMS ray error over F, d, C and fields 0, ±0.7, ±1 (only +0.7, +1 without assembly errors, which keep the lens symmetric).'));
   const tolHist = stage({ aspect: 2.6, label: '', draw: drawTol, cls: 'plain', minH: 200 });
   const sensSt = stage({ aspect: 2.6, label: '', draw: drawSens, cls: 'plain', minH: 180 });
   const tolJob = latest('tolerance');
   let tolData = null;
   const tolBtn = h('button.btn', { type: 'button', onClick: () => {
     const st = tolCtl.state;
-    tolBtn.disabled = true; tolRo.textContent = `Running ${st.trials} trials in the background…`;
+    tolBtn.disabled = true; tolRo.textContent = t('Running {n} trials in the background…', { n: st.trials });
     tolJob('tolerance', { lens: clone(LENSES[ctl.state.lens]), tol: { radiusPct: st.radiusPct, thicknessUm: st.thicknessUm, indexDelta: st.indexE4 * 1e-4, decenterUm: st.decenterUm, tiltArcmin: st.tiltArcmin }, trials: st.trials, seed: 7 })
       .then((r) => {
         tolData = r; tolHist.redraw(); sensSt.redraw();
-        tolRo.textContent = `Nominal ${(r.nominal * 1000).toFixed(2)} µm · median ${(r.median * 1000).toFixed(2)} µm · 90th percentile ${(r.p90 * 1000).toFixed(2)} µm (${(r.p90 / r.nominal).toFixed(2)}× nominal)${r.failed ? ` · ${r.failed} trials failed to trace` : ''}.`;
+        tolRo.textContent = t('Nominal {nom} µm · median {med} µm · 90th percentile {p90} µm ({x}× nominal)', { nom: (r.nominal * 1000).toFixed(2), med: (r.median * 1000).toFixed(2), p90: (r.p90 * 1000).toFixed(2), x: (r.p90 / r.nominal).toFixed(2) }) + (r.failed ? ' · ' + t('{n} trials failed to trace', { n: r.failed }) : '') + '.';
       }).catch((e) => { tolRo.textContent = t('Tolerance run failed: {msg}', { msg: e.message }); })
       .finally(() => { tolBtn.disabled = false; });
   } }, 'Run tolerance analysis');
@@ -694,7 +694,7 @@ export default function mount(root, meta) {
 
   root.append(h('section.block', {}, h('h2', {}, 'Prescription editor'),
     h('div.card', {},
-      h('p.note', {}, 'Edit the custom lens surface by surface (R = ∞ for a plane; leave Semi-Ø empty for automatic clear apertures, or set it to vignette oblique beams). Changes are traced immediately and travel in the page link, so a design can be shared. Import a Zemax .zmx (sequential STANDARD/EVENASPH) or an Optica Viva .json; unknown glasses are modelled from their n_d and V_d.'),
+      h('p.note', {}, t('Edit the custom lens surface by surface (R = ∞ for a plane; leave Semi-Ø empty for automatic clear apertures, or set it to vignette oblique beams). Changes are traced immediately and travel in the page link, so a design can be shared. Import a Zemax .zmx (sequential STANDARD/EVENASPH) or an Optica Viva .json; unknown glasses are modelled from their n_d and V_d.')),
       h('div.rx-actions', {},
         h('button.btn', { type: 'button', onClick: () => applyCustom(clone(LENSES[ctl.state.lens]), `Copied ${LENSES[ctl.state.lens].name} into the editor.`) }, t('Edit a copy of the current lens')),
         h('button.btn', { type: 'button', onClick: () => {

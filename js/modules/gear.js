@@ -8,7 +8,7 @@ import { makeRng } from '../lib/random.js';
 import { esfr, edgeFit, mtfAt, syntheticEdge } from '../lib/esfr.js';
 import { CAMERAS, pitchOf } from '../lib/equipment.js';
 import { linearPlanes, vignetting, fitDistortion, undistort, distortPoint } from '../lib/gear.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const TESTS = { sharp: 'Sharpness (slanted edge)', vig: 'Vignetting (flat field)', dist: 'Distortion (straight line)' };
 
@@ -35,8 +35,8 @@ export default function mount(root, meta) {
     analyse();
   });
   let lastBody = 'custom', lastTest = ctl.state.test;
-  const status = h('p.note', { role: 'status' }, 'Load a photo or the demo image.');
-  const howto = { sharp: 'Drag a box across a dark-to-bright edge tilted by a few degrees.', vig: 'Use a photo of an evenly lit, featureless surface.', dist: 'Click at least four points along a line that is straight in reality, near the edge of the frame.' };
+  const status = h('p.note', { role: 'status' }, t('Load a photo or the demo image.'));
+  const howto = { sharp: N_('Drag a box across a dark-to-bright edge tilted by a few degrees.'), vig: N_('Use a photo of an evenly lit, featureless surface.'), dist: N_('Click at least four points along a line that is straight in reality, near the edge of the frame.') };
   const hint = h('p.note');
   const ro = h('div');
   const calc = liveCalc('Result');
@@ -56,7 +56,7 @@ export default function mount(root, meta) {
       const bmp = await createImageBitmap(f);
       const scale = Math.min(1, 8000 / Math.max(bmp.width, bmp.height));
       setImage((c) => c.drawImage(bmp, 0, 0, bmp.width * scale, bmp.height * scale), Math.round(bmp.width * scale), Math.round(bmp.height * scale), true);
-      status.textContent = `${f.name}: ${W} × ${H} pixels, analysed in your browser only.${scale < 1 ? ' (Scaled down to 8000 pixels.)' : ''}`;
+      status.textContent = t('{file}: {W} × {H} pixels, analysed in your browser only.', { file: f.name, W, H }) + (scale < 1 ? ' ' + t('(Scaled down to 8000 pixels.)') : '');
     } catch (e) { status.textContent = t('That file could not be read as an image.'); }
   });
 
@@ -107,7 +107,7 @@ export default function mount(root, meta) {
   function analyse() {
     R = null;
     const st = ctl.state;
-    hint.textContent = howto[st.test];
+    hint.textContent = t(howto[st.test]);
     if (!src) { view.redraw(); chart.redraw(); return; }
     if (st.test === 'sharp' && roi && roi.w > 12 && roi.h > 12) {
       const x0 = Math.max(0, Math.round(roi.x)), y0 = Math.max(0, Math.round(roi.y)), w = Math.min(W - x0, Math.round(roi.w)), hh = Math.min(H - y0, Math.round(roi.h));

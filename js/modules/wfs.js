@@ -101,7 +101,7 @@ export default function mount(root, meta) {
       ['Error budget (fit ⊕ temporal ⊕ noise)', Math.sqrt(B.total).toFixed(0) + ' nm'],
       ['Strehl at λ_sci: Maréchal · long-exposure peak', `${Math.exp(-(((2 * Math.PI * rmsR) / lam) ** 2)).toFixed(2)} · ${pk.toFixed(2)}`],
     ]));
-    note.textContent = `t = ${(S.t * 1000).toFixed(0)} ms simulated, ${S.steps} loop frames (${S.batch} in the last batch, in the worker). Wind moves the screen ${(S.st.wind / (S.st.fs * DX)).toFixed(2)} pupil pixels per frame.`;
+    note.textContent = t('t = {ms} ms simulated, {n} loop frames ({batch} in the last batch, in the worker). Wind moves the screen {px} pupil pixels per frame.', { ms: (S.t * 1000).toFixed(0), n: S.steps, batch: S.batch, px: (S.st.wind / (S.st.fs * DX)).toFixed(2) });
   }
 
   function drawSH(ctx, w, hh) {

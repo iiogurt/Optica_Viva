@@ -189,7 +189,7 @@ export default function mount(root, meta) {
     const { r, pick, st, ms } = TK, lens = LENSES[st.lens];
     const b0 = pick('bg', 0, 0), f0 = pick('fg', 0, 0), bc = pick('bg', 1, 1);
     const f = r.efl, N = r.fnum, s = st.focus, cThin = (f * f) / (N * (s - f));
-    note.textContent = `Traced: 18 kernels × ${LAMS.length} wavelengths through the ${lens.name.split(' (')[0]} in ${(ms / 1000).toFixed(1)} s. Background lights at infinity, foreground lights at ${(s / 2000).toFixed(2)} m.`;
+    note.textContent = t('Traced: 18 kernels × {n} wavelengths through the {lens} in {s} s. Background lights at infinity, foreground lights at {near} m.', { n: LAMS.length, lens: lens.name.split(' (')[0], s: (ms / 1000).toFixed(1), near: (s / 2000).toFixed(2) });
     const rc = (k) => k.st.rim / k.st.centre;
     const look = (q) => (q > 1.08 ? 'bright rim' : q < 0.92 ? 'soft edge, bright centre' : 'nearly uniform');
     ro.replaceChildren(readouts([
@@ -336,7 +336,7 @@ export default function mount(root, meta) {
       g.putImageData(im, 0, 0);
       DF = { ...r, img, w020: dctl.state.w020 };
       const airy = 2.44 * 550e-6 * r.N, Dgeo = 2 * r.Rgeo * r.du, sinc = Math.sin(Math.PI * DF.w020) / (Math.PI * DF.w020);
-      dnote.textContent = `Geometric disk Ø ${(Dgeo * 1000).toFixed(1)} µm = ${(Dgeo / airy).toFixed(1)} Airy diameters (f/${r.N.toFixed(1)}, sensor moved ${(r.dz * 1000).toFixed(0)} µm). Centre intensity I(0)/I₀ = ${r.centre.toFixed(3)}; pure defocus predicts sinc²(W₀₂₀/λ) = ${(sinc * sinc).toFixed(3)}.`;
+      dnote.textContent = t('Geometric disk Ø {d} µm = {airy} Airy diameters (f/{N}, sensor moved {dz} µm). Centre intensity I(0)/I₀ = {c}; pure defocus predicts sinc²(W₀₂₀/λ) = {p}.', { d: (Dgeo * 1000).toFixed(1), airy: (Dgeo / airy).toFixed(1), N: r.N.toFixed(1), dz: (r.dz * 1000).toFixed(0), c: r.centre.toFixed(3), p: (sinc * sinc).toFixed(3) });
       dview.redraw();
     }, (e) => { dnote.textContent = t('Diffraction PSF failed: {msg}', { msg: e.message }); });
   }, 60);
