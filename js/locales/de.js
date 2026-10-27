@@ -1249,4 +1249,5 @@ export default {
   "Test colours the display cannot show": "Testfarben, die das Display nicht zeigen kann",
   "3-D: every surface colour possible under this light, in CIE xyY, with a display gamut": "3-D: jede unter diesem Licht mögliche Oberflächenfarbe in CIE xyY, mit einem Displayfarbraum",
   "3-D, true scale: what the camera sees, the plane of focus and the sharp zone": "3-D, maßstäblich: was die Kamera sieht, die Schärfeebene und der scharfe Bereich",
+  "3-D: the sphere of directions with Tissot circles, and where the projection puts them on the image plane": "3-D: die Richtungskugel mit Tissot-Kreisen und wohin die Projektion sie auf der Bildebene legt",
 };

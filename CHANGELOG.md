@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **3-D projections** (`js/lib/projection3d.js`): the projection laboratory shows the sphere of directions, radius f, with the Tissot circles on it, and the image plane tangent to it at the optical axis, where each circle lands as the chosen projection maps it. Lines join the circles on the horizon and the central meridian to their images (straight rays through the centre only for the rectilinear lens); the sensor's field is outlined on the sphere, and circles outside it are grey. The Tissot circles are now computed once in `js/lib/projection.js` (`tissotCircles`, `tissotColour`, `toCamera`) for the 2-D overlay and the 3-D view.
+
+### Changed
+- The Tissot area ratio is measured against the image of the same 24-sided polygon under the equal-area mapping, so the polygon's own area deficit (1.1 %) cancels: an equisolid fisheye now reads 1.000.
+
 ## [1.21.0] - 2026-10-27
 
 ### Added

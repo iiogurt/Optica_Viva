@@ -2,8 +2,10 @@ import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/u
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
 import { SENSORS } from '../lib/sensors.js';
-import { PROJ, forward } from '../lib/projection.js';
+import { PROJ, tissotCircles, tissotColour } from '../lib/projection.js';
 import { parallel, rowBands } from '../lib/compute.js';
+import { view3d } from '../lib/gl3d.js';
+import { projectionScene } from '../lib/projection3d.js';
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
@@ -27,7 +29,8 @@ export default function mount(root, meta) {
   const calc = liveCalc();
   const view = stage({ aspect: 1.5, label: 'Rendered view', draw: drawView, minH: 280 });
   const curves = stage({ aspect: 2.2, label: '', draw: drawCurves, cls: 'plain', minH: 220 });
-  root.append(lab([view.el, h('div.card', { style: { padding: '6px' } }, curves.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D: the sphere of directions with Tissot circles, and where the projection puts them on the image plane', aspect: 1.7, minH: 280, yaw: 0.95, pitch: 0.3 });
+  root.append(lab([view.el, v3.el, h('div.card', { style: { padding: '6px' } }, curves.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   let img = null;
   // rendered in parallel row bands by the compute workers (js/lib/projection.js); a newer
@@ -77,6 +80,15 @@ export default function mount(root, meta) {
     &\text{stereo: } h=${texNum(hs, 3)},\ k=${texNum(ks, 3)},\ h/k=${texNum(hs / ks, 3)}
     \end{aligned}`);
     view.redraw(); curves.redraw();
+    show3d();
+  }
+  // 3-D: the camera stays where the reader put it, unless the scene's size changes more than 1.5×
+  let size3d = 0;
+  function show3d() {
+    const st = ctl.state, S = SENSORS[st.sensor], size = Math.max(st.f, Math.hypot(S.w, S.h) / 2);
+    const keep = size3d > 0 && size / size3d < 1.5 && size3d / size < 1.5;
+    v3.setScene(projectionScene({ proj: st.proj, f: st.f, sw: S.w, sh: S.h, yaw: st.yaw, pitch: st.pitch }), keep);
+    if (!keep) size3d = size;
   }
 
   function drawView(ctx, w, hh) {
@@ -88,38 +100,13 @@ export default function mount(root, meta) {
     const st = ctl.state;
     if (!st.tissot) return;
     const S = img.S, mm = dw / S.w;
-    const cyw = Math.cos((st.yaw * Math.PI) / 180), syw = Math.sin((st.yaw * Math.PI) / 180);
-    const cp = Math.cos((st.pitch * Math.PI) / 180), sp = Math.sin((st.pitch * Math.PI) / 180);
-    // world → camera (inverse of the render rotation)
-    const toCam = (d) => {
-      const x0 = d[0] * cyw - d[2] * syw, z0 = d[0] * syw + d[2] * cyw;
-      return [x0, d[1] * cp - z0 * sp, d[1] * sp + z0 * cp];
-    };
-    const delta = (5 * Math.PI) / 180; // circle radius (10° diameter)
-    for (let lat = -60; lat <= 60; lat += 20) for (let lon = -160; lon <= 180; lon += 20) {
-      const la = (lat * Math.PI) / 180, lo = (lon * Math.PI) / 180;
-      const c = [Math.cos(la) * Math.sin(lo), Math.sin(la), Math.cos(la) * Math.cos(lo)];
-      const e1 = [Math.cos(lo), 0, -Math.sin(lo)], e2 = [-Math.sin(la) * Math.sin(lo), Math.cos(la), -Math.sin(la) * Math.cos(lo)];
-      const pts = [];
-      let ok = true;
-      for (let k = 0; k <= 24; k++) {
-        const a = (k / 24) * 2 * Math.PI, ca = Math.cos(delta), sa = Math.sin(delta);
-        const d = [0, 1, 2].map((q) => c[q] * ca + sa * (Math.cos(a) * e1[q] + Math.sin(a) * e2[q]));
-        const p = forward(st.proj, toCam(d), st.f);
-        if (!p || !isFinite(p[0])) { ok = false; break; }
-        pts.push([ox + dw / 2 + p[0] * mm, oy + dh / 2 - p[1] * mm]);
-      }
-      if (!ok) continue;
+    for (const t of tissotCircles(st.proj, st.f, st.yaw, st.pitch)) {
+      if (!t.img) continue;
+      const pts = [...t.img.slice(1), t.img[1]].map(([x, y]) => [ox + dw / 2 + x * mm, oy + dh / 2 - y * mm]);
       if (pts.some(([x, y]) => x < ox - 40 || x > ox + dw + 40 || y < oy - 40 || y > oy + dh + 40)) continue;
-      // area relative to the image centre
-      let A = 0; for (let k = 0; k < pts.length - 1; k++) A += pts[k][0] * pts[k + 1][1] - pts[k + 1][0] * pts[k][1];
-      A = Math.abs(A) / 2;
-      const A0 = Math.PI * (st.f * delta * mm) ** 2;
-      const ratio = A / A0;
-      if (ratio > 60) continue;
-      const hue = ratio > 1 ? `rgba(255,${Math.max(60, 200 - 60 * Math.log2(ratio))},80,0.45)` : `rgba(90,${150 + 50 * ratio},255,0.45)`;
+      if (t.ratio > 60) continue;
       ctx.beginPath(); pts.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
-      ctx.fillStyle = hue; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = `rgba(${tissotColour(t.ratio).join(',')},0.45)`; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1; ctx.stroke();
     }
     ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(ox + 8, oy + dh - 26, 300, 20);
     ctx.fillStyle = '#fff'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
@@ -159,7 +146,9 @@ export default function mount(root, meta) {
 <h3>Tissot's indicatrix</h3>
 <p>An infinitesimal circle of angular radius \(\delta\) on the sphere maps to an ellipse with semi-axes \(h\delta\) (radial) and \(k\delta\) (tangential), where</p>
 \[h = \frac{dR}{d\theta},\qquad k = \frac{R(\theta)}{\sin\theta}.\]
-<p>Conformality means \(h = k\) (stereographic). Equal area means \(hk = f^2\) (equisolid). For a rectilinear lens \(h = f\sec^2\theta\) and \(k = f\sec\theta\). Area therefore grows as \(\sec^3\theta\), and objects are stretched radially by a further factor \(\sec\theta\). This is the "volume anamorphosis" that turns faces at the edge of a wide-angle group photo into ovals. The overlay draws the exact images of 10° circles by mapping 24 boundary directions through the projection.</p>
+<p>Conformality means \(h = k\) (stereographic). Equal area means \(hk = f^2\) (equisolid). For a rectilinear lens \(h = f\sec^2\theta\) and \(k = f\sec\theta\). Area therefore grows as \(\sec^3\theta\), and objects are stretched radially by a further factor \(\sec\theta\). This is the "volume anamorphosis" that turns faces at the edge of a wide-angle group photo into ovals. The overlay draws the exact images of 10° circles by mapping 24 boundary directions through the projection. Each is coloured by its area relative to the image of the same 24-sided polygon under the equal-area mapping, so the polygon's own area deficit cancels.</p>
+<h3>The sphere of directions</h3>
+<p>Every projection starts from the same object: the sphere of all directions around the centre of projection. The 3-D view draws it with radius \(f\), so that the image plane is the plane tangent to it at the optical axis. The gnomonic projection is then literal: each direction's image is where the straight line from the centre through the sphere meets the plane, and nothing beyond 90° ever reaches it. Every other mapping places the image at \(R(\theta)\) instead of \(f\tan\theta\), so the line from a circle to its image no longer passes through the centre. The fisheyes fold the whole forward hemisphere inside the gold circle \(r = R(90^\circ)\). The outline on the sphere is the sensor's border mapped back through the projection: the part of the world the picture contains. Near the back pole a 5° circle's image becomes a thin crescent, which the 24-point outline only approximates.</p>
 </div><div>
 <h3>Why spheres become ellipses</h3>
 <p>A sphere subtends a circular cone. A gnomonic projection images that cone as a conic section (an ellipse whose eccentricity grows with \(\theta\)), even though the projection is "distortion-free" in the lens-designer's sense. Panoramic projections such as cylindrical and Panini give up straightness of horizontal lines to keep verticals straight and objects round. Panini (\(d = 1\)) is a stereographic projection of a cylinder. Painters of vedute used it intuitively.</p>
@@ -174,5 +163,5 @@ export default function mount(root, meta) {
     'T. K. Sharpless, B. Postle &amp; D. M. German, "Pannini: a new projection for rendering wide angle perspective images", Computational Aesthetics (2010).',
     'M. R. Calabretta &amp; E. W. Greisen, "Representations of celestial coordinates in FITS", A&amp;A 395, 1077 (2002).',
   ]));
-  return () => [view, curves].forEach((s) => s.destroy());
+  return () => [view, v3, curves].forEach((s) => s.destroy());
 }

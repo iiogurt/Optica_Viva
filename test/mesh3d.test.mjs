@@ -171,3 +171,34 @@ test('depth-of-field 3-D: the frustum matches the photograph, and cards are gree
   }
   assert.ok(sceneDepth(100, 120) >= 100, 'a focus at 100 m stays in the scene');
 });
+
+test('projection 3-D: rectilinear is central projection onto the tangent plane, the field edge maps back to the sensor, circles drawn on the sensor only', async () => {
+  const { tissotCircles, forward } = await import('../js/lib/projection.js');
+  const { projectionScene, fieldEdge, onSensor } = await import('../js/lib/projection3d.js');
+  const f = 10;
+  // rectilinear: the image of a direction d is where the ray from the centre through d meets z = f
+  for (const t of tissotCircles('rectilinear', f, 0, 0).filter((t) => t.img)) {
+    const d = t.centre;
+    assert.ok(Math.abs(t.img[0][0] - (f * d[0]) / d[2]) < 1e-9 && Math.abs(t.img[0][1] - (f * d[1]) / d[2]) < 1e-9);
+  }
+  // the field edge: each direction on it maps back onto the sensor outline
+  const sw = 36, sh = 24;
+  for (const [proj, fl] of [['rectilinear', 14], ['equisolid', 12], ['panini', 10]]) {
+    const runs = fieldEdge(proj, fl, sw, sh);
+    assert.ok(runs.length >= 1);
+    for (const d of runs.flat()) {
+      const [x, y] = forward(proj, d, fl);
+      assert.ok(Math.abs(Math.abs(x) - sw / 2) < 1e-6 || Math.abs(Math.abs(y) - sh / 2) < 1e-6, `${proj}: ${x}, ${y} is not on the outline`);
+    }
+  }
+  // the scene: the sphere has radius f, the image plane lies at z = f, and only circles that land on
+  // the sensor are drawn there
+  const sc = projectionScene({ proj: 'rectilinear', f: 14, sw, sh, yaw: 0, pitch: 0 });
+  const sph = sc.meshes[0].mesh.positions;
+  for (let i = 0; i < sph.length; i += 3) assert.ok(Math.abs(Math.hypot(sph[i], sph[i + 1], sph[i + 2]) - 14) < 1e-4);
+  const image = sc.meshes.at(-1).mesh.positions;
+  for (let i = 0; i < image.length; i += 3) {
+    assert.ok(Math.abs(image[i + 2] - 14) < 0.05);
+    assert.ok(onSensor([image[i], image[i + 1]], sw, sh));
+  }
+});

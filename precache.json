@@ -67,6 +67,7 @@
     "js/lib/polar.js",
     "js/lib/portrait.js",
     "js/lib/projection.js",
+    "js/lib/projection3d.js",
     "js/lib/pupil.js",
     "js/lib/random.js",
     "js/lib/raytrace.js",
