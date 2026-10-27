@@ -78,6 +78,11 @@ export function interfaceStrings(files = walk('js').filter((f) => !f.startsWith(
       for (const el of elements(src.slice(a, matchEnd(src, a)))) if (el.trim().startsWith('[')) add(plain(elements(el.trim())[0] || ''));
     }
     for (const m of src.matchAll(new RegExp(String.raw`\bliveCalc\(\s*(${PLAIN})\s*\)`, 'g'))) add(m[1]);
+    // chart text: plot(ctx, w, h, { title, x: { label }, y: { label }, series: [{ label }], hlines/vlines: [{ label }] })
+    for (const m of src.matchAll(/\bplot\(ctx\b/g)) {
+      const a = m.index + 'plot'.length, call = src.slice(a, matchEnd(src, a));
+      for (const x of call.matchAll(new RegExp(String.raw`\b(?:title|label): (${PLAIN})\s*[,}]`, 'g'))) add(x[1]);
+    }
     for (const m of src.matchAll(/\b(?:stage|view3d)\(\{/g)) {
       const a = m.index + m[0].length - 1, obj = src.slice(a, matchEnd(src, a));
       const x = new RegExp(String.raw`\blabel: (${PLAIN})\s*[,}]`).exec(obj);
