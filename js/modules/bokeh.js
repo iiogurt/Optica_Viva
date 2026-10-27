@@ -4,6 +4,7 @@ import { plot, range } from '../lib/plot.js';
 import { LENSES, autoSemiDiameters, stopIndex, hasMirrors } from '../lib/raytrace.js';
 import { linspace } from '../lib/color.js';
 import { latest } from '../lib/compute.js';
+import { view3d } from '../lib/gl3d.js';
 
 const K = 112; // kernel resolution (px)
 const PALETTE = [[255, 196, 120], [255, 150, 90], [140, 200, 255], [255, 230, 190], [190, 160, 255], [255, 255, 255]];
@@ -141,7 +142,8 @@ export default function mount(root, meta) {
   const dview = stage({ aspect: 2.4, label: 'Diffraction PSF', draw: drawDiff, minH: 220 });
   const dnote = h('div.note', { role: 'status' });
   const diffCard = h('div.card', {}, h('h3', {}, 'Small disks: diffraction'), dctl.el, dview.el, dnote);
-  root.append(lab([scene.el, note, close.el, h('div.card', { style: { padding: '6px' } }, prof.el), diffCard], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D: real rays from two background points through the iris and the barrel, and where they land on the sensor', aspect: 2.2, minH: 240, yaw: -0.5, pitch: 0.28 });
+  root.append(lab([scene.el, note, close.el, v3.el, h('div.card', { style: { padding: '6px' } }, prof.el), diffCard], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   // deterministic set of lights
   let seed = 11; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
@@ -151,7 +153,8 @@ export default function mount(root, meta) {
 
   let KS = null, TK = null;
   const grid = [-1, -0.5, 0, 0.5, 1];
-  const bokehJob = latest('bokeh'), sdCache = new Map();
+  const bokehJob = latest('bokeh'), scene3dJob = latest('bokeh3d'), sdCache = new Map();
+  let lens3d = '';
   let alive = true;
   // Traced lens: 18 kernels (background at ∞, foreground at half the focus distance; 3 × 3 field
   // positions) from the worker; brightness is physical within each side.
@@ -160,6 +163,12 @@ export default function mount(root, meta) {
     if (!sdCache.has(st.lens)) sdCache.set(st.lens, autoSemiDiameters(lens));
     const sd = sdCache.get(st.lens).map((v, k) => (k === si ? v : v * (1 - st.barrel)));
     const fields = GRID.flatMap((fy) => GRID.map((fx) => [fx * 16, fy * 10.7]));
+    // 3-D (in the worker): the camera stays put while the lens stays the same
+    scene3dJob('bokehScene3d', { lens, sd, focus: st.focus, stop: st.stop, blades: st.blades < 3 ? 0 : st.blades, round: st.round }).then((sc) => {
+      if (!alive) return;
+      v3.setScene(sc, lens3d === st.lens);
+      lens3d = st.lens;
+    }, () => {});
     note.textContent = 'Tracing rays through the lens for 18 kernels…';
     const t0 = performance.now();
     bokehJob('bokehTraced', { lens, sd, lambdas: LAMS, focus: st.focus, near: st.focus / 2, stop: st.stop, blades: st.blades < 3 ? 0 : st.blades, round: st.round, fields, K, grid: 36 }).then((r) => {
@@ -205,6 +214,7 @@ export default function mount(root, meta) {
   const recompute = debounce(() => {
     const st = ctl.state;
     diffCard.hidden = st.model !== 'traced';
+    v3.el.hidden = st.model !== 'traced';
     if (st.model === 'traced') { recomputeTraced(st); recomputeDiff(); return; }
     TK = null;
     note.textContent = 'Phenomenological model: the pupil outline and a cubic transverse aberration set by the sliders.';
@@ -396,6 +406,8 @@ export default function mount(root, meta) {
 <li>the barrel's clear apertures cut cat's eyes off axis, and coma shades them unevenly.</li>
 </ul>
 <p>Disks are drawn at their physical size on a 36 mm sensor, so the scaling \(c = f^2/(N(s-f))\) is visible directly: a 50 mm f/5 lens gives small disks, a 100 mm f/3 large ones. The traced diameter agrees with this thin-lens value to within a few per cent, and the flux of a stopped-down kernel equals \(\pi r_{EP}^2\) within 1 % (see the tests).</p>
+<h3>The cone in 3-D</h3>
+<p>The 3-D view traces the same lens with 32 rays round the edge of the iris and one through its centre, from a background point on axis (blue) and one in the corner of a full-frame sensor (gold). Because the sensor sits behind the image of infinity, each bundle comes to a point in front of it and spreads again: the footprint on the sensor is an image of the iris, as large as \(f^2/(N(s-f))\). In the corner the bundle is tilted, so the clear apertures of the front and rear elements cut its two sides and the footprint becomes the cat's eye. Its share of the light is the fraction of a \(24\times24\) grid over the iris that gets through. The footprints are a few millimetres wide, so they are also drawn enlarged beside the sensor.</p>
 <h3>Small disks: diffraction</h3>
 <p>Geometry is the limit of large defocus. The <em>Small disks</em> panel computes the Fraunhofer PSF of the traced, defocused pupil by FFT. It uses the lens's own aberrations and vignetting, with the sensor moved by \(\Delta z = W_{020}/(1-\cos U')\). For pure defocus the pupil phase \(2\pi W_{020}\rho^2/\lambda\) divides the disk into Fresnel zones. Each extra wave of defocus adds one ring, and the centre alternates between bright and dark:</p>
 \[\frac{I(0)}{I_0} = \operatorname{sinc}^2\!\left(\frac{W_{020}}{\lambda}\right),\]
@@ -409,5 +421,5 @@ export default function mount(root, meta) {
     'M. Hullin et al., "Polynomial optics: a construction kit for efficient ray-tracing of lens systems", Comput. Graph. Forum 31 (2012).',
     'S. Bhagavathula &amp; K. Thompson, "Bokeh: a review of the physics and aesthetics", Optics &amp; Photonics News (2020).',
   ]));
-  return () => { alive = false; [scene, close, prof, dview].forEach((s) => s.destroy()); };
+  return () => { alive = false; [scene, close, prof, dview, v3].forEach((s) => s.destroy()); };
 }

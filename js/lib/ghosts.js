@@ -77,7 +77,7 @@ export function ghostSystem(lens, o) {
     return t;
   }));
   const nb = o.blades || 0, sector = nb ? (2 * Math.PI) / nb : 0, cp = nb ? Math.cos(Math.PI / nb) : 1;
-  const rot = nb ? Math.PI / 2 - sector / 2 : 0; // a blade vertex at the top
+  const rot = nb ? Math.PI / 2 - sector / 2 : 0; // the middle of a blade's edge at the top
   // iris radius at azimuth φ: straight blades r = cp/cos φ (circumradius 1), blended toward a
   // circle by the blade roundness
   const rd = o.round || 0;

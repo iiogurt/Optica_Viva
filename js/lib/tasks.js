@@ -9,6 +9,7 @@ import { optimise, solve } from './optimise.js';
 import { monteCarlo, sensitivity } from './tolerance.js';
 import { ghostSystem, renderGhosts } from './ghosts.js';
 import { bokehKernels } from './bokeh.js';
+import { bokehScene } from './bokeh3d.js';
 import { renderLake } from './polar.js';
 import { tiltScene, tiltBlend, shiftRows, TILT } from './scenes.js';
 import { diskBlurRGBA } from './blur.js';
@@ -431,6 +432,8 @@ function defocusPSF(p) {
 }
 
 // Bokeh kernels traced through a lens prescription (see js/lib/bokeh.js).
+// The bokeh laboratory's 3-D scene (traced rays and footprints), built off the main thread.
+function bokehScene3d(p) { return { result: bokehScene(p), transfer: [] }; }
 function bokehTraced(p) {
   const r = bokehKernels({ ...p, basis: spectralBasis(p.lambdas) });
   return { result: r, transfer: r.kernels.map((k) => k.rgb.buffer) };
@@ -610,4 +613,4 @@ function seeingStep(p) {
 }
 function shiftTask(p) { const r = shiftRows(p.st, p.y0, p.y1); return { result: r, transfer: [r.buffer] }; }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };
+export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };

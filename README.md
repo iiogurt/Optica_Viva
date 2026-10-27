@@ -323,7 +323,7 @@ Sellmeier dispersion, the Abbe diagram and the partial-dispersion normal line, w
 **Bokeh** · `#/bokeh`<br>
 <img src="docs/screenshots/bokeh.webp" alt="Night scene with bokeh traced through a Double-Gauss lens, with green and magenta colour fringes" width="70%">
 
-**Traced from the real lens**: defocus kernels come from exact rays through the chosen prescription at 8 wavelengths, at their physical size. The lens's own spherical aberration gives soft-edged backgrounds and bright-rimmed foregrounds, and its secondary spectrum gives the classic **magenta foreground and green background** fringes. The clear apertures cut **cat's eyes** off axis. For small disks, an FFT panel shows the **Fresnel rings** of the defocused pupil (on-axis intensity sinc²(W₀₂₀/λ)). A phenomenological mode keeps sliders for over-correction (**soap-bubble** disks), mirror-lens obstruction, apodisation and onion-ring ripple.
+**Traced from the real lens**: defocus kernels come from exact rays through the chosen prescription at 8 wavelengths, at their physical size. The lens's own spherical aberration gives soft-edged backgrounds and bright-rimmed foregrounds, and its secondary spectrum gives the classic **magenta foreground and green background** fringes. The clear apertures cut **cat's eyes** off axis. For small disks, an FFT panel shows the **Fresnel rings** of the defocused pupil (on-axis intensity sinc²(W₀₂₀/λ)). A phenomenological mode keeps sliders for over-correction (**soap-bubble** disks), mirror-lens obstruction, apodisation and onion-ring ripple. A **3-D view** traces real rays round the iris from a background point on axis and one in the corner: they cross in front of the sensor and land as a disc shaped like the iris, or as a cat's eye where the barrel cuts the corner beam (footprints shown enlarged beside the sensor).
 
 </td>
 </tr>
@@ -853,6 +853,7 @@ Optica_Viva/
 │   │   ├── dof3d.js           3-D depth of field: the camera's frustum, plane of focus, sharp zone and cards at true scale
 │   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
 │   │   ├── earthobs3d.js      3-D Earth observation at true scale: orbit, swath, push-broom footprint and imaged strip
+│   │   ├── bokeh3d.js         3-D bokeh: rays round the iris through the traced lens, axial and corner footprints
 │   │   ├── starshade3d.js     3-D starshade geometry: petals, separation, IWA line of sight, the shadow on the pupil
 │   │   ├── transit3d.js       3-D transit geometry at true scale: star, tilted orbit, sight-line cylinder, chord, b
 │   │   ├── interf3d.js        3-D aperture synthesis: the turning Earth, stations, and the baselines' u-v tracks

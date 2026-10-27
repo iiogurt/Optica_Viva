@@ -7,7 +7,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **3-D bokeh** (`js/lib/bokeh3d.js`): the bokeh laboratory (traced model) shows real rays round the iris, from a background point on axis and one in the corner of the frame, through the chosen lens with the barrel's clear apertures; they cross in front of the sensor set for the focus distance and land as the traced footprints, the iris shape on axis and a cat's eye in the corner (with the share of light that gets through), drawn on the sensor and enlarged beside it. Built in the worker. `lensScene()` takes the pupil samples to trace as an option.
 - **3-D starshade** (`js/lib/starshade3d.js`): the starshade laboratory shows the telescope and the petalled starshade at their true separation (across the line of sight everything is enlarged by one round factor, shown in the view), the starlight passing beside the starshade and its geometric shadow, the line of sight to a planet at the inner working angle, and the computed shadow on the telescope's plane (log intensity) with the pupil in it. A test checks the petal widths against the apodisation profile.
+
+### Fixed
+- A comment in `js/lib/ghosts.js` said the iris has a blade vertex at the top; the formula puts the middle of a blade's edge there (the shape itself is unchanged).
 
 ## [1.22.0] - 2026-10-27
 
