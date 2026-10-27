@@ -44,6 +44,8 @@ export default function mount(root, meta) {
   const note = h('p.note', {}, 'Computing PSFs in the worker…');
   root.append(lab([h('div.grid-2', {}, mosaic.el, map.el), note, h('div.card', { style: { padding: '6px' } }, curve.el)], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '8px' } }, hubble)), h('div.card', {}, ro), calc.el]));
 
+  // translated here: inside update(), t is the two-mirror telescope
+  const COMPUTING = t('Computing PSFs in the worker…');
   const job = latest('fieldPSF');
   let R = null, S = null;
   function model(st) {
@@ -80,7 +82,7 @@ export default function mount(root, meta) {
     &\quad(H = ${texNum(st.field, 3)}'\text{, field edge})
     \end{aligned}`);
     map.redraw(); curve.redraw();
-    note.textContent = t('Computing PSFs in the worker…');
+    note.textContent = COMPUTING;
     job('fieldPSF', { tel: t, K1, K2, dz: st.dz * 1e-6, mis, field: st.field * ARCMIN, grid: 5, lam, eps: T.eps, spiders: 4, n: 128, Dpx: 48, crop: 64, curved: st.curved }).then((r) => {
       R = r;
       const alias = Math.max(...r.pts.map((p) => p.grad)) > 0.5;
