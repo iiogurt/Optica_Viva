@@ -216,7 +216,7 @@ Ten formats from phone to IMAX inside a real image circle. The equivalence table
 **Fisheye vs rectilinear** · `#/projection`<br>
 <img src="docs/screenshots/projection.webp" alt="Rectilinear projection of a 3-D hall with Tissot indicatrices">
 
-Per-pixel inverse ray casting into a 3-D hall through seven projections: gnomonic, stereographic, equidistant, equisolid, orthographic, Panini and equirectangular. **Exact Tissot indicatrices** show local distortion.
+Per-pixel inverse ray casting into a 3-D hall through seven projections: gnomonic, stereographic, equidistant, equisolid, orthographic, Panini and equirectangular. **Exact Tissot indicatrices** show local distortion. A **3-D view** puts the same circles on the sphere of directions and on the image plane tangent to it, so you can see each projection unroll the sphere: rectilinear is central projection through the centre, the fisheyes fold the whole sphere into a circle.
 
 </td>
 </tr>
@@ -852,6 +852,7 @@ Optica_Viva/
 │   │   ├── tilt3d.js          3-D Scheimpflug geometry at true scale, and the plane of focus over the toy town
 │   │   ├── dof3d.js           3-D depth of field: the camera's frustum, plane of focus, sharp zone and cards at true scale
 │   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
+│   │   ├── projection3d.js    3-D sphere of directions with Tissot circles, the image plane and the sensor's field
 │   │   ├── i18n.js            Interface translation: t(), N_(), language choice and loading
 │   │   ├── transit.js         Transit light curves with limb darkening, orbits, photometric noise
 │   │   ├── ledset.js          LED mission: flicker-free shutter angles, PWM banding, safe wall distance
@@ -948,6 +949,9 @@ The numerical core was checked against published or analytically known values. E
 | Real-ray flare ghosts, Double-Gauss at f/18, 0.57° (4 paths) | position within 3 %, size within 2 %, flux within 3 % | y–nu ghost matrices: (B − AD/C)θ, \|A/C\| r<sub>stop</sub>, R<sub>i</sub>R<sub>j</sub> π(r<sub>stop</sub>/C)² |
 | Brewster angle, water and N-BK7 | 53.12°, 56.60° | arctan n = 53.12°, 56.60° |
 | Three ideal polarisers at 0°, 45°, 90° (unpolarised input) | 1/8 | ½ · cos²45° · cos²45° = 0.125 |
+| Tissot area ratio, equisolid fisheye (5° circles up to 140° off axis) | 1 within 0.2 % | equal-area projection: hk = f² |
+| Tissot circle, stereographic, 40° latitude | a circle to 10⁻⁹ | conformal: circles map to circles |
+| Tissot area ratio, rectilinear at 40° | 2.255 | sec³θ = 2.225 (5° circle: +1.4 %) |
 | Rayleigh optical depth at 550 nm | 0.0973 | sea-level standard atmosphere ≈ 0.097 |
 | Polarised lake render, centre pixel | equals an explicit Mueller chain (rotate · reflect · rotate · polarise) to 10⁻⁶ | independent vector-frame calculation |
 | Vertical polariser on a Brewster-angle reflection | < 1 % transmitted | reflection fully s-polarised (R<sub>p</sub> = 0) |

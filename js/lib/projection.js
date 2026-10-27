@@ -42,6 +42,52 @@ export function forward(p, d, f) {
   return [r * Math.cos(a), r * Math.sin(a)];
 }
 
+// World → camera directions for a camera yawed (about y) and pitched (about x), in degrees: the
+// inverse of the rotation used by projectionRows.
+export function toCamera(yaw, pitch) {
+  const cy = Math.cos((yaw * Math.PI) / 180), sy = Math.sin((yaw * Math.PI) / 180);
+  const cp = Math.cos((pitch * Math.PI) / 180), sp = Math.sin((pitch * Math.PI) / 180);
+  return (d) => {
+    const x0 = d[0] * cy - d[2] * sy, z0 = d[0] * sy + d[2] * cy;
+    return [x0, d[1] * cp - z0 * sp, d[1] * sp + z0 * cp];
+  };
+}
+
+// Tissot indicatrices: circles of angular radius δ on the sphere of directions, centred every 20°
+// in latitude (±60°) and longitude (world frame), each traced by n boundary directions.
+// Returns [{ lat, lon, centre, ring (camera-frame unit vectors), img: [[x, y] mm, …] (the
+// exact images of centre and ring, or null if any point has none), ratio }], where ratio is the
+// image area relative to an equal-area projection's (> 1: enlarged); the reference is the
+// image of the same n-gon under r = 2f sin(θ/2), so the polygon's own area deficit cancels.
+export const TISSOT_DELTA = (5 * Math.PI) / 180;
+export function tissotCircles(proj, f, yaw, pitch, delta = TISSOT_DELTA, n = 24) {
+  const cam = toCamera(yaw, pitch), out = [];
+  const A0 = (n / 2) * Math.sin((2 * Math.PI) / n) * (2 * f * Math.sin(delta / 2)) ** 2;
+  for (let lat = -60; lat <= 60; lat += 20) for (let lon = -160; lon <= 180; lon += 20) {
+    const la = (lat * Math.PI) / 180, lo = (lon * Math.PI) / 180;
+    const c = [Math.cos(la) * Math.sin(lo), Math.sin(la), Math.cos(la) * Math.cos(lo)];
+    const e1 = [Math.cos(lo), 0, -Math.sin(lo)], e2 = [-Math.sin(la) * Math.sin(lo), Math.cos(la), -Math.sin(la) * Math.cos(lo)];
+    const ca = Math.cos(delta), sa = Math.sin(delta), ring = [];
+    for (let k = 0; k < n; k++) {
+      const a = (k / n) * 2 * Math.PI;
+      ring.push(cam([0, 1, 2].map((q) => c[q] * ca + sa * (Math.cos(a) * e1[q] + Math.sin(a) * e2[q]))));
+    }
+    const centre = cam(c);
+    let img = [centre, ...ring].map((d) => forward(proj, d, f));
+    if (img.some((p) => !p || !isFinite(p[0]) || !isFinite(p[1]))) img = null;
+    let ratio = NaN;
+    if (img) {
+      let A = 0;
+      for (let k = 1; k <= n; k++) { const p = img[k], q = img[k === n ? 1 : k + 1]; A += p[0] * q[1] - q[0] * p[1]; }
+      ratio = Math.abs(A) / 2 / A0;
+    }
+    out.push({ lat, lon, centre, ring, img, ratio });
+  }
+  return out;
+}
+// Fill colour (0–255) for an area ratio: red when enlarged, blue when shrunk.
+export const tissotColour = (ratio) => (ratio > 1 ? [255, Math.max(60, 200 - 60 * Math.log2(ratio)), 80] : [90, 150 + 50 * ratio, 255]);
+
 // ── Scene: a 12 × 12 m hall with windows, chequered floor and globes ───────────────────
 const BOX = { x: 6, yl: -1.6, yh: 3.4, z: 6 };
 const GLOBES = [[-1.6, -0.6, 3.2, 0.9], [1.9, -0.9, 2.4, 0.7], [0, 0.2, 5.0, 0.7], [-3.6, -0.8, 0.8, 0.75], [3.7, -0.7, -1.5, 0.85]];

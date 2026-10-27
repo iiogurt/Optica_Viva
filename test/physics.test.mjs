@@ -299,3 +299,26 @@ test('display primaries reproduce the IEC 61966-2-1 sRGB matrix; Rec. 2020 prima
     near(Math.hypot(x - lx, y - ly), 0, 3e-3, `Rec. 2020 primary at ${nm} nm`);
   }
 });
+
+test('Tissot indicatrices: equisolid keeps area, stereographic keeps circles, rectilinear area grows as sec³θ', async () => {
+  const { tissotCircles } = await import('../js/lib/projection.js');
+  const f = 10;
+  // equal area: every image has the area of its circle on the sphere, to the n-gon's accuracy (beyond
+  // ~140° off axis a 5° circle's image bends into a crescent that 24 points no longer describe)
+  const eq = tissotCircles('equisolid', f, 25, -15).filter((t) => t.img && t.centre[2] > Math.cos((140 * Math.PI) / 180));
+  assert.ok(eq.length > 80);
+  for (const t of eq) assert.ok(Math.abs(t.ratio - 1) < 0.002, `equisolid ratio ${t.ratio} at ${t.lat}, ${t.lon}`);
+  // conformal: the stereographic image of a circle is a circle (all points on the circumcircle of three)
+  for (const t of tissotCircles('stereographic', f, 0, 0).filter((t) => t.img && t.lat === 40)) {
+    const [a, b, c] = [t.img[1], t.img[9], t.img[17]];
+    const D = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]));
+    const sq = (p) => p[0] ** 2 + p[1] ** 2;
+    const ux = (sq(a) * (b[1] - c[1]) + sq(b) * (c[1] - a[1]) + sq(c) * (a[1] - b[1])) / D, uy = (sq(a) * (c[0] - b[0]) + sq(b) * (a[0] - c[0]) + sq(c) * (b[0] - a[0])) / D;
+    const R = Math.hypot(a[0] - ux, a[1] - uy);
+    for (const p of t.img.slice(1)) assert.ok(Math.abs(Math.hypot(p[0] - ux, p[1] - uy) - R) < 1e-9 * f, 'not a circle');
+  }
+  // rectilinear: h = f sec²θ, k = f sec θ, so area grows as sec³θ (a 5° circle averages that over its
+  // extent: 1.4 % more at 40°)
+  const r40 = tissotCircles('rectilinear', f, 0, 0).find((t) => t.lat === 0 && t.lon === 40);
+  near(r40.ratio, Math.cos((40 * Math.PI) / 180) ** -3, 0.02 * r40.ratio, 'rectilinear area ratio at 40°');
+});
