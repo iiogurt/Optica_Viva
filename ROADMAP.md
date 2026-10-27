@@ -75,7 +75,7 @@ flowchart LR
 | Laboratories | 59 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 228, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 314 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 315 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -521,7 +521,7 @@ Candidates, in order of how much the third dimension adds:
 - [x] **P2 · M** **Depth of field**: at true scale, the camera's view frustum (the photograph's sensor, height and shifted framing), the plane of focus, the sharp zone as a glass slab and the cards coloured by their blur.
 - [x] **P2 · M** **Projections**: the sphere of directions (radius f) with the Tissot circles, the image plane tangent to it at the axis, each circle's image where the projection puts it, and the sensor's field outlined on the sphere.
 - [x] **P2 · M** **Gravitational lensing**: the light path of every image (solved from the lens equation) from the source past the lens galaxy to the telescope, the planes at their comoving distances, critical curves and caustics on them, and the Einstein ring as a double cone; angles exaggerated × 40 000.
-- [ ] **P2 · M** **Interferometry**: the rotating Earth with the array's baselines sweeping the u-v plane.
+- [x] **P2 · M** **Interferometry**: the Earth turning under the source (an hour-angle slider), the stations that see it, and each baseline projected onto the u-v plane facing the source, tracing its track; local arrays enlarged. The 3-D projection reproduces the 2-D coverage point for point.
 - [ ] **P2 · M** **Orbits**: Earth observation (orbit, swath and push-broom footprint) and exoplanet transits (orbit, line of sight, impact parameter).
 - [x] **P2 · S** **Colour science**: the colour solid in CIE xyY (the optimal colours under the chosen light, adapted to D65), with the sRGB, Display P3 or Rec. 2020 gamut and the 14 test colours. *A perceptual (CIELAB) version and gamut volumes remain.*
 - [ ] **P3 · M** **Starshade and coronagraph**: the telescope–starshade geometry to scale (tens of thousands of kilometres) and the shadow on the pupil.

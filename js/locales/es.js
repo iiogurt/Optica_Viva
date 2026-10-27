@@ -1249,6 +1249,8 @@ export default {
   "Test colours the display cannot show": "Colores de prueba que la pantalla no puede mostrar",
   "3-D: every surface colour possible under this light, in CIE xyY, with a display gamut": "3-D: todos los colores de superficie posibles con esta luz, en CIE xyY, con una gama de pantalla",
   "3-D, true scale: what the camera sees, the plane of focus and the sharp zone": "3-D, a escala: lo que ve la cámara, el plano de enfoque y la zona nítida",
+  "3-D: the Earth turns under the source, and each baseline, as the source sees it, traces its track in the u-v plane": "3-D: la Tierra gira bajo la fuente y cada línea de base, tal como la ve la fuente, traza su pista en el plano u-v",
+  "Moment shown in 3-D (hour angle)": "Momento mostrado en 3-D (ángulo horario)",
   "3-D: the light paths from the source galaxy past the lens to the telescope, with the Einstein ring as a cone": "3-D: las trayectorias de la luz desde la galaxia fuente, junto a la lente, hasta el telescopio, con el anillo de Einstein como cono",
   "3-D: the sphere of directions with Tissot circles, and where the projection puts them on the image plane": "3-D: la esfera de direcciones con los círculos de Tissot y dónde los coloca la proyección en el plano imagen",
 };

@@ -42,6 +42,7 @@
     "js/lib/hdr.js",
     "js/lib/i18n.js",
     "js/lib/ifilter.js",
+    "js/lib/interf3d.js",
     "js/lib/interferometry.js",
     "js/lib/jupiter.js",
     "js/lib/ledset.js",

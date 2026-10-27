@@ -221,3 +221,27 @@ test('lensing 3-D: every light path ends on the source, bends at the lens by the
   const ring = sc.lines.find((l) => l.points.length === 73);
   near(Math.hypot(ring.points[0][0], ring.points[0][1]), Math.abs(toScene(P.b, 0, cl)[0]), 1e-9, 'Einstein ring radius');
 });
+
+test('interferometry 3-D: the turning Earth projected onto the u-v plane reproduces the coverage of every array', async () => {
+  const { ARRAYS, uvCoverage } = await import('../js/lib/interferometry.js');
+  const { uvAt, hourAngles, skyAxes, stations, interfScene } = await import('../js/lib/interf3d.js');
+  for (const [key, decDeg, hours] of [['eht', 12.39, 24], ['vla', 40, 8], ['vlti', -30, 6]]) {
+    const arr = ARRAYS[key], dec = (decDeg * Math.PI) / 180;
+    const got = uvCoverage(arr, dec, hours, 48).filter((_, i) => i % 2 === 0), mine = [];
+    for (const H of hourAngles(arr, hours, 48)) for (const p of uvAt(arr, dec, H)) if (p.visible) mine.push([p.u, p.v]);
+    assert.equal(mine.length, got.length, `${key}: number of u-v points`);
+    got.forEach(([u, v], i) => near(Math.hypot(u - mine[i][0], v - mine[i][1]), 0, 1e-9 * Math.hypot(u, v), `${key}: u-v point ${i}`));
+    // local arrays are drawn enlarged; the u-v points above are in wavelengths of the true array
+    if (!arr.geo) assert.ok(stations(arr).k > 100, `${key}: enlarged`);
+  }
+  // the u-v plane is perpendicular to the source, u points east and v towards the pole
+  for (const d of [-0.7, 0, 0.2, 1.1]) {
+    const { s, u, v } = skyAxes(d), dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    near(dot(s, u), 0, 1e-15, 's·u'); near(dot(s, v), 0, 1e-15, 's·v'); near(dot(u, v), 0, 1e-15, 'u·v');
+    assert.ok(v[2] > 0, 'v towards the north pole');
+  }
+  // the scene: the Earth has unit radius and the source arrow leaves the plane along s
+  const sc = interfScene({ array: 'eht', dec: 12, hours: 12, H: 1.5 });
+  const E = sc.meshes[0].mesh.positions;
+  for (let i = 0; i < E.length; i += 3) near(Math.hypot(E[i], E[i + 1], E[i + 2]), 1, 1e-6, 'Earth radius');
+});
