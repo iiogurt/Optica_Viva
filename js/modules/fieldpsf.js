@@ -4,6 +4,7 @@ import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { twoMirror, conics, seidelTwoMirror, fieldPoly, rmsPoly, astigNodes, sum, THREF } from '../lib/fieldpsf.js';
+import { t } from '../lib/i18n.js';
 
 const INF = lut('inferno'), VIR = lut('viridis');
 const TELS = {
@@ -34,7 +35,7 @@ export default function mount(root, meta) {
     dx: { type: 'range', label: 'Secondary decentre', min: -200, max: 200, step: 2, value: 0, unit: 'µm' },
     tx: { type: 'range', label: 'Secondary tilt', min: -60, max: 60, step: 1, value: 0, unit: '″' },
   }, () => update());
-  const hubble = h('button.btn', { type: 'button', onclick: () => { ctl.set.tel('hubble'); ctl.set.form('rc'); ctl.set.dK(-0.0116); ctl.set.dz(0); ctl.set.dx(0); ctl.set.tx(0); update(); } }, 'Hubble in 1990: K₁ = −1.0139');
+  const hubble = h('button.btn', { type: 'button', onclick: () => { ctl.set.tel('hubble'); ctl.set.form('rc'); ctl.set.dK(-0.0116); ctl.set.dz(0); ctl.set.dx(0); ctl.set.tx(0); update(); } }, t('Hubble in 1990: K₁ = −1.0139'));
   const ro = h('div');
   const calc = liveCalc();
   const mosaic = stage({ aspect: 1, label: 'PSFs across the field, with Strehl', draw: drawMosaic, minH: 260 });
@@ -79,7 +80,7 @@ export default function mount(root, meta) {
     &\quad(H = ${texNum(st.field, 3)}'\text{, field edge})
     \end{aligned}`);
     map.redraw(); curve.redraw();
-    note.textContent = 'Computing PSFs in the worker…';
+    note.textContent = t('Computing PSFs in the worker…');
     job('fieldPSF', { tel: t, K1, K2, dz: st.dz * 1e-6, mis, field: st.field * ARCMIN, grid: 5, lam, eps: T.eps, spiders: 4, n: 128, Dpx: 48, crop: 64, curved: st.curved }).then((r) => {
       R = r;
       const alias = Math.max(...r.pts.map((p) => p.grad)) > 0.5;

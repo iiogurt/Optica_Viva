@@ -4,6 +4,7 @@ import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { friedProbability } from '../lib/lucky.js';
+import { t } from '../lib/i18n.js';
 
 const INF = lut('inferno');
 
@@ -34,7 +35,7 @@ export default function mount(root, meta) {
   let R = null;
   function update() {
     const st = ctl.state;
-    note.textContent = 'Simulating frames in the worker…';
+    note.textContent = t('Simulating frames in the worker…');
     job('lucky', { Dr0: st.Dr0, frames: Math.round(st.frames), keep: st.keep, Np: 32, N: 64, step: 4, seed: 7 }).then((r) => {
       R = { st: { ...st }, ...r };
       note.textContent = `${Math.round(st.frames)} frames of a ${(32 / st.Dr0).toFixed(1)}-pixel r₀ through a 32-pixel pupil; ${r.nKeep} kept. Images are normalised to the diffraction-limited peak (Strehl).`;

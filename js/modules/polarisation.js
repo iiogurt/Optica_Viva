@@ -6,6 +6,7 @@ import { oetf, colormap, wavelengthRGB } from '../lib/color.js';
 import { polariser, retarder, mapply, ellipse, fresnelAmp, brewster, rayleighDoP, diskStress, principal, retardation, michelLevy, CRYSTALS, walkOff, maxWalkOff } from '../lib/polar.js';
 import { view3d } from '../lib/gl3d.js';
 import { beamScene, poincareScene } from '../lib/pol3d.js';
+import { t } from '../lib/i18n.js';
 
 const D2R = Math.PI / 180;
 
@@ -63,7 +64,7 @@ export default function mount(root, meta) {
       if (want) pump();
       else if (job.draft) request(false);
       note.textContent = `${img.W}×${img.H} px (${img.draft ? 'draft' : 'full'}), ${img.ms.toFixed(0)} ms in the worker. Reflected skylight at the image centre through the filter: ${(Math.log2(Math.max(img.stats.centreGlare, 1e-6))).toFixed(2)} EV, over the whole water surface ${(Math.log2(Math.max(img.stats.glareRatio, 1e-6))).toFixed(2)} EV (relative to a neutral filter of the same density).`;
-    }, (e) => { busy = false; note.textContent = 'Render failed: ' + e.message; });
+    }, (e) => { busy = false; note.textContent = t('Render failed: {msg}', { msg: e.message }); });
   }
 
   function update() {

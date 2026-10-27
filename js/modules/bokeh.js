@@ -5,6 +5,7 @@ import { LENSES, autoSemiDiameters, stopIndex, hasMirrors } from '../lib/raytrac
 import { linspace } from '../lib/color.js';
 import { latest } from '../lib/compute.js';
 import { view3d } from '../lib/gl3d.js';
+import { t } from '../lib/i18n.js';
 
 const K = 112; // kernel resolution (px)
 const PALETTE = [[255, 196, 120], [255, 150, 90], [140, 200, 255], [255, 230, 190], [190, 160, 255], [255, 255, 255]];
@@ -169,7 +170,7 @@ export default function mount(root, meta) {
       v3.setScene(sc, lens3d === st.lens);
       lens3d = st.lens;
     }, () => {});
-    note.textContent = 'Tracing rays through the lens for 18 kernels…';
+    note.textContent = t('Tracing rays through the lens for 18 kernels…');
     const t0 = performance.now();
     bokehJob('bokehTraced', { lens, sd, lambdas: LAMS, focus: st.focus, near: st.focus / 2, stop: st.stop, blades: st.blades < 3 ? 0 : st.blades, round: st.round, fields, K, grid: 36 }).then((r) => {
       if (!alive) return;
@@ -182,7 +183,7 @@ export default function mount(root, meta) {
       TK = { r, ks, pick, st: { ...st }, ms: performance.now() - t0 };
       updateTraced();
       scene.redraw(); close.redraw(); prof.redraw();
-    }, (e) => { note.textContent = 'Ray tracing failed: ' + e.message; });
+    }, (e) => { note.textContent = t('Ray tracing failed: {msg}', { msg: e.message }); });
   }
   function updateTraced() {
     const { r, pick, st, ms } = TK, lens = LENSES[st.lens];
@@ -217,7 +218,7 @@ export default function mount(root, meta) {
     v3.el.hidden = st.model !== 'traced';
     if (st.model === 'traced') { recomputeTraced(st); recomputeDiff(); return; }
     TK = null;
-    note.textContent = 'Phenomenological model: the pupil outline and a cubic transverse aberration set by the sliders.';
+    note.textContent = t('Phenomenological model: the pupil outline and a cubic transverse aberration set by the sliders.');
     const P = { blades: st.blades < 3 ? 0 : st.blades, round: st.round, stop: st.stop, vig: st.vig, sa: st.sa, ripple: st.ripple, obs: st.obs, apod: st.apod, rot: Math.PI / 2 };
     const cache = new Map();
     const get = (side, fx, fy) => {
@@ -321,7 +322,7 @@ export default function mount(root, meta) {
     if (st.model !== 'traced') return;
     const base = LENSES[st.lens], lens = { ...base, epd: base.epd * Math.pow(2, -st.stop / 2) };
     if (!sdCache.has(st.lens)) sdCache.set(st.lens, autoSemiDiameters(base));
-    dnote.textContent = 'Computing the defocused diffraction PSF…';
+    dnote.textContent = t('Computing the defocused diffraction PSF…');
     diffJob('defocusPSF', { lens, sd: sdCache.get(st.lens), w020: dctl.state.w020, lambdas: linspace(450, 650, 5), ref: 550 }).then((r) => {
       if (!alive || !r) return;
       const n = r.n, img = document.createElement('canvas');
@@ -337,7 +338,7 @@ export default function mount(root, meta) {
       const airy = 2.44 * 550e-6 * r.N, Dgeo = 2 * r.Rgeo * r.du, sinc = Math.sin(Math.PI * DF.w020) / (Math.PI * DF.w020);
       dnote.textContent = `Geometric disk Ø ${(Dgeo * 1000).toFixed(1)} µm = ${(Dgeo / airy).toFixed(1)} Airy diameters (f/${r.N.toFixed(1)}, sensor moved ${(r.dz * 1000).toFixed(0)} µm). Centre intensity I(0)/I₀ = ${r.centre.toFixed(3)}; pure defocus predicts sinc²(W₀₂₀/λ) = ${(sinc * sinc).toFixed(3)}.`;
       dview.redraw();
-    }, (e) => { dnote.textContent = 'Diffraction PSF failed: ' + e.message; });
+    }, (e) => { dnote.textContent = t('Diffraction PSF failed: {msg}', { msg: e.message }); });
   }, 60);
 
   function drawDiff(ctx, w, hh) {

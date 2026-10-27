@@ -2,6 +2,7 @@ import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/u
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
+import { t } from '../lib/i18n.js';
 
 const D2R = Math.PI / 180;
 const SHAKE = { steady: { name: 'Steady (braced, experienced)', sigma: 0.5, tremor: 0.3 }, normal: { name: 'Normal hand-held', sigma: 1, tremor: 0.6 }, shaky: { name: 'Unsteady (cold, tired, moving)', sigma: 2, tremor: 1.2 } };
@@ -30,7 +31,7 @@ export default function mount(root, meta) {
   const picture = stage({ aspect: 1, label: 'One exposure of a Siemens star at the chosen settings (resample with the button)', draw: drawPic, minH: 240 });
   const pathView = stage({ aspect: 1, label: 'Path of a point on the sensor during that exposure (grid: 45 MP pixels, 4.4 microns)', draw: drawPath, minH: 240 });
   const curve = stage({ aspect: 2.3, label: '', draw: drawCurve, cls: 'plain', minH: 210 });
-  const btn = h('button.btn', { type: 'button' }, 'Take another shot');
+  const btn = h('button.btn', { type: 'button' }, t('Take another shot'));
   root.append(lab([h('div.grid-2', {}, picture.el, pathView.el), h('div', {}, btn), h('div.card', { style: { padding: '6px' } }, curve.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   const job = latest('shake');
