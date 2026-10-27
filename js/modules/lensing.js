@@ -3,6 +3,8 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { angularDiameterDistance as DA, C_KMS as C } from '../lib/optics.js';
 import { FOV, SFOV } from '../lib/lensing.js';
 import { runOn, parallel, rowBands, poolSize } from '../lib/compute.js';
+import { view3d } from '../lib/gl3d.js';
+import { lensingScene, comoving } from '../lib/lensing3d.js';
 
 const ARC = Math.PI / 180 / 3600;
 
@@ -30,7 +32,8 @@ export default function mount(root, meta) {
   const calc = liveCalc();
   const img = stage({ aspect: 1, label: 'Image plane: what the telescope sees', draw: drawImage });
   const src = stage({ aspect: 1, label: 'Source plane: drag the galaxy · caustics', draw: drawSource });
-  root.append(lab([h('div.grid-2', {}, img.el, src.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D: the light paths from the source galaxy past the lens to the telescope, with the Einstein ring as a cone', aspect: 1.9, minH: 280, yaw: -1.05, pitch: 0.32 });
+  root.append(lab([h('div.grid-2', {}, img.el, src.el), v3.el], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   let srcPos = [0.12, 0.06];
   let dragging = false;
@@ -65,14 +68,15 @@ export default function mount(root, meta) {
     for (const q of parts) { rgba.set(q, off); off += q.length; }
     imgCanvas = toCanvas(rgba, N); srcCanvas = toCanvas(extra.img, N);
     if (extra.crit) { L.crit = extra.crit; L.caus = extra.caus; curvesFor = key; }
-    L.mu = extra.mu;
+    L.mu = extra.mu; L.images = extra.images;
+    show3d();
     img.redraw(); src.redraw();
     const dd = ro.querySelectorAll('dd'); if (dd.length) dd[dd.length - 1].textContent = isFinite(L.mu) ? L.mu.toFixed(1) + '×' : '—';
   }
 
   function update() {
     const st = ctl.state, P = params();
-    L = { P, crit: L ? L.crit : [], caus: L ? L.caus : [] };
+    L = { P, crit: L ? L.crit : [], caus: L ? L.caus : [], images: L ? L.images : [] };
     const Dl = DA(0, st.zl), Ds = DA(0, Math.max(st.zs, st.zl + 0.01)), Dls = DA(st.zl, Math.max(st.zs, st.zl + 0.01));
     const Mpc = 3.0857e22, G = 6.674e-11, c = 2.998e8, Msun = 1.989e30;
     const tE = st.b * ARC;
@@ -94,6 +98,14 @@ export default function mount(root, meta) {
     \mu &= \frac{1}{\det A},\quad A_{ij} = \delta_{ij} - \partial_j\alpha_i
     \end{aligned}`);
     render().catch(console.error);
+  }
+
+  // 3-D: the camera stays where the reader put it, unless the source distance changes more than 1.5×
+  let depth3d = 0;
+  function show3d() {
+    const st = ctl.state, D = comoving(Math.max(st.zs, st.zl + 0.01)), keep = depth3d > 0 && D / depth3d < 1.5 && depth3d / D < 1.5;
+    v3.setScene(lensingScene({ P: L.P, zl: st.zl, zs: st.zs, src: srcPos, R: st.R, images: L.images, crit: L.crit, caus: L.caus }), keep);
+    if (!keep) depth3d = D;
   }
 
   function drawImage(ctx, w, hh) {
@@ -144,6 +156,8 @@ export default function mount(root, meta) {
 </div><div>
 <h3>Magnification, critical curves and caustics</h3>
 <p>The Jacobian \(A_{ij} = \partial\beta_i/\partial\theta_j = \delta_{ij} - \partial_i\partial_j\psi\) is a lensing "aberration matrix". Its isotropic part is the convergence \(\kappa\) (focusing), and its trace-free part is the shear \(\gamma\) (astigmatism). The magnification is \(\mu = 1/\det A = 1/[(1-\kappa)^2 - \gamma^2]\). Where \(\det A = 0\) lie the <strong>critical curves</strong> (cyan), and their images in the source plane are the <strong>caustics</strong> (amber). Every time the source crosses a caustic, a pair of images is created or destroyed. Inside the diamond-shaped tangential caustic of an elliptical lens, the source has five images, one of them demagnified at the centre. This is the "Einstein cross" configuration.</p>
+<h3>The 3-D view</h3>
+<p>The view finds every image \(\boldsymbol\theta_i\) of the source centre by solving the lens equation (a grid search for near-solutions, then Newton's method with the Jacobian \(A\)) and draws each light path as two straight legs that meet in the lens plane. Along the line of sight the planes sit at their <em>comoving</em> distances \(\chi = (1+z)D_A\). In a flat universe space is Euclidean in comoving coordinates, so light travels in straight lines there and \(\chi_s = \chi_l + \chi_{ls}\), which angular-diameter distances do not satisfy (beyond \(z \approx 1.6\) a farther galaxy even has a smaller \(D_A\)). Since \(D_{ls}/D_s = \chi_{ls}/\chi_s\), the bend of each drawn path is exactly the deflection \(\hat\alpha\). Across the line of sight all angles are multiplied by 40 000, or the arcsecond bends would be invisible over gigaparsecs. The gold double cone is the Einstein ring: the directions \(\theta_E\) from the telescope, closing on the axis at the source plane.</p>
 <h3>Connection to ordinary optics</h3>
 <p>Gravitational lenses are extremely aberrated: a point mass has a single focal line instead of a focal point, and its "spherical aberration" is infinite. Caustics here are the same mathematical objects as the bright lines at the bottom of a swimming pool, or the caustic in the <a href="#/raytracer">ray tracer's</a> focus view. Catastrophe theory classifies them into folds and cusps.</p>
 <h3>In practice</h3>
@@ -156,5 +170,5 @@ export default function mount(root, meta) {
     'R. Narayan &amp; M. Bartelmann, "Lectures on gravitational lensing", arXiv:astro-ph/9606001 (1996).',
     'T. Treu, "Strong lensing by galaxies", ARA&amp;A 48, 87 (2010).',
   ]));
-  return () => [img, src].forEach((s) => s.destroy());
+  return () => [img, src, v3].forEach((s) => s.destroy());
 }

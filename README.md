@@ -507,7 +507,7 @@ Resolution and Nyquist sampling for eight real cameras, Planck thermal emission,
 **Gravitational lensing** · `#/lensing`<br>
 <img src="docs/screenshots/lensing.webp" alt="Einstein ring arcs from an SIE lens, with critical curves and caustics">
 
-Inverse ray-shooting through point-mass, SIS and **SIE + shear** lenses. Critical curves are found by marching squares and mapped to caustics. Flat ΛCDM distances give the Einstein radius, enclosed mass and velocity dispersion. Drag the source galaxy across the caustics.
+Inverse ray-shooting through point-mass, SIS and **SIE + shear** lenses. Critical curves are found by marching squares and mapped to caustics. Flat ΛCDM distances give the Einstein radius, enclosed mass and velocity dispersion. Drag the source galaxy across the caustics. A **3-D view** shows the light path of every image, solved from the lens equation, from the source past the lens galaxy to the telescope, with the planes at their comoving distances and the Einstein ring as a double cone.
 
 </td>
 <td valign="top">
@@ -852,6 +852,7 @@ Optica_Viva/
 │   │   ├── tilt3d.js          3-D Scheimpflug geometry at true scale, and the plane of focus over the toy town
 │   │   ├── dof3d.js           3-D depth of field: the camera's frustum, plane of focus, sharp zone and cards at true scale
 │   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
+│   │   ├── lensing3d.js       3-D lensing: comoving planes, light paths of every image, critical curves, caustics, ring cone
 │   │   ├── projection3d.js    3-D sphere of directions with Tissot circles, the image plane and the sensor's field
 │   │   ├── i18n.js            Interface translation: t(), N_(), language choice and loading
 │   │   ├── transit.js         Transit light curves with limb darkening, orbits, photometric noise
@@ -949,6 +950,8 @@ The numerical core was checked against published or analytically known values. E
 | Real-ray flare ghosts, Double-Gauss at f/18, 0.57° (4 paths) | position within 3 %, size within 2 %, flux within 3 % | y–nu ghost matrices: (B − AD/C)θ, \|A/C\| r<sub>stop</sub>, R<sub>i</sub>R<sub>j</sub> π(r<sub>stop</sub>/C)² |
 | Brewster angle, water and N-BK7 | 53.12°, 56.60° | arctan n = 53.12°, 56.60° |
 | Three ideal polarisers at 0°, 45°, 90° (unpolarised input) | 1/8 | ½ · cos²45° · cos²45° = 0.125 |
+| Lensed images, SIS and point mass (θE = 1.4″, β = 0.5″) | within 10⁻⁶″ | β ± θE; (β ± √(β² + 4θE²))/2 |
+| Comoving distances, flat ΛCDM | (1 + z<sub>s</sub>) D<sub>ls</sub> = χ<sub>s</sub> − χ<sub>l</sub> to 10⁻⁵ Gpc | flat space: comoving distances add |
 | Tissot area ratio, equisolid fisheye (5° circles up to 140° off axis) | 1 within 0.2 % | equal-area projection: hk = f² |
 | Tissot circle, stereographic, 40° latitude | a circle to 10⁻⁹ | conformal: circles map to circles |
 | Tissot area ratio, rectilinear at 40° | 2.255 | sec³θ = 2.225 (5° circle: +1.4 %) |

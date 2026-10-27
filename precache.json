@@ -47,6 +47,7 @@
     "js/lib/ledset.js",
     "js/lib/lens3d.js",
     "js/lib/lensing.js",
+    "js/lib/lensing3d.js",
     "js/lib/lensio.js",
     "js/lib/lighting.js",
     "js/lib/lucky.js",
