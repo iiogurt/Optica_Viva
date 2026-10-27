@@ -583,7 +583,7 @@ The **CCD equation for stacks**: a faint galaxy behind a sky set by the **Bortle
 **Starshade** · `#/starshade`<br>
 <img src="docs/screenshots/starshade.webp" alt="A petalled starshade, its log-intensity shadow at the telescope, shadow profiles at three wavelengths and suppression vs wavelength">
 
-**Fresnel diffraction behind an occulter** tens of thousands of kilometres in front of the telescope. A round screen has a **Poisson–Arago spot** as bright as the unobstructed star; **Cash's hypergaussian petals** cancel it to below 10⁻¹⁰. Shadow profiles, an aperture-averaged suppression spectrum, the Fresnel number and the inner working angle.
+**Fresnel diffraction behind an occulter** tens of thousands of kilometres in front of the telescope. A round screen has a **Poisson–Arago spot** as bright as the unobstructed star; **Cash's hypergaussian petals** cancel it to below 10⁻¹⁰. Shadow profiles, an aperture-averaged suppression spectrum, the Fresnel number and the inner working angle. A **3-D view** shows the telescope and the starshade at their true separation (across the line of sight enlarged by a stated factor), the starlight passing beside it, the line of sight to a planet at the inner working angle, and the computed shadow on the telescope's plane with the pupil in it.
 
 </td>
 </tr>
@@ -853,6 +853,7 @@ Optica_Viva/
 │   │   ├── dof3d.js           3-D depth of field: the camera's frustum, plane of focus, sharp zone and cards at true scale
 │   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
 │   │   ├── earthobs3d.js      3-D Earth observation at true scale: orbit, swath, push-broom footprint and imaged strip
+│   │   ├── starshade3d.js     3-D starshade geometry: petals, separation, IWA line of sight, the shadow on the pupil
 │   │   ├── transit3d.js       3-D transit geometry at true scale: star, tilted orbit, sight-line cylinder, chord, b
 │   │   ├── interf3d.js        3-D aperture synthesis: the turning Earth, stations, and the baselines' u-v tracks
 │   │   ├── lensing3d.js       3-D lensing: comoving planes, light paths of every image, critical curves, caustics, ring cone
