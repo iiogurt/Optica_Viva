@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **3-D starshade** (`js/lib/starshade3d.js`): the starshade laboratory shows the telescope and the petalled starshade at their true separation (across the line of sight everything is enlarged by one round factor, shown in the view), the starlight passing beside the starshade and its geometric shadow, the line of sight to a planet at the inner working angle, and the computed shadow on the telescope's plane (log intensity) with the pupil in it. A test checks the petal widths against the apodisation profile.
+
 ## [1.22.0] - 2026-10-27
 
 ### Added

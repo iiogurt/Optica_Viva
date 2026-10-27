@@ -4,6 +4,8 @@ import { latest } from '../lib/compute.js';
 import { plot, range } from '../lib/plot.js';
 import { lut, wavelengthRGB } from '../lib/color.js';
 import { OCCULTERS, fresnelNumber, iwa } from '../lib/starshade.js';
+import { view3d } from '../lib/gl3d.js';
+import { starshadeScene } from '../lib/starshade3d.js';
 
 const INF = lut('inferno');
 const MAS = 206264806.2;
@@ -35,15 +37,25 @@ export default function mount(root, meta) {
   const prof = stage({ aspect: 2.1, label: '', draw: drawProf, cls: 'plain', minH: 220 });
   const spec = stage({ aspect: 2.1, label: '', draw: drawSpec, cls: 'plain', minH: 220 });
   const note = h('p.note', {}, 'Computing the Fresnel integrals in the worker…');
-  root.append(lab([h('div.grid-2', {}, shape.el, map.el), note, h('div.card', { style: { padding: '6px' } }, prof.el), h('div.card', { style: { padding: '6px' } }, spec.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D: the telescope, the starshade tens of thousands of kilometres away, and its shadow on the telescope', aspect: 1.9, minH: 260, yaw: -0.7, pitch: 0.35 });
+  root.append(lab([h('div.grid-2', {}, shape.el, map.el), note, v3.el, h('div.card', { style: { padding: '6px' } }, prof.el), h('div.card', { style: { padding: '6px' } }, spec.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   const job = latest('starshade');
   let R = null;
   const lams = (st) => [...new Set([400e-9, st.lam * 1e-9, 1000e-9])].sort((x, y) => x - y);
   const specLams = range(300e-9, 1200e-9, 46);
+  // 3-D: drawn at once with the last computed shadow, then again when the new one arrives; the
+  // camera stays put unless the distance changes more than 1.5×
+  let z3d = 0;
+  function show3d(st, z, rhos, prof) {
+    const keep = z3d > 0 && z / z3d < 1.5 && z3d / z < 1.5;
+    v3.setScene(starshadeScene({ a: st.a, b: st.b, n: st.n, N: st.N, z, D: st.D, lamNm: st.lam, rhos, prof }), keep);
+    if (!keep) z3d = z;
+  }
   function update() {
     const st = ctl.state, Rt = st.a + st.b, z = st.z * 1e3, lam = st.lam * 1e-9, F = fresnelNumber(Rt, lam, z), th = iwa(Rt, z) * MAS;
     shape.redraw();
+    show3d(st, z, R ? R.rhos : [], R ? R.prof[R.p.lams.indexOf(R.st.lam * 1e-9)] : []);
     calc.set(String.raw`\begin{aligned}
     F &= \frac{(a+b)^2}{\lambda z}\\
     &= \frac{(${texNum(Rt, 3)}\ \text{m})^2}{${texNum(st.lam, 3)}\ \text{nm}\times ${texNum(st.z / 1000, 3)}\,\text{Mm}} = ${texNum(F, 3)}\\
@@ -66,6 +78,7 @@ export default function mount(root, meta) {
       calc.say(`At ${fmt(st.z / 1000, 3)} thousand km the starshade dims the starlight over the telescope to <strong>${fmt(sp, 2)}</strong> of its unblocked level, against ${fmt(r.diskSupp, 2)} for a plain disc of the same size. Planets can be seen from <strong>${th.toFixed(0)} mas</strong> from the star outwards.`);
       note.textContent = `Shadow of a hypergaussian starshade (a = ${st.a} m, b = ${st.b} m, n = ${st.n}) at ${st.z.toLocaleString('en')} km. The telescope aperture is the dashed circle. Scalar Fresnel diffraction, azimuthally averaged petals.`;
       [map, prof, spec].forEach((x) => x.redraw());
+      show3d(st, z, r.rhos, r.prof[k]);
     });
   }
   function band(s, thr) {
@@ -146,6 +159,8 @@ export default function mount(root, meta) {
 \[A(r) = \exp\!\left[-\left(\frac{r-a}{b}\right)^n\right]\quad(r > a),\qquad A = 1\ (r\le a)\]
 <p>gives suppression below \(10^{-10}\) over a broad band when \(a\), \(b\) and \(z\) are chosen so that \(F\lesssim 15\) at the longest wavelength. Numerically optimised profiles (Vanderbei, Cady and Kasdin) do better with smaller shades.</p>
 </div><div>
+<h3>The geometry in 3-D</h3>
+<p>The 3-D view keeps the distances along the line of sight to scale and enlarges everything across it by one round factor, typically \(5\times10^5\). A 66 m starshade 80 000 km away subtends 170 mas, about the size of a coin seen from 15 km. Because both directions across are enlarged alike, angles are enlarged by the same factor and the line of sight that grazes the petal tips is the inner working angle \((a+b)/z\). The telescope sits deep inside the geometric shadow, a cylinder of radius \(a+b\). The coloured disc around the pupil is the computed shadow: the apodised petals keep the light that diffracts round the edge out of the centre, so the pupil sees \(10^{-10}\) or less where a plain disc would put the bright Poisson spot.</p>
 <h3>The trade-offs</h3>
 <p>Diffraction gets worse at long wavelengths (smaller \(F\), fewer zones over the petal), so the band's red end sets the size. The inner working angle, the smallest star–planet separation that is not covered, is about \((a+b)/z\). Moving the shade further away shrinks the IWA but lowers \(F\), and a larger shade restores \(F\) but must be built and flown to millimetre precision. Typical designs are 30–70 m across at 30 000–100 000 km, with IWAs of 60–100 mas, independent of telescope size. That is the main appeal: the telescope itself needs no coronagraph and no wavefront control.</p>
 <h3>Numerical method and approximations</h3>
@@ -159,5 +174,5 @@ export default function mount(root, meta) {
     'M. Born &amp; E. Wolf, <em>Principles of Optics</em>, 7th ed., §8.8 (Fresnel diffraction, Lommel functions).',
   ]));
 
-  return () => [shape, map, prof, spec].forEach((x) => x.destroy());
+  return () => [shape, map, prof, spec, v3].forEach((x) => x.destroy());
 }

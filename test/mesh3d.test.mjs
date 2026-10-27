@@ -286,3 +286,30 @@ test('transit 3-D: the planet crosses the sight lines at impact parameter b, and
   const miss = orbit({ P: 3.5247, Mstar: 1.12, Rstar: 1.16, Rp: 15.2 * REARTH, b: 1.2 });
   assert.ok(!transitScene({ aR: miss.aR, inc: miss.inc, k: miss.k, b: 1.2 }).lines.some((l) => (l.width || 0) === 2.4), 'no chord when the planet misses');
 });
+
+test('starshade 3-D: the outline matches the apodisation, the planet line grazes the tips at the IWA, the shadow uses the computed profile', async () => {
+  const { OCCULTERS, shadowLab } = await import('../js/lib/starshade.js');
+  const { starshadeScene, outline, enlargement } = await import('../js/lib/starshade3d.js');
+  const o = { a: 12.5, b: 12.5, n: 6 }, N = 16;
+  // the petals cover the fraction A(r) of every circle: angular width 2π A(r)/N per petal
+  const pts = outline(o, N, 40);
+  for (const i of [5, 20, 35]) {
+    const [x1, y1] = pts[i], [x2, y2] = pts[80 - i + 1], r = Math.hypot(x1, y1);
+    const width = Math.abs(Math.atan2(y2, x2) - Math.atan2(y1, x1));
+    near(width * N / (2 * Math.PI), OCCULTERS.hyper.A(r, o), 1e-9, `petal width at r = ${r.toFixed(1)} m`);
+  }
+  // E is a round number giving the starshade about 12 % of its distance
+  const z = 8e7, E = enlargement(25, z);
+  assert.ok([1, 2, 5].includes(E / 10 ** Math.floor(Math.log10(E))) && (25 * E) / z > 0.05 && (25 * E) / z < 0.3);
+  // the planet line leaves the telescope at the IWA angle (enlarged by E) and passes the tips
+  const r = shadowLab({ kind: 'hyper', ...o, z, D: 4, lams: [550e-9], lamC: 550e-9, rhoMax: 35, nr: 40, specLams: [550e-9], steps: 800 });
+  const sc = starshadeScene({ ...o, N, z, D: 4, lamNm: 550, rhos: r.rhos, prof: r.prof[0] });
+  const pl = sc.lines.find((l) => l.color[0] === 0.42);
+  near(pl.points[1][0] / pl.points[1][2], (25 / z) * sc.E, 1e-12, 'IWA line slope');
+  // the shadow mesh has a ring per computed radius, coloured darkest where the intensity is lowest
+  const sh = sc.meshes.find((m) => m.mesh.colors && m.mesh.positions.length === r.rhos.length * 73 * 3);
+  assert.ok(sh, 'shadow mesh');
+  const lum = (i) => sh.mesh.colors[i * 73 * 3] + sh.mesh.colors[i * 73 * 3 + 1] + sh.mesh.colors[i * 73 * 3 + 2];
+  const iMin = r.prof[0].indexOf(Math.min(...r.prof[0])), iMax = r.prof[0].indexOf(Math.max(...r.prof[0]));
+  assert.ok(lum(iMin) < lum(iMax), 'dark where the shadow is deep');
+});
