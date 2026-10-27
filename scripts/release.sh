@@ -8,8 +8,8 @@
 #       and the README version, commit, push the branch, open the release PR.
 #
 #   scripts/release.sh publish X.Y.Z
-#       after the release PR is merged (CI green): verify main carries X.Y.Z,
-#       tag the merge commit, push the tag, create the GitHub release from CHANGELOG.
+#       after the release PR is merged (CI green): find its merge commit on main (later
+#       merges are left for the next release), tag it, push the tag, create the GitHub release from CHANGELOG.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 REPO=https://github.com/iiogurt/Optica_Viva
@@ -51,12 +51,18 @@ JS
   ;;
 publish)
   on_fresh_main
-  [ "$(node -p "require('./package.json').version")" = "$V" ] || { echo "main is not at $V yet: merge the release PR first" >&2; exit 1; }
+  # Tag the release PR's merge commit, not HEAD: PRs merged after it belong to the next release.
+  REL=$(git log --first-parent --format='%H %s' | awk -v s="chore(release): v$V" 'index($0, s) == 42 && (length($0) == 41 + length(s) || substr($0, 42 + length(s), 2) == " (") {print $1}')
+  [ -n "$REL" ] || { echo "no 'chore(release): v$V' commit on main: merge the release PR first" >&2; exit 1; }
+  [ "$(wc -l <<<"$REL")" = 1 ] || { echo "more than one 'chore(release): v$V' commit on main" >&2; exit 1; }
+  [ "$(git show "$REL:package.json" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")" = "$V" ] || { echo "the release commit does not carry version $V" >&2; exit 1; }
   git rev-parse -q --verify "refs/tags/v$V" >/dev/null && { echo "tag v$V exists" >&2; exit 1; }
-  git tag -a "v$V" -m "v$V"
+  LATER=$(git rev-list --count "$REL..HEAD")
+  [ "$LATER" = 0 ] || echo "note: tagging ${REL:0:7}; the $LATER later commit(s) on main stay unreleased"
+  git tag -a "v$V" -m "v$V" "$REL"
   git push -q origin "v$V"          # pushes the tag only; main is untouched
   NOTES=$(mktemp)
-  awk -v v="$V" '$0 ~ "^## \\[" v "\\]" {f=1; next} /^## \[/ {if (f) exit} f' CHANGELOG.md > "$NOTES"
+  git show "$REL:CHANGELOG.md" | awk -v v="$V" '$0 ~ "^## \\[" v "\\]" {f=1; next} /^## \[/ {if (f) exit} f' > "$NOTES"
   gh release create "v$V" --title "v$V" --notes-file "$NOTES" --verify-tag
   rm -f "$NOTES"
   git branch -q -D "release/v$V" 2>/dev/null || true

@@ -34,7 +34,7 @@ Use the most precise model that runs interactively, and state every approximatio
   - **CHANGELOG.md** in Keep a Changelog format: PRs add their entries under `## [Unreleased]` (the release script dates them);
   - **README.md** wherever it is affected (lab gallery, models, validation, structure);
   - **ROADMAP.md**: move shipped items to *Completed*; put new ideas in a milestone or the *Backlog*.
-- Releases are two-phase. (1) `scripts/release.sh prepare X.Y.Z "type(scope): summary"` on an up-to-date `main`: runs checks and tests, creates `release/vX.Y.Z`, turns `[Unreleased]` into `[X.Y.Z] - date` (with compare links), bumps the versions, and opens a release PR. (2) After that PR merges with green CI: `scripts/release.sh publish X.Y.Z` tags the merge commit, pushes **only the tag**, and creates the GitHub release.
+- Releases are two-phase. (1) `scripts/release.sh prepare X.Y.Z "type(scope): summary"` on an up-to-date `main`: runs checks and tests, creates `release/vX.Y.Z`, turns `[Unreleased]` into `[X.Y.Z] - date` (with compare links), bumps the versions, and opens a release PR. (2) After that PR merges with green CI: `scripts/release.sh publish X.Y.Z` tags the release PR's merge commit (PRs merged after it stay for the next release), pushes **only the tag**, and creates the GitHub release.
 - Regenerate README screenshots (`docs/screenshots/*.webp`) when visuals change.
 
 See also `CONTRIBUTING.md` (human-facing version of these rules) and the PR template checklist.
