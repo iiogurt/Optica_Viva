@@ -2,6 +2,8 @@ import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion } from
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { NS, DP, CROP } from '../lib/seeing.js';
 import { runOn, poolSize } from '../lib/compute.js';
+import { view3d } from '../lib/gl3d.js';
+import { seeingScene } from '../lib/seeing3d.js';
 
 
 export default function mount(root, meta) {
@@ -30,13 +32,25 @@ export default function mount(root, meta) {
   const sp = stage({ aspect: 1, label: 'Short exposure (5 ms)', draw: (c, w, hh) => drawPSF(c, w, hh, 'short') });
   const lp = stage({ aspect: 1, label: 'Long exposure', draw: (c, w, hh) => drawPSF(c, w, hh, 'long') });
   const dl = stage({ aspect: 1, label: 'Diffraction limit (space)', draw: (c, w, hh) => drawPSF(c, w, hh, 'ideal') });
-  root.append(lab([scrSt.el, h('div.grid-3', {}, sp.el, lp.el, dl.el)], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '12px' } }, resetBtn)), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D: the phase screen blowing past the telescope, and the wavefront left in the pupil after correction', aspect: 2.2, minH: 240, yaw: -0.45, pitch: 0.55 });
+  root.append(lab([scrSt.el, h('div.grid-3', {}, sp.el, lp.el, dl.el), v3.el], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '12px' } }, resetBtn)), h('div.card', {}, ro), calc.el]));
 
   // The simulation runs in a compute worker (js/lib/seeing.js): reset() starts a session there and
   // the animation streams display-ready frames back, one request at a time, so a slow machine shows
   // fewer frames instead of freezing. sid makes frames of an older session stale.
   const WK = poolSize() - 1; // the worker that holds the session
   let seed = 7, sid = 0, P = null, screenImg = null, idealImg = null, frame = null, busy = false, raf = 0;
+  // 3-D: the screen band arrives with each reset, the residual with each frame; while animating the
+  // view is rebuilt at most every 300 ms (the Pi would otherwise spend its time on vertex buffers)
+  let strip = null, last3d = 0, framed3d = false;
+  function show3d(f) {
+    if (!strip) return;
+    const now = performance.now();
+    if (f && ctl.state.run && now - last3d < 300) return;
+    last3d = now;
+    v3.setScene(seeingScene({ ...strip, shift: f ? f.shift : 0, wave: f ? f.wave : null, rms: f ? f.rms : NaN, D: P.D, v: P.v, ao: P.ao }), framed3d);
+    framed3d = true;
+  }
   const toCanvas = (rgba, w, hh) => { const c = imageCanvas(w, hh); c.data.set(rgba); c.put(); return c.c; };
 
   function reset(newSeed) {
@@ -47,6 +61,8 @@ export default function mount(root, meta) {
     runOn(WK, 'seeingReset', { p: P, seed, sid: my }).then((r) => {
       if (my !== sid) return;
       screenImg = toCanvas(r.screen, NS, NS); idealImg = toCanvas(r.ideal, CROP, CROP);
+      strip = { strip: r.strip, cols: r.cols, rows: r.rows };
+      show3d(null);
       frame = null;
       request(true);
     }).catch(console.error);
@@ -94,6 +110,7 @@ export default function mount(root, meta) {
       frame = { short: toCanvas(f.short, CROP, CROP), long: toCanvas(f.long, CROP, CROP), pupil: toCanvas(f.pupil, DP, DP), rms: f.rms, shift: f.shift };
       const dd = ro.querySelectorAll('dd'); if (dd.length) dd[dd.length - 1].textContent = f.strehl.toExponential(2) + ` (${f.accN} frames)`;
       sp.redraw(); lp.redraw(); dl.redraw(); scrSt.redraw();
+      show3d(f);
     }, (e) => { busy = false; console.error(e); });
   }
   const loop = () => { request(false); raf = requestAnimationFrame(loop); };
@@ -147,6 +164,7 @@ export default function mount(root, meta) {
 \[\Phi_\phi(\kappa) = 0.023\,r_0^{-5/3}\left(\kappa^2 + L_0^{-2}\right)^{-11/6}.\]
 <p>A screen is synthesised by filtering complex white Gaussian noise with \(\sqrt{\Phi_\phi}\,\Delta\kappa\) and inverse-FFTing. The FFT grid cannot represent scales larger than itself, so three levels of subharmonics (Lane et al. 1992) restore the missing low-order power, especially tip-tilt. Taylor's frozen-flow hypothesis translates the screen at the wind speed, giving a coherence time \(\tau_0 = 0.314\,r_0/v\).</p>
 </div><div>
+<p>The 3-D view draws the band of the screen that the pupil sweeps as a relief, its height the phase in waves at the observing wavelength. Above the pupil it draws the wavefront the telescope keeps after correction, piston removed, at the same scale. With no correction the residual has the screen's own hills, apart from the mean. Tip–tilt takes out the overall slope. Full AO leaves only what the deformable mirror's actuators are too coarse or too slow to follow.</p>
 <h3>Short and long exposures</h3>
 <p>Exposures shorter than \(\tau_0\) freeze the atmosphere. The PSF breaks into about \((D/r_0)^2\) <em>speckles</em>, each of diffraction-limited size \(\lambda/D\). Speckle interferometry (Labeyrie, 1970) exploits these. Long exposures average the speckles into the smooth seeing halo, whose long-exposure OTF is \(\exp[-3.44(\lambda\nu/r_0)^{5/3}]\).</p>
 <h3>Adaptive optics error budget</h3>
@@ -164,5 +182,5 @@ export default function mount(root, meta) {
     'J. W. Hardy, <i>Adaptive Optics for Astronomical Telescopes</i>, Oxford (1998).',
     'A. Labeyrie, "Attainment of diffraction limited resolution in large telescopes by Fourier analysing speckle patterns", A&amp;A 6, 85 (1970).',
   ]));
-  return () => { cancelAnimationFrame(raf); [scrSt, sp, lp, dl].forEach((s) => s.destroy()); };
+  return () => { cancelAnimationFrame(raf); [scrSt, sp, lp, dl, v3].forEach((s) => s.destroy()); };
 }

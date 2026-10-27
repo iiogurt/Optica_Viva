@@ -377,3 +377,27 @@ test('ray tracer 3-D: rays by wavelength, the T and S foci where fieldCurves put
   assert.ok(vig.length > 0, 'some rays vignetted');
   for (const l of vig) assert.ok(l.points.at(-1)[2] < par.zImage, 'stops before the image');
 });
+
+test('seeing 3-D: the screen band and the residual share one height scale; the pupil sits where the wind has carried the screen', async () => {
+  const { seeingSession, NS, DP } = await import('../js/lib/seeing.js');
+  const { seeingScene, colX } = await import('../js/lib/seeing3d.js');
+  const s = seeingSession(), p = { D: 4, r0: 12, lam: 1.65, v: 12, ao: 'off', nact: 16, lag: 2 };
+  const r = s.reset(p, 7);
+  assert.equal(r.strip.length, r.cols * r.rows);
+  assert.equal(r.cols, NS / 4);
+  const f = s.step(4);
+  // the residual handed to the 3-D view is the one whose RMS the page reports (mean removed)
+  let s2 = 0, c = 0; for (const w of f.wave) if (w !== 0) { s2 += w * w; c++; }
+  near(Math.sqrt(s2 / c), f.rms, 1e-3 * f.rms, 'residual RMS');
+  const sc = seeingScene({ strip: r.strip, cols: r.cols, rows: r.rows, shift: f.shift, wave: f.wave, rms: f.rms, D: p.D, v: p.v, ao: p.ao });
+  // the screen's highest point is k × its largest |phase|; the residual relief uses the same k
+  let smax = 0; for (const x of r.strip) smax = Math.max(smax, Math.abs(x));
+  const hy = sc.meshes[0].mesh.positions; let ymax = 0; for (let i = 1; i < hy.length; i += 3) ymax = Math.max(ymax, Math.abs(hy[i]));
+  near(ymax, smax * sc.k, 1e-6, 'screen height');
+  const ring = sc.lines.find((l) => l.width === 1.8);
+  const cx = ring.points.reduce((a, q) => a + q[0], 0) / ring.points.length;
+  near(cx, colX((f.shift % NS) + DP / 2), 0.02, 'pupil centre');
+  // full adaptive optics leaves a much flatter residual than no correction
+  s.reset({ ...p, ao: 'ao' }, 7); const g = s.step(4);
+  assert.ok(g.rms < 0.5 * f.rms, `AO residual ${g.rms} vs ${f.rms}`);
+});

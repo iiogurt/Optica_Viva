@@ -75,7 +75,7 @@ flowchart LR
 | Laboratories | 59 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 228, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 380 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 381 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -517,7 +517,7 @@ Candidates, in order of how much the third dimension adds:
 - [x] **P1 · M** **Ray tracer**: glass elements as solids, mirrors, the stop and the sensor, with real skew rays on axis and at the chosen field (#128). *Since then: rays coloured by wavelength (F·d·C or 7 λ, following the Wavelengths control), the tangential and sagittal foci of the field marked as short focal lines, and rays stopped by a clear aperture drawn dim red, ending where they are stopped.*
 - [x] **P1 · M** **Tilt–shift / Scheimpflug** (#131): at true scale in the camera, the sensor, lens and focus planes meeting in the Scheimpflug line, with the hinge line at J = f / sin α; and the plane of focus with its depth-of-field wedge over the toy town.
 - [x] **P1 · M** **Polarisation** (#130): the electric field along the beam through each polariser and wave plate (flat waves, helices, ellipses, with the unpolarised share as a ring), and the Poincaré sphere with the state after each element.
-- [x] **P1 · S** **Wavefronts and PSFs as surfaces** (#129): the Zernike wavefront over a round pupil next to its PSF's log relief, and the PSF laboratory's star image as a relief in its own colours (JWST's six spikes in near-infrared colour). *The seeing phase screen remains.*
+- [x] **P1 · S** **Wavefronts and PSFs as surfaces** (#129): the Zernike wavefront over a round pupil next to its PSF's log relief, and the PSF laboratory's star image as a relief in its own colours (JWST's six spikes in near-infrared colour). *The seeing laboratory got its phase screen too: the band the pupil sweeps as a relief in waves, the pupil, and the residual wavefront above it at the same scale.*
 - [x] **P2 · M** **Depth of field**: at true scale, the camera's view frustum (the photograph's sensor, height and shifted framing), the plane of focus, the sharp zone as a glass slab and the cards coloured by their blur.
 - [x] **P2 · M** **Projections**: the sphere of directions (radius f) with the Tissot circles, the image plane tangent to it at the axis, each circle's image where the projection puts it, and the sensor's field outlined on the sphere.
 - [x] **P2 · M** **Gravitational lensing**: the light path of every image (solved from the lens equation) from the source past the lens galaxy to the telescope, the planes at their comoving distances, critical curves and caustics on them, and the Einstein ring as a double cone; angles exaggerated × 40 000.
