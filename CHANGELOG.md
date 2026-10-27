@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.23.0] - 2026-10-27
+
 ### Added
 - **3-D Lyot coronagraph** (`js/lib/coronagraph3d.js`): the space-telescope laboratory lays the coronagraph out along the beam as a 4f relay, with the field the Fourier model computes on each plane: the entrance pupil, the star's image (log relief) under the occulting mask, the Lyot plane (|E|, log) with the bright ring the mask's diffracted light makes at the pupil edge and the Lyot stop, and the final coronagraphic image. Schematic rays: the starlight stops at the mask, an off-axis planet's light reaches its image. This completes the v1.20 list of 3-D views.
 - **3-D seeing** (`js/lib/seeing3d.js`): the seeing laboratory shows the band of the frozen-flow phase screen that the wind carries across the telescope as a relief in waves, the telescope's pupil moving over it, and above the pupil the wavefront left after correction at the same height scale, so tip–tilt and adaptive optics visibly flatten it. The worker sends the band once per reset and the residual with each frame; while animating, the view is rebuilt at most every 300 ms.
@@ -744,7 +746,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.22.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.23.0...HEAD
+[1.23.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.22.0...v1.23.0
 [1.22.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.19.0...v1.20.0
