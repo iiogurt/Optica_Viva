@@ -356,3 +356,24 @@ test('flare 3-D: a ghost path hits the surfaces in order, turns back at j and fo
   const sc = flareScene({ lens, sd, coat: 'mgf2', blades: 7, theta });
   assert.equal(sc.ranked.length, 3);
 });
+
+test('ray tracer 3-D: rays by wavelength, the T and S foci where fieldCurves puts them, vignetted rays marked', async () => {
+  const { astigFoci, fieldCurves, stopIndex: si } = await import('../js/lib/raytrace.js');
+  const L = LENSES['double-gauss'], par = paraxial(L), sd = autoSemiDiameters(L);
+  const lambdas = [486.13, 587.56, 656.27];
+  const sc = lensScene(L, { sd, par, zImg: par.zImage, fields: [0, L.field], lambdas, foci: true });
+  // three colours of rays, one per wavelength
+  const cols = new Set(sc.lines.filter((l) => l.width === 1.1).map((l) => l.color.slice(0, 3).map((v) => v.toFixed(3)).join()));
+  assert.ok(cols.size >= 3, `${cols.size} ray colours`);
+  // the focus markers sit at astigFoci's z, which is fieldCurves' at full field
+  const f = astigFoci(L, 587.56, L.field, par), fc = fieldCurves(L).at(-1);
+  near(f.zt - par.zImage, fc.zt, 1e-9, 'T focus'); near(f.zs - par.zImage, fc.zs, 1e-9, 'S focus');
+  const marks = sc.lines.filter((l) => l.width === 2);
+  assert.equal(marks.length, 2);
+  near(marks[0].points[0][2], f.zt, 1e-9, 'T marker'); near(marks[1].points[0][2], f.zs, 1e-9, 'S marker');
+  // shrinking the clear apertures stops some rays: they are drawn dim red and end inside the lens
+  const k = si(L), tight = lensScene(L, { sd: sd.map((v, i) => (i === k ? v : v * 0.6)), par, zImg: par.zImage, fields: [L.field] });
+  const vig = tight.lines.filter((l) => l.vignetted);
+  assert.ok(vig.length > 0, 'some rays vignetted');
+  for (const l of vig) assert.ok(l.points.at(-1)[2] < par.zImage, 'stops before the image');
+});

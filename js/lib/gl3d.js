@@ -129,13 +129,13 @@ export function view3d({ label = '', aspect = 2, minH = 260, maxH = 620, yaw = -
   const bgBuf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, bgBuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
   const cam = { yaw, pitch, dist: 1, target: [0, 0, 0], size: 1 }, home = { yaw, pitch };
-  let objs = [], lineVAO = null, lineCount = 0, lineBufs = [], labels = [], dirty = true, raf = 0, W = 1, H = 1, M = null;
+  let objs = [], lineVAO = null, lineCount = 0, plainCount = 0, lineBufs = [], labels = [], dirty = true, raf = 0, W = 1, H = 1, M = null;
 
   function release() {
     for (const o of objs) { gl.deleteBuffer(o.pb); gl.deleteBuffer(o.nb); if (o.cb) gl.deleteBuffer(o.cb); gl.deleteBuffer(o.ib); gl.deleteVertexArray(o.vao); }
     for (const b of lineBufs) gl.deleteBuffer(b);
     if (lineVAO) gl.deleteVertexArray(lineVAO);
-    objs = []; lineBufs = []; lineVAO = null; lineCount = 0;
+    objs = []; lineBufs = []; lineVAO = null; lineCount = 0; plainCount = 0;
   }
   function setScene(scene, keepCamera = false) {
     release();
@@ -154,8 +154,11 @@ export function view3d({ label = '', aspect = 2, minH = 260, maxH = 620, yaw = -
       objs.push({ vao, pb, nb, cb, ib, count: m.mesh.indices.length, color: m.color || [0.8, 0.8, 0.8], opacity: m.opacity ?? 1, glass: !!m.glass, centre: c, loc });
     }
     // all polylines in one buffer: per segment 4 vertices (a, b, side/end, colour), 6 indices
-    const segs = [];
-    for (const l of scene.lines || []) for (let i = 0; i + 1 < l.points.length; i++) segs.push([l.points[i], l.points[i + 1], l.color || [1, 1, 1, 1], l.width || 1.5]);
+    // plain lines (glow: false, blended over what is behind) first, then glowing ones (added)
+    const plain = [], glowing = [];
+    for (const l of scene.lines || []) for (let i = 0; i + 1 < l.points.length; i++) (l.glow === false ? plain : glowing).push([l.points[i], l.points[i + 1], l.color || [1, 1, 1, 1], l.width || 1.5]);
+    const segs = plain.concat(glowing);
+    plainCount = plain.length * 6;
     if (segs.length) {
       const A = new Float32Array(segs.length * 4 * 3), B = new Float32Array(segs.length * 4 * 3), S = new Float32Array(segs.length * 4 * 2), C = new Float32Array(segs.length * 4 * 4), I = new Uint32Array(segs.length * 6);
       segs.forEach(([a, b, c, wd], s) => {
@@ -216,8 +219,10 @@ export function view3d({ label = '', aspect = 2, minH = 260, maxH = 620, yaw = -
     if (lineCount) {
       gl.useProgram(line.p);
       gl.uniformMatrix4fv(line.u.mvp, false, M.mvp); gl.uniform2f(line.u.px, W / 2, H / 2); gl.uniform1f(line.u.width, Math.min(2, devicePixelRatio || 1));
+      gl.bindVertexArray(lineVAO);
+      if (plainCount) { gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.drawElements(gl.TRIANGLES, plainCount, gl.UNSIGNED_INT, 0); }
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-      gl.bindVertexArray(lineVAO); gl.drawElements(gl.TRIANGLES, lineCount, gl.UNSIGNED_INT, 0);
+      if (lineCount > plainCount) gl.drawElements(gl.TRIANGLES, lineCount - plainCount, gl.UNSIGNED_INT, plainCount * 4);
     }
     gl.bindVertexArray(null); gl.depthMask(true); gl.disable(gl.BLEND);
     drawLabels();

@@ -493,7 +493,9 @@ export default function mount(root, meta) {
   const update3d = debounce(() => {
     const m = model; if (!m || !v3.ok) return;
     const fields = m.theta > 0 ? [0, m.theta] : [0];
-    v3.setScene(lensScene(m.lens, { sd: m.sd, par: m.pd, zImg: m.zImg, fields }), scene3dLens === S.lens);
+    // rays coloured by wavelength when more than one is traced, and the off-axis field's T and S foci
+    const lambdas = S.spectrum === 'mono' ? null : SPECTRA[S.spectrum];
+    v3.setScene(lensScene(m.lens, { sd: m.sd, par: m.pd, zImg: m.zImg, fields, lambdas, foci: true }), scene3dLens === S.lens);
     scene3dLens = S.lens;
   }, 150);
 
