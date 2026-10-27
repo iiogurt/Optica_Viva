@@ -613,7 +613,7 @@ Interference filters pass bluer light at an angle: why a 3 nm hydrogen-alpha fil
 **Exoplanet transits** · `#/transits`<br>
 <img src="docs/screenshots/transits.webp" alt="Transit of HD 209458 b: a limb-darkened star with the planet's path and the light curve with simulated TESS measurements">
 
-The dip in starlight as a planet crosses its star: depth (R_p/R★)², limb darkening, duration from Kepler's law, transit probability, and the signal-to-noise ratio a backyard telescope, TESS, Kepler or JWST would reach.
+The dip in starlight as a planet crosses its star: depth (R_p/R★)², limb darkening, duration from Kepler's law, transit probability, and the signal-to-noise ratio a backyard telescope, TESS, Kepler or JWST would reach. A **3-D view** at true scale shows the star, the tilted orbit, the cylinder of sight lines through the star towards the telescope, the transit chord and the impact parameter.
 
 </td>
 </tr>
@@ -853,6 +853,7 @@ Optica_Viva/
 │   │   ├── dof3d.js           3-D depth of field: the camera's frustum, plane of focus, sharp zone and cards at true scale
 │   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
 │   │   ├── earthobs3d.js      3-D Earth observation at true scale: orbit, swath, push-broom footprint and imaged strip
+│   │   ├── transit3d.js       3-D transit geometry at true scale: star, tilted orbit, sight-line cylinder, chord, b
 │   │   ├── interf3d.js        3-D aperture synthesis: the turning Earth, stations, and the baselines' u-v tracks
 │   │   ├── lensing3d.js       3-D lensing: comoving planes, light paths of every image, critical curves, caustics, ring cone
 │   │   ├── projection3d.js    3-D sphere of directions with Tissot circles, the image plane and the sensor's field
