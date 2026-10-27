@@ -8,6 +8,7 @@ import { makeRng } from '../lib/random.js';
 import { esfr, edgeFit, mtfAt, syntheticEdge } from '../lib/esfr.js';
 import { CAMERAS, pitchOf } from '../lib/equipment.js';
 import { linearPlanes, vignetting, fitDistortion, undistort, distortPoint } from '../lib/gear.js';
+import { t } from '../lib/i18n.js';
 
 const TESTS = { sharp: 'Sharpness (slanted edge)', vig: 'Vignetting (flat field)', dist: 'Distortion (straight line)' };
 
@@ -21,9 +22,9 @@ export default function mount(root, meta) {
   ]));
 
   const fileIn = h('input', { type: 'file', accept: 'image/*', style: { display: 'none' } });
-  const loadBtn = h('button.btn', { type: 'button', onClick: () => fileIn.click() }, 'Load your photo…');
-  const demoBtn = h('button.btn', { type: 'button', onClick: () => loadDemo() }, 'Use the demo image');
-  const clearBtn = h('button.btn', { type: 'button', onClick: () => { pts = []; analyse(); } }, 'Clear points');
+  const loadBtn = h('button.btn', { type: 'button', onClick: () => fileIn.click() }, t('Load your photo…'));
+  const demoBtn = h('button.btn', { type: 'button', onClick: () => loadDemo() }, t('Use the demo image'));
+  const clearBtn = h('button.btn', { type: 'button', onClick: () => { pts = []; analyse(); } }, t('Clear points'));
   const ctl = controls({
     test: { type: 'seg', label: 'Test', value: 'sharp', options: Object.entries(TESTS).map(([k, t]) => [k, t.split(' (')[0]]) },
     body: { type: 'select', label: 'Your camera', value: 'custom', options: [['custom', 'Other (set the pixel size)'], ...Object.entries(CAMERAS).map(([k, c]) => [k, c.name])] },
@@ -56,7 +57,7 @@ export default function mount(root, meta) {
       const scale = Math.min(1, 8000 / Math.max(bmp.width, bmp.height));
       setImage((c) => c.drawImage(bmp, 0, 0, bmp.width * scale, bmp.height * scale), Math.round(bmp.width * scale), Math.round(bmp.height * scale), true);
       status.textContent = `${f.name}: ${W} × ${H} pixels, analysed in your browser only.${scale < 1 ? ' (Scaled down to 8000 pixels.)' : ''}`;
-    } catch (e) { status.textContent = 'That file could not be read as an image.'; }
+    } catch (e) { status.textContent = t('That file could not be read as an image.'); }
   });
 
   // demo images with known answers: σ = 1 px blur, corners 1.5 stops down, barrel k = −0.06
@@ -70,7 +71,7 @@ export default function mount(root, meta) {
       octx.putImageData(img, 0, 0);
       setImage(() => octx.putImageData(img, 0, 0), w, hh, false);
       roi = { x: w / 2 - 40, y: hh / 2 - 80, w: 80, h: 160 }; analyse();
-      status.textContent = 'Demo: an edge tilted by 5°, blurred by σ = 1 pixel, with half a pixel of lateral colour.';
+      status.textContent = t('Demo: an edge tilted by 5°, blurred by σ = 1 pixel, with half a pixel of lateral colour.');
     } else if (test === 'vig') {
       for (let y = 0; y < hh; y++) for (let x = 0; x < w; x++) {
         const r = Math.hypot(x - w / 2, y - hh / 2) / Math.hypot(w / 2, hh / 2), th = Math.atan(r * Math.tan((42 * Math.PI) / 180));
@@ -78,7 +79,7 @@ export default function mount(root, meta) {
         put(y * w + x, v, v, v);
       }
       setImage(() => octx.putImageData(img, 0, 0), w, hh, false);
-      status.textContent = 'Demo: a flat field through a 24 mm lens on full frame (cos⁴ to 42° at the corner) with some mechanical vignetting.';
+      status.textContent = t('Demo: a flat field through a 24 mm lens on full frame (cos⁴ to 42° at the corner) with some mechanical vignetting.');
     } else {
       for (let k = 0; k < w * hh; k++) put(k, 0.85, 0.85, 0.85);
       setImage(() => {}, w, hh, false);
@@ -87,7 +88,7 @@ export default function mount(root, meta) {
       for (const yy of [40, 160, 300, 440, 560]) { octx.beginPath(); for (let x = 20; x <= w - 20; x += 10) { const [a, b] = distortPoint(x, yy, -0.06, w, hh); x === 20 ? octx.moveTo(a, b) : octx.lineTo(a, b); } octx.stroke(); }
       for (const xx of [40, 250, 450, 650, 860]) { octx.beginPath(); for (let y = 20; y <= hh - 20; y += 10) { const [a, b] = distortPoint(xx, y, -0.06, w, hh); y === 20 ? octx.moveTo(a, b) : octx.lineTo(a, b); } octx.stroke(); }
       analyse();
-      status.textContent = 'Demo: a grid photographed through a lens with barrel distortion (k = −0.06). Click points along one curved line near the edge.';
+      status.textContent = t('Demo: a grid photographed through a lens with barrel distortion (k = −0.06). Click points along one curved line near the edge.');
     }
   }
 

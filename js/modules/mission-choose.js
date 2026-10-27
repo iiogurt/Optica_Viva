@@ -4,6 +4,7 @@ import { header, lab, idea, rule, theory, references, liveCalc, missionStep } fr
 import { MODULES } from '../app.js';
 import { cameraOptions, resolveCamera, TELESCOPES } from '../lib/equipment.js';
 import { camera, telescope, stops } from '../lib/choose.js';
+import { t } from '../lib/i18n.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const FORMATS = ['mf', 'ff', 'apsc', 'mft', 'one', 'phone'];
@@ -57,7 +58,7 @@ export default function mount(root, meta) {
     el.querySelector('h3').textContent = title;
     let a = el.querySelector('.mstep-lab');
     if (!a) { a = h('a.mstep-lab'); el.append(a); }
-    a.href = '#/' + lab; a.textContent = 'Explore: ' + titleOf(lab) + ' →';
+    a.href = '#/' + lab; a.textContent = t('Explore: {lab} →', { lab: titleOf(lab) });
   };
   const win = (x, y, more = true) => (Math.abs(x - y) / Math.max(x, y) < 0.03 ? 'equal' : (x > y) === more ? '<strong style="color:' + A + '">A</strong>' : '<strong style="color:' + B + '">B</strong>');
 

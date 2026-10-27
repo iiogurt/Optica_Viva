@@ -11,6 +11,7 @@ import { mtfDiffraction } from '../lib/pupil.js';
 import { lut } from '../lib/color.js';
 import { view3d } from '../lib/gl3d.js';
 import { lensScene } from '../lib/lens3d.js';
+import { t } from '../lib/i18n.js';
 
 
 const SPECTRA = {
@@ -43,7 +44,7 @@ export default function mount(root, meta) {
     both: { type: 'toggle', label: 'Also draw on-axis bundle', value: true },
   }, () => update());
   Object.assign(S, ctl.state);
-  const bestBtn = h('button.btn', { type: 'button', onClick: () => autoFocus() }, 'Find best focus (min RMS spot)');
+  const bestBtn = h('button.btn', { type: 'button', onClick: () => autoFocus() }, t('Find best focus (min RMS spot)'));
   const ro = h('div');
   const calc = liveCalc('First-order calculation');
 
@@ -591,13 +592,13 @@ export default function mount(root, meta) {
       h('td', { style: { whiteSpace: 'nowrap' } }, typeof sf.glass === 'string'
         ? (() => { const opts = GLASS_OPTIONS.includes(sf.glass) ? GLASS_OPTIONS : [...GLASS_OPTIONS, sf.glass]; const sel = h('select.rx-glass', { 'aria-label': `Surface ${i + 1} glass` }, ...opts.map((g) => h('option', { value: g, selected: g === sf.glass }, g))); sel.addEventListener('change', () => editSurface(i, 'glass', sel.value)); return sel; })()
         : h('span', { title: `model glass n_d = ${sf.glass.nd}, V_d = ${sf.glass.vd}` }, sf.glass.name + ' (model)'),
-        sf.glass === 'mirror' ? null : h('button.btn.rx-map', { type: 'button', title: 'Choose from the glass map (SCHOTT, OHARA, CDGM)', 'aria-label': `Surface ${i + 1}: choose glass from the glass map`, onclick: () => openGlassMap({ current: typeof sf.glass === 'string' ? sf.glass : null, title: `Glass after surface ${i + 1}`, onPick: (g) => editSurface(i, 'glass', g) }) }, 'map')),
+        sf.glass === 'mirror' ? null : h('button.btn.rx-map', { type: 'button', title: t('Choose from the glass map (SCHOTT, OHARA, CDGM)'), 'aria-label': t('Surface {n}: choose glass from the glass map', { n: i + 1 }), onclick: () => openGlassMap({ current: typeof sf.glass === 'string' ? sf.glass : null, title: `Glass after surface ${i + 1}`, onPick: (g) => editSurface(i, 'glass', g) }) }, t('map'))),
       h('td', {}, numIn(sf.sd || '', (v) => editSurface(i, 'sd', v), { 'aria-label': `Surface ${i + 1} clear semi-diameter`, placeholder: 'auto' })),
       h('td', {}, numIn(sf.k || 0, (v) => editSurface(i, 'k', v), { 'aria-label': `Surface ${i + 1} conic` })),
       h('td', {}, numIn(sf.a ? sf.a[0] : 0, (v) => editSurface(i, 'a4', v), { 'aria-label': `Surface ${i + 1} a4` })),
       h('td', {}, numIn(sf.a ? sf.a[1] : 0, (v) => editSurface(i, 'a6', v), { 'aria-label': `Surface ${i + 1} a6` })),
       h('td', {}, (() => { const r = h('input', { type: 'radio', name: 'rx-stop', checked: !!sf.stop, 'aria-label': `Surface ${i + 1} is the stop` }); r.addEventListener('change', () => editSurface(i, 'stop')); return r; })()),
-      h('td', {}, h('button.btn.rx-del', { type: 'button', title: 'Remove surface', 'aria-label': `Remove surface ${i + 1}`, disabled: L.surfaces.length <= 2, onClick: () => { const N = clone(L); const wasStop = N.surfaces[i].stop; N.surfaces.splice(i, 1); if (wasStop) N.surfaces[0].stop = true; applyCustom(N); } }, '✕')),
+      h('td', {}, h('button.btn.rx-del', { type: 'button', title: t('Remove surface'), 'aria-label': t('Remove surface {n}', { n: i + 1 }), disabled: L.surfaces.length <= 2, onClick: () => { const N = clone(L); const wasStop = N.surfaces[i].stop; N.surfaces.splice(i, 1); if (wasStop) N.surfaces[0].stop = true; applyCustom(N); } }, '✕')),
     ));
     const pupil = h('div.rx-meta', {},
       h('label', {}, 'Entrance pupil Ø (mm) ', numIn(L.epd, (v) => { const N = clone(L); N.epd = parseFloat(v); applyCustom(N); }, { 'aria-label': 'Entrance pupil diameter' })),
@@ -622,8 +623,8 @@ export default function mount(root, meta) {
   const optJob = latest('optimise');
   function runOptimiser(btn) {
     const start = clone(LENSES[ctl.state.lens]);
-    btn.disabled = true; const label = btn.textContent; btn.textContent = 'Optimising…';
-    msg.textContent = 'Optimising curvatures and image distance, holding the focal length (this can take a few seconds)…';
+    btn.disabled = true; const label = btn.textContent; btn.textContent = t('Optimising…');
+    msg.textContent = t('Optimising curvatures and image distance, holding the focal length (this can take a few seconds)…');
     optJob('optimiseLens', { lens: start, opts: { iterations: 30 } }).then((r) => {
       const h = r.history;
       applyCustom(r.lens, `Optimised in ${h.length - 1} iterations: RMS ray error ${(h[0] * 1000).toFixed(2)} → ${(h[h.length - 1] * 1000).toFixed(2)} µm, EFL ${r.efl.toFixed(3)} mm.`);
@@ -655,7 +656,7 @@ export default function mount(root, meta) {
       .then((r) => {
         tolData = r; tolHist.redraw(); sensSt.redraw();
         tolRo.textContent = `Nominal ${(r.nominal * 1000).toFixed(2)} µm · median ${(r.median * 1000).toFixed(2)} µm · 90th percentile ${(r.p90 * 1000).toFixed(2)} µm (${(r.p90 / r.nominal).toFixed(2)}× nominal)${r.failed ? ` · ${r.failed} trials failed to trace` : ''}.`;
-      }).catch((e) => { tolRo.textContent = 'Tolerance run failed: ' + e.message; })
+      }).catch((e) => { tolRo.textContent = t('Tolerance run failed: {msg}', { msg: e.message }); })
       .finally(() => { tolBtn.disabled = false; });
   } }, 'Run tolerance analysis');
   // per-element sensitivity: growth of the refocused RMS error for one σ of decenter or tilt alone
@@ -695,7 +696,7 @@ export default function mount(root, meta) {
     h('div.card', {},
       h('p.note', {}, 'Edit the custom lens surface by surface (R = ∞ for a plane; leave Semi-Ø empty for automatic clear apertures, or set it to vignette oblique beams). Changes are traced immediately and travel in the page link, so a design can be shared. Import a Zemax .zmx (sequential STANDARD/EVENASPH) or an Optica Viva .json; unknown glasses are modelled from their n_d and V_d.'),
       h('div.rx-actions', {},
-        h('button.btn', { type: 'button', onClick: () => applyCustom(clone(LENSES[ctl.state.lens]), `Copied ${LENSES[ctl.state.lens].name} into the editor.`) }, 'Edit a copy of the current lens'),
+        h('button.btn', { type: 'button', onClick: () => applyCustom(clone(LENSES[ctl.state.lens]), `Copied ${LENSES[ctl.state.lens].name} into the editor.`) }, t('Edit a copy of the current lens')),
         h('button.btn', { type: 'button', onClick: () => {
           // split the medium in front of the last surface with a plane: the system is unchanged until edited
           const N = clone(LENSES.custom), j = N.surfaces.length - 1, prev = N.surfaces[j - 1];
@@ -704,9 +705,9 @@ export default function mount(root, meta) {
           N.surfaces.splice(j, 0, { R: Infinity, t: dt, glass: prev.glass });
           applyCustom(N, 'Added a plane surface before the last one: edit its radius, thickness and glass.');
         } }, '+ Add surface'),
-        h('button.btn.opt-btn', { type: 'button', onClick: (e) => runOptimiser(e.currentTarget) }, 'Optimise (damped least squares)'),
-        h('button.btn', { type: 'button', onClick: () => fileIn.click() }, 'Import .zmx / .json'),
-        h('button.btn', { type: 'button', onClick: download }, 'Export JSON'),
+        h('button.btn.opt-btn', { type: 'button', onClick: (e) => runOptimiser(e.currentTarget) }, t('Optimise (damped least squares)')),
+        h('button.btn', { type: 'button', onClick: () => fileIn.click() }, t('Import .zmx / .json')),
+        h('button.btn', { type: 'button', onClick: download }, t('Export JSON')),
         fileIn),
       tableWrap, msg),
     h('div.card', { style: { marginTop: '14px' } }, h('h3', { style: { margin: '0 0 10px', font: '500 17px var(--font-serif)' } }, 'Tolerance analysis'),

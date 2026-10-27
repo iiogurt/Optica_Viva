@@ -9,6 +9,7 @@ import { fresnel, stackReflectance, COATINGS } from '../lib/thinfilm.js';
 import { spectralBasis, linspace, cmf, xyzToLinearRGB, gamutClip, oetf } from '../lib/color.js';
 import { rasterAperture, psf, rescale } from '../lib/pupil.js';
 import { plot, range } from '../lib/plot.js';
+import { t } from '../lib/i18n.js';
 
 const LAMS = linspace(420, 680, 8);
 const BASIS = spectralBasis(LAMS);
@@ -82,7 +83,7 @@ export default function mount(root, meta) {
     want = null;
     if (!job || !alive) return;
     busy = true;
-    rayNote.textContent = 'Tracing real rays through every ghost path…';
+    rayNote.textContent = t('Tracing real rays through every ghost path…');
     const t0 = performance.now();
     run('flareGhosts', job.args).then((r) => {
       busy = false;
@@ -93,7 +94,7 @@ export default function mount(root, meta) {
       if (want) pump();
       else if (job.draft && !dragging) requestRays(false);
       if (!busy) rayNote.textContent = `Real-ray ghosts (${rays.draft ? 'draft' : 'refined'}): ${rays.stats.paths} visible paths × ${LAMS.length} wavelengths, ${(rays.stats.rays / 1000).toFixed(0)} k rays, ${rays.stats.culled} paths too faint to show, ${(rays.ms / 1000).toFixed(1)} s.`;
-    }, (e) => { busy = false; rayNote.textContent = 'Ghost tracing failed: ' + e.message; });
+    }, (e) => { busy = false; rayNote.textContent = t('Ghost tracing failed: {msg}', { msg: e.message }); });
   }
   // ghost image × gain, added to the display values like the paraxial ghosts' alpha (same
   // calibration in both models); cached per gain
@@ -173,7 +174,7 @@ export default function mount(root, meta) {
     G = { lens, par, ghosts, rEP, st: { ...st }, Rsurf, T, totalGhost, brightest, star: star.c, sd: sdCache.get(st.lens) };
     show3d();
     if (st.model === 'rays') requestRays(true);
-    else rayNote.textContent = 'Paraxial ghosts: each is a uniformly lit, scaled image of the iris, with no aberrations or vignetting.';
+    else rayNote.textContent = t('Paraxial ghosts: each is a uniformly lit, scaled image of the iris, with no aberrations or vignetting.');
     const nGlassAir = Rsurf.filter((r) => r[3] > 0).length;
     ro.replaceChildren(readouts([
       ['Reflecting surfaces k', String(nGlassAir)],

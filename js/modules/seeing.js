@@ -4,6 +4,7 @@ import { NS, DP, CROP } from '../lib/seeing.js';
 import { runOn, poolSize } from '../lib/compute.js';
 import { view3d } from '../lib/gl3d.js';
 import { seeingScene } from '../lib/seeing3d.js';
+import { t } from '../lib/i18n.js';
 
 
 export default function mount(root, meta) {
@@ -25,7 +26,7 @@ export default function mount(root, meta) {
     lag: { type: 'range', label: 'AO servo lag', min: 0, max: 10, step: 0.5, value: 2, unit: 'ms' },
     run: { type: 'toggle', label: 'Animate (frozen-flow turbulence)', value: !reducedMotion() },
   }, () => reset());
-  const resetBtn = h('button.btn', { type: 'button', onClick: () => reset(true) }, 'New turbulence realisation');
+  const resetBtn = h('button.btn', { type: 'button', onClick: () => reset(true) }, t('New turbulence realisation'));
   const ro = h('div');
   const calc = liveCalc();
   const scrSt = stage({ aspect: 3, label: 'Phase screen (pupil window outlined) · residual after correction', draw: drawScreen, minH: 170 });

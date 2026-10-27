@@ -4,6 +4,7 @@ import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { run, latest } from '../lib/compute.js';
 import { nollResidual, pyramidGeometric } from '../lib/wfs.js';
+import { t } from '../lib/i18n.js';
 
 const NP = 120, D = 8, DX = D / NP, NPSF = 256; // 8 m telescope, 120 px pupil, WFS at 600 nm (see js/lib/wfs.js)
 const DIV = lut('diverging'), INF = lut('inferno');
@@ -36,15 +37,15 @@ export default function mount(root, meta) {
   const phView = stage({ aspect: 3, label: 'Turbulence · deformable mirror · residual (OPD, common scale)', draw: drawPhase, minH: 150 });
   const series = stage({ aspect: 2.6, label: '', draw: drawSeries, cls: 'plain', minH: 200 });
   const modal = stage({ aspect: 2.6, label: '', draw: drawModal, cls: 'plain', minH: 200 });
-  const runBtn = h('button.btn', { type: 'button' }, 'Pause');
+  const runBtn = h('button.btn', { type: 'button' }, t('Pause'));
   const note = h('p.note', {}, '');
   root.append(lab([h('div.grid-2', {}, shView.el, psfView.el), phView.el, h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } }, runBtn, note), h('div.card', { style: { padding: '6px' } }, series.el), h('div.card', { style: { padding: '6px' } }, modal.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   // The loop runs in the compute worker (a persistent simulator): each request advances it for
   // ~120 ms of computing and returns the last frame. Controls reconfigure it in place.
   let S = null, info = null, busy = false, alive = true, running = !reducedMotion(), pendingCfg = null, raf = 0;
-  runBtn.textContent = running ? 'Pause' : 'Run';
-  runBtn.addEventListener('click', () => { running = !running; runBtn.textContent = running ? 'Pause' : 'Run'; if (running) pump(); });
+  runBtn.textContent = running ? t('Pause') : t('Run');
+  runBtn.addEventListener('click', () => { running = !running; runBtn.textContent = running ? t('Pause') : t('Run'); if (running) pump(); });
   const cfg = (reset) => { const st = ctl.state; return { nsub: +st.nsub, J: Math.round(st.J), r0: st.r0, wind: st.wind, fs: st.fs, gain: st.gain, nph: st.nph, ron: st.ron, loop: st.loop, lsci: +st.lsci, reset }; };
   let first = true;
   function configure() { pendingCfg = cfg(first); first = false; if (!busy) pump(); }
@@ -54,7 +55,7 @@ export default function mount(root, meta) {
     pendingCfg = null;
     if (!config && !running && S) return;
     busy = true;
-    if (config && !info) note.textContent = 'Building the sensor and reconstructor…';
+    if (config && !info) note.textContent = t('Building the sensor and reconstructor…');
     run('aoLoop', { config, run: 120 }).then((r) => {
       busy = false;
       if (!alive) return;
@@ -64,7 +65,7 @@ export default function mount(root, meta) {
       [shView, psfView, phView, series, modal].forEach((x) => x.redraw());
       readout();
       if (pendingCfg || running) raf = requestAnimationFrame(pump);
-    }, (e) => { busy = false; note.textContent = 'Simulation failed: ' + e.message; });
+    }, (e) => { busy = false; note.textContent = t('Simulation failed: {msg}', { msg: e.message }); });
   }
 
   let B = null;

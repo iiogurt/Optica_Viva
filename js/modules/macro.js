@@ -4,6 +4,7 @@ import { run } from '../lib/compute.js';
 import { plot, logRange } from '../lib/plot.js';
 import { oetf } from '../lib/color.js';
 import { closeUp, macroDoF, airyDiameter, optimalNw, stackFrames } from '../lib/macro.js';
+import { t } from '../lib/i18n.js';
 
 const D2R = Math.PI / 180, COC = 0.03, LAM = 550, PX = 0.006; // full-frame CoC (mm), λ (nm), 24 MP pixel (mm)
 // Representative unit-focusing lenses: pupil magnification m_p, front vertex ahead of the front
@@ -72,7 +73,7 @@ export default function mount(root, meta) {
       note.textContent = `Visible depth of the ruler ${s.depth.toFixed(1)} mm; largest blur ${(2 * s.rMax * (36 / r.full.W) * 1000).toFixed(0)} µm on the sensor; diffraction σ ${(s.sigma * 36 / r.full.W * 1000).toFixed(1)} µm. ${s.foci > 1 ? s.foci + ' frames stacked.' : 'Single frame.'} ${(performance.now() - t0).toFixed(0)} ms in the worker${job.draft ? ' (draft)' : ''}.`;
       if (want) pump();
       else if (job.draft) request(false);
-    }, (e) => { busy = false; note.textContent = 'Render failed: ' + e.message; });
+    }, (e) => { busy = false; note.textContent = t('Render failed: {msg}', { msg: e.message }); });
   }
 
   function update() {

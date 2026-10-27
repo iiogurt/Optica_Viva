@@ -6,6 +6,7 @@ import { lut, wavelengthRGB } from '../lib/color.js';
 import { OCCULTERS, fresnelNumber, iwa } from '../lib/starshade.js';
 import { view3d } from '../lib/gl3d.js';
 import { starshadeScene } from '../lib/starshade3d.js';
+import { t } from '../lib/i18n.js';
 
 const INF = lut('inferno');
 const MAS = 206264806.2;
@@ -63,7 +64,7 @@ export default function mount(root, meta) {
     \lambda/D &= ${texNum((lam / st.D) * MAS, 3)}\ \text{mas}\\
     E(0) &= 1 + i\,\frac{2\pi}{\lambda z}\int_0^\infty A(r)\,e^{i\pi r^2/\lambda z}\,r\,dr
     \end{aligned}`);
-    note.textContent = 'Computing the Fresnel integrals in the worker…';
+    note.textContent = t('Computing the Fresnel integrals in the worker…');
     const p = { kind: 'hyper', a: st.a, b: st.b, n: st.n, z, D: st.D, lams: lams(st), lamC: lam, rhoMax: Math.max(1.4 * Rt, st.D), nr: 120, specLams, steps: 2000 };
     job('starshade', p).then((r) => {
       R = { st: { ...st }, p, ...r };

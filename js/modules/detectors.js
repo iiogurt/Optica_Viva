@@ -3,6 +3,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot, logRange } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { rng, ramp, slopeCDS, slopeLS, slopeJump, slopeVarianceLS, slopeVarianceCDS, ipc, ipcVarianceFactor, ctiColumn, persistenceRate } from '../lib/detectors.js';
+import { t } from '../lib/i18n.js';
 
 const INF = lut('inferno');
 
@@ -28,7 +29,7 @@ export default function mount(root, meta) {
   const calc = liveCalc();
   const rampView = stage({ aspect: 2.3, label: '', draw: drawRamp, cls: 'plain', minH: 220 });
   const noiseView = stage({ aspect: 2.3, label: '', draw: drawNoise, cls: 'plain', minH: 200 });
-  const btn = h('button.btn', { type: 'button' }, 'New exposure');
+  const btn = h('button.btn', { type: 'button' }, t('New exposure'));
   root.append(lab([h('div.card', { style: { padding: '6px' } }, rampView.el), h('div', {}, btn), h('div.card', { style: { padding: '6px' } }, noiseView.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
   let seed = 3, R = null;
   btn.addEventListener('click', () => { seed++; update(); });
