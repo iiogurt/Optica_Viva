@@ -90,6 +90,7 @@
     "js/lib/tolerance.js",
     "js/lib/tours.js",
     "js/lib/transit.js",
+    "js/lib/transit3d.js",
     "js/lib/turbulence.js",
     "js/lib/ui.js",
     "js/lib/underwater.js",

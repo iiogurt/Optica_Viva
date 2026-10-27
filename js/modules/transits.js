@@ -4,6 +4,8 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot } from '../lib/plot.js';
 import { makeRng } from '../lib/random.js';
 import { fluxAt, intensity, orbit, zAt, precision, transitSNR, REARTH, RSUN, AU, DAY } from '../lib/transit.js';
+import { view3d } from '../lib/gl3d.js';
+import { transitScene } from '../lib/transit3d.js';
 
 // Planet radius (Earth radii), period (d), stellar mass and radius (solar), impact parameter, V.
 const SYSTEMS = {
@@ -48,9 +50,10 @@ export default function mount(root, meta) {
   const calc = liveCalc();
   const disc = stage({ aspect: 2.2, label: 'The star as seen by the telescope, with the planet\'s path', draw: drawStar, minH: 180 });
   const curve = stage({ aspect: 2.2, label: '', draw: drawCurve, cls: 'plain', minH: 240 });
-  root.append(lab([disc.el, h('div.card', { style: { padding: '8px' } }, curve.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D, true scale: the orbit, the sight lines through the star and the transit chord', aspect: 1.9, minH: 260, yaw: 2.3, pitch: 0.4 });
+  root.append(lab([disc.el, h('div.card', { style: { padding: '8px' } }, curve.el), v3.el], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
-  let M = null;
+  let M = null, aR3d = 0;
   function update() {
     const st = ctl.state, sc = SCOPES[st.scope];
     const u = st.ld ? [0.4, 0.26] : [0, 0];
@@ -87,6 +90,10 @@ export default function mount(root, meta) {
     \mathrm{SNR} &= \frac{\delta}{\sigma}\sqrt{n} = ${transits ? texNum(snr1, 3) : '0'}
     \end{aligned}`);
     disc.redraw(); curve.redraw();
+    // 3-D: the camera stays where the reader put it unless the orbit's size changes more than 1.5×
+    const keep = aR3d > 0 && o.aR / aR3d < 1.5 && aR3d / o.aR < 1.5;
+    v3.setScene(transitScene({ aR: o.aR, inc: o.inc, k: o.k, b: st.b }), keep);
+    if (!keep) aR3d = o.aR;
   }
 
   function drawStar(ctx, w, hh) {
@@ -132,7 +139,7 @@ export default function mount(root, meta) {
 <h3>The occulted flux</h3>
 <p>The star's surface brightness follows the quadratic limb-darkening law \(I(\mu)/I(1) = 1 - u_1(1-\mu) - u_2(1-\mu)^2\) with \(\mu = \sqrt{1-r^2}\); with limb darkening on, \(u_1 = 0.4\), \(u_2 = 0.26\), typical of a Sun-like star in visible light. Its total flux is \(\pi(1 - u_1/3 - u_2/6)\). The page integrates \(I\) over the planet's disc (radius \(k = R_p/R_\star\)) at projected separation \(z\) on a polar grid, which reproduces the analytic results of Mandel &amp; Agol (2002) for an opaque disc, including partial overlap at ingress and egress.</p>
 <h3>Orbit</h3>
-<p>For a circular orbit, Kepler's third law gives the semi-major axis \(a\) from the period and the star's mass; the inclination follows from the impact parameter, \(\cos i = b R_\star/a\), and the projected separation is \(z = (a/R_\star)\sqrt{\sin^2\phi + \cos^2 i\cos^2\phi}\). The total duration \(T_{14}\) is the formula of Seager &amp; Mallén-Ornelas (2003), and \(R_\star/a\) is the probability that a randomly oriented orbit transits.</p>
+<p>For a circular orbit, Kepler's third law gives the semi-major axis \(a\) from the period and the star's mass; the inclination follows from the impact parameter, \(\cos i = b R_\star/a\), and the projected separation is \(z = (a/R_\star)\sqrt{\sin^2\phi + \cos^2 i\cos^2\phi}\). The total duration \(T_{14}\) is the formula of Seager &amp; Mallén-Ornelas (2003), and \(R_\star/a\) is the probability that a randomly oriented orbit transits. The 3-D view shows why: the telescope sees the star through a cylinder of sight lines of radius \(R_\star\) (plus \(R_p\)), and a transit happens only if the orbit, a circle of radius \(a\), cuts through it. The gold chord is the part of the orbit inside the cylinder; the planet spends \(T_{14}\) on it, and the white segment at mid-transit is \(b\). For a hot Jupiter (\(a \approx 9R_\star\)) one orbit in nine is tilted little enough; for the Earth seen from afar (\(a = 215R_\odot\)) one in 215.</p>
 </div><div>
 <h3>Noise</h3>
 <p>Each point collects \(N_\gamma = 10^6\cdot10^{-0.4V}\,\pi(D/2)^2\,q\,t\) photons (V band, 100 nm wide, throughput \(q\)), giving a shot-noise precision \(1/\sqrt{N_\gamma}\), added in quadrature to a systematic floor for each telescope: pointing jitter, detector effects and, from the ground, scintillation and changing extinction. A transit of depth \(\delta\) sampled by \(n\) points of precision \(\sigma\) has \(\mathrm{SNR} = (\delta/\sigma)\sqrt{n}\); Kepler's pipeline required 7.1 for a detection.</p>
@@ -145,4 +152,5 @@ export default function mount(root, meta) {
     'J. M. Jenkins et al., "Overview of the Kepler science processing pipeline", Astrophys. J. 713, L87 (2010): the 7.1σ threshold.',
     'M. Gillon et al., "Seven temperate terrestrial planets around the nearby ultracool dwarf star TRAPPIST-1", Nature 542, 456 (2017).',
   ]));
+  return () => [disc, curve, v3].forEach((s) => s.destroy());
 }

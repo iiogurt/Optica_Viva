@@ -266,3 +266,23 @@ test('Earth observation 3-D: the satellite flies at H, the swath is pixels × GS
   for (const p of edge.points) near(Math.hypot(p[0], p[1] + R, p[2]), R + 0.0015, 1e-9, 'on the ground');
   near(dist(onSphere(0, 0), [0, 0, 0]), 0, 1e-12, 'nadir at the origin');
 });
+
+test('transit 3-D: the planet crosses the sight lines at impact parameter b, and the chord lasts T14', async () => {
+  const { orbit, REARTH, DAY } = await import('../js/lib/transit.js');
+  const { transitScene, planetAt } = await import('../js/lib/transit3d.js');
+  for (const b of [0, 0.51, 0.9]) {
+    const o = orbit({ P: 3.5247, Mstar: 1.12, Rstar: 1.16, Rp: 15.2 * REARTH, b });
+    const P0 = planetAt(0, o.aR, o.inc);
+    near(Math.hypot(P0[0], P0[1]), b, 1e-12, 'projected distance at mid-transit');
+    assert.ok(P0[2] < 0, 'in front of the star');
+    near(Math.hypot(...P0), o.aR, 1e-9, 'orbit radius');
+    // the chord's ends (projected distance 1 + k) lie T14/2 either side of mid-transit
+    const phi = (Math.PI * o.T14) / (3.5247 * DAY), E = planetAt(phi, o.aR, o.inc);
+    near(Math.hypot(E[0], E[1]), 1 + o.k, 1e-9, 'first/fourth contact');
+    const sc = transitScene({ aR: o.aR, inc: o.inc, k: o.k, b });
+    const chord = sc.lines.find((l) => (l.width || 0) === 2.4);
+    for (const p of chord.points) assert.ok(Math.hypot(p[0], p[1]) < 1 + o.k && p[2] < 0);
+  }
+  const miss = orbit({ P: 3.5247, Mstar: 1.12, Rstar: 1.16, Rp: 15.2 * REARTH, b: 1.2 });
+  assert.ok(!transitScene({ aR: miss.aR, inc: miss.inc, k: miss.k, b: 1.2 }).lines.some((l) => (l.width || 0) === 2.4), 'no chord when the planet misses');
+});
