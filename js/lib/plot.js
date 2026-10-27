@@ -1,5 +1,10 @@
 // Minimal, crisp canvas charting: linear/log axes, nice ticks, series, fills, markers.
 import { theme } from './ui.js';
+import { t } from './i18n.js';
+
+// Chart text (title, axis labels, marker labels, legend) is translated here, like the toolkit's
+// control labels; text that is not a string, or has no translation, is drawn as given.
+const tr = (s) => (typeof s === 'string' ? t(s) : s);
 
 function niceStep(range, target) {
   const raw = range / target, mag = 10 ** Math.floor(Math.log10(raw)), f = raw / mag;
@@ -48,9 +53,9 @@ export function plot(ctx, w, h, opt) {
   }
   // axis labels
   ctx.fillStyle = T.dim; ctx.font = '11.5px Inter, system-ui, sans-serif';
-  if (x.label) { ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(x.label, (pad.l + w - pad.r) / 2, h - 3); }
-  if (y.label) { ctx.save(); ctx.translate(12, (pad.t + h - pad.b) / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(y.label, 0, 0); ctx.restore(); }
-  if (opt.title) { ctx.fillStyle = T.fg; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.font = '600 12px Inter, system-ui, sans-serif'; ctx.fillText(opt.title, pad.l, 6); }
+  if (x.label) { ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(tr(x.label), (pad.l + w - pad.r) / 2, h - 3); }
+  if (y.label) { ctx.save(); ctx.translate(12, (pad.t + h - pad.b) / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(tr(y.label), 0, 0); ctx.restore(); }
+  if (opt.title) { ctx.fillStyle = T.fg; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.font = '600 12px Inter, system-ui, sans-serif'; ctx.fillText(tr(opt.title), pad.l, 6); }
 
   ctx.beginPath(); ctx.rect(pad.l, pad.t, w - pad.l - pad.r, h - pad.t - pad.b); ctx.clip();
   for (const b of opt.bands || []) {
@@ -81,12 +86,12 @@ export function plot(ctx, w, h, opt) {
   for (const v of opt.vlines || []) {
     ctx.strokeStyle = v.color || T.faint; ctx.setLineDash(v.dash || [4, 4]); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(X(v.x) + 0.5, pad.t); ctx.lineTo(X(v.x) + 0.5, h - pad.b); ctx.stroke(); ctx.setLineDash([]);
-    if (v.label) { ctx.fillStyle = v.color || T.dim; ctx.font = '10.5px Inter, system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(v.label, X(v.x) + 4, pad.t + 4 + (v.dy || 0)); }
+    if (v.label) { ctx.fillStyle = v.color || T.dim; ctx.font = '10.5px Inter, system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(tr(v.label), X(v.x) + 4, pad.t + 4 + (v.dy || 0)); }
   }
   for (const v of opt.hlines || []) {
     ctx.strokeStyle = v.color || T.faint; ctx.setLineDash(v.dash || [4, 4]); ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(pad.l, Y(v.y) + 0.5); ctx.lineTo(w - pad.r, Y(v.y) + 0.5); ctx.stroke(); ctx.setLineDash([]);
-    if (v.label) { ctx.fillStyle = v.color || T.dim; ctx.font = '10.5px Inter, system-ui, sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.fillText(v.label, w - pad.r - 4, Y(v.y) - 3); }
+    if (v.label) { ctx.fillStyle = v.color || T.dim; ctx.font = '10.5px Inter, system-ui, sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.fillText(tr(v.label), w - pad.r - 4, Y(v.y) - 3); }
   }
   ctx.restore();
   // legend
@@ -94,11 +99,13 @@ export function plot(ctx, w, h, opt) {
     ctx.save();
     ctx.font = '11px Inter, system-ui, sans-serif';
     const items = (opt.series || []).filter((s) => s.label);
-    let lx = opt.legendX ?? pad.l + 10, ly = opt.legendY ?? pad.t + 10;
+    // translated labels can be longer: keep the widest one inside the plot
+    const wMax = Math.max(0, ...items.map((s) => ctx.measureText(tr(s.label)).width));
+    let lx = Math.max(pad.l + 4, Math.min(opt.legendX ?? pad.l + 10, w - pad.r - 24 - wMax)), ly = opt.legendY ?? pad.t + 10;
     for (const s of items) {
       ctx.fillStyle = s.color; ctx.fillRect(lx, ly - 1, 14, 3);
       ctx.fillStyle = T.fg; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.fillText(s.label, lx + 20, ly);
+      ctx.fillText(tr(s.label), lx + 20, ly);
       ly += 16;
     }
     ctx.restore();
