@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.22.0] - 2026-10-27
+
 ### Added
 - **3-D transits** (`js/lib/transit3d.js`): the transit laboratory shows, at true scale in stellar radii, the star, the planet's orbit tilted by the inclination, the cylinder of sight lines through the star towards the telescope, the transit chord (gold, absent when the planet misses) and the impact parameter at mid-transit. A test checks that the planet crosses at distance b and that the chord's ends lie T14/2 either side of mid-transit.
 - **3-D Earth observation** (`js/lib/earthobs3d.js`): the Earth-observation laboratory shows, at true scale, a 3 200 km patch of the curved Earth, the orbit arc with the satellite and its speed, the ground track, the fan of view down to the swath (12 000 pixels × GSD), the detector line's footprint at nadir and the strip imaged in the last minute.
@@ -726,7 +728,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.21.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.22.0...HEAD
+[1.22.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.19.0...v1.20.0
 [1.19.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.18.0...v1.19.0
