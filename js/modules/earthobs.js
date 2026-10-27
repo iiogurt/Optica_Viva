@@ -4,6 +4,8 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot, range } from '../lib/plot.js';
 import { makeRng } from '../lib/random.js';
 import { design, groundScene, imageFromOrbit, mtfDiff } from '../lib/earthobs.js';
+import { view3d } from '../lib/gl3d.js';
+import { earthobsScene } from '../lib/earthobs3d.js';
 
 const PRESETS = {
   cubesat: { name: 'CubeSat camera (9 cm aperture)', H: 500, D: 0.09, f: 0.58, p: 5.5, N: 1 },
@@ -38,10 +40,11 @@ export default function mount(root, meta) {
   const calc = liveCalc();
   const view = stage({ aspect: 2.5, label: 'An 80 × 56 m city block: the ground (left) and from orbit (right)', draw: drawView, minH: 220 });
   const mtf = stage({ aspect: 2.4, label: '', draw: drawMTF, cls: 'plain', minH: 220 });
-  root.append(lab([view.el, h('div.card', { style: { padding: '8px' } }, mtf.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D, true scale: the orbit, the swath and the strip a push-broom camera images in a minute', aspect: 1.9, minH: 260, yaw: 0.75, pitch: 0.5 });
+  root.append(lab([view.el, v3.el, h('div.card', { style: { padding: '8px' } }, mtf.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   const rng = makeRng(5), scene = groundScene(80, 56, 0.1, rng.u);
-  let M = null;
+  let M = null, shown3d = false;
   function update() {
     const st = ctl.state, N = Math.round(st.N);
     const d = { H: st.H * 1000, D: st.D, f: st.f, p: st.p * 1e-6, N, el: st.el };
@@ -70,6 +73,8 @@ export default function mount(root, meta) {
     Q &= \frac{\lambda f}{D p} = ${texNum(r.Q, 3)}
     \end{aligned}`);
     view.redraw(); mtf.redraw();
+    v3.setScene(earthobsScene({ H: d.H, gsd: r.gsd, v: r.v, ground: r.ground }), shown3d);
+    shown3d = true;
   }
 
   function drawView(ctx, w, hh) {
@@ -116,7 +121,7 @@ export default function mount(root, meta) {
   root.append(theory('From orbit to pixels', String.raw`
 <div class="theory-cols"><div>
 <h3>Orbit and scan</h3>
-<p>A circular orbit at height \(H\) has speed \(v = \sqrt{GM/(R_\oplus + H)}\), and the point below the satellite moves at \(v_g = v R_\oplus/(R_\oplus + H)\), about 7 km/s in low orbit (Earth's rotation, up to 0.46 km/s, is neglected). A push-broom camera images one line across track and lets the motion sweep it along: the line rate is \(v_g/\text{GSD}\), and each line integrates for \(t = \text{GSD}/v_g\).</p>
+<p>A circular orbit at height \(H\) has speed \(v = \sqrt{GM/(R_\oplus + H)}\), and the point below the satellite moves at \(v_g = v R_\oplus/(R_\oplus + H)\), about 7 km/s in low orbit (Earth's rotation, up to 0.46 km/s, is neglected). A push-broom camera images one line across track and lets the motion sweep it along: the line rate is \(v_g/\text{GSD}\), and each line integrates for \(t = \text{GSD}/v_g\). The 3-D view draws this at true scale: the swath is the line of pixels projected to the ground, \(N_\text{pix}\,\text{GSD}\) wide (4.5 km for the very-high-resolution satellite, 118 km for the mapping one), and the strip behind it grows by \(v_g\) every second, about 400 km a minute. Seen from 600–800 km the swath spans only 0.4° to 9°, which is why a very sharp satellite sees a given place rarely unless it can point sideways.</p>
 <h3>Time-delay integration</h3>
 <p>A TDI sensor shifts its charge from row to row in step with the image's motion, so \(N\) rows expose the same ground line one after another and the signal grows \(N\) times. Shot noise grows as \(\sqrt N\) and read noise is added once per stage here (2 e⁻), so the SNR improves almost as \(\sqrt N\).</p>
 <h3>Signal</h3>
@@ -134,4 +139,5 @@ export default function mount(root, meta) {
     'J. R. Schott, <i>Remote Sensing: The Image Chain Approach</i>, 2nd ed., Oxford University Press (2007).',
     'W. J. Larson and J. R. Wertz (eds.), <i>Space Mission Analysis and Design</i>, 3rd ed., Microcosm (1999): orbits and ground speed.',
   ]));
+  return () => [view, mtf, v3].forEach((s) => s.destroy());
 }

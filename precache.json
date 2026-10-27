@@ -22,6 +22,7 @@
     "js/lib/dof3d.js",
     "js/lib/dofphoto.js",
     "js/lib/earthobs.js",
+    "js/lib/earthobs3d.js",
     "js/lib/eclipse.js",
     "js/lib/equipment.js",
     "js/lib/esfr.js",
