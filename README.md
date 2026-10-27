@@ -489,7 +489,7 @@ Night mode from a burst of short frames, detail beyond the pixel grid from hand 
 **Atmospheric seeing & AO** · `#/seeing`<br>
 <img src="docs/screenshots/seeing.webp" alt="Phase screen, AO residual, speckle and long-exposure PSFs">
 
-von Kármán phase screens built by FFT with **Lane subharmonics**, under Taylor frozen flow. Short-exposure speckle and long-exposure PSFs are shown with no correction, tip-tilt only, or a **deformable mirror** with servo lag, together with the full error budget.
+von Kármán phase screens built by FFT with **Lane subharmonics**, under Taylor frozen flow. Short-exposure speckle and long-exposure PSFs are shown with no correction, tip-tilt only, or a **deformable mirror** with servo lag, together with the full error budget. A **3-D view** shows the band of the phase screen the wind carries across the telescope as a relief, the pupil on it, and above it the wavefront left after correction at the same height scale.
 
 </td>
 <td width="50%" valign="top">
@@ -853,6 +853,7 @@ Optica_Viva/
 │   │   ├── dof3d.js           3-D depth of field: the camera's frustum, plane of focus, sharp zone and cards at true scale
 │   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
 │   │   ├── earthobs3d.js      3-D Earth observation at true scale: orbit, swath, push-broom footprint and imaged strip
+│   │   ├── seeing3d.js        3-D seeing: the frozen-flow phase screen as a relief, the pupil, the residual above it
 │   │   ├── flare3d.js         3-D flare: exact paths of the brightest ghosts through the lens, ranked by irradiance
 │   │   ├── bokeh3d.js         3-D bokeh: rays round the iris through the traced lens, axial and corner footprints
 │   │   ├── starshade3d.js     3-D starshade geometry: petals, separation, IWA line of sight, the shadow on the pupil

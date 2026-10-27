@@ -606,13 +606,13 @@ function seeingReset(p) {
   seeing = seeing || seeingSession();
   const r = seeing.reset(p.p, p.seed);
   seeingSid = p.sid;
-  return { result: r, transfer: [r.screen.buffer, r.ideal.buffer] };
+  return { result: r, transfer: [r.screen.buffer, r.ideal.buffer, r.strip.buffer] };
 }
 function seeingStep(p) {
   if (!seeing || p.sid !== seeingSid) return { result: null, transfer: [] };
   const f = seeing.step(p.steps);
   f.sid = p.sid;
-  return { result: f, transfer: [f.short.buffer, f.long.buffer, f.pupil.buffer] };
+  return { result: f, transfer: [f.short.buffer, f.long.buffer, f.pupil.buffer, f.wave.buffer] };
 }
 function shiftTask(p) { const r = shiftRows(p.st, p.y0, p.y1); return { result: r, transfer: [r.buffer] }; }
 

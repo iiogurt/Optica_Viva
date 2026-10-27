@@ -6,6 +6,9 @@ import { lut } from './color.js';
 import { phaseScreen } from './turbulence.js';
 
 export const NS = 512, DP = 64; // screen 8D wide, pupil 64 px
+// The band of the screen the pupil sweeps (rows NS/4 − STRIP_PAD … NS/4 + DP + STRIP_PAD), sampled
+// every STRIP_STEP pixels for the 3-D view.
+export const STRIP_PAD = 16, STRIP_STEP = 4;
 const n = 256; // PSF grid (Q = 4)
 export const CROP = 192; // displayed PSF crop (px)
 const dt = 0.005; // s per animation step
@@ -76,7 +79,11 @@ function tiltFit(ph) {
     const img = new Uint8ClampedArray(NS * NS * 4);
     let mx = 1e-9; for (let i = 0; i < NS * NS; i++) mx = Math.max(mx, Math.abs(screen[i]));
     for (let i = 0; i < NS * NS; i++) { const tt = Math.round((screen[i] / mx * 0.5 + 0.5) * 255) * 3; img[i * 4] = DIV[tt]; img[i * 4 + 1] = DIV[tt + 1]; img[i * 4 + 2] = DIV[tt + 2]; img[i * 4 + 3] = 255; }
-    return { screen: img, ideal: psfImage(ideal.I, 1) };
+    // the band the pupil sweeps, in waves at λ (the screen is in radians at 500 nm), for the 3-D view
+    const toWaves = 0.5 / p.lam / (2 * Math.PI), cols = NS / STRIP_STEP, rows = (DP + 2 * STRIP_PAD) / STRIP_STEP + 1;
+    const strip = new Float32Array(cols * rows);
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) strip[j * cols + i] = screen[(NS / 4 - STRIP_PAD + j * STRIP_STEP) * NS + i * STRIP_STEP] * toWaves;
+    return { screen: img, ideal: psfImage(ideal.I, 1), strip, cols, rows };
   }
 
   // Advance `steps` time steps of dt and return the display frame: short- and long-exposure PSF
@@ -113,7 +120,10 @@ function tiltFit(ph) {
       const tt = Math.round((v / Math.max(rm, 0.5) * 0.5 + 0.5) * 255) * 3;
       pupil[o] = DIV[tt]; pupil[o + 1] = DIV[tt + 1]; pupil[o + 2] = DIV[tt + 2]; pupil[o + 3] = 255;
     }
-    return { short: psfImage(last.I, 1), long: psfImage(acc, accN), pupil, rms: Math.sqrt(Math.max(0, s2 / c - (s1 / c) ** 2)), shift: last.shift, strehl: pk / ideal.peak, accN };
+    // the residual wavefront in the pupil (waves, mean removed, 0 outside) for the 3-D view
+    const wave = new Float32Array(DP * DP), mean = c ? s1 / c : 0;
+    for (let y = 0; y < DP; y++) for (let x = 0; x < DP; x++) { const k = (off + y) * n + off + x; if (amp[k] >= 0.5) wave[y * DP + x] = last.W[k] - mean; }
+    return { wave, short: psfImage(last.I, 1), long: psfImage(acc, accN), pupil, rms: Math.sqrt(Math.max(0, s2 / c - (s1 / c) ** 2)), shift: last.shift, strehl: pk / ideal.peak, accN };
   }
   return { reset, step };
 }
