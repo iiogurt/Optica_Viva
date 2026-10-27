@@ -779,5 +779,5 @@ export default function mount(root, meta) {
     'Zemax sample prescriptions "Cooke 40 degree field" and "Double Gauss 28 degree field" (classic textbook forms).',
   ]));
 
-  return () => { [layout, zoom, spot, fan, chroma, psfStage].forEach((s) => s.destroy()); v3.destroy(); };
+  return () => { [layout, zoom, spot, fan, chroma, mtfSt, fieldSt, seidSt, psfStage, tolHist, sensSt].forEach((s) => s.destroy()); v3.destroy(); };
 }

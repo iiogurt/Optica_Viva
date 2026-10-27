@@ -152,4 +152,5 @@ where \(\theta\) and \(\theta'\) are the angles at the receiver and the light an
     'F. Hunter, S. Biver and P. Fuqua, <i>Light: Science and Magic</i>, 5th ed., Routledge (2015): the family of angles, hard and soft light.',
     'Y. Le Grand and S. G. El Hage, <i>Physiological Optics</i>, Springer (1980): corneal radius and the Purkinje images.',
   ]));
+  return () => [scene, top, fall].forEach((s) => s.destroy());
 }

@@ -99,4 +99,5 @@ export default function mount(root, meta) {
     'R. Kingslake, <i>Optics in Photography</i>, SPIE Press (1992): focusing and depth of focus.',
     'Canon, Dual Pixel CMOS AF technical documentation (2013): split-pixel phase detection on the imaging sensor.',
   ]));
+  return () => [halves, climb].forEach((s) => s.destroy());
 }

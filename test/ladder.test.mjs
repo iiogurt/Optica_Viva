@@ -29,3 +29,14 @@ for (const { id, src } of laddered) {
     if (/\bliveCalc\(/.test(src)) assert.match(src, /\bcalc\.say\(/, 'the live calculation says the result in words');
   });
 }
+
+// Every page returns a cleanup function, and releases every figure it creates (each stage holds a
+// ResizeObserver, each 3-D view a WebGL context, of which a browser allows only a few).
+for (const { id, src } of pages) {
+  test(`${id}: mount returns a cleanup that releases its figures`, () => {
+    assert.match(src, /\n {2}return \(\) =>/, 'mount(root, meta) must return a cleanup function');
+    const figs = [...src.matchAll(/\n {2}const (\w+) = (?:stage|view3d)\(/g)].map((m) => m[1]);
+    const ret = src.slice(src.lastIndexOf('\n  return () =>'));
+    for (const f of figs) assert.match(ret, new RegExp(`\\b${f}\\b`), `the cleanup destroys ${f}`);
+  });
+}

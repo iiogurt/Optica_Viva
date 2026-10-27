@@ -186,4 +186,5 @@ export default function mount(root, meta) {
     'B. Edlén, "The refractive index of air", Metrologia 2, 71 (1966).',
     'J. W. Goodman, <i>Introduction to Fourier Optics</i>, 3rd ed., Roberts (2005): the diffraction cut-off and sampling.',
   ]));
+  return () => [view].forEach((s) => s.destroy());
 }

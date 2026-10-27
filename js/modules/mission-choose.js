@@ -171,4 +171,5 @@ export default function mount(root, meta) {
     'W. R. Dawes, "Catalogue of micrometrical measurements of double stars", Mem. R. Astron. Soc. 35, 137 (1867): the Dawes limit.',
     'H. Rutten and M. van Venrooij, <i>Telescope Optics: Evaluation and Design</i>, Willmann-Bell (1988).',
   ]));
+  return () => [bars].forEach((s) => s.destroy());
 }

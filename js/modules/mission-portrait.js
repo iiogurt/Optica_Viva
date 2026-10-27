@@ -121,4 +121,5 @@ export default function mount(root, meta) {
     'F. Hunter, S. Biver and P. Fuqua, <i>Light: Science and Magic</i>, 5th ed., Routledge (2015): portrait lighting.',
     'H. M. Merklinger, <i>The INs and OUTs of FOCUS</i> (1992): background blur as a share of the frame.',
   ]));
+  return () => [view].forEach((s) => s.destroy());
 }

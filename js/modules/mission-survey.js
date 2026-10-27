@@ -168,4 +168,5 @@ export default function mount(root, meta) {
     'J. Johnson, "Analysis of image forming systems", Image Intensifier Symposium, Fort Belvoir (1958): resolution criteria for detection, recognition and identification.',
     'ASPRS, <i>Manual of Photogrammetry</i>, 6th ed. (2013): ground sample distance, overlap and image motion.',
   ]));
+  return () => [view].forEach((s) => s.destroy());
 }

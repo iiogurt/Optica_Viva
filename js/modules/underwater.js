@@ -129,4 +129,5 @@ export default function mount(root, meta) {
     'C. D. Mobley, <i>Light and Water: Radiative Transfer in Natural Waters</i>, Academic Press (1994).',
     'M. Edge, <i>The Underwater Photographer</i>, 4th ed., Focal Press (2010): ports, strobes and backscatter.',
   ]));
+  return () => [chart, spec, geo].forEach((s) => s.destroy());
 }

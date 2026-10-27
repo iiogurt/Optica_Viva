@@ -115,4 +115,5 @@ export default function mount(root, meta) {
     'IEEE Std 1789-2015, <i>Recommended Practices for Modulating Current in High-Brightness LEDs for Mitigating Health Risks to Viewers</i>: flicker frequency and depth.',
     'The <a href="#/motion">Rolling shutter &amp; time</a> and <a href="#/vp">Virtual production</a> laboratories of this site, for the models and their primary references.',
   ]));
+  return () => [bands, moi].forEach((s) => s.destroy());
 }
