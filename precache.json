@@ -19,6 +19,7 @@
     "js/lib/colour3d.js",
     "js/lib/computational.js",
     "js/lib/compute.js",
+    "js/lib/coronagraph3d.js",
     "js/lib/detectors.js",
     "js/lib/dof3d.js",
     "js/lib/dofphoto.js",

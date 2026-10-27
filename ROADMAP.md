@@ -75,7 +75,7 @@ flowchart LR
 | Laboratories | 59 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 228, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 381 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 382 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -504,7 +504,7 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 
 ### v1.20 3-D views
 
-🚧 **In progress**: the engine and four views were released in v1.20.0; the others follow in later releases.
+✅ **Complete**: the engine and four views in v1.20.0; colour, depth of field, projections, lensing, interferometry, Earth observation, transits, starshade, bokeh, flare, the ray tracer's additions, the seeing screen and the coronagraph in v1.21–v1.23.
 
 *Goal: show in three dimensions what flat diagrams can only hint at (skew rays, tilted planes, orbits, polarisation states, colour solids), with pleasant, light graphics that stay fluid on a Raspberry Pi 4.*
 
@@ -524,7 +524,7 @@ Candidates, in order of how much the third dimension adds:
 - [x] **P2 · M** **Interferometry**: the Earth turning under the source (an hour-angle slider), the stations that see it, and each baseline projected onto the u-v plane facing the source, tracing its track; local arrays enlarged. The 3-D projection reproduces the 2-D coverage point for point.
 - [x] **P2 · M** **Orbits**: Earth observation (a true-scale patch of the curved Earth with the orbit, the fan of view, the detector line's footprint and the strip imaged in the last minute) and exoplanet transits (the star, the tilted orbit, the cylinder of sight lines through the star, the transit chord and the impact parameter, at true scale).
 - [x] **P2 · S** **Colour science**: the colour solid in CIE xyY (the optimal colours under the chosen light, adapted to D65), with the sRGB, Display P3 or Rec. 2020 gamut and the 14 test colours. *A perceptual (CIELAB) version and gamut volumes remain.*
-- [ ] **P3 · M** **Starshade and coronagraph**: the telescope–starshade geometry to scale (tens of thousands of kilometres) and the shadow on the pupil. *Starshade done: the petals, the true separation (across the line of sight enlarged by a round factor), the starlight, the line of sight at the inner working angle and the computed shadow on the telescope's plane. The coronagraph (masks and Lyot stop along the beam) is open.*
+- [x] **P3 · M** **Starshade and coronagraph**: the starshade (the petals, the true separation with the across-the-line-of-sight scale enlarged by a round factor, the starlight, the line of sight at the inner working angle and the computed shadow on the telescope's plane) and the Lyot coronagraph (a 4f relay along the beam with the computed field on the pupil, the focal plane under the occulting mask, the Lyot plane inside the stop and the final image; the starlight stops at the mask, the planet's reaches its image).
 - [x] **P3 · M** **Bokeh and defocus**: real rays round the iris from a background point on axis and one in the corner through the traced lens, crossing in front of the sensor; the traced footprints (iris shape on axis, cat's eye in the corner) on the sensor and enlarged beside it.
 - [x] **P3 · M** **Flare**: real-ray ghost paths bouncing between surfaces inside the lens. *The three brightest ghosts for the sun's position (ranked by mean irradiance from a ray grid through every path), their exact paths, their spots on the sensor and the faint image-forming light.*
 

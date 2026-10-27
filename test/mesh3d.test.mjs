@@ -401,3 +401,27 @@ test('seeing 3-D: the screen band and the residual share one height scale; the p
   s.reset({ ...p, ao: 'ao' }, 7); const g = s.step(4);
   assert.ok(g.rms < 0.5 * f.rms, `AO residual ${g.rms} vs ${f.rms}`);
 });
+
+test('coronagraph 3-D: the mask, the Lyot stop and the planet image sit where the Fourier model puts them', async () => {
+  const { TASKS } = await import('../js/lib/tasks.js');
+  const { coronagraphScene, Z } = await import('../js/lib/coronagraph3d.js');
+  const n = 128, Dp = 32, Q = n / Dp, st = { pupil: 'clear', mask: 4, lyot: 0.8, sep: 10, con: 1e-2, wfe: 2, lam: 1.6 }; // a bright planet, so it outshines the starlight left at the mask's edge
+  const r = TASKS.coronagraph({ st, n, Dp }).result, sc = coronagraphScene(r, st, n, Dp);
+  const cropF = Math.min(n, 2 * Math.ceil((st.sep + 5) * Q)), sF = 0.5 / (cropF / 2), sP = 0.5 / (Math.round(Dp * 1.25) / 2);
+  // the occulting mask: a disc of mask × λ/D just in front of the focal plane
+  const mask = sc.meshes.find((m) => !m.mesh.colors && Math.abs(m.mesh.positions[2] - (Z.focal - 0.37)) < 1e-6);
+  near(Math.hypot(mask.mesh.positions[3], mask.mesh.positions[4]), st.mask * Q * sF, 1e-6, 'mask radius');
+  // the Lyot stop's opening: lyot × D
+  const stop = sc.lines.find((l) => l.width === 1.8);
+  near(Math.hypot(stop.points[0][0], stop.points[0][1]), ((Dp * st.lyot) / 2) * sP, 1e-6, 'Lyot stop radius');
+  // the planet's rays end at its image: sep × λ/D off axis in the final plane, where the
+  // coronagraphic image also has its off-axis peak
+  const planet = sc.lines.filter((l) => l.points.length === 8);
+  assert.ok(planet.length > 0);
+  for (const l of planet) { const e = l.points.at(-1); near(e[0], st.sep * Q * sF, 1e-9, 'planet x'); near(e[2], Z.image, 1e-9, 'final plane'); }
+  let best = -1, bx = 0;
+  for (let x = n / 2 + 2 * Q; x < n; x++) { const v = r.cI[(n / 2) * n + x]; if (v > best) { best = v; bx = x; } }
+  near(bx - n / 2, st.sep * Q, 1.5, 'planet peak in the coronagraphic image (px)');
+  // the star's rays stop at the focal plane
+  for (const l of sc.lines.filter((l) => l.points.length === 4)) near(l.points.at(-1)[2], Z.focal, 1e-9, 'star rays end at the mask');
+});
