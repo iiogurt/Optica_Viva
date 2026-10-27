@@ -105,3 +105,38 @@ export function sourceAndMagnification({ P, src, R, N }) {
   }
   return { img, mu: srcArea ? imgArea / srcArea : NaN };
 }
+
+// Every image θ (arcsec) of a point source at β = src, inside the field: local minima of
+// |θ − α(θ) − β| on a grid, refined by Newton's method with the numerical Jacobian A. Returns
+// [{ x, y, mu }] (mu = 1/det A, negative for images of odd parity), brightest first.
+export function images(P, src, G = 140) {
+  const h = FOV / G, res = new Float64Array((G + 1) * (G + 1));
+  const at = (i, j) => [-FOV / 2 + i * h, -FOV / 2 + j * h];
+  const miss = (x, y) => { const [ax, ay] = deflect(P, x, y); return [x - ax - src[0], y - ay - src[1]]; };
+  for (let j = 0; j <= G; j++) for (let i = 0; i <= G; i++) res[j * (G + 1) + i] = Math.hypot(...miss(...at(i, j)));
+  const jac = (x, y) => {
+    const d = 1e-5, [a1, b1] = deflect(P, x + d, y), [a0, b0] = deflect(P, x - d, y), [a2, b2] = deflect(P, x, y + d), [a3, b3] = deflect(P, x, y - d);
+    return [1 - (a1 - a0) / (2 * d), -(a2 - a3) / (2 * d), -(b1 - b0) / (2 * d), 1 - (b2 - b3) / (2 * d)];
+  };
+  const out = [];
+  for (let j = 1; j < G; j++) for (let i = 1; i < G; i++) {
+    const r = res[j * (G + 1) + i];
+    if (r > 4 * h) continue;
+    let local = true;
+    for (let dj = -1; dj <= 1 && local; dj++) for (let di = -1; di <= 1; di++) if ((di || dj) && res[(j + dj) * (G + 1) + i + di] < r) { local = false; break; }
+    if (!local) continue;
+    let [x, y] = at(i, j);
+    for (let k = 0; k < 40; k++) {
+      const [fx, fy] = miss(x, y), [a, b, c, d] = jac(x, y), det = a * d - b * c;
+      if (!isFinite(det) || Math.abs(det) < 1e-12) break;
+      const sx = (d * fx - b * fy) / det, sy = (a * fy - c * fx) / det, L = Math.hypot(sx, sy), damp = L > 0.2 ? 0.2 / L : 1;
+      x -= sx * damp; y -= sy * damp;
+      if (L < 1e-11) break;
+    }
+    if (Math.hypot(...miss(x, y)) > 1e-7 || Math.hypot(x, y) < 1e-3 || Math.abs(x) > FOV / 2 || Math.abs(y) > FOV / 2) continue;
+    if (out.some((p) => Math.hypot(p.x - x, p.y - y) < 1e-4)) continue;
+    const [a, b, c, d] = jac(x, y);
+    out.push({ x, y, mu: 1 / (a * d - b * c) });
+  }
+  return out.sort((p, q) => Math.abs(q.mu) - Math.abs(p.mu));
+}

@@ -202,3 +202,22 @@ test('projection 3-D: rectilinear is central projection onto the tangent plane, 
     assert.ok(onSensor([image[i], image[i + 1]], sw, sh));
   }
 });
+
+test('lensing 3-D: every light path ends on the source, bends at the lens by the deflection, and the ring cone opens at θE', async () => {
+  const { images, deflect } = await import('../js/lib/lensing.js');
+  const { lensingScene, comoving, toScene } = await import('../js/lib/lensing3d.js');
+  const P = { model: 'sie', b: 1.4, q: 0.7, pa: 0.5, gamma: 0.04, gpa: 1.7 }, src = [0.12, 0.06], zl = 0.3, zs = 2;
+  const ims = images(P, src), sc = lensingScene({ P, zl, zs, src, R: 0.45, images: ims });
+  const cl = comoving(zl), cs = comoving(zs), S = toScene(src[0], src[1], cs);
+  const paths = sc.lines.filter((l) => l.points.length === 3 && l.points[0].every((v) => v === 0));
+  assert.equal(paths.length, ims.length);
+  paths.forEach(({ points: [, L, E] }, i) => {
+    for (let a = 0; a < 3; a++) near(E[a], S[a], 1e-12, 'ends on the source');
+    near(L[2], cl, 1e-12, 'bends in the lens plane');
+    // slopes of the two legs (scene units per Gpc) differ by (χs/χls) α(θ), scaled like every angle
+    const [ax, ay] = deflect(P, ims[i].x, ims[i].y), k = toScene(1, 1, 1);
+    for (const [c, alpha] of [[0, ax * k[0]], [1, ay * k[1]]]) near(L[c] / cl - (E[c] - L[c]) / (cs - cl), (cs / (cs - cl)) * alpha, 1e-9, 'bend');
+  });
+  const ring = sc.lines.find((l) => l.points.length === 73);
+  near(Math.hypot(ring.points[0][0], ring.points[0][1]), Math.abs(toScene(P.b, 0, cl)[0]), 1e-9, 'Einstein ring radius');
+});

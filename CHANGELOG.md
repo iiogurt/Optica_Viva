@@ -7,6 +7,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **3-D gravitational lensing** (`js/lib/lensing3d.js`): the lensing laboratory shows the telescope, the lens plane with the lens galaxy's mass ellipse and the critical curves, the source plane with the caustics and the background galaxy, the light path of every image with its magnification, and the Einstein ring as a double cone. The planes sit at their comoving distances, where light travels in straight lines in a flat universe; angles are exaggerated × 40 000. `images()` in `js/lib/lensing.js` solves the lens equation for every image of a point source (grid search, then Newton), in the worker with the source panel. Tests check SIS and point-mass images against the closed forms, the four-image cross of an elliptical lens, that comoving distances add up, and that each drawn path bends by the deflection.
+
+### Added
 - **3-D projections** (`js/lib/projection3d.js`): the projection laboratory shows the sphere of directions, radius f, with the Tissot circles on it, and the image plane tangent to it at the optical axis, where each circle lands as the chosen projection maps it. Lines join the circles on the horizon and the central meridian to their images (straight rays through the centre only for the rectilinear lens); the sensor's field is outlined on the sphere, and circles outside it are grey. The Tissot circles are now computed once in `js/lib/projection.js` (`tissotCircles`, `tissotColour`, `toCamera`) for the 2-D overlay and the 3-D view.
 
 ### Changed

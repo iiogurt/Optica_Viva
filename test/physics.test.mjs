@@ -322,3 +322,23 @@ test('Tissot indicatrices: equisolid keeps area, stereographic keeps circles, re
   const r40 = tissotCircles('rectilinear', f, 0, 0).find((t) => t.lat === 0 && t.lon === 40);
   near(r40.ratio, Math.cos((40 * Math.PI) / 180) ** -3, 0.02 * r40.ratio, 'rectilinear area ratio at 40°');
 });
+
+test('lens equation images: SIS at β ± θE, point mass at (β ± √(β² + 4θE²))/2, with their magnifications', async () => {
+  const { images } = await import('../js/lib/lensing.js');
+  const b = 1.4, src = [0.3, -0.4], beta = Math.hypot(...src);
+  const sis = images({ model: 'sis', b }, src);
+  assert.equal(sis.length, 2);
+  const rs = sis.map((p) => Math.hypot(p.x, p.y)).sort((x, y) => y - x);
+  near(rs[0], beta + b, 1e-6, 'SIS outer image'); near(rs[1], b - beta, 1e-6, 'SIS inner image');
+  near(sis[0].mu, (beta + b) / beta, 1e-3 * sis[0].mu, 'SIS μ+ = θ/(θ − θE)');
+  const pm = images({ model: 'point', b }, src).map((p) => Math.hypot(p.x, p.y)).sort((x, y) => y - x);
+  near(pm[0], (beta + Math.sqrt(beta * beta + 4 * b * b)) / 2, 1e-6, 'point-mass outer');
+  near(pm[1], (Math.sqrt(beta * beta + 4 * b * b) - beta) / 2, 1e-6, 'point-mass inner');
+  // an elliptical lens with the source near the centre gives an Einstein cross
+  assert.equal(images({ model: 'sie', b, q: 0.7, pa: 0.5, gamma: 0.04, gpa: 1.7 }, [0.05, 0.03]).length, 4);
+});
+
+test('flat ΛCDM: comoving distances add up, (1 + z_s) D_ls = χ_s − χ_l', async () => {
+  const { comoving } = await import('../js/lib/lensing3d.js');
+  for (const [zl, zs] of [[0.3, 2], [1.2, 5], [0.05, 0.4]]) near((1 + zs) * angularDiameterDistance(zl, zs) / 1000, comoving(zs) - comoving(zl), 1e-5, `z = ${zl}, ${zs}`);
+});

@@ -14,7 +14,7 @@ import { tiltScene, tiltBlend, shiftRows, TILT } from './scenes.js';
 import { diskBlurRGBA } from './blur.js';
 import { groundRows } from './dofphoto.js';
 import { projectionRows } from './projection.js';
-import { lensRows, sourceAndMagnification, criticalCurves, deflect } from './lensing.js';
+import { lensRows, sourceAndMagnification, criticalCurves, deflect, images } from './lensing.js';
 import { perspectiveRows } from './perspective.js';
 import { seeingSession } from './seeing.js';
 import { renderRuler } from './macro.js';
@@ -585,6 +585,7 @@ function projectionTask(p) { const r = projectionRows(p.p, p.y0, p.y1); return {
 function lensRowsTask(p) { const r = lensRows(p.p, p.y0, p.y1); return { result: r, transfer: [r.buffer] }; }
 function lensSide(p) {
   const r = sourceAndMagnification(p);
+  r.images = images(p.P, p.src);
   if (p.curves) {
     r.crit = criticalCurves(p.P);
     r.caus = r.crit.map(([a, b]) => [a, b].map(([x, y]) => { const [ax, ay] = deflect(p.P, x, y); return [x - ax, y - ay]; }));
