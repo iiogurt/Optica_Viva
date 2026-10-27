@@ -1,6 +1,7 @@
 // The ray tracer's 3-D scene (shown by js/lib/gl3d.js): glass elements as solids of revolution,
 // mirrors, the stop and the image plane, and real skew rays through the lens. Pure: no DOM.
-import { aimRay, trace, toPlane, surfaceSag, stopIndex } from './raytrace.js';
+import { aimRay, trace, toPlane, surfaceSag, stopIndex, astigFoci } from './raytrace.js';
+import { wavelengthRGB } from './color.js';
 import { glassData } from './glass.js';
 import { lensSolid, mirrorSheet, annulus, quad, bounds } from './mesh3d.js';
 
@@ -21,9 +22,12 @@ function pupilPattern(rim = 16, fan = 4) {
 // lens: prescription (with epd); sd: clear semi-diameters; par: paraxial data at 587.56 nm;
 // zImg: image plane; fields: field angles (degrees) to trace; lambda: wavelength (nm); pupil:
 // the rays per field as normalised stop coordinates [[px, py], …] (default: rim and fans); half:
-// the image plane's half-width and half-height (default: just large enough for the traced images).
+// the image plane's half-width and half-height (default: just large enough for the traced images);
+// lambdas: trace every field at these wavelengths (nm), coloured by wavelength, instead of at
+// `lambda` coloured by field; foci: mark the tangential and sagittal foci of each off-axis field.
+// Rays stopped by a clear aperture end there, drawn dim red.
 // Returns { meshes, lines, labels } in millimetres, optical axis along z.
-export function lensScene(lens, { sd, par, zImg, fields = [0], lambda = 587.56, pupil = pupilPattern(), half = null }) {
+export function lensScene(lens, { sd, par, zImg, fields = [0], lambda = 587.56, pupil = pupilPattern(), half = null, lambdas = null, foci = false }) {
   const S = lens.surfaces, zv = par.zv, meshes = [], lines = [], labels = [];
   const name = (g) => (typeof g === 'string' ? g : g.name);
   for (let i = 0; i < S.length; i++) {
@@ -55,16 +59,19 @@ export function lensScene(lens, { sd, par, zImg, fields = [0], lambda = 587.56, 
   const pattern = pupil;
   const allPts = [], rays = [];
   fields.forEach((th, fi) => {
-    const col = FIELD_COLOURS[fi % FIELD_COLOURS.length];
-    for (const [px, py] of pattern) {
-      const a = aimRay(lens, lambda, th, px, py, par);
-      if (!a) continue;
-      const r = trace(lens, lambda, a.p, a.d, { path: true, sd, zv });
-      if (!r.path || r.path.length < 2) continue;
-      const pts = r.path.map((q) => [q[0], q[1], q[2]]);
-      if (r.ok) { const q = toPlane(r, zImg); pts.push([q[0], q[1], q[2]]); hMax = Math.max(hMax, Math.abs(q[1])); }
-      allPts.push(pts);
-      rays.push({ points: pts, color: col, width: 1.1 });
+    for (const lam of lambdas || [lambda]) {
+      const col = lambdas ? [...wavelengthRGB(lam), 0.5] : FIELD_COLOURS[fi % FIELD_COLOURS.length];
+      for (const [px, py] of pattern) {
+        const a = aimRay(lens, lam, th, px, py, par);
+        if (!a) continue;
+        const r = trace(lens, lam, a.p, a.d, { path: true, sd, zv });
+        if (!r.path || r.path.length < 2) continue;
+        const pts = r.path.map((q) => [q[0], q[1], q[2]]);
+        if (r.ok) { const q = toPlane(r, zImg); pts.push([q[0], q[1], q[2]]); hMax = Math.max(hMax, Math.abs(q[1])); }
+        allPts.push(pts);
+        // the wavelengths add up (glow): white where their paths coincide, coloured where they part
+        rays.push({ points: pts, color: r.ok ? col : [1, 0.35, 0.35, 0.45], width: 1.1, vignetted: !r.ok });
+      }
     }
   });
   // lead the incoming rays in from well in front of the first surface
@@ -80,6 +87,20 @@ export function lensScene(lens, { sd, par, zImg, fields = [0], lambda = 587.56, 
   labels.push({ p: [0, hp * 1.15, zImg], text: 'image plane', color: 'rgba(255,255,255,0.75)' });
   // the optical axis, faint, from the start of the rays to just past the image
   lines.push(...rays);
+  // where the vignetted rays stop
+  for (const l of rays) if (l.vignetted) { const e = l.points[l.points.length - 1]; meshes.push({ mesh: quad(e, [1, 0, 0], [0, 1, 0], 0.25, 0.25), color: [1, 0.35, 0.35], opacity: 0.9 }); }
+  // the tangential focal line (across the meridional plane) and the sagittal one (along it)
+  if (foci) for (const th of fields) {
+    if (!(th > 0)) continue;
+    const f = astigFoci(lens, lambda, th, par);
+    if (!f) continue;
+    const at = (z) => toPlane(f.chief, z), L = Math.max(0.6, bb.size * 0.02);
+    const t = at(f.zt), sg = at(f.zs);
+    lines.push({ points: [[t[0] - L, t[1], f.zt], [t[0] + L, t[1], f.zt]], color: [1, 0.45, 0.62, 1], width: 2 });
+    lines.push({ points: [[sg[0], sg[1] - L, f.zs], [sg[0], sg[1] + L, f.zs]], color: [0.6, 1, 0.7, 1], width: 2 });
+    const above = Math.abs(f.zt - f.zs) < bb.size * 0.03 ? L * 1.2 : 0;
+    labels.push({ p: [t[0], t[1] + L * 1.6 + above, f.zt], text: 'T focus', color: '#ff7aa0' }, { p: [sg[0], sg[1] - L * 1.8, f.zs], text: 'S focus', color: '#9cffb3' });
+  }
   const zs = Math.min(...rays.map((l) => l.points[0][2]), zv[0]), ze = zImg + (zImg - zv[0]) * 0.08;
   lines.push({ points: [[0, 0, zs], [0, 0, ze]], color: [1, 1, 1, 0.18], width: 0.8 });
   // frame the camera on the optics and the image, not on the long incoming rays
