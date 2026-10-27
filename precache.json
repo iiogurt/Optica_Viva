@@ -33,6 +33,7 @@
     "js/lib/fft.js",
     "js/lib/fieldpsf.js",
     "js/lib/film.js",
+    "js/lib/flare3d.js",
     "js/lib/gallery.js",
     "js/lib/gear.js",
     "js/lib/ghosts.js",

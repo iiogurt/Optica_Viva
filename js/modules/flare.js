@@ -2,7 +2,8 @@ import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { LENSES, paraxial, autoSemiDiameters } from '../lib/raytrace.js';
 import { paraxialGhosts } from '../lib/ghosts.js';
-import { run } from '../lib/compute.js';
+import { run, latest } from '../lib/compute.js';
+import { view3d } from '../lib/gl3d.js';
 import { index } from '../lib/glass.js';
 import { fresnel, stackReflectance, COATINGS } from '../lib/thinfilm.js';
 import { spectralBasis, linspace, cmf, xyzToLinearRGB, gamutClip, oetf } from '../lib/color.js';
@@ -45,17 +46,18 @@ export default function mount(root, meta) {
   const view = stage({ aspect: 1.5, label: 'Drag the sun', draw: drawView, minH: 300 });
   const rplot = stage({ aspect: 1.5, label: '', draw: drawR, cls: 'plain' });
   const fplot = stage({ aspect: 1.5, label: '', draw: drawFresnel, cls: 'plain' });
-  root.append(lab([view.el, rayNote, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, rplot.el), h('div.card', { style: { padding: '6px' } }, fplot.el))], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D: the paths of the brightest ghosts, reflected twice inside the lens, and where they land', aspect: 2.2, minH: 240, yaw: -1.35, pitch: 0.18 });
+  root.append(lab([view.el, rayNote, v3.el, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, rplot.el), h('div.card', { style: { padding: '6px' } }, fplot.el))], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   let sun = [0.68, 0.3];
-  const move = (e) => { const r = view.canvas.getBoundingClientRect(); sun = [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; view.redraw(); requestRays(true); };
+  const move = (e) => { const r = view.canvas.getBoundingClientRect(); sun = [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; view.redraw(); requestRays(true); show3d(); };
   let dragging = false;
   view.canvas.tabIndex = 0;
   view.canvas.setAttribute('aria-label', 'Lens flare render. Arrow keys move the sun.');
   view.canvas.addEventListener('keydown', (e) => {
     const d = { ArrowLeft: [-0.02, 0], ArrowRight: [0.02, 0], ArrowUp: [0, -0.02], ArrowDown: [0, 0.02] }[e.key];
     if (!d) return;
-    e.preventDefault(); sun = [Math.min(1, Math.max(0, sun[0] + d[0])), Math.min(1, Math.max(0, sun[1] + d[1]))]; view.redraw(); requestRays(true);
+    e.preventDefault(); sun = [Math.min(1, Math.max(0, sun[0] + d[0])), Math.min(1, Math.max(0, sun[1] + d[1]))]; view.redraw(); requestRays(true); show3d();
   });
   view.canvas.addEventListener('pointerdown', (e) => { dragging = true; view.canvas.setPointerCapture(e.pointerId); move(e); });
   view.canvas.addEventListener('pointermove', (e) => dragging && move(e));
@@ -108,6 +110,18 @@ export default function mount(root, meta) {
   }
 
   let G = null;
+  // 3-D (in the worker), once the sun or the lens settles; the camera stays while the lens does
+  const scene3dJob = latest('flare3d');
+  let lens3d = '';
+  const show3d = debounce(() => {
+    if (!G || !alive) return;
+    const st = G.st, theta = [((sun[0] - 0.5) * 36) / G.par.efl, ((0.5 - sun[1]) * 24) / G.par.efl];
+    scene3dJob('flareScene3d', { lens: G.lens, sd: G.sd, coat: st.coat, blades: st.blades, theta }).then((sc) => {
+      if (!alive) return;
+      v3.setScene(sc, lens3d === st.lens);
+      lens3d = st.lens;
+    }, () => {});
+  }, 300);
   const recompute = debounce(() => {
     const st = ctl.state, base = LENSES[st.lens];
     const lens = { ...base, epd: base.epd / st.stopdown };
@@ -157,6 +171,7 @@ export default function mount(root, meta) {
     star.put();
     if (!sdCache.has(st.lens)) sdCache.set(st.lens, autoSemiDiameters(base));
     G = { lens, par, ghosts, rEP, st: { ...st }, Rsurf, T, totalGhost, brightest, star: star.c, sd: sdCache.get(st.lens) };
+    show3d();
     if (st.model === 'rays') requestRays(true);
     else rayNote.textContent = 'Paraxial ghosts: each is a uniformly lit, scaled image of the iris, with no aberrations or vignetting.';
     const nGlassAir = Rsurf.filter((r) => r[3] > 0).length;
@@ -288,6 +303,8 @@ export default function mount(root, meta) {
 <p>A layer of index \(n_j\) and thickness \(d_j\) has the characteristic matrix</p>
 \[\mathbf M_j = \begin{pmatrix}\cos\delta_j & \frac{i}{\eta_j}\sin\delta_j\\ i\eta_j\sin\delta_j & \cos\delta_j\end{pmatrix},\quad \delta_j = \frac{2\pi n_jd_j\cos\theta_j}{\lambda},\]
 <p>with \(\eta_j = n_j\cos\theta_j\) (s) or \(n_j/\cos\theta_j\) (p). Then \(\begin{psmallmatrix}B\\C\end{psmallmatrix} = \prod\mathbf M_j\begin{psmallmatrix}1\\\eta_s\end{psmallmatrix}\) and \(R = \left|\frac{\eta_0B - C}{\eta_0B + C}\right|^2\). A single quarter-wave layer zeroes reflection when \(n_1 = \sqrt{n_0n_s}\approx1.23\). MgF₂ (1.38) is the closest durable material and leaves 1.3 %. Multilayers broaden and deepen the minimum. Graded-index nanostructures (Canon SWC, Nikon Nano Crystal, moth-eye surfaces) remove the abrupt interface altogether, so reflection stays low even at steep angles. The residual reflection is coloured, which is why lens fronts glint green or magenta (see the tint swatch).</p>
+<h3>Ghost paths in 3-D</h3>
+<p>The 3-D view ranks every two-reflection path \((i, j)\) by its mean irradiance on the sensor. It traces a \(13\times13\) grid of parallel rays from the sun through the path and sums the two reflectances of the rays that clear every aperture. That flux, divided by the area of the spot they cover, is the ghost's brightness relative to the sun. The three brightest are drawn with their exact paths: forward to surface \(j\), back to surface \(i\), then forward to the sensor. A ghost focused into a small spot can outshine one that collects more light but spreads it, which is why the ranking uses irradiance and not flux.</p>
 <h3>Diffraction star and veiling glare</h3>
 <p>The sun's star is the Fraunhofer pattern of the iris polygon, computed by FFT for 8 wavelengths. An odd blade count gives \(2n\) spikes. Light scattered by surface roughness, dust, and the ground glass edges and barrel interior adds a broad <em>veiling glare</em> that lifts the shadows and cuts contrast. In space telescopes, the same physics is fought with baffles, black coatings and super-polished mirrors. Stray light from the Sun and Earth is a primary design driver for JWST's sunshield and for coronagraphs.</p>
 </div></div>`));
@@ -298,5 +315,5 @@ export default function mount(root, meta) {
     'E. Hecht, <i>Optics</i>, 5th ed. (2017), §4.6: Fresnel equations.',
     'S. Lee &amp; E. Eisemann, "Practical real-time lens-flare rendering", Comput. Graph. Forum 32(4) (2013).',
   ]));
-  return () => { alive = false; [view, rplot, fplot].forEach((s) => s.destroy()); };
+  return () => { alive = false; [view, rplot, fplot, v3].forEach((s) => s.destroy()); };
 }

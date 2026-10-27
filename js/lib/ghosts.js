@@ -89,7 +89,8 @@ export function ghostSystem(lens, o) {
 
 // Exact trace of one ray along ghost path (i, j), or the direct path (i = j = −1), at wavelength index li.
 // Returns [x, y, gauge, R] on the sensor (a reused array: copy it), or null if the ray misses a surface, suffers TIR on a
-// refraction, or strays far outside an aperture (gauge > 2).
+// refraction, or strays far outside an aperture (gauge > 2). If `pts` is an array, every surface hit and the sensor
+// point are appended to it as x, y, z triples (for drawing the path).
 export function makeGhostTracer(sys, li) {
   const { S, N, zv, sd, si, gaugeStop, asph } = sys, { before, after } = sys.media[li];
   const tab = sys.tables.map((t) => t[li]), Rad = S.map((s) => s.R), flat = S.map((s) => !isFinite(s.R));
@@ -114,7 +115,7 @@ export function makeGhostTracer(sys, li) {
   };
   // one flat loop over plain locals: closures over mutable numbers would box every update
   const out = new Float64Array(4);
-  return function traceGhost(i, j, x0, y0, z0, ux, uy, uz) {
+  return function traceGhost(i, j, x0, y0, z0, ux, uy, uz, pts = null) {
     const { ks, n1, n2, rf } = sequence(i, j);
     let px = x0, py = y0, pz = z0, dx = ux, dy = uy, dz = uz, nx = 0, ny = 0, nz = -1, g = 0, R = 1;
     for (let m = 0; m < ks.length; m++) {
@@ -137,6 +138,7 @@ export function makeGhostTracer(sys, li) {
         px += t * dx; py += t * dy; pz += t * dz;
         nx = px / Rr; ny = py / Rr; nz = (pz - cz) / Rr;
       }
+      if (pts) pts.push(px, py, pz);
       const gk = k === si ? gaugeStop(px, py) : Math.sqrt(px * px + py * py) / sd[k];
       if (gk > g) { g = gk; if (g > 2) return null; }
       let cosi = -(nx * dx + ny * dy + nz * dz);
@@ -161,6 +163,7 @@ export function makeGhostTracer(sys, li) {
     if (dz <= 0) return null;
     const t = (sys.zImg - pz) / dz;
     out[0] = px + t * dx; out[1] = py + t * dy; out[2] = g; out[3] = R;
+    if (pts) pts.push(out[0], out[1], sys.zImg);
     return out;
   };
 }
