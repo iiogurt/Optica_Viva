@@ -535,7 +535,7 @@ A **diffraction model of the Shack–Hartmann sensor**: one FFT spot per lenslet
 **Interferometry & aperture synthesis** · `#/interferometry`<br>
 <img src="docs/screenshots/interferometry.webp" alt="Fringes of a stellar disk and the visibility curve against baseline" width="70%">
 
-**Michelson's stellar interferometer**: fringes of a disk star summed point by point reproduce the van Cittert–Zernike visibility |2J₁(x)/x|, including **Betelgeuse's 47 mas** from the 3.07 m null of 1920. **Earth-rotation synthesis** with VLA-like, VLTI and **EHT** layouts (elevation-limited stations) produces u-v coverage, the dirty beam, the dirty image and **Högbom CLEAN** of a black-hole ring, a binary or a jet, computed in the worker.
+**Michelson's stellar interferometer**: fringes of a disk star summed point by point reproduce the van Cittert–Zernike visibility |2J₁(x)/x|, including **Betelgeuse's 47 mas** from the 3.07 m null of 1920. **Earth-rotation synthesis** with VLA-like, VLTI and **EHT** layouts (elevation-limited stations) produces u-v coverage, the dirty beam, the dirty image and **Högbom CLEAN** of a black-hole ring, a binary or a jet, computed in the worker. A **3-D view** shows the Earth turning under the source, the stations that can see it, and each baseline, projected as the source sees it, tracing its track in the u-v plane.
 
 </td>
 </tr>
@@ -852,6 +852,7 @@ Optica_Viva/
 │   │   ├── tilt3d.js          3-D Scheimpflug geometry at true scale, and the plane of focus over the toy town
 │   │   ├── dof3d.js           3-D depth of field: the camera's frustum, plane of focus, sharp zone and cards at true scale
 │   │   ├── colour3d.js        3-D colour solid: optimal colours under a source in xyY, display gamuts, test colours
+│   │   ├── interf3d.js        3-D aperture synthesis: the turning Earth, stations, and the baselines' u-v tracks
 │   │   ├── lensing3d.js       3-D lensing: comoving planes, light paths of every image, critical curves, caustics, ring cone
 │   │   ├── projection3d.js    3-D sphere of directions with Tissot circles, the image plane and the sensor's field
 │   │   ├── i18n.js            Interface translation: t(), N_(), language choice and loading

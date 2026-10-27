@@ -3,6 +3,8 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
+import { view3d } from '../lib/gl3d.js';
+import { interfScene } from '../lib/interf3d.js';
 import { MAS, diskVisibility, firstNull, fringes, fringeVisibility, ARRAYS } from '../lib/interferometry.js';
 
 const INF = lut('inferno'), DIV = lut('diverging');
@@ -74,6 +76,7 @@ export default function mount(root, meta) {
     scale: { type: 'range', label: 'Source size', min: 1, max: 20, log: true, value: 8, fmt: (v) => v.toPrecision(2) + ' × λ/B_max' },
     natural: { type: 'toggle', label: 'Natural weighting (else uniform)', value: false },
     niter: { type: 'range', label: 'CLEAN iterations', min: 0, max: 1000, step: 10, value: 300 },
+    H: { type: 'range', label: 'Moment shown in 3-D (hour angle)', min: -12, max: 12, step: 0.1, value: 0, unit: 'h' },
   }, () => updA());
   const aro = h('div');
   const uv = stage({ aspect: 1, label: 'u-v coverage (each baseline traces an ellipse as the Earth turns)', draw: drawUV, minH: 220 });
@@ -81,13 +84,22 @@ export default function mount(root, meta) {
   const skyV = stage({ aspect: 1, label: 'True sky', draw: (c, w, hh) => drawMap(c, w, hh, 'sky'), minH: 200 });
   const dirty = stage({ aspect: 1, label: 'Dirty image (sky ⊗ dirty beam)', draw: (c, w, hh) => drawMap(c, w, hh, 'dirty', true), minH: 200 });
   const rest = stage({ aspect: 1, label: 'After Högbom CLEAN, restored', draw: (c, w, hh) => drawMap(c, w, hh, 'restored'), minH: 200 });
-  sec2.append(lab([h('div.grid-2', {}, uv.el, beam.el), h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' } }, skyV.el, dirty.el, rest.el)], [h('div.card', {}, actl.el), h('div.card', {}, aro)]));
+  const v3 = view3d({ label: '3-D: the Earth turns under the source, and each baseline, as the source sees it, traces its track in the u-v plane', aspect: 1.7, minH: 280, yaw: 0.75, pitch: 0.35 });
+  sec2.append(lab([h('div.grid-2', {}, uv.el, beam.el), v3.el, h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' } }, skyV.el, dirty.el, rest.el)], [h('div.card', {}, actl.el), h('div.card', {}, aro)]));
   root.append(sec2);
   const job = latest('aperture');
   let A = null, lastArr = actl.state.array;
+  // the 3-D view follows every control; the imaging pipeline only the ones it uses
+  let jobKey = '', view3dFor = '';
   function updA() {
     const st = actl.state;
     if (st.array !== lastArr) { lastArr = st.array; actl.set.dec(ARRAYS[st.array].dec); }
+    const geom = [st.array, actl.state.dec, st.hours].join();
+    v3.setScene(interfScene({ array: st.array, dec: actl.state.dec, hours: st.hours, H: st.H }), view3dFor === st.array);
+    view3dFor = st.array;
+    const key = JSON.stringify([geom, st.sky, st.scale, st.natural, st.niter]);
+    if (key === jobKey) return;
+    jobKey = key;
     job('aperture', { array: st.array, dec: actl.state.dec, hours: st.hours, sky: st.sky, scale: st.scale, natural: st.natural, niter: st.niter, N: 128 }).then((r) => {
       A = { st: { ...st }, ...r };
       const arr = ARRAYS[st.array], unit = r.res / MAS >= 1000 ? [1000 * MAS, 'arcsec'] : r.res / MAS >= 1 ? [MAS, 'mas'] : [MAS / 1000, 'µas'];
@@ -140,6 +152,7 @@ export default function mount(root, meta) {
 <p>Each pair of antennas samples one point \((u, v)\) of the source's Fourier transform. As the Earth turns, the projected baseline sweeps an ellipse through the \(u\)-\(v\) plane:</p>
 \[u = \frac{X\sin H + Y\cos H}{\lambda},\qquad v = \frac{-X\sin\delta\cos H + Y\sin\delta\sin H + Z\cos\delta}{\lambda},\]
 <p>with \((X, Y, Z)\) the baseline in equatorial coordinates, \(H\) the hour angle and \(\delta\) the declination. Stations count only while both see the source above 15° elevation. For the EHT this limits each baseline to a few hours of a day.</p>
+<p>The 3-D view shows where the formula comes from. Turn the Earth by \(H\) under a fixed sky in which the source lies along \(\hat s = (\cos\delta, 0, \sin\delta)\). The \(u\)-\(v\) plane is the plane perpendicular to \(\hat s\), with \(\hat u = (0, 1, 0)\) pointing east and \(\hat v = (-\sin\delta, 0, \cos\delta)\) towards the pole. Then \(u = \mathbf b\cdot\hat u/\lambda\) and \(v = \mathbf b\cdot\hat v/\lambda\) are the baseline as the source sees it: the separation of the two stations' shadows on that plane. A source at the pole sees every baseline turn as a circle. One on the equator sees east–west baselines shrink to lines. A station counts while \(\hat n\cdot\hat s > \sin 15^\circ\), with \(\hat n\) its local vertical, using the same hour angle as the projection.</p>
 </div><div>
 <h3>Dirty images and CLEAN</h3>
 <p>Inverting the sampled visibilities gives the <em>dirty image</em>: the true sky convolved with the <em>dirty beam</em>, the Fourier transform of the sampling pattern. Sparse coverage makes the beam's sidelobes strong. Uniform weighting gives every sampled cell equal weight and sharpens the beam; natural weighting maximises sensitivity. Högbom's CLEAN (1974) assumes the sky is a set of point sources. It repeatedly finds the residual peak, subtracts a fraction (gain 0.1) of the beam there, records the component, and finally restores the components with a clean Gaussian beam. It is the simplest of the deconvolution methods; the EHT used regularised maximum-likelihood imaging as well.</p>
@@ -152,5 +165,5 @@ export default function mount(root, meta) {
     'Event Horizon Telescope Collaboration, “First M87 Event Horizon Telescope results. I–IV”, <em>Astrophys. J. Lett.</em> 875 (2019).',
   ]));
 
-  return () => [fr, vis, uv, beam, skyV, dirty, rest].forEach((x) => x.destroy());
+  return () => [fr, vis, uv, beam, skyV, dirty, rest, v3].forEach((x) => x.destroy());
 }

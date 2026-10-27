@@ -71,7 +71,11 @@ export function merge(list) {
 export function annulus(rIn, rOut, z0, seg = 72) { return flip(lathe([[rIn, z0], [rOut, z0]], seg)); }
 
 // The same mesh with every vertex coloured rgb (for merging coloured meshes).
-export const tint = (m, rgb) => ({ ...m, colors: new Float32Array(Array.from({ length: m.positions.length / 3 }, () => rgb).flat()) });
+export function tint(m, rgb) {
+  const n = m.positions.length / 3, colors = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) colors.set(rgb, i * 3);
+  return { ...m, colors };
+}
 
 // Axis-aligned box from corner a to corner b (flat-shaded faces), optionally coloured.
 export function box(a, b, rgb = null) {
