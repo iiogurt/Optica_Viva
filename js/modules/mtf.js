@@ -100,7 +100,9 @@ export default function mount(root, meta) {
       ['Rayleigh distance 1.22λN', (1.22 * 0.55 * N).toFixed(2) + ' µm'],
       ['f-number where ν_c = ν_N', 'f/' + (2 * st.p / 0.55).toFixed(1)],
     ]));
-    calc.say(`At f/${st.N.toPrecision(2)} with ${st.p} µm pixels, half the contrast survives up to <strong>${fmt(M.mtf50, 3)} cycles/mm</strong>. At the finest pattern the pixels can record (${fmt(nyq, 3)} cycles/mm), ${(sysAbs(nyq) * 100).toFixed(0)} % remains` + (sysAbs(nyq) > 0.1 ? ', so moiré is likely.' : '.'));
+    calc.say((sysAbs(nyq) > 0.1
+      ? t('At f/{N} with {p} µm pixels, half the contrast survives up to <strong>{mtf50} cycles/mm</strong>. At the finest pattern the pixels can record ({nyq} cycles/mm), {rest} % remains, so moiré is likely.', { N: st.N.toPrecision(2), p: st.p, mtf50: fmt(M.mtf50, 3), nyq: fmt(nyq, 3), rest: (sysAbs(nyq) * 100).toFixed(0) })
+      : t('At f/{N} with {p} µm pixels, half the contrast survives up to <strong>{mtf50} cycles/mm</strong>. At the finest pattern the pixels can record ({nyq} cycles/mm), {rest} % remains.', { N: st.N.toPrecision(2), p: st.p, mtf50: fmt(M.mtf50, 3), nyq: fmt(nyq, 3), rest: (sysAbs(nyq) * 100).toFixed(0) })));
     calc.set(String.raw`\begin{aligned}
     \mathrm{MTF}_\text{sys} &= \mathrm{MTF}_\text{opt}\,\mathrm{MTF}_\text{pix}\,\mathrm{MTF}_\text{OLPF}\\
     \nu_c &= 1/(\lambda N) = ${texNum(nuC(550), 4)}\ \text{cy/mm}\\

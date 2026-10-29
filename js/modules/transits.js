@@ -82,8 +82,9 @@ export default function mount(root, meta) {
       ['Transits for a detection (SNR 7.1)', isFinite(need) ? String(need) : '—'],
     ]));
     calc.say(transits
-      ? `The planet blocks <strong>${fmt(centre * 1e6, 3)} ppm</strong> of the starlight for <strong>${(o.T14 / 3600).toPrecision(2)} hours</strong>. With ${fmt(sig, 3)} ppm of noise per ${st.t.toFixed(0)} s point, one transit is detected at signal-to-noise <strong>${snr1 >= 100 ? snr1.toFixed(0) : snr1.toFixed(1)}</strong>${snr1 >= 7.1 ? ', a clear detection.' : `; about ${need} transits (${fmt((need * st.P) / 365.25, 2)} years) are needed.`}`
-      : `At impact parameter ${st.b.toFixed(2)} the planet passes beside the star: no transit is seen from this direction.`);
+      ? t('The planet blocks <strong>{ppm} ppm</strong> of the starlight for <strong>{h} hours</strong>. With {sig} ppm of noise per {dt} s point, one transit is detected at signal-to-noise <strong>{snr}</strong>.', { ppm: fmt(centre * 1e6, 3), h: (o.T14 / 3600).toPrecision(2), sig: fmt(sig, 3), dt: st.t.toFixed(0), snr: snr1 >= 100 ? snr1.toFixed(0) : snr1.toFixed(1) })
+        + ' ' + (snr1 >= 7.1 ? t('That is a clear detection.') : t('About {n} transits ({y} years) are needed.', { n: need, y: fmt((need * st.P) / 365.25, 2) }))
+      : t('At impact parameter {b} the planet passes beside the star: no transit is seen from this direction.', { b: st.b.toFixed(2) }));
     calc.set(String.raw`\begin{aligned}
     \delta &= \left(\frac{R_p}{R_\star}\right)^2 = ${texNum(o.k, 3)}^2 = ${texNum(o.depth * 1e6, 3)}\ \text{ppm}\\
     a &= \left(\frac{GM_\star P^2}{4\pi^2}\right)^{1/3} = ${texNum(o.a / AU, 3)}\ \text{AU}\\

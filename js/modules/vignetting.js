@@ -2,6 +2,7 @@ import { h, controls, stage, readouts, imageCanvas, texNum, fmt } from '../lib/u
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS } from '../lib/sensors.js';
 import { plot, range } from '../lib/plot.js';
+import { t } from '../lib/i18n.js';
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
@@ -67,7 +68,7 @@ export default function mount(root, meta) {
       ['Total corner falloff', ev(c.tot).toFixed(2) + ' EV'],
       ['Entrance-pupil radius f/2N', (st.f / (2 * st.N)).toFixed(2) + ' mm'],
     ]));
-    calc.say(`The corners get <strong>${Math.abs(ev(c.tot)).toFixed(1)} stops</strong> less light than the centre: ${Math.abs(ev(c.nat)).toFixed(1)} from the slanted light, ${isFinite(ev(c.me)) ? Math.abs(ev(c.me)).toFixed(1) : 'all'} from the lens barrel and ${isFinite(ev(c.px)) ? Math.abs(ev(c.px)).toFixed(1) : 'all'} from the pixels.`);
+    calc.say(t('The corners get <strong>{tot} stops</strong> less light than the centre: {nat} from the slanted light, {me} from the lens barrel and {px} from the pixels.', { tot: Math.abs(ev(c.tot)).toFixed(1), nat: Math.abs(ev(c.nat)).toFixed(1), me: isFinite(ev(c.me)) ? Math.abs(ev(c.me)).toFixed(1) : t('all'), px: isFinite(ev(c.px)) ? Math.abs(ev(c.px)).toFixed(1) : t('all') }));
     calc.set(String.raw`\begin{aligned}
     \mathrm{RI}(\theta) &= \cos^{n}\theta\cdot V_\text{mech}(\theta)\cdot T_\text{px}(\theta_\text{CRA})\\
     &= ${texNum(c.nat, 3)}\times${texNum(c.me, 3)}\times${texNum(c.px, 3)} = ${texNum(c.tot, 3)}\\

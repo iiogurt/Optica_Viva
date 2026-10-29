@@ -112,7 +112,10 @@ export default function mount(root, meta) {
       ['Exposure / flicker period', (st.fexp / (1000 / f)).toFixed(2) + ' cycles'],
       ['Flicker bands across frame', ((st.readout / 1000) * f).toFixed(1)],
     ]));
-    calc.say(`During the ${st.readout} ms readout the propeller turns <strong>${((tipSpeed * st.readout) / 1000 * 180 / Math.PI).toFixed(0)}°</strong>, which bends the blades. ` + (Math.abs(appRpm) < 0.5 ? 'The wheel seems to stand still.' : `The wheel seems to turn ${appRpm * st.wrpm < 0 ? '<strong>backwards</strong>' : 'forwards'} at <strong>${Math.abs(appRpm).toFixed(0)} rpm</strong> instead of ${st.wrpm}.`));
+    calc.say(t('During the {ms} ms readout the propeller turns <strong>{deg}°</strong>, which bends the blades.', { ms: st.readout, deg: ((tipSpeed * st.readout) / 1000 * 180 / Math.PI).toFixed(0) }) + ' '
+      + (Math.abs(appRpm) < 0.5 ? t('The wheel seems to stand still.')
+        : appRpm * st.wrpm < 0 ? t('The wheel seems to turn <strong>backwards</strong> at <strong>{rpm} rpm</strong> instead of {true}.', { rpm: Math.abs(appRpm).toFixed(0), true: st.wrpm })
+        : t('The wheel seems to turn forwards at <strong>{rpm} rpm</strong> instead of {true}.', { rpm: Math.abs(appRpm).toFixed(0), true: st.wrpm })));
     calc.set(String.raw`\begin{aligned}
     t_\text{row}(y) &= t_0 + \frac{y}{H}T_\text{read}\\
     t_\text{exp} &= \frac{\theta_\text{shutter}}{360^\circ}\cdot\frac{1}{f_\text{fps}} = \frac{${st.angle}}{360\times${st.fps}}\ \text{s}\\

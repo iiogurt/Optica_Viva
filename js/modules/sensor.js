@@ -101,8 +101,8 @@ export default function mount(root, meta) {
     const k = crop(S);
     const mft = crop(SENSORS.mft);
     calc.say(k > 1.01 || k < 0.99
-      ? `On ${S.name}, ${fmt(st.f, 3)} mm at f/${st.N.toPrecision(2)} and ISO ${Math.round(st.iso)} makes the same photograph as <strong>${fmt(k * st.f, 3)} mm at f/${(k * st.N).toPrecision(2)} and ISO ${Math.round(k * k * st.iso)}</strong> on full frame: same view, same depth of field, same lens opening of ${(st.f / st.N).toFixed(1)} mm.`
-      : `To make this photograph (${fmt(st.f, 3)} mm, f/${st.N.toPrecision(2)}, ISO ${Math.round(st.iso)} on full frame), a Micro Four Thirds camera would need <strong>${fmt(st.f / mft, 3)} mm at f/${(st.N / mft).toPrecision(2)} and ISO ${Math.round(st.iso / (mft * mft))}</strong>: the same lens opening of ${(st.f / st.N).toFixed(1)} mm.`);
+      ? t('On {sensor}, {f} mm at f/{N} and ISO {iso} makes the same photograph as <strong>{fe} mm at f/{Ne} and ISO {isoe}</strong> on full frame: same view, same depth of field, same lens opening of {D} mm.', { sensor: t(S.name), f: fmt(st.f, 3), N: st.N.toPrecision(2), iso: Math.round(st.iso), fe: fmt(k * st.f, 3), Ne: (k * st.N).toPrecision(2), isoe: Math.round(k * k * st.iso), D: (st.f / st.N).toFixed(1) })
+      : t('To make this photograph ({f} mm, f/{N}, ISO {iso} on full frame), a Micro Four Thirds camera would need <strong>{fm} mm at f/{Nm} and ISO {isom}</strong>: the same lens opening of {D} mm.', { f: fmt(st.f, 3), N: st.N.toPrecision(2), iso: Math.round(st.iso), fm: fmt(st.f / mft, 3), Nm: (st.N / mft).toPrecision(2), isom: Math.round(st.iso / (mft * mft)), D: (st.f / st.N).toFixed(1) }));
     calc.set(String.raw`\begin{aligned}
     k &= \frac{43.27}{${texNum(diag(S), 4)}} = ${texNum(k, 4)}\\
     f_{FF} &= k f = ${texNum(k * st.f, 4)}\ \text{mm}\\

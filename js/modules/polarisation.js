@@ -90,8 +90,8 @@ export default function mount(root, meta) {
       ['Filter factor (unpolarised light)', st.pol ? (Math.log2(1 / ff)).toFixed(2) + ' EV' : '—'],
     ]));
     const P0 = f ? (f.Rs - f.Rp) / (f.Rs + f.Rp) : 0;
-    calc.say((thC !== null ? `Light reflected at the image centre meets the water at ${(thC / D2R).toFixed(0)}° (Brewster's angle is ${(thB / D2R).toFixed(1)}°) and is <strong>${(P0 * 100).toFixed(0)} % polarised</strong>. ` : `The image centre shows sky. `)
-      + (st.pol ? `The filter costs ${Math.log2(1 / ff).toFixed(1)} stops of light.` : 'The filter is off.'));
+    calc.say((thC !== null ? t('Light reflected at the image centre meets the water at {th}° (Brewster\'s angle is {thB}°) and is <strong>{P} % polarised</strong>.', { th: (thC / D2R).toFixed(0), thB: (thB / D2R).toFixed(1), P: (P0 * 100).toFixed(0) }) : t('The image centre shows sky.')) + ' '
+      + (st.pol ? t('The filter costs {s} stops of light.', { s: Math.log2(1 / ff).toFixed(1) }) : t('The filter is off.')));
     calc.set(String.raw`\begin{aligned}
     \theta_B &= \arctan\frac{n_2}{n_1} = \arctan ${texNum(N_W, 4)} = ${texNum(thB / D2R, 4)}^\circ\\
     ${f ? String.raw`r_s &= \frac{\cos\theta_i - n\cos\theta_t}{\cos\theta_i + n\cos\theta_t} = ${texNum(f.rs, 4)},\quad r_p = ${texNum(f.rp, 4)}\\

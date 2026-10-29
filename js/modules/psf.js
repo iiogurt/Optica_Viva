@@ -6,6 +6,7 @@ import { oetf, linspace } from '../lib/color.js';
 import { plot } from '../lib/plot.js';
 import { view3d } from '../lib/gl3d.js';
 import { psfMesh } from '../lib/surf3d.js';
+import { t } from '../lib/i18n.js';
 
 const PRESETS = {
   circle: { label: 'Circular (ideal lens)', spec: { type: 'circle' } },
@@ -94,9 +95,9 @@ export default function mount(root, meta) {
     const D = P.tel ? P.D : null;
     const th = 1.22 * lam / D, d = 2.44 * band.ref / 1000 * st.N;
     calc.say((P.tel
-      ? `The finest detail the ${P.label.replace(/ \(.*\)$/, '')} can separate at ${fmt(band.ref / 1000, 3)} µm is about <strong>${fmt(th * 206265 * 1000, 3)} milliarcseconds</strong>: the size of a coin seen from ${fmt(0.023 / th / 1000, 3)} km.`
-      : `At f/${st.N.toPrecision(2)} a point of light becomes a dot <strong>${fmt(d, 3)} µm</strong> across, ${fmt(d / 4.3, 2)} pixels on a sensor with 4.3 µm pixels.`)
-      + (st.defocus ? ` Defocus has lowered the peak to ${(data.strehl * 100).toFixed(0)} % of a perfect focus.` : ''));
+      ? t('The finest detail the {tel} can separate at {lam} µm is about <strong>{mas} milliarcseconds</strong>: the size of a coin seen from {km} km.', { tel: P.label.replace(/ \(.*\)$/, ''), lam: fmt(band.ref / 1000, 3), mas: fmt(th * 206265 * 1000, 3), km: fmt(0.023 / th / 1000, 3) })
+      : t('At f/{N} a point of light becomes a dot <strong>{d} µm</strong> across, {px} pixels on a sensor with 4.3 µm pixels.', { N: st.N.toPrecision(2), d: fmt(d, 3), px: fmt(d / 4.3, 2) }))
+      + (st.defocus ? ' ' + t('Defocus has lowered the peak to {p} % of a perfect focus.', { p: (data.strehl * 100).toFixed(0) }) : ''));
     calc.set(P.tel
       ? String.raw`\begin{aligned}\theta_R &= 1.22\,\lambda/D\\ &= 1.22\times\frac{${texNum(band.ref / 1000, 3)}\,\mu\text{m}}{${D}\ \text{m}}\\ &= ${texNum((1.22 * lam / D) * 206265 * 1000, 4)}\ \text{mas}\\ \text{PSF}(\boldsymbol\theta) &= \Big|\mathcal F\{P\,e^{i2\pi W/\lambda}\}\Big|^2_{\,\mathbf f=\boldsymbol\theta/\lambda}\end{aligned}`
       : String.raw`\begin{aligned}I(v) &= \left[\frac{2J_1(v)}{v}\right]^2,\quad v = \frac{\pi r}{\lambda N}\\ r_\text{Airy} &= 1.22\,\lambda N = 1.22\times${texNum(band.ref / 1000, 3)}\times${texNum(st.N, 3)}\\ &= ${texNum(1.22 * band.ref / 1000 * st.N, 3)}\ \mu\text{m}\end{aligned}`);
