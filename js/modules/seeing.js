@@ -89,9 +89,11 @@ export default function mount(root, meta) {
       ['Measured long-exp. Strehl', '…'],
     ]));
     const strehl = Math.exp(-sTot);
-    calc.say(`At ${lam} µm the air blurs stars to <strong>${seeing.toFixed(2)}″</strong>, ${Math.max(1, seeing / dlim).toFixed(0)} times the ${st.D.toPrecision(2)} m telescope's own limit of ${(dlim * 1000).toFixed(0)} mas. `
-      + (st.ao === 'off' ? 'Without correction, ' : st.ao === 'tt' ? 'Removing only the image motion, ' : 'With adaptive optics, ')
-      + `the peak brightness is about <strong>${strehl < 0.001 ? 'below 0.1' : (strehl * 100).toPrecision(2)} %</strong> of a perfect image (the Strehl ratio).`);
+    calc.say(t('At {lam} µm the air blurs stars to <strong>{s}″</strong>, {k} times the {D} m telescope\'s own limit of {dl} mas.', { lam, s: seeing.toFixed(2), k: Math.max(1, seeing / dlim).toFixed(0), D: st.D.toPrecision(2), dl: (dlim * 1000).toFixed(0) }) + ' '
+      + (() => { const p = strehl < 0.001 ? t('below 0.1') : (strehl * 100).toPrecision(2);
+        return st.ao === 'off' ? t('Without correction, the peak brightness is about <strong>{p} %</strong> of a perfect image (the Strehl ratio).', { p })
+          : st.ao === 'tt' ? t('Removing only the image motion, the peak brightness is about <strong>{p} %</strong> of a perfect image (the Strehl ratio).', { p })
+          : t('With adaptive optics, the peak brightness is about <strong>{p} %</strong> of a perfect image (the Strehl ratio).', { p }); })());
     calc.set(String.raw`\begin{aligned}
     r_0(\lambda) &= r_0(500)\left(\tfrac{\lambda}{0.5\,\mu m}\right)^{6/5} = ${texNum(r0l * 100, 3)}\ \text{cm}\\
     \sigma^2_\text{fit} &= 0.28\,(d/r_0)^{5/3} = ${texNum(sFit, 3)}\\

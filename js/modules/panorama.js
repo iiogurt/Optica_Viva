@@ -53,7 +53,9 @@ export default function mount(root, meta) {
       ['Largest pupil offset for ≤ 1 px at this distance', eMax.toFixed(2) + ' mm'],
       ['Nearest object stitchable to 1 px with this offset', e ? ((Math.abs(e) * 2 * Math.sin(delta / 2)) / (PX / st.f)).toFixed(1) + ' m' : '∞ (no parallax)'],
     ]));
-    calc.say(`The near pole at ${fmt(st.dn, 2)} m shifts by <strong>${(Math.abs(disp) * pxPerRad).toFixed(0)} pixels</strong> between the two frames` + (Math.abs(disp) * pxPerRad <= 1 ? ': invisible after stitching.' : '. It will show as a doubled or broken pole; turning about the entrance pupil would remove it.'));
+    calc.say((Math.abs(disp) * pxPerRad <= 1
+      ? t('The near pole at {d} m shifts by <strong>{px} pixels</strong> between the two frames: invisible after stitching.', { d: fmt(st.dn, 2), px: (Math.abs(disp) * pxPerRad).toFixed(0) })
+      : t('The near pole at {d} m shifts by <strong>{px} pixels</strong> between the two frames. It will show as a doubled or broken pole; turning about the entrance pupil would remove it.', { d: fmt(st.dn, 2), px: (Math.abs(disp) * pxPerRad).toFixed(0) })));
     calc.set(String.raw`\begin{aligned}
     \Delta\varphi &= 2\arctan\frac{e\sin(\Delta/2)}{d - e\cos(\Delta/2)}\\
     &= ${texNum(Math.abs(disp) * 1000, 3)}\ \text{mrad}\\

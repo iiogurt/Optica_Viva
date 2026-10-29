@@ -83,8 +83,8 @@ export default function mount(root, meta) {
       ['Radial distortion at corner', ((Math.hypot(...D(cx, cy)) / 1 - 1) * 100).toFixed(2) + ' %'],
       ['TV distortion (SMIA)', tv.toFixed(2) + ' %'],
     ]));
-    calc.say(`From ${fmt(st.d, 2)} m the nose is drawn <strong>${((magNose / magEar - 1) * 100).toFixed(0)} %</strong> larger, relative to the ears, than in a distant view; a ${F.toFixed(0)} mm lens frames the face.`
-      + (() => { const d = (Math.hypot(...D(cx, cy)) - 1) * 100; return Math.abs(d) < 0.05 ? ' The lens has no distortion.' : ` Lens distortion pulls the image corners ${d < 0 ? 'inwards' : 'outwards'} by ${Math.abs(d).toFixed(1)} %.`; })());
+    calc.say(t('From {d} m the nose is drawn <strong>{p} %</strong> larger, relative to the ears, than in a distant view; a {F} mm lens frames the face.', { d: fmt(st.d, 2), p: ((magNose / magEar - 1) * 100).toFixed(0), F: F.toFixed(0) }) + ' '
+      + (() => { const d = (Math.hypot(...D(cx, cy)) - 1) * 100; return Math.abs(d) < 0.05 ? t('The lens has no distortion.') : d < 0 ? t('Lens distortion pulls the image corners inwards by {p} %.', { p: Math.abs(d).toFixed(1) }) : t('Lens distortion pulls the image corners outwards by {p} %.', { p: Math.abs(d).toFixed(1) }); })());
     calc.set(String.raw`\begin{aligned}
     m(z) &= \frac{f}{z}\Rightarrow \frac{m_\text{nose}}{m_\text{ear}} = \frac{d + 0.01}{d - 0.108} = ${texNum(magNose / magEar, 4)}\\
     x_d &= x\,(1 + k_1r^2 + k_2r^4 + k_3r^6) + 2p_1xy + p_2(r^2 + 2x^2)\\

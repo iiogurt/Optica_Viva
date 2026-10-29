@@ -49,7 +49,9 @@ export default function mount(root, meta) {
         ['Safe shutter, stabilised', r.safeStab ? fmtT(r.safeStab) : '—'],
         ['Stabilisation gain', gain !== null ? gain.toFixed(1) + ' EV' : '—'],
       ]));
-      calc.say(`At ${fmt(st.f, 3)} mm and ${fmtT(st.t)} the image smears by about <strong>${(r.blur.extent * 1000).toFixed(0)} µm</strong>; ${st.stab && r.safeStab ? 'with' : 'without'} stabilisation the slowest reliably sharp shutter speed is <strong>${fmtT(st.stab && r.safeStab ? r.safeStab : r.safeRaw)}</strong>.`);
+      calc.say((st.stab && r.safeStab
+      ? t('At {f} mm and {T} the image smears by about <strong>{b} µm</strong>; with stabilisation the slowest reliably sharp shutter speed is <strong>{s}</strong>.', { f: fmt(st.f, 3), T: fmtT(st.t), b: (r.blur.extent * 1000).toFixed(0), s: fmtT(r.safeStab) })
+      : t('At {f} mm and {T} the image smears by about <strong>{b} µm</strong>; without stabilisation the slowest reliably sharp shutter speed is <strong>{s}</strong>.', { f: fmt(st.f, 3), T: fmtT(st.t), b: (r.blur.extent * 1000).toFixed(0), s: fmtT(r.safeRaw) })));
       calc.set(String.raw`\begin{aligned}
       b &\approx f\,\omega\,t \le c\\
       t &\le \frac{c}{f\,\omega} = ${texNum(limit / (st.f * Math.hypot(sh.sigma, sh.tremor) * D2R), 3)}\ \text{s}\\

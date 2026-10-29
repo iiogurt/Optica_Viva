@@ -165,8 +165,10 @@ export default function mount(root, meta) {
     const s0 = m.lens.surfaces[0];
     const n1 = mediaIndices(m.lens, 587.56)[0]; // −1 after a mirror
     const off = ctl.state.field * (m.lens.field || 1), offTxt = off < 1 && off > 0 ? `${(off * 60).toFixed(1)}′` : `${off.toFixed(1)}°`;
-    calc.say(`A ${fmt(Math.abs(pd.efl), 3)} mm ${hasMirrors(m.lens) ? 'telescope' : 'lens'} at f/${N.toFixed(1)}: rays from a point ${offTxt} off axis land in a spot of <strong>${fmt(m.rms, 3)} µm</strong> RMS radius, `
-      + (m.rms > airy ? `${fmt(m.rms / airy, 2)} times the Airy radius (${fmt(airy, 2)} µm), so aberrations, not diffraction, limit the sharpness.` : `inside the Airy radius (${fmt(airy, 2)} µm), so it is diffraction-limited here.`));
+    calc.say((hasMirrors(m.lens)
+      ? t('A {f} mm telescope at f/{N}: rays from a point {off} off axis land in a spot of <strong>{rms} µm</strong> RMS radius,', { f: fmt(Math.abs(pd.efl), 3), N: N.toFixed(1), off: offTxt, rms: fmt(m.rms, 3) })
+      : t('A {f} mm lens at f/{N}: rays from a point {off} off axis land in a spot of <strong>{rms} µm</strong> RMS radius,', { f: fmt(Math.abs(pd.efl), 3), N: N.toFixed(1), off: offTxt, rms: fmt(m.rms, 3) })) + ' '
+      + (m.rms > airy ? t('{k} times the Airy radius ({a} µm), so aberrations, not diffraction, limit the sharpness.', { k: fmt(m.rms / airy, 2), a: fmt(airy, 2) }) : t('inside the Airy radius ({a} µm), so it is diffraction-limited here.', { a: fmt(airy, 2) })));
     calc.set(String.raw`\begin{aligned}
     &f' = -1/M_{21} = ${texNum(pd.efl, 5)}\ \text{mm}\\
     &N = |f'|/D_{EP} = ${texNum(Math.abs(pd.efl), 4)}/${texNum(m.lens.epd, 3)} = ${texNum(N, 3)}\\

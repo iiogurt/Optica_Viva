@@ -127,7 +127,9 @@ export default function mount(root, meta) {
       ['Planet detectable?', snrRatio > 1 ? 'yes, above the speckle floor' : 'no, buried in speckles'],
     ]));
     const h0 = Math.sqrt(1e-10) * st.lam * 1000 / Math.PI;
-    calc.say(`The planet sits ${st.sep} λ/D from the star; there it is <strong>${snrRatio >= 0.1 && snrRatio < 1000 ? snrRatio.toPrecision(2) : fmt(snrRatio, 2)}</strong> times as bright as the leftover starlight, so it is ` + (snrRatio > 1 ? '<strong>detectable</strong>.' : '<strong>buried in speckles</strong>.'));
+    calc.say((snrRatio > 1
+      ? t('The planet sits {sep} λ/D from the star; there it is <strong>{k}</strong> times as bright as the leftover starlight, so it is <strong>detectable</strong>.', { sep: st.sep, k: snrRatio >= 0.1 && snrRatio < 1000 ? snrRatio.toPrecision(2) : fmt(snrRatio, 2) })
+      : t('The planet sits {sep} λ/D from the star; there it is <strong>{k}</strong> times as bright as the leftover starlight, so it is <strong>buried in speckles</strong>.', { sep: st.sep, k: snrRatio >= 0.1 && snrRatio < 1000 ? snrRatio.toPrecision(2) : fmt(snrRatio, 2) })));
     calc.set(String.raw`\begin{aligned}
     E_1 &= \mathcal F\{P\,e^{i\phi}\}\\
     E_2 &= \mathcal F^{-1}\{(1-M)E_1\}\\

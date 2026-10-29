@@ -70,9 +70,9 @@ export default function mount(root, meta) {
     const th = 40 * Math.PI / 180;
     const sc = (p) => { const R = PROJ[p].R, hh2 = (R(th + 1e-5, 1) - R(th - 1e-5, 1)) / 2e-5, k = R(th, 1) / Math.sin(th); return [hh2, k]; };
     const [hr, kr] = sc('rectilinear'), [he, ke] = sc('equisolid'), [hs, ks] = sc('stereographic');
-    calc.say((P.cyl ? `${P.name} is a panoramic mapping: it unrolls the scene onto a cylinder, so verticals stay straight while horizontal lines bend.`
-      : `At ${fmt(st.f, 3)} mm on ${S.name}, this projection covers <strong>${isFinite(fovFor(st.proj)) ? fovFor(st.proj).toFixed(0) + '°' : 'a full circle'}</strong> across the diagonal`
-      + (st.proj === 'rectilinear' ? `; an equisolid fisheye of the same focal length would cover ${isFinite(fovFor('equisolid')) ? fovFor('equisolid').toFixed(0) + '°' : 'a full circular image'}.` : '.')));
+    calc.say((P.cyl ? t('{name} is a panoramic mapping: it unrolls the scene onto a cylinder, so verticals stay straight while horizontal lines bend.', { name: t(P.name) })
+      : (isFinite(fovFor(st.proj)) ? t('At {f} mm on {sensor}, this projection covers <strong>{fov}°</strong> across the diagonal.', { f: fmt(st.f, 3), sensor: t(S.name), fov: fovFor(st.proj).toFixed(0) }) : t('At {f} mm on {sensor}, this projection covers <strong>a full circle</strong> across the diagonal.', { f: fmt(st.f, 3), sensor: t(S.name) }))
+      + (st.proj === 'rectilinear' ? ' ' + (isFinite(fovFor('equisolid')) ? t('An equisolid fisheye of the same focal length would cover {fov}°.', { fov: fovFor('equisolid').toFixed(0) }) : t('An equisolid fisheye of the same focal length would cover a full circular image.')) : '')));
     calc.set(String.raw`\begin{aligned}
     &\text{Scale factors at } \theta = 40^\circ\ (f=1):\\
     &h = \frac{dR}{d\theta},\quad k = \frac{R(\theta)}{\sin\theta}\\

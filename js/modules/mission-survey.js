@@ -98,7 +98,9 @@ export default function mount(root, meta) {
         why: st.shutter === 'rolling' ? `A 30 ms rolling readout lets the drone move ${(st.dv * 0.03).toFixed(2)} m during one frame: ${r.skew.toFixed(0)} pixels of skew, which mapping software must model or a mechanical shutter avoid.` : 'A mechanical or global shutter exposes all rows at once: no skew.',
         tex: String.raw`s = \frac{v\,T_\text{read}}{\text{GSD}}`,
       });
-      calc.say(`<strong>${(r.gsd * 100).toFixed(1)} cm per pixel</strong> from ${st.A} m; shoot every ${r.interval.toFixed(1)} s at 1/${Math.ceil(1 / r.tMax)} s or faster${st.shutter === 'rolling' ? `, and account for ${r.skew.toFixed(0)} px of rolling-shutter skew` : ''}.`);
+      calc.say((st.shutter === 'rolling'
+      ? t('<strong>{gsd} cm per pixel</strong> from {A} m; shoot every {dt} s at 1/{s} s or faster, and account for {skew} px of rolling-shutter skew.', { gsd: (r.gsd * 100).toFixed(1), A: st.A, dt: r.interval.toFixed(1), s: Math.ceil(1 / r.tMax), skew: r.skew.toFixed(0) })
+      : t('<strong>{gsd} cm per pixel</strong> from {A} m; shoot every {dt} s at 1/{s} s or faster.', { gsd: (r.gsd * 100).toFixed(1), A: st.A, dt: r.interval.toFixed(1), s: Math.ceil(1 / r.tMax) })));
       calc.set(String.raw`L = \frac{A\,s}{f}:\ ${texNum(r.across, 3)} \times ${texNum(r.along, 3)}\ \text{m}`);
     }
     view.redraw();

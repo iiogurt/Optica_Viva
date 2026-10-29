@@ -85,7 +85,9 @@ export default function mount(root, meta) {
     ]));
     const nz = MODES.filter((j) => c[j]);
     const terms = (nz.slice(0, 3).map((j) => `${texNum(c[j], 2)}^2`).join('+') + (nz.length > 3 ? '+\\cdots' : '')) || '0';
-    calc.say(`The wavefront deviates by <strong>${rms.toFixed(3)} waves RMS</strong> (${(mx - mn).toFixed(2)} peak to valley), so the star's peak is <strong>${(D.strehl * 100).toFixed(0)} %</strong> as bright as with a perfect lens` + (D.strehl >= 0.8 ? ': diffraction-limited by the Maréchal criterion.' : '.'));
+    calc.say((D.strehl >= 0.8
+      ? t('The wavefront deviates by <strong>{rms} waves RMS</strong> ({pv} peak to valley), so the star\'s peak is <strong>{S} %</strong> as bright as with a perfect lens: diffraction-limited by the Maréchal criterion.', { rms: rms.toFixed(3), pv: (mx - mn).toFixed(2), S: (D.strehl * 100).toFixed(0) })
+      : t('The wavefront deviates by <strong>{rms} waves RMS</strong> ({pv} peak to valley), so the star\'s peak is <strong>{S} %</strong> as bright as with a perfect lens.', { rms: rms.toFixed(3), pv: (mx - mn).toFixed(2), S: (D.strehl * 100).toFixed(0) })));
     calc.set(String.raw`\begin{aligned}\sigma_W^2 &= \textstyle\sum_{j\ge4} a_j^2 = ${terms}\\ \sigma_W &= ${texNum(rms, 4)}\,\lambda\\ S &\approx e^{-(2\pi\sigma_W)^2} = ${texNum(sm, 4)}\\ S_\text{exact} &= \frac{\max|\mathcal F\{Pe^{i2\pi W}\}|^2}{\max|\mathcal F\{P\}|^2} = ${texNum(D.strehl, 4)}\end{aligned}`);
     [wf, ifg, ps, tf, sp].forEach((s) => s.redraw());
     show3d(r);

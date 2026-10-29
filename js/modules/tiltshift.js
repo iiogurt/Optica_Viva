@@ -98,8 +98,12 @@ export default function mount(root, meta) {
       ['Verticals', st.mode === 'shift' ? (st.pitch > 0.4 ? 'converge (keystone)' : 'parallel ✓') : '—'],
     ]));
     calc.say((st.mode === 'tilt'
-      ? (isFinite(J) ? `The lens is tilted ${Math.abs(st.alpha).toFixed(1)}°, so the plane of sharp focus pivots about a line <strong>${J.toFixed(2)} m</strong> from the lens and ${st.alpha < 0 ? 'lies along the receding scene' : 'cuts steeply through the scene, leaving a thin band sharp'}.` : `No tilt: the plane of sharp focus is parallel to the sensor, ${fmt(st.s, 3)} m away.`)
-      : (st.pitch > 0.4 ? `The camera points ${st.pitch}° upwards, so vertical lines converge (keystone distortion).` : `The camera is level and the lens is shifted ${st.shift} mm: verticals stay parallel, and the lens must cover an image circle of ${(2 * Math.hypot(12, 18 + st.shift)).toFixed(0)} mm.`)));
+      ? (isFinite(J)
+        ? (st.alpha < 0
+          ? t('The lens is tilted {a}°, so the plane of sharp focus pivots about a line <strong>{J} m</strong> from the lens and lies along the receding scene.', { a: Math.abs(st.alpha).toFixed(1), J: J.toFixed(2) })
+          : t('The lens is tilted {a}°, so the plane of sharp focus pivots about a line <strong>{J} m</strong> from the lens and cuts steeply through the scene, leaving a thin band sharp.', { a: Math.abs(st.alpha).toFixed(1), J: J.toFixed(2) }))
+        : t('No tilt: the plane of sharp focus is parallel to the sensor, {s} m away.', { s: fmt(st.s, 3) }))
+      : (st.pitch > 0.4 ? t('The camera points {p}° upwards, so vertical lines converge (keystone distortion).', { p: st.pitch }) : t('The camera is level and the lens is shifted {s} mm: verticals stay parallel, and the lens must cover an image circle of {c} mm.', { s: st.shift, c: (2 * Math.hypot(12, 18 + st.shift)).toFixed(0) }))));
     calc.set(String.raw`\begin{aligned}
     &\text{Scheimpflug: sensor} \cap \text{lens plane} \cap \text{PoF} = \text{one line}\\
     &\text{Hinge rule: } J = \frac{f}{\sin\alpha} = \frac{${texNum(st.f, 3)}\,\text{mm}}{\sin ${texNum(Math.abs(st.alpha), 2)}^\circ} = ${isFinite(J) ? texNum(J, 3) + '\\,\\text{m}' : '\\infty'}\\

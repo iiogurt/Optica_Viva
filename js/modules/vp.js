@@ -48,7 +48,10 @@ export default function mount(root, meta) {
       ['Moiré / grid contrast', (100 * r.contrast).toFixed(2) + ' %'],
       ['Aliased and < 1 % from', safe ? safe.toFixed(1) + ' m' : '—'],
     ]));
-    calc.say(`On the sensor the wall's grid has <strong>${r.nu.toFixed(0)} cycles/mm</strong> against a Nyquist limit of ${r.nyquist.toFixed(0)}` + (r.aliased ? `, so it aliases into moiré with <strong>${(100 * r.contrast).toFixed(1)} %</strong> contrast` : `, so the grid itself is resolved, with ${(100 * r.contrast).toFixed(1)} % contrast`) + (r.contrast < 0.01 ? ', below the 1 % at which it shows.' : '.'));
+    calc.say(t('On the sensor the wall\'s grid has <strong>{nu} cycles/mm</strong> against a Nyquist limit of {nyq}.', { nu: r.nu.toFixed(0), nyq: r.nyquist.toFixed(0) }) + ' '
+      + (() => { const c = (100 * r.contrast).toFixed(1), low = r.contrast < 0.01;
+        return r.aliased ? (low ? t('It aliases into moiré with <strong>{c} %</strong> contrast, below the 1 % at which it shows.', { c }) : t('It aliases into moiré with <strong>{c} %</strong> contrast.', { c }))
+          : (low ? t('The grid itself is resolved, with {c} % contrast, below the 1 % at which it shows.', { c }) : t('The grid itself is resolved, with {c} % contrast.', { c })); })());
     calc.set(String.raw`\begin{aligned}
     \nu_w &= \frac{1}{m\,p} = ${texNum(r.nu, 3)}\ \text{mm}^{-1},\quad \nu_\text{alias} = \left|\nu_w - \tfrac{k}{q}\right| = ${texNum(r.alias, 3)}\\
     C &= M_\text{grid}\,\frac{2J_1(\pi b\nu_w)}{\pi b\nu_w}\,\mathrm{MTF}_\text{lens}\,\mathrm{sinc}(q\nu_w) = ${texNum(r.contrast, 3)}

@@ -1,6 +1,7 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
+import { t } from '../lib/i18n.js';
 
 const NPX = 150; // sensor pixels across
 
@@ -121,7 +122,9 @@ export default function mount(root, meta) {
       ['Demo: ' + st.f.toFixed(3) + ' cy/px appears at', fa.toFixed(3) + ' cy/px'],
     ]));
     const H = (nu) => Math.abs((Math.sin(Math.PI * a * nu) / (Math.PI * a * nu + 1e-12)) * (st.olpf ? Math.cos(Math.PI * st.olpf * nu) : 1)) || (nu === 0 ? 1 : 0);
-    calc.say(`A pattern of ${st.f.toFixed(2)} cycles per pixel is recorded as <strong>${fa.toFixed(2)} cycles per pixel</strong>` + (st.f > 0.5 ? ': it lies above the Nyquist limit of 0.5 and folds back as a false, coarser pattern.' : ': it lies below the Nyquist limit of 0.5, so it is recorded faithfully.'));
+    calc.say((st.f > 0.5
+      ? t('A pattern of {f} cycles per pixel is recorded as <strong>{fa} cycles per pixel</strong>: it lies above the Nyquist limit of 0.5 and folds back as a false, coarser pattern.', { f: st.f.toFixed(2), fa: fa.toFixed(2) })
+      : t('A pattern of {f} cycles per pixel is recorded as <strong>{fa} cycles per pixel</strong>: it lies below the Nyquist limit of 0.5, so it is recorded faithfully.', { f: st.f.toFixed(2), fa: fa.toFixed(2) })));
     calc.set(String.raw`\begin{aligned}
     f_\text{alias} &= |f - k f_s|,\ k = \mathrm{round}(f/f_s)\\
     &= |${texNum(st.f, 3)} - ${Math.round(st.f)}| = ${texNum(fa, 3)}\ \text{cy/px}\\

@@ -64,7 +64,8 @@ export default function mount(root, meta) {
       why: `The wall's grid lands on the sensor at ${m.nu.toFixed(0)} cycles/mm against a pixel limit of ${m.nyquist.toFixed(0)}; ${m.aliased ? 'it aliases into moiré' : 'it is resolved as a grid'} with ${pct(m.contrast)} contrast. ${m.contrast < 0.01 ? 'That is below the 1 % at which it shows.' : r.safe ? `Keep the wall at least ${r.safe.toFixed(1)} m away with focus on the actor, or open the aperture.` : 'Increase the distance or defocus the wall.'}`,
       tex: String.raw`\nu_w = \frac{1}{m\,p} = ${texNum(m.nu, 3)}\ \text{mm}^{-1}`,
     });
-    calc.say(`<strong>${fps} fps at ${r.mainsBands < 0.005 ? st.angle.toFixed(1) : best.toFixed(1)}°</strong> (${(exposureMs(fps, r.mainsBands < 0.005 ? st.angle : best)).toFixed(1)} ms) for ${st.mains} Hz mains; at your ${st.angle.toFixed(1)}°, LED fixtures leave ${pct(r.fixtureBands)} bands; the wall shows ${pct(m.contrast)} moiré at ${st.Z.toFixed(1)} m${r.safe && m.contrast >= 0.01 ? `, below 1 % from ${r.safe.toFixed(1)} m` : ''}.`);
+    calc.say(t('<strong>{fps} fps at {ang}°</strong> ({ms} ms) for {mains} Hz mains; at your {yours}°, LED fixtures leave {led} bands; the wall shows {moire} moiré at {Z} m.', { fps, ang: r.mainsBands < 0.005 ? st.angle.toFixed(1) : best.toFixed(1), ms: (exposureMs(fps, r.mainsBands < 0.005 ? st.angle : best)).toFixed(1), mains: st.mains, yours: st.angle.toFixed(1), led: pct(r.fixtureBands), moire: pct(m.contrast), Z: st.Z.toFixed(1) })
+      + (r.safe && m.contrast >= 0.01 ? ' ' + t('The moiré falls below 1 % from {d} m.', { d: r.safe.toFixed(1) }) : ''));
     calc.set(String.raw`\begin{aligned}
     t &= \frac{\theta}{360^\circ\,f_\text{fps}} = ${texNum(r.t * 1000, 3)}\ \text{ms}\\
     n_\text{bands} &= T_\text{readout}\,f_\text{flicker} = ${texNum(r.nMains, 3)}

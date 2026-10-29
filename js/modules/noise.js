@@ -104,7 +104,10 @@ export default function mount(root, meta) {
       ['Engineering dynamic range', m.DR.toFixed(1) + ' EV'],
       ['Clipped pixels', (clipFrac * 100).toFixed(1) + ' %'],
     ]));
-    calc.say(`A mid-grey pixel collects about <strong>${fmt(m.eMid, 3)} photons</strong>, and its signal-to-noise ratio is <strong>${m.snrMid.toFixed(0)}</strong>` + (m.snrMid > 0.9 * Math.sqrt(m.eMid) ? `, close to the shot-noise limit √n = ${Math.sqrt(m.eMid).toFixed(0)}: the electronics add little.` : `; shot noise alone would allow √n = ${Math.sqrt(m.eMid).toFixed(0)}, the rest is lost to electronic noise.`) + (clipFrac > 0.01 ? ` ${(clipFrac * 100).toFixed(0)} % of the pixels clip.` : ''));
+    calc.say((m.snrMid > 0.9 * Math.sqrt(m.eMid)
+      ? t('A mid-grey pixel collects about <strong>{n} photons</strong>, and its signal-to-noise ratio is <strong>{snr}</strong>, close to the shot-noise limit √n = {lim}: the electronics add little.', { n: fmt(m.eMid, 3), snr: m.snrMid.toFixed(0), lim: Math.sqrt(m.eMid).toFixed(0) })
+      : t('A mid-grey pixel collects about <strong>{n} photons</strong>, and its signal-to-noise ratio is <strong>{snr}</strong>; shot noise alone would allow √n = {lim}, the rest is lost to electronic noise.', { n: fmt(m.eMid, 3), snr: m.snrMid.toFixed(0), lim: Math.sqrt(m.eMid).toFixed(0) }))
+      + (clipFrac > 0.01 ? ' ' + t('{p} % of the pixels clip.', { p: (clipFrac * 100).toFixed(0) }) : ''));
     calc.set(String.raw`\begin{aligned}
     E &= \frac{\pi T L}{4N^2},\quad \bar n = E\,t\,A_\text{px}\,\Phi_\gamma\,\eta = ${texNum(m.eMid, 3)}\ e^-\\
     \sigma &= \sqrt{\bar n + D t + \sigma_r^2 + (P\bar n)^2}\\
