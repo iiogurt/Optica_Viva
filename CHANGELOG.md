@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.25.0] - 2026-10-29
+
 ### Changed
 - The last 22 live-calculation sentences are translated (LED mission, survey, rolling shutter, MTF, noise, panorama, perspective, polarisation, projection, PSF, ray tracer, sampling, seeing, sensor, shake, telescope, tilt-shift, transits, vignetting, video moiré, wavefront sensing, Zernike), so every laboratory now states its result in the chosen language; 68 new strings in German, French and Spanish. The panorama canvas now calls the near pole a post (“Pfosten”, “poteau”, “poste”), as its controls do.
 - 22 more live-calculation sentences are translated (ADC, autofocus, bokeh, chromatic, cinema, colour, detectors, depth of field, Earth observation, eye, filters, the three gear checks, HDR, lighting, macro and five missions). Each conditional part now chooses between complete translatable sentences or clauses instead of gluing English fragments; 64 new strings in German, French and Spanish.
@@ -760,7 +762,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.24.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.25.0...HEAD
+[1.25.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.24.0...v1.25.0
 [1.24.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.23.0...v1.24.0
 [1.23.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.22.0...v1.23.0
 [1.22.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.21.0...v1.22.0
