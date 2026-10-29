@@ -200,7 +200,7 @@ export default function mount(root, meta) {
       ['Thin-lens prediction f²/(N(s−f))', cThin.toFixed(2) + ' mm'],
       ['Background rim / centre', rc(b0).toFixed(2) + ' (' + look(rc(b0)) + ')'],
       ['Foreground rim / centre', rc(f0).toFixed(2) + ' (' + look(rc(f0)) + ')'],
-      ['Corner kernel flux', ((bc.flux / b0.flux) * 100).toFixed(0) + ' % of centre'],
+      ['Corner kernel flux', t('{p} % of centre', { p: ((bc.flux / b0.flux) * 100).toFixed(0) })],
     ]));
     calc.say(t('A point at infinity behind the subject becomes a disc <strong>{Dmm} mm</strong> wide on the sensor (the thin-lens estimate gives {cThin} mm), and its rim is {rc} times as bright as its centre: {look}.', { Dmm: b0.st.Dmm.toFixed(2), cThin: cThin.toFixed(2), rc: rc(b0).toFixed(2), look: look(rc(b0)) }));
     calc.set(String.raw`\begin{aligned}
@@ -236,11 +236,11 @@ export default function mount(root, meta) {
     KS.prof = { b: row(kb), f: row(kf) };
     const iris = Math.pow(2, -st.stop / 2);
     ro.replaceChildren(readouts([
-      ['Iris shape', st.blades < 3 ? 'circular' : `${st.blades} blades, ${(st.round * 100).toFixed(0)} % rounded`],
+      ['Iris shape', st.blades < 3 ? t('circular') : t('{n} blades, {p} % rounded', { n: st.blades, p: (st.round * 100).toFixed(0) })],
       ['Iris / full aperture diameter', (iris * 100).toFixed(0) + ' %'],
-      ['Wide-open edge kernel open area', (get(1, 1, 1).k.total / get(1, 0, 0).k.total * 100).toFixed(0) + ' % of centre'],
-      ['Background disk', st.sa > 0 ? 'bright rim (soap bubble)' : st.sa < 0 ? 'soft edge, bright centre' : 'uniform'],
-      ['Foreground disk', st.sa > 0 ? 'soft edge, bright centre' : st.sa < 0 ? 'bright rim' : 'uniform'],
+      ['Wide-open edge kernel open area', t('{p} % of centre', { p: (get(1, 1, 1).k.total / get(1, 0, 0).k.total * 100).toFixed(0) })],
+      ['Background disk', t(st.sa > 0 ? N_('bright rim (soap bubble)') : st.sa < 0 ? N_('soft edge, bright centre') : N_('uniform'))],
+      ['Foreground disk', t(st.sa > 0 ? N_('soft edge, bright centre') : st.sa < 0 ? N_('bright rim') : N_('uniform'))],
     ]));
     calc.say(t('{bg}, and {fg}.', { bg: st.sa > 0 ? t('Background discs have a bright rim, like soap bubbles') : st.sa < 0 ? t('Background discs have a soft edge and a bright centre') : t('Background discs are evenly lit'), fg: st.sa > 0 ? t('foreground discs have a soft edge and a bright centre') : st.sa < 0 ? t('foreground discs have a bright rim') : t('foreground discs are evenly lit') }) + ' '
       + (st.blades >= 3 ? t('The iris is open to <strong>{p} %</strong> of the full aperture, so the discs take the shape of its {n} blades.', { p: (iris * 100).toFixed(0), n: st.blades }) : t('The iris is open to <strong>{p} %</strong> of the full aperture.', { p: (iris * 100).toFixed(0) })));

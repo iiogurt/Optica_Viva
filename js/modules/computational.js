@@ -37,11 +37,11 @@ export default function mount(root, meta) {
     const pr = B.predicted;
     ro.replaceChildren(readouts([
       ['SNR of mid grey: one short frame', pr.single.toFixed(1)],
-      [`SNR: burst of ${st.N}`, pr.burst.toFixed(1)],
+      [t('SNR: burst of {n}', { n: st.N }), pr.burst.toFixed(1)],
       ['SNR: one long exposure (same light)', pr.long.toFixed(1)],
       ['Burst penalty (read noise per frame)', ((1 - pr.burst / pr.long) * 100).toFixed(0) + ' %'],
       ['Long exposure smeared by', st.shake.toFixed(2) + ' px'],
-      ['Depth map wrong on', P.wrongPct.toFixed(1) + ' % of the pixels'],
+      ['Depth map wrong on', t('{p} % of the pixels', { p: P.wrongPct.toFixed(1) })],
     ]));
     calc.say(t('Merging {N} short frames raises the signal-to-noise ratio from <strong>{single}</strong> to <strong>{burst}</strong>, {v4} % of what one long exposure would give, but without its {shake} px of shake. With a 1/{coarse} depth map, {wrongPct} % of the portrait is blurred or kept sharp by mistake.', { N: st.N, single: pr.single.toFixed(1), burst: pr.burst.toFixed(1), v4: ((pr.burst / pr.long) * 100).toFixed(0), shake: st.shake.toFixed(1), coarse: st.coarse, wrongPct: P.wrongPct.toFixed(1) }));
     calc.set(String.raw`\begin{aligned}

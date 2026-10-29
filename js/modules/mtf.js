@@ -5,7 +5,7 @@ import { fft2d } from '../lib/fft.js';
 import { latest } from '../lib/compute.js';
 import { cmf } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const sinc = (x) => (Math.abs(x) < 1e-9 ? 1 : Math.sin(Math.PI * x) / (Math.PI * x));
 
@@ -96,7 +96,7 @@ export default function mount(root, meta) {
       ['System MTF50', fmt(M.mtf50, 3) + ' cy/mm'],
       ['System MTF at Nyquist', (Math.abs(sys(nyq)) * 100).toFixed(1) + ' %'],
       ['Optics MTF at Nyquist', (Math.abs(optics(nyq)) * 100).toFixed(1) + ' %'],
-      ['Aliasing risk', sysAbs(nyq) > 0.1 ? 'high: moiré likely' : sysAbs(nyq) > 0.03 ? 'moderate' : 'low'],
+      ['Aliasing risk', t(sysAbs(nyq) > 0.1 ? N_('high: moiré likely') : sysAbs(nyq) > 0.03 ? N_('moderate') : N_('low'))],
       ['Rayleigh distance 1.22λN', (1.22 * 0.55 * N).toFixed(2) + ' µm'],
       ['f-number where ν_c = ν_N', 'f/' + (2 * st.p / 0.55).toFixed(1)],
     ]));

@@ -51,7 +51,7 @@ export default function mount(root, meta) {
     ro.replaceChildren(readouts([
       ['Refraction at 550 nm', refraction(550, z, s.P, s.T).toFixed(1) + '″'],
       ['(n − 1) of air at 550 nm', airRefractivityPT(550, s.P, s.T).toExponential(4)],
-      [`Dispersion ${st.l0}–${st.l1} nm`, span(air).toFixed(3) + '″'],
+      [t('Dispersion {a}–{b} nm', { a: st.l0, b: st.l1 }), span(air).toFixed(3) + '″'],
       ['ADC rotation (each doublet)', (th / D2R).toFixed(1) + '°'],
       ['Residual with the ADC', span(res).toFixed(3) + '″'],
       ['Seeing FWHM', st.seeing.toFixed(2) + '″'],

@@ -32,8 +32,8 @@ export default function mount(root, meta) {
       ['Anterior / posterior focal length', `${(1000 / e.power).toFixed(2)} / ${((1000 * nV) / e.power).toFixed(2)} mm`],
       ['Axial length (cornea to retina)', axial.toFixed(2) + ' mm'],
       ['Refraction at 555 nm', eyeAt(555).error.toFixed(2) + ' D'],
-      ['Chromatic difference 450 → 650 nm', (chromaticDifference(450) - chromaticDifference(650)).toFixed(2) + ' D (measured: ' + (thibos(650) - thibos(450)).toFixed(2) + ' D)'],
-      [`Refraction at ${st.lam} nm relative to 555`, (-chromaticDifference(st.lam)).toFixed(2) + ' D' + (st.lam < 555 ? ' (eye myopic in blue)' : '')],
+      ['Chromatic difference 450 → 650 nm', t('{d} D (measured: {m} D)', { d: (chromaticDifference(450) - chromaticDifference(650)).toFixed(2), m: (thibos(650) - thibos(450)).toFixed(2) })],
+      [t('Refraction at {l} nm relative to 555', { l: st.lam }), st.lam < 555 ? t('{d} D (eye myopic in blue)', { d: (-chromaticDifference(st.lam)).toFixed(2) }) : (-chromaticDifference(st.lam)).toFixed(2) + ' D'],
     ]));
     calc.say(t('The eye focuses with <strong>{P} dioptres</strong>, like a lens of {f} mm focal length in air.', { P: e.power.toFixed(1), f: (1000 / e.power).toFixed(1) }) + ' '
       + (Math.abs(chromaticDifference(st.lam)) < 0.02 ? t('Light of {l} nm is in focus on the retina.', { l: st.lam })
@@ -112,11 +112,11 @@ export default function mount(root, meta) {
       const best = r.sweep.reduce((a, b) => (b[2] > a[2] ? b : a));
       const at = (c) => { const { freq, mtf } = r.one; for (let i = 1; i < freq.length; i++) if (freq[i] >= c) return mtf[i - 1] + ((c - freq[i - 1]) / (freq[i] - freq[i - 1])) * (mtf[i] - mtf[i - 1]); return 0; };
       pro.replaceChildren(readouts([
-        ['Diffraction cut-off D/λ', r.one.cutoff.toFixed(0) + ' cycles/degree'],
+        ['Diffraction cut-off D/λ', t('{c} cycles/degree', { c: r.one.cutoff.toFixed(0) })],
         ['Strehl ratio', r.one.strehl.toFixed(3)],
         ['MTF at 30 / 60 cycles/degree', `${at(30).toFixed(2)} / ${at(60).toFixed(2)}`],
         ['Best pupil for 30 c/deg', best[0] + ' mm'],
-        ['Foveal cone Nyquist (2.5 µm spacing)', '≈ 60 cycles/degree'],
+        ['Foveal cone Nyquist (2.5 µm spacing)', t('≈ 60 cycles/degree')],
       ]));
       [psfView, mtfPlot, sweepPlot].forEach((x) => x.redraw());
     });

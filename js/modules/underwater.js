@@ -49,10 +49,10 @@ export default function mount(root, meta) {
       ['Red left (600–700 nm)', (bands.red * 100).toPrecision(2) + ' %'],
       ['Green left (500–600 nm)', (bands.green * 100).toPrecision(2) + ' %'],
       ['Blue left (400–500 nm)', (bands.blue * 100).toPrecision(2) + ' %'],
-      ['Flat port: field in water', fp.hfovWater.toFixed(0) + '° (from ' + st.hfov + '°)'],
-      ['Flat port: colour fringe at the edge', fp.lateral.toFixed(0) + ' µm on the sensor'],
-      ['Dome: focus the lens at', (dome.fromPupil * 100).toFixed(0) + ' cm (infinity → ' + (dome.atInfinity * 100).toFixed(0) + ' cm)'],
-      ['Strobe light enters the view at', (bs * 100).toFixed(0) + ' cm in front of the port'],
+      ['Flat port: field in water', t('{a}° (from {b}°)', { a: fp.hfovWater.toFixed(0), b: st.hfov })],
+      ['Flat port: colour fringe at the edge', t('{d} µm on the sensor', { d: fp.lateral.toFixed(0) })],
+      ['Dome: focus the lens at', t('{d} cm (infinity → {i} cm)', { d: (dome.fromPupil * 100).toFixed(0), i: (dome.atInfinity * 100).toFixed(0) })],
+      ['Strobe light enters the view at', t('{d} cm in front of the port', { d: (bs * 100).toFixed(0) })],
     ]));
     calc.say(t('{water}: after {v1} m, <strong>{v3} %</strong> of the red light is left against {v4} % of the blue. A strobe\'s light travels only {v5} m. Behind a dome, the lens must focus at <strong>{v6} cm</strong> to see a subject {r} m away.', { v1: (st.z + st.r).toFixed(1), water: t(WATERS[st.water][0]), v3: (bands.red * 100).toPrecision(2), v4: (bands.blue * 100).toPrecision(2), v5: (2 * st.r).toFixed(1), v6: (dome.fromPupil * 100).toFixed(0), r: st.r }));
     calc.set(String.raw`\begin{aligned}

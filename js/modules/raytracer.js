@@ -155,12 +155,12 @@ export default function mount(root, meta) {
       ['Back focal distance', fmt(pd.bfl, 5) + ' mm'],
       ['Working f-number', 'f/' + N.toFixed(2)],
       ['Entrance pupil (from S1)', fmt(pd.zEP, 4) + ' mm'],
-      ['Petzval radius', Math.abs(pd.petzval) < 1e-8 ? '∞ (flat field)' : fmt(-1 / pd.petzval, 4) + ' mm'],
+      ['Petzval radius', Math.abs(pd.petzval) < 1e-8 ? t('∞ (flat field)') : fmt(-1 / pd.petzval, 4) + ' mm'],
       ['Distortion at full field', fmt(m.distortion, 3) + ' %'],
       ['RMS spot radius', fmt(m.rms, 3) + ' µm'],
       ['GEO spot radius', fmt(m.geo, 3) + ' µm'],
       ['Airy radius (588 nm)', fmt(airy, 3) + ' µm'],
-      ['Regime', m.rms > airy ? 'aberration-limited' : 'diffraction-limited'],
+      ['Regime', m.rms > airy ? t('aberration-limited') : t('diffraction-limited')],
     ]));
     const s0 = m.lens.surfaces[0];
     const n1 = mediaIndices(m.lens, 587.56)[0]; // −1 after a mirror

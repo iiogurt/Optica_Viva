@@ -90,12 +90,12 @@ export default function mount(root, meta) {
     // plane of focus inclination: tan ψ = (v / f − 1)… exact via two sensor points
     const pof = pofLine(G);
     ro.replaceChildren(readouts([
-      ['Hinge distance J = f / sin α', isFinite(J) ? J.toFixed(2) + ' m' : '∞ (no tilt)'],
+      ['Hinge distance J = f / sin α', isFinite(J) ? J.toFixed(2) + ' m' : t('∞ (no tilt)')],
       ['Plane-of-focus angle to sensor plane', pof ? (() => { const d = Math.abs((pof.ang * 180) / Math.PI) % 180; return Math.min(d, 180 - d).toFixed(1) + '°'; })() : '—'],
       ['PoF crosses the lens plane at (traced)', pof ? (() => { const t = -pof.p1[2] / (pof.p2[2] - pof.p1[2]); return Math.abs(pof.p1[1] + t * (pof.p2[1] - pof.p1[1])).toFixed(3) + ' m ' + (st.alpha > 0 ? 'above' : 'below'); })() : '—'],
       ['Image distance v', (G.v * 1000).toFixed(2) + ' mm'],
       ['Required image circle (shift)', (2 * Math.hypot(12, 18 + st.shift)).toFixed(1) + ' mm'],
-      ['Verticals', st.mode === 'shift' ? (st.pitch > 0.4 ? 'converge (keystone)' : 'parallel ✓') : '—'],
+      ['Verticals', st.mode === 'shift' ? (st.pitch > 0.4 ? t('converge (keystone)') : t('parallel ✓')) : '—'],
     ]));
     calc.say((st.mode === 'tilt'
       ? (isFinite(J)

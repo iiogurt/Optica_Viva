@@ -78,8 +78,8 @@ export default function mount(root, meta) {
     ro.replaceChildren(readouts([
       ['Focal length', F.toFixed(1) + ' mm'],
       ['Horizontal field of view', hfov.toFixed(1) + '°'],
-      ['Nose magnification vs ears', ((magNose / magEar - 1) * 100).toFixed(1) + ' % larger'],
-      ['Background (12 m) size vs face', ((st.d / (12 + st.d)) * 100).toFixed(1) + ' % of same object at face'],
+      ['Nose magnification vs ears', t('{p} % larger', { p: ((magNose / magEar - 1) * 100).toFixed(1) })],
+      ['Background (12 m) size vs face', t('{p} % of same object at face', { p: ((st.d / (12 + st.d)) * 100).toFixed(1) })],
       ['Radial distortion at corner', ((Math.hypot(...D(cx, cy)) / 1 - 1) * 100).toFixed(2) + ' %'],
       ['TV distortion (SMIA)', tv.toFixed(2) + ' %'],
     ]));

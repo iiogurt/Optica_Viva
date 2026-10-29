@@ -43,7 +43,7 @@ export default function mount(root, meta) {
       ['Line transmission (collimated)', (T0 * 100).toFixed(0) + ' %'],
       ['Line transmission in this beam', (T * 100).toFixed(0) + ' %'],
       ['Best pre-shift of the filter', '+' + best.shift.toFixed(2) + ' nm → ' + (best.T * 100).toFixed(0) + ' %'],
-      ['Exposure cost', T > 0.01 ? (Math.log2(T0 / T)).toFixed(2) + ' stops' : 'line blocked'],
+      ['Exposure cost', T > 0.01 ? t('{s} stops', { s: (Math.log2(T0 / T)).toFixed(2) }) : t('line blocked')],
     ]));
     calc.say(st.pre
       ? t('At f/{N}, rays cross the filter at up to {a}°, shifting its passband up to {edge} nm bluewards. The {line} line keeps <strong>{T} %</strong> of its light with the pre-shifted filter.', { N: st.N.toPrecision(2), a: ((Math.atan(1 / (2 * st.N)) + chief) * 180 / Math.PI).toFixed(0), edge: edge.toFixed(1), line: LINES[st.line][0], T: (T * 100).toFixed(0) })

@@ -218,7 +218,7 @@ export default function mount(root, meta) {
         ['Modulation steps averaged', String(r.steps)],
         ['Mean signal ⟨Sx⟩, ⟨Sy⟩', `${r.mx.toFixed(3)}, ${r.my.toFixed(3)}`],
         ['Geometric prediction for this tilt', st.mode === 'tilt' && st.rmod > 0 ? pyramidGeometric(st.amp, st.rmod).toFixed(3) : '—'],
-        ['Optical gain near zero (per λ/D)', Pc ? (Pc.curve[1][1] / Pc.curve[1][0]).toFixed(3) + (st.rmod > 0 ? ` (geometric 2/πR = ${(2 / (Math.PI * st.rmod)).toFixed(3)})` : '') : '…'],
+        ['Optical gain near zero (per λ/D)', Pc ? (Pc.curve[1][1] / Pc.curve[1][0]).toFixed(3) + (st.rmod > 0 ? ' ' + t('(geometric 2/πR = {g})', { g: (2 / (Math.PI * st.rmod)).toFixed(3) }) : '') : '…'],
       ]));
   }
   function drawPyrImg(ctx, w, hh) {

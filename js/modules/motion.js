@@ -108,8 +108,8 @@ export default function mount(root, meta) {
       ['Blade rotation during one row exposure', ((tipSpeed * st.exp) / 1000 * 180 / Math.PI).toFixed(1) + '°'],
       ['Frame exposure (angle/360 · 1/fps)', '1/' + Math.round(1 / texp) + ' s'],
       ['Spoke-passing frequency', fSpoke.toFixed(2) + ' Hz'],
-      ['Apparent wheel speed', appRpm.toFixed(1) + ' rpm' + (Math.abs(appRpm) < 0.5 ? ' (frozen)' : appRpm * st.wrpm < 0 ? ' (backwards!)' : '')],
-      ['Exposure / flicker period', (st.fexp / (1000 / f)).toFixed(2) + ' cycles'],
+      ['Apparent wheel speed', Math.abs(appRpm) < 0.5 ? t('{r} rpm (frozen)', { r: appRpm.toFixed(1) }) : appRpm * st.wrpm < 0 ? t('{r} rpm (backwards!)', { r: appRpm.toFixed(1) }) : t('{r} rpm', { r: appRpm.toFixed(1) })],
+      ['Exposure / flicker period', t('{n} cycles', { n: (st.fexp / (1000 / f)).toFixed(2) })],
       ['Flicker bands across frame', ((st.readout / 1000) * f).toFixed(1)],
     ]));
     calc.say(t('During the {ms} ms readout the propeller turns <strong>{deg}°</strong>, which bends the blades.', { ms: st.readout, deg: ((tipSpeed * st.readout) / 1000 * 180 / Math.PI).toFixed(0) }) + ' '

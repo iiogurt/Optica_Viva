@@ -43,7 +43,7 @@ export default function mount(root, meta) {
         ['Strehl: long exposure', r.strehl.long.toFixed(3)],
         ['Strehl: shift-and-add, all frames', r.strehl.tt.toFixed(3)],
         ['Strehl: lucky selection', r.strehl.lucky.toFixed(3)],
-        ['Fried probability of a lucky frame', friedProbability(st.Dr0) < 1 ? (100 * friedProbability(st.Dr0)).toFixed(2) + ' %' : '> 100 % (formula valid for D/r₀ ≥ 3.5)'],
+        ['Fried probability of a lucky frame', friedProbability(st.Dr0) < 1 ? (100 * friedProbability(st.Dr0)).toFixed(2) + ' %' : t('> 100 % (formula valid for D/r₀ ≥ 3.5)')],
       ]));
       calc.say(t('Keeping the best {v1} % of {frames} short exposures gives a Strehl ratio of <strong>{lucky}</strong>, against {tt} for re-centring all frames and {long} for one long exposure.', { v1: (st.keep * 100).toFixed(st.keep < 0.1 ? 1 : 0), frames: st.frames, lucky: r.strehl.lucky.toFixed(2), tt: r.strehl.tt.toFixed(2), long: r.strehl.long.toFixed(3) }));
       calc.set(String.raw`\begin{aligned}

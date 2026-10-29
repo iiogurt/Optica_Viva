@@ -119,7 +119,7 @@ export default function mount(root, meta) {
       ['OLPF first zero 1/(2d)', st.olpf ? (1 / (2 * st.olpf)).toFixed(2) + ' cy/px' : '—'],
       ['Pixel-aperture first zero 1/a', (1 / a).toFixed(2) + ' cy/px'],
       ['Mean false-colour (chroma) error', (chroma / (NPX * NPX) * 100).toFixed(2) + ' %'],
-      ['Demo: ' + st.f.toFixed(3) + ' cy/px appears at', fa.toFixed(3) + ' cy/px'],
+      [t('Demo: {f} cy/px appears at', { f: st.f.toFixed(3) }), fa.toFixed(3) + ' cy/px'],
     ]));
     const H = (nu) => Math.abs((Math.sin(Math.PI * a * nu) / (Math.PI * a * nu + 1e-12)) * (st.olpf ? Math.cos(Math.PI * st.olpf * nu) : 1)) || (nu === 0 ? 1 : 0);
     calc.say((st.f > 0.5

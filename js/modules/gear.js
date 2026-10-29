@@ -122,10 +122,10 @@ export default function mount(root, meta) {
       R = { kind: 'sharp', res, ang, mtf50: mtfAt(res.Y.freqs, res.Y.mtf, 0.5), mtf10: mtfAt(res.Y.freqs, res.Y.mtf, 0.1), ca: [shift('R'), shift('B')], H };
       const lpmm = (f) => (f * 1000) / st.pitch;
       ro.replaceChildren(readouts([
-        ['Edge angle', ang.toFixed(1) + '°' + (ang < 2 || ang > 10 ? ' (2–10° works best)' : '')],
-        ['MTF50', `${R.mtf50.toFixed(3)} cycles/px = ${lpmm(R.mtf50).toFixed(0)} lp/mm`],
+        ['Edge angle', ang < 2 || ang > 10 ? t('{a}° (2–10° works best)', { a: ang.toFixed(1) }) : ang.toFixed(1) + '°'],
+        ['MTF50', t('{c} cycles/px = {lp} lp/mm', { c: R.mtf50.toFixed(3), lp: lpmm(R.mtf50).toFixed(0) })],
         ['MTF50 in line pairs per picture height', isFinite(R.mtf50) ? (R.mtf50 * Math.min(W, H)).toFixed(0) + ' lp/ph' : '—'],
-        ['MTF10 (limit of visible detail)', isFinite(R.mtf10) ? R.mtf10.toFixed(3) + ' cycles/px' : '> 1'],
+        ['MTF10 (limit of visible detail)', isFinite(R.mtf10) ? t('{c} cycles/px', { c: R.mtf10.toFixed(3) }) : '> 1'],
         ['Contrast at Nyquist (0.5 cycles/px)', (res.Y.mtf[res.Y.freqs.findIndex((f) => f >= 0.5)] * 100).toFixed(0) + ' %'],
         ['Lateral colour: red, blue vs green', `${R.ca[0].toFixed(2)} px, ${R.ca[1].toFixed(2)} px`],
       ]));
@@ -140,8 +140,8 @@ export default function mount(root, meta) {
       const worst = Math.min(...v.cornerStops);
       ro.replaceChildren(readouts([
         ['Corners vs centre (stops)', v.cornerStops.map((s) => s.toFixed(2)).join(', ')],
-        ['Darkest corner', worst.toFixed(2) + ' stops (' + (100 * 2 ** worst).toFixed(0) + ' %)'],
-        ['Asymmetry between corners', (Math.max(...v.cornerStops) - worst).toFixed(2) + ' stops'],
+        ['Darkest corner', t('{s} stops ({p} %)', { s: worst.toFixed(2), p: (100 * 2 ** worst).toFixed(0) })],
+        ['Asymmetry between corners', t('{s} stops', { s: (Math.max(...v.cornerStops) - worst).toFixed(2) })],
       ]));
       calc.say(t('The darkest corner gets <strong>{s} stops</strong> less light than the centre ({p} %).', { s: Math.abs(worst).toFixed(1), p: (100 * 2 ** worst).toFixed(0) }) + ' '
         + (Math.max(...v.cornerStops) - worst > 0.2 ? t('The corners differ by more than 0.2 stops: the lens may be decentred, or the light was uneven.') : t('The corners agree, as a well-centred lens should.')));
@@ -152,18 +152,18 @@ export default function mount(root, meta) {
         ro.replaceChildren(readouts([
           ['Points', String(pts.length)],
           ['Division-model coefficient k', d.k.toFixed(4)],
-          ['Distortion at the corner', d.corner.toFixed(2) + ' % (' + (d.k < -0.002 ? 'barrel' : d.k > 0.002 ? 'pincushion' : 'negligible') + ')'],
-          ['Deviation from a straight line', `${d.before.toFixed(2)} px → ${d.after.toFixed(2)} px after correction`],
+          ['Distortion at the corner', d.corner.toFixed(2) + ' % (' + t(d.k < -0.002 ? N_('barrel') : d.k > 0.002 ? N_('pincushion') : N_('negligible')) + ')'],
+          ['Deviation from a straight line', t('{a} px → {b} px after correction', { a: d.before.toFixed(2), b: d.after.toFixed(2) })],
         ]));
         calc.say((d.k < 0
         ? t('The points are straightened by k = <strong>{k}</strong>: <strong>{c} % barrel distortion</strong> at the corner. The line\'s deviation drops from {before} to {after} pixels.', { k: d.k.toFixed(3), c: Math.abs(d.corner).toFixed(1), before: d.before.toFixed(1), after: d.after.toFixed(2) })
         : t('The points are straightened by k = <strong>{k}</strong>: <strong>{c} % pincushion distortion</strong> at the corner. The line\'s deviation drops from {before} to {after} pixels.', { k: d.k.toFixed(3), c: Math.abs(d.corner).toFixed(1), before: d.before.toFixed(1), after: d.after.toFixed(2) })));
       } else {
-        ro.replaceChildren(readouts([['Points', `${pts.length} (click at least 4 along one straight line)`]]));
+        ro.replaceChildren(readouts([['Points', t('{n} (click at least 4 along one straight line)', { n: pts.length })]]));
         calc.say(t('Click at least four points along a line that is straight in reality, preferably near the edge of the frame.'));
       }
     }
-    if (!R && st.test === 'sharp') { ro.replaceChildren(readouts([['Region', 'drag a box across a slightly tilted edge']])); calc.say(t('Drag a box across a dark-to-bright edge tilted by a few degrees.')); }
+    if (!R && st.test === 'sharp') { ro.replaceChildren(readouts([['Region', t('drag a box across a slightly tilted edge')]])); calc.say(t('Drag a box across a dark-to-bright edge tilted by a few degrees.')); }
     calc.set(st.test === 'sharp' ? String.raw`\mathrm{MTF}(f) = \left|\frac{\mathcal{F}\{w\,\mathrm{LSF}\}(f)}{\mathcal{F}\{w\,\mathrm{LSF}\}(0)}\right|` : st.test === 'vig' ? String.raw`\Delta = \log_2\frac{E_\text{corner}}{E_\text{centre}}` : String.raw`x_u = c + \frac{x_d - c}{1 + k\,r_d^2}`);
     view.redraw(); chart.redraw();
   }
