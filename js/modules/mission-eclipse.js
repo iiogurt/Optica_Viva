@@ -73,7 +73,8 @@ export default function mount(root, meta) {
         : longest > drift ? `The Sun drifts one pixel every ${(drift * 1000).toFixed(0)} ms at ${Math.round(st.f)} mm. Use a tracking mount, or keep the tripod exposures below ${fmtT(nearestShutter(drift))} and accept a fainter outer corona.` : 'At this focal length the drift is below a pixel even for the longest exposure.',
       tex: String.raw`t_\text{1 px} = \frac{p}{f\,\omega} = ${texNum(drift * 1000, 3)}\ \text{ms}`,
     });
-    calc.say(`<strong>ND 5.0 filter for the partial phases at ${fmtT(ladder[0].ts)}; at totality, filter off and a ladder from ${fmtT(total[0].ts)} to ${fmtT(longest)}</strong> at f/${st.N.toPrecision(2)}, ISO ${Math.round(st.iso)}, ${seqTime.toFixed(1)} s per pass. The Sun is ${sunPx.toFixed(0)} pixels wide${st.mount === 'tripod' && longest > drift ? '; a tripod smears the faint corona' : ''}.`);
+    calc.say(t('<strong>ND 5.0 filter for the partial phases at {tp}; at totality, filter off and a ladder from {t0} to {t1}</strong> at f/{N}, ISO {iso}, {seq} s per pass. The Sun is {px} pixels wide.', { tp: fmtT(ladder[0].ts), t0: fmtT(total[0].ts), t1: fmtT(longest), N: st.N.toPrecision(2), iso: Math.round(st.iso), seq: seqTime.toFixed(1), px: sunPx.toFixed(0) })
+      + (st.mount === 'tripod' && longest > drift ? ' ' + t('A tripod smears the faint corona.') : ''));
     calc.set(String.raw`\begin{aligned}
     t &= \frac{N^2}{I\cdot 2^Q} = \frac{${texNum(st.N, 3)}^2}{${Math.round(st.iso)}\cdot 2^Q}\\
     Q &= 12\ (\text{Baily's beads}) \dots -3\ (8\,R_\odot)

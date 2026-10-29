@@ -6,7 +6,7 @@ import { makeRng } from '../lib/random.js';
 import { design, groundScene, imageFromOrbit, mtfDiff } from '../lib/earthobs.js';
 import { view3d } from '../lib/gl3d.js';
 import { earthobsScene } from '../lib/earthobs3d.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const PRESETS = {
   cubesat: { name: 'CubeSat camera (9 cm aperture)', H: 500, D: 0.09, f: 0.58, p: 5.5, N: 1 },
@@ -65,8 +65,8 @@ export default function mount(root, meta) {
       ['MTF at Nyquist (optics × pixel × smear)', (r.mtf.total * 100).toFixed(0) + ' %'],
       ['Swath of a 12 000-pixel line', swath.toFixed(1) + ' km'],
     ]));
-    const sees = r.gsd <= 0.15 ? 'road markings and car details' : r.gsd <= 0.5 ? 'individual cars and road markings' : r.gsd <= 1.5 ? 'cars as blobs' : r.gsd <= 5 ? 'roads and buildings, not cars' : 'fields, blocks and rivers';
-    calc.say(`Each pixel covers <strong>${r.gsd < 1 ? (r.gsd * 100).toFixed(0) + ' cm' : r.gsd.toPrecision(2) + ' m'}</strong> of ground, enough to see ${sees}. The ground passes at ${(r.ground / 1000).toFixed(1)} km/s, so each line gets ${(r.t * 1e6).toFixed(0)} µs; ${N} TDI stages collect ${fmt(r.e, 3)} electrons, a signal-to-noise ratio of <strong>${r.snr.toFixed(0)}</strong>.`);
+    const sees = r.gsd <= 0.15 ? N_('road markings and car details') : r.gsd <= 0.5 ? N_('individual cars and road markings') : r.gsd <= 1.5 ? N_('cars as blobs') : r.gsd <= 5 ? N_('roads and buildings, not cars') : N_('fields, blocks and rivers');
+    calc.say(t('Each pixel covers <strong>{gsd}</strong> of ground, enough to see {sees}. The ground passes at {v} km/s, so each line gets {dt} µs; {N} TDI stages collect {e} electrons, a signal-to-noise ratio of <strong>{snr}</strong>.', { gsd: r.gsd < 1 ? (r.gsd * 100).toFixed(0) + ' cm' : r.gsd.toPrecision(2) + ' m', sees: t(sees), v: (r.ground / 1000).toFixed(1), dt: (r.t * 1e6).toFixed(0), N, e: fmt(r.e, 3), snr: r.snr.toFixed(0) }));
     calc.set(String.raw`\begin{aligned}
     \text{GSD} &= \frac{H\,p}{f} = ${texNum(r.gsd, 3)}\ \text{m}\\
     v_g &= \sqrt{\frac{GM}{R+H}}\,\frac{R}{R+H} = ${texNum(r.ground / 1000, 3)}\ \text{km/s}\\

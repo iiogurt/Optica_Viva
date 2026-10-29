@@ -56,7 +56,9 @@ export default function mount(root, meta) {
       ['Residual with the ADC', span(res).toFixed(3) + '″'],
       ['Seeing FWHM', st.seeing.toFixed(2) + '″'],
     ]));
-    calc.say(`At ${st.z}° from the zenith the air lifts the star by <strong>${refraction(550, z, s.P, s.T).toFixed(0)}″</strong> and spreads ${st.l0}–${st.l1} nm over <strong>${span(air).toFixed(2)}″</strong>` + (st.adc ? `; the corrector leaves ${span(res).toFixed(3)}″` : '') + `, against a seeing disc of ${st.seeing}″.`);
+    calc.say(st.adc
+      ? t('At {z}° from the zenith the air lifts the star by <strong>{R}″</strong> and spreads {l0}–{l1} nm over <strong>{span}″</strong>; the corrector leaves {res}″, against a seeing disc of {seeing}″.', { z: st.z, R: refraction(550, z, s.P, s.T).toFixed(0), l0: st.l0, l1: st.l1, span: span(air).toFixed(2), res: span(res).toFixed(3), seeing: st.seeing })
+      : t('At {z}° from the zenith the air lifts the star by <strong>{R}″</strong> and spreads {l0}–{l1} nm over <strong>{span}″</strong>, against a seeing disc of {seeing}″.', { z: st.z, R: refraction(550, z, s.P, s.T).toFixed(0), l0: st.l0, l1: st.l1, span: span(air).toFixed(2), seeing: st.seeing }));
     calc.set(String.raw`\begin{aligned}
     R_{550} &= (n-1)\tan z = ${texNum(refraction(550, z, s.P, s.T), 4)}''\\
     \Delta R &= [n(\lambda_1)-n(\lambda_2)]\tan z = ${texNum(span(air), 3)}''\\

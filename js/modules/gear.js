@@ -129,7 +129,9 @@ export default function mount(root, meta) {
         ['Contrast at Nyquist (0.5 cycles/px)', (res.Y.mtf[res.Y.freqs.findIndex((f) => f >= 0.5)] * 100).toFixed(0) + ' %'],
         ['Lateral colour: red, blue vs green', `${R.ca[0].toFixed(2)} px, ${R.ca[1].toFixed(2)} px`],
       ]));
-      calc.say(`Half the contrast survives up to <strong>${R.mtf50.toFixed(2)} cycles per pixel</strong> (${lpmm(R.mtf50).toFixed(0)} line pairs per mm with ${st.pitch} µm pixels). ${R.mtf50 > 0.35 ? 'That is very sharp, possibly sharpened in the camera.' : R.mtf50 > 0.25 ? 'That is a sharp lens at this spot.' : 'That is soft: check focus, shake or the aperture.'} Colour fringes: red ${R.ca[0].toFixed(2)} px, blue ${R.ca[1].toFixed(2)} px.`);
+      calc.say(t('Half the contrast survives up to <strong>{c} cycles per pixel</strong> ({lp} line pairs per mm with {p} µm pixels).', { c: R.mtf50.toFixed(2), lp: lpmm(R.mtf50).toFixed(0), p: st.pitch }) + ' '
+        + (R.mtf50 > 0.35 ? t('That is very sharp, possibly sharpened in the camera.') : R.mtf50 > 0.25 ? t('That is a sharp lens at this spot.') : t('That is soft: check focus, shake or the aperture.')) + ' '
+        + t('Colour fringes: red {r} px, blue {b} px.', { r: R.ca[0].toFixed(2), b: R.ca[1].toFixed(2) }));
     } else if (st.test === 'vig') {
       const scale = Math.min(1, 900 / Math.max(W, H)), w = Math.round(W * scale), hh = Math.round(H * scale), c = document.createElement('canvas'); c.width = w; c.height = hh;
       const cx = c.getContext('2d'); cx.drawImage(src, 0, 0, w, hh);
@@ -141,7 +143,8 @@ export default function mount(root, meta) {
         ['Darkest corner', worst.toFixed(2) + ' stops (' + (100 * 2 ** worst).toFixed(0) + ' %)'],
         ['Asymmetry between corners', (Math.max(...v.cornerStops) - worst).toFixed(2) + ' stops'],
       ]));
-      calc.say(`The darkest corner gets <strong>${Math.abs(worst).toFixed(1)} stops</strong> less light than the centre (${(100 * 2 ** worst).toFixed(0)} %). ${Math.max(...v.cornerStops) - worst > 0.2 ? 'The corners differ by more than 0.2 stops: the lens may be decentred, or the light was uneven.' : 'The corners agree, as a well-centred lens should.'}`);
+      calc.say(t('The darkest corner gets <strong>{s} stops</strong> less light than the centre ({p} %).', { s: Math.abs(worst).toFixed(1), p: (100 * 2 ** worst).toFixed(0) }) + ' '
+        + (Math.max(...v.cornerStops) - worst > 0.2 ? t('The corners differ by more than 0.2 stops: the lens may be decentred, or the light was uneven.') : t('The corners agree, as a well-centred lens should.')));
     } else if (st.test === 'dist') {
       if (pts.length >= 4) {
         const d = fitDistortion(pts, W, H);
@@ -152,7 +155,9 @@ export default function mount(root, meta) {
           ['Distortion at the corner', d.corner.toFixed(2) + ' % (' + (d.k < -0.002 ? 'barrel' : d.k > 0.002 ? 'pincushion' : 'negligible') + ')'],
           ['Deviation from a straight line', `${d.before.toFixed(2)} px → ${d.after.toFixed(2)} px after correction`],
         ]));
-        calc.say(`The points are straightened by k = <strong>${d.k.toFixed(3)}</strong>: <strong>${Math.abs(d.corner).toFixed(1)} % ${d.k < 0 ? 'barrel' : 'pincushion'} distortion</strong> at the corner. The line's deviation drops from ${d.before.toFixed(1)} to ${d.after.toFixed(2)} pixels.`);
+        calc.say((d.k < 0
+        ? t('The points are straightened by k = <strong>{k}</strong>: <strong>{c} % barrel distortion</strong> at the corner. The line\'s deviation drops from {before} to {after} pixels.', { k: d.k.toFixed(3), c: Math.abs(d.corner).toFixed(1), before: d.before.toFixed(1), after: d.after.toFixed(2) })
+        : t('The points are straightened by k = <strong>{k}</strong>: <strong>{c} % pincushion distortion</strong> at the corner. The line\'s deviation drops from {before} to {after} pixels.', { k: d.k.toFixed(3), c: Math.abs(d.corner).toFixed(1), before: d.before.toFixed(1), after: d.after.toFixed(2) })));
       } else {
         ro.replaceChildren(readouts([['Points', `${pts.length} (click at least 4 along one straight line)`]]));
         calc.say(t('Click at least four points along a line that is straight in reality, preferably near the edge of the frame.'));

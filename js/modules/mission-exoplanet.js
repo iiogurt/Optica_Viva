@@ -64,8 +64,10 @@ export default function mount(root, meta) {
       tex: String.raw`t_\text{spec} \approx 0.2R\cdot t\ (R = 70)`,
     });
     calc.say(r.outside
-      ? `<strong>Observable:</strong> the planet sits ${r.sepLD.toFixed(1)} λ/D from the star, ${r.aboveFloor ? 'above' : 'below'} the leftover starlight; detection takes <strong>${hours(r.t)}</strong> and a spectrum about <strong>${hours(r.tSpec)}</strong>.`
-      : `<strong>Not observable</strong> with this telescope: the planet lies inside the inner working angle (${r.sepLD.toFixed(1)} λ/D against ${st.iwa}).`);
+      ? (r.aboveFloor
+        ? t('<strong>Observable:</strong> the planet sits {s} λ/D from the star, above the leftover starlight; detection takes <strong>{td}</strong> and a spectrum about <strong>{ts}</strong>.', { s: r.sepLD.toFixed(1), td: hours(r.t), ts: hours(r.tSpec) })
+        : t('<strong>Observable:</strong> the planet sits {s} λ/D from the star, below the leftover starlight; detection takes <strong>{td}</strong> and a spectrum about <strong>{ts}</strong>.', { s: r.sepLD.toFixed(1), td: hours(r.t), ts: hours(r.tSpec) }))
+      : t('<strong>Not observable</strong> with this telescope: the planet lies inside the inner working angle ({s} λ/D against {iwa}).', { s: r.sepLD.toFixed(1), iwa: st.iwa }));
     calc.set(String.raw`\begin{aligned}
     V_\star &= 4.83 + 5\log_{10}(d/10\,\text{pc}) = ${texNum(r.V, 3)}\\
     F_p &= C\,F_\star = ${texNum(r.C * r.Fs, 3)}\ \text{s}^{-1}

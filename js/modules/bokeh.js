@@ -242,7 +242,8 @@ export default function mount(root, meta) {
       ['Background disk', st.sa > 0 ? 'bright rim (soap bubble)' : st.sa < 0 ? 'soft edge, bright centre' : 'uniform'],
       ['Foreground disk', st.sa > 0 ? 'soft edge, bright centre' : st.sa < 0 ? 'bright rim' : 'uniform'],
     ]));
-    calc.say(`Background discs ${st.sa > 0 ? 'have a bright rim, like soap bubbles' : st.sa < 0 ? 'have a soft edge and a bright centre' : 'are evenly lit'}, and foreground discs ${st.sa > 0 ? 'have a soft edge and a bright centre' : st.sa < 0 ? 'have a bright rim' : 'are evenly lit'}. The iris is open to <strong>${(iris * 100).toFixed(0)} %</strong> of the full aperture${st.blades >= 3 ? `, so the discs take the shape of its ${st.blades} blades` : ''}.`);
+    calc.say(t('{bg}, and {fg}.', { bg: st.sa > 0 ? t('Background discs have a bright rim, like soap bubbles') : st.sa < 0 ? t('Background discs have a soft edge and a bright centre') : t('Background discs are evenly lit'), fg: st.sa > 0 ? t('foreground discs have a soft edge and a bright centre') : st.sa < 0 ? t('foreground discs have a bright rim') : t('foreground discs are evenly lit') }) + ' '
+      + (st.blades >= 3 ? t('The iris is open to <strong>{p} %</strong> of the full aperture, so the discs take the shape of its {n} blades.', { p: (iris * 100).toFixed(0), n: st.blades }) : t('The iris is open to <strong>{p} %</strong> of the full aperture.', { p: (iris * 100).toFixed(0) })));
     calc.set(String.raw`\begin{aligned}
     r(\rho) &= c\,(\rho + s\rho^3)\\
     s_\text{bg} &= -2W_{040}/|W_{020}| = ${texNum(-st.sa, 3)}\\

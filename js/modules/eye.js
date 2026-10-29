@@ -35,8 +35,10 @@ export default function mount(root, meta) {
       ['Chromatic difference 450 → 650 nm', (chromaticDifference(450) - chromaticDifference(650)).toFixed(2) + ' D (measured: ' + (thibos(650) - thibos(450)).toFixed(2) + ' D)'],
       [`Refraction at ${st.lam} nm relative to 555`, (-chromaticDifference(st.lam)).toFixed(2) + ' D' + (st.lam < 555 ? ' (eye myopic in blue)' : '')],
     ]));
-    calc.say(`The eye focuses with <strong>${e.power.toFixed(1)} dioptres</strong>, like a lens of ${(1000 / e.power).toFixed(1)} mm focal length in air. `
-      + (Math.abs(chromaticDifference(st.lam)) < 0.02 ? `Light of ${st.lam} nm is in focus on the retina.` : `Light of ${st.lam} nm comes to focus ${st.lam < 555 ? 'in front of' : 'behind'} the retina, an error of ${Math.abs(chromaticDifference(st.lam)).toFixed(2)} dioptres.`));
+    calc.say(t('The eye focuses with <strong>{P} dioptres</strong>, like a lens of {f} mm focal length in air.', { P: e.power.toFixed(1), f: (1000 / e.power).toFixed(1) }) + ' '
+      + (Math.abs(chromaticDifference(st.lam)) < 0.02 ? t('Light of {l} nm is in focus on the retina.', { l: st.lam })
+        : st.lam < 555 ? t('Light of {l} nm comes to focus in front of the retina, an error of {e} dioptres.', { l: st.lam, e: Math.abs(chromaticDifference(st.lam)).toFixed(2) })
+        : t('Light of {l} nm comes to focus behind the retina, an error of {e} dioptres.', { l: st.lam, e: Math.abs(chromaticDifference(st.lam)).toFixed(2) })));
     calc.set(String.raw`\begin{aligned}
     P &= -C = ${texNum(e.power, 4)}\ \text{D}\\
     R(\lambda) &= -\frac{S_{00}}{S_{01}},\quad \Delta R_{450\to650} = ${texNum(chromaticDifference(450) - chromaticDifference(650), 3)}\ \text{D}

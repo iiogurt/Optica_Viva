@@ -55,7 +55,9 @@ export default function mount(root, meta) {
       ['Flash aperture at full power', 'f/' + N.toPrecision(2)],
       ['Specular reflectance of skin / cornea', (fresnel0(1.376) * 100).toFixed(1) + ' %'],
     ]));
-    calc.say(`A ${st.size.toFixed(0)} cm light at ${st.dist.toFixed(2)} m looks <strong>${(ang * 180 / Math.PI).toFixed(0)}°</strong> wide from the subject. The shadow on the wall ${st.b.toFixed(1)} m behind has soft edges <strong>${(sg.pen * 100).toFixed(0)} cm</strong> wide${sg.umbra > 0 ? '' : ' and no hard core'}, and the wall is <strong>${fo.stops.toFixed(1)} stops</strong> darker than the face.`);
+    calc.say((sg.umbra > 0
+      ? t('A {size} cm light at {d} m looks <strong>{a}°</strong> wide from the subject. The shadow on the wall {b} m behind has soft edges <strong>{pen} cm</strong> wide, and the wall is <strong>{stops} stops</strong> darker than the face.', { size: st.size.toFixed(0), d: st.dist.toFixed(2), a: (ang * 180 / Math.PI).toFixed(0), b: st.b.toFixed(1), pen: (sg.pen * 100).toFixed(0), stops: fo.stops.toFixed(1) })
+      : t('A {size} cm light at {d} m looks <strong>{a}°</strong> wide from the subject. The shadow on the wall {b} m behind has soft edges <strong>{pen} cm</strong> wide and no hard core, and the wall is <strong>{stops} stops</strong> darker than the face.', { size: st.size.toFixed(0), d: st.dist.toFixed(2), a: (ang * 180 / Math.PI).toFixed(0), b: st.b.toFixed(1), pen: (sg.pen * 100).toFixed(0), stops: fo.stops.toFixed(1) })));
     calc.set(String.raw`\begin{aligned}
     w_\text{pen} &= \frac{S\,b}{d} = \frac{${texNum(S, 3)}\times${texNum(st.b, 3)}}{${texNum(st.dist, 3)}} = ${texNum(sg.pen * 100, 3)}\ \text{cm}\\
     \Delta &= \log_2\frac{E_\text{subject}}{E_\text{wall}} = ${texNum(fo.stops, 3)}\ \text{stops}\\

@@ -6,6 +6,7 @@ import { plan, JUPITER_FLATTENING } from '../lib/jupiter.js';
 import { dispersion } from '../lib/adc.js';
 import { TELESCOPES, ASTROCAMS } from '../lib/equipment.js';
 import { gaussianExact } from '../lib/macro.js';
+import { t } from '../lib/i18n.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const fmtT = (t) => (t >= 60 ? (t / 60).toFixed(1) + ' min' : t.toFixed(0) + ' s');
@@ -96,7 +97,7 @@ export default function mount(root, meta) {
       why: `At ${st.alt}° altitude the air spreads violet to red over ${r.disp.toFixed(2)}″, ${r.disp > r.res ? `${(r.disp / r.res).toFixed(1)} times` : 'less than'} the telescope's resolution of ${r.res.toFixed(2)}″. ${r.adc ? 'Colour fringes will soften the detail unless a corrector or a monochrome camera with filters is used.' : 'The colours stay within half a resolution element.'}`,
       tex: String.raw`\Delta R = [n(400) - n(700)]\tan z = ${texNum(r.disp, 3)}''`,
     });
-    calc.say(`<strong>f/${r.N.toFixed(1)} · ${(r.t * 1000).toFixed(1)} ms · ${r.rate.toFixed(0)} fps · ${fmtT(r.rot.t)} per capture · keep ${(r.keep * 100).toFixed(0)} %</strong>${r.adc ? ' · with ADC' : ''}. Jupiter will be ${r.discPx.toFixed(0)} pixels wide; seeing alone would blur it to ${st.fwhm}″, the stack can reach ${r.res.toFixed(2)}″.`);
+    calc.say(t('<strong>f/{N} · {ms} ms · {fps} fps · {cap} per capture · keep {keep} %</strong>{adc}. Jupiter will be {px} pixels wide; seeing alone would blur it to {fwhm}″, the stack can reach {res}″.', { N: r.N.toFixed(1), ms: (r.t * 1000).toFixed(1), fps: r.rate.toFixed(0), cap: fmtT(r.rot.t), keep: (r.keep * 100).toFixed(0), adc: r.adc ? ' · ' + t('with ADC') : '', px: r.discPx.toFixed(0), fwhm: st.fwhm, res: r.res.toFixed(2) }));
     calc.set(String.raw`\begin{aligned}
     r_0(550\,\text{nm}) &= ${texNum(r.r0 * 100, 3)}\ \text{cm},\quad D/r_0 = ${texNum(r.Dr0, 3)}\\
     \lambda/D &= ${texNum(r.res, 3)}'',\quad \text{scale} = ${texNum(r.scale, 3)}''/\text{px}

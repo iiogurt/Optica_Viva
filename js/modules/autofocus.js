@@ -4,6 +4,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot, range } from '../lib/plot.js';
 import { latest } from '../lib/compute.js';
 import { defocus, disparityOf, imageDistance } from '../lib/autofocus.js';
+import { t } from '../lib/i18n.js';
 
 const FRAME = 1 / 120; // s per autofocus frame (a 120 fps live view)
 
@@ -52,7 +53,7 @@ export default function mount(root, meta) {
         ['Contrast detection: focus set to', (r.cdU / 1000).toFixed(3) + ' m'],
         ['Contrast detection: frames, time', `${r.frames}, ${(tCD * 1000).toFixed(0)} ms`],
       ]));
-      calc.say(`The subject is blurred by ${((d.blur * 1000) / st.pitch).toFixed(1)} pixels and the half-images are <strong>${Math.abs((disp * 1000) / st.pitch).toFixed(1)} px apart</strong> (${d.dv < 0 ? 'the lens is focused too close' : 'the lens is focused too far'}). Phase detection lands at ${(r.pdU / 1000).toFixed(2)} m in <strong>${r.pdFrames} frames</strong>; contrast detection needs <strong>${r.frames}</strong> to reach ${(r.cdU / 1000).toFixed(2)} m.`);
+      calc.say(t('The subject is blurred by {blur} pixels and the half-images are <strong>{disp} px apart</strong> ({dir}). Phase detection lands at {pd} m in <strong>{pdFrames} frames</strong>; contrast detection needs <strong>{frames}</strong> to reach {cd} m.', { blur: ((d.blur * 1000) / st.pitch).toFixed(1), disp: Math.abs((disp * 1000) / st.pitch).toFixed(1), dir: d.dv < 0 ? t('the lens is focused too close') : t('the lens is focused too far'), pd: (r.pdU / 1000).toFixed(2), pdFrames: r.pdFrames, frames: r.frames, cd: (r.cdU / 1000).toFixed(2) }));
       halves.redraw(); climb.redraw();
     }).catch(console.error);
   }

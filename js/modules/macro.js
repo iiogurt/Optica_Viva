@@ -94,7 +94,7 @@ export default function mount(root, meta) {
       ['Optimum for the subject depth', 'f/' + Nopt.toPrecision(2) + ' (N_w ' + NwOpt.toPrecision(3) + ')'],
       ['Stack frames for that depth', nFrames + ' at f/' + st.N.toPrecision(2)],
     ]));
-    calc.say(`At ${st.m >= 1 ? st.m.toPrecision(2) + ' : 1' : '1 : ' + (1 / st.m).toPrecision(2)} the lens set to f/${st.N.toPrecision(2)} works at <strong>f/${g.Nw.toPrecision(2)}</strong>, ${g.evLoss.toFixed(1)} stops less light, and only <strong>${dof < 1 ? (dof * 1000).toFixed(0) + ' µm' : dof.toFixed(2) + ' mm'}</strong> of depth is sharp.`);
+    calc.say(t('At {m} the lens set to f/{N} works at <strong>f/{Nw}</strong>, {ev} stops less light, and only <strong>{dof}</strong> of depth is sharp.', { m: st.m >= 1 ? st.m.toPrecision(2) + ' : 1' : '1 : ' + (1 / st.m).toPrecision(2), N: st.N.toPrecision(2), Nw: g.Nw.toPrecision(2), ev: g.evLoss.toFixed(1), dof: dof < 1 ? (dof * 1000).toFixed(0) + ' µm' : dof.toFixed(2) + ' mm' }));
     calc.set(String.raw`\begin{aligned}
     N_w &= N\left(1+\frac{m}{m_p}\right) = ${texNum(st.N, 3)}\left(1+\frac{${texNum(st.m, 3)}}{${texNum(L.mp, 2)}}\right) = ${texNum(g.Nw, 3)}\\
     \Delta EV &= 2\log_2\!\left(1+\tfrac{m}{m_p}\right) = ${texNum(g.evLoss, 3)}\\

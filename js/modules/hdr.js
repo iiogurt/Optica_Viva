@@ -51,7 +51,8 @@ export default function mount(root, meta) {
       ['Bracket dynamic range', dr.toFixed(1) + ' EV (+' + (dr - dr1).toFixed(1) + ')'],
       ['Graduated ND: OD', st.gnd ? (st.gnd / Math.log2(10)).toFixed(2) + ` (${st.gnd} stops)` : '—'],
     ]));
-    calc.say(`One frame of this sensor records <strong>${dr1.toFixed(1)} stops</strong>; the bracket of ${st.n} frame${st.n === '1' ? '' : 's'} covers <strong>${dr.toFixed(1)} stops</strong>` + (st.gnd ? `, and the graduated filter holds the sky back by ${st.gnd} more.` : '.') + ' The scene spans about 20 stops.' );
+    calc.say((st.n === '1' ? t('One frame of this sensor records <strong>{dr1} stops</strong>.', { dr1: dr1.toFixed(1) }) : t('One frame of this sensor records <strong>{dr1} stops</strong>; the bracket of {n} frames covers <strong>{dr} stops</strong>.', { dr1: dr1.toFixed(1), n: st.n, dr: dr.toFixed(1) }))
+      + (st.gnd ? ' ' + t('The graduated filter holds the sky back by {g} more stops.', { g: st.gnd }) : '') + ' ' + t('The scene spans about 20 stops.') );
     calc.set(String.raw`\begin{aligned}
     S_{\mathrm{SNR}=1} &= \tfrac12\left(1+\sqrt{1+4\sigma_r^2}\right) = ${texNum((1 + Math.sqrt(1 + 4 * cam.read ** 2)) / 2, 3)}\ e^-\\
     \mathrm{DR} &= \log_2\frac{S_\text{FWC}}{S_{\mathrm{SNR}=1}} = ${texNum(dr1, 3)}\ \text{EV}\\
