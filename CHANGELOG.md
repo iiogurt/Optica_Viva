@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Changed
+- The names and one-line descriptions of the remaining catalogue groups (5–13, 150 entries) are translated, so the whole catalogue apart from its longer explanations and worked examples now changes language; 288 new strings in German, French and Spanish.
 - The catalogue of phenomena is translated in part: its frame (search, filters, navigator, counts, buttons), the 13 group titles and introductions, and the names and one-line descriptions of the first four groups (79 entries); search matches both the English and the translated text. 201 new strings in German, French and Spanish. The longer explanations and worked examples stay English, like the laboratories’ explanations.
 - Readouts whose name or value is built from values (“Refraction at {l} nm relative to 555”, “{d} D (measured: {m} D)”, “{s} stops”, “aliased → moiré at {nu} cycles/mm”, the verdicts such as “diffraction-limited” or “no transit”) go through the translator; 87 new strings in German, French and Spanish.
 
