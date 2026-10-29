@@ -91,7 +91,9 @@ export default function mount(root, meta) {
         why: `Scale A's f-number by the ratio of crop factors k_A/k_B (${(a.k / b.k).toFixed(2)}) to get the same lens opening: B would need f/${nMatch.toPrecision(2)} to match A in light and depth of field${nMatch < 0.95 ? ', faster than lenses for that format usually go' : ''}.`,
         tex: String.raw`N_B = N_A\,\frac{k_A}{k_B} = ${texNum(nMatch, 3)}`,
       });
-      calc.say(`For this shot, <strong>${Math.abs(dl) < 0.1 ? 'both gather the same light' : (dl > 0 ? 'A' : 'B') + ' gathers ' + Math.abs(dl).toFixed(1) + ' stops more light'}</strong> and has the shallower depth of field; B would need f/${nMatch.toPrecision(2)} to equal A.`);
+      calc.say((Math.abs(dl) < 0.1
+      ? t('For this shot, <strong>both gather the same light</strong>; B would need f/{N} to equal A.', { N: nMatch.toPrecision(2) })
+      : t('For this shot, <strong>{who} gathers {d} stops more light</strong> and has the shallower depth of field; B would need f/{N} to equal A.', { who: dl > 0 ? 'A' : 'B', d: Math.abs(dl).toFixed(1), N: nMatch.toPrecision(2) })));
       calc.set(String.raw`\begin{aligned}
       f_A &= ${texNum(a.f, 3)}\ \text{mm},\ D_A = ${texNum(a.D, 3)}\ \text{mm}\\
       f_B &= ${texNum(b.f, 3)}\ \text{mm},\ D_B = ${texNum(b.D, 3)}\ \text{mm}
@@ -121,7 +123,9 @@ export default function mount(root, meta) {
         why: `Useful magnification runs from about ${a.minMag.toFixed(0)}–${a.maxMag.toFixed(0)}× (A) and ${b.minMag.toFixed(0)}–${b.maxMag.toFixed(0)}× (B). The shorter focal length shows a wider field: ${st.fA < st.fB ? 'A' : 'B'} suits large nebulae and the Milky Way, the longer one planets and double stars.`,
         tex: String.raw`M_\text{max} \approx 2D_\text{mm},\quad M_\text{min} \approx D/7\ \text{mm}`,
       });
-      calc.say(`<strong>${st.DB > st.DA ? 'B' : 'A'}</strong> shows finer detail and fainter objects; under ${st.seeing}″ seeing ${a.seeingLimited && b.seeingLimited ? 'both are limited by the air for long exposures' : 'the larger aperture still resolves more'}.`);
+      calc.say((a.seeingLimited && b.seeingLimited
+      ? t('<strong>{who}</strong> shows finer detail and fainter objects; under {s}″ seeing both are limited by the air for long exposures.', { who: st.DB > st.DA ? 'B' : 'A', s: st.seeing })
+      : t('<strong>{who}</strong> shows finer detail and fainter objects; under {s}″ seeing the larger aperture still resolves more.', { who: st.DB > st.DA ? 'B' : 'A', s: st.seeing })));
       calc.set(String.raw`\begin{aligned}
       \theta_A &= ${texNum(a.rayleigh, 3)}'',\quad \theta_B = ${texNum(b.rayleigh, 3)}''\\
       \Delta &= 2\log_2(D_B/D_A) = ${texNum(stops(b.grasp, a.grasp), 3)}\ \text{stops}

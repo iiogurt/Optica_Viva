@@ -45,7 +45,9 @@ export default function mount(root, meta) {
       ['Fit with jump detection', `${jf.slope.toFixed(3)} e⁻/s (jumps at read ${jf.jumps.join(', ') || '—'})`],
       ['Slope noise: CDS · LS', `${Math.sqrt(vC).toFixed(3)} · ${Math.sqrt(vL).toFixed(3)} e⁻/s`],
     ]));
-    calc.say(`The true flux is ${st.f} e⁻/s. The first and last reads alone give <strong>${cds.toFixed(2)}</strong>, a straight-line fit to all ${st.N} reads <strong>${ls.toFixed(2)}</strong>` + (st.cr ? `, and the fit that detects the cosmic-ray jump <strong>${jf.slope.toFixed(2)}</strong> e⁻/s.` : ' e⁻/s.'));
+    calc.say(st.cr
+      ? t('The true flux is {f} e⁻/s. The first and last reads alone give <strong>{cds}</strong>, a straight-line fit to all {N} reads <strong>{ls}</strong>, and the fit that detects the cosmic-ray jump <strong>{jf}</strong> e⁻/s.', { f: st.f, cds: cds.toFixed(2), N: st.N, ls: ls.toFixed(2), jf: jf.slope.toFixed(2) })
+      : t('The true flux is {f} e⁻/s. The first and last reads alone give <strong>{cds}</strong>, a straight-line fit to all {N} reads <strong>{ls}</strong> e⁻/s.', { f: st.f, cds: cds.toFixed(2), N: st.N, ls: ls.toFixed(2) }));
     calc.set(String.raw`\begin{aligned}
     \sigma^2_\text{LS} &= \tfrac{\sigma_r^2}{\sum(t_i-\bar t)^2} + f\Delta t\textstyle\sum_k W_k^2\\
     &= ${texNum(vL, 3)},\quad W_k = \textstyle\sum_{i\ge k} w_i\\

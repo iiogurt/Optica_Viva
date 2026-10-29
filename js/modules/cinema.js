@@ -50,7 +50,9 @@ export default function mount(root, meta) {
       ['Streak strength (two reflections)', sc ? `${sc.strength.toExponential(1)} of the source → ${Math.log2(sc.strength * 2 ** st.hl).toFixed(1)} EV vs exposure` : '—'],
       ['Same framing on a spherical lens needs', s > 1 ? `a ${(sensorW * s).toFixed(1)} mm wide sensor or ${(F / s).toFixed(0)} mm with a crop` : '—'],
     ]));
-    calc.say((s > 1 ? `A ${s}× anamorphic squeeze makes the background lights ovals ${s.toFixed(1)} times taller than wide` : 'A spherical lens draws the background lights as circles') + `; each spans <strong>${(blurV / D2R * 60).toFixed(0)} arcminutes</strong> in height.`);
+    calc.say(s > 1
+      ? t('A {s}× anamorphic squeeze makes the background lights ovals {r} times taller than wide; each spans <strong>{a} arcminutes</strong> in height.', { s, r: s.toFixed(1), a: (blurV / D2R * 60).toFixed(0) })
+      : t('A spherical lens draws the background lights as circles; each spans <strong>{a} arcminutes</strong> in height.', { a: (blurV / D2R * 60).toFixed(0) }));
     calc.set(String.raw`\begin{aligned}
     \text{aspect} &= s\,\frac{w}{h} = ${texNum(s, 3)}\times${texNum(sensorW / GATE_H, 3)} = 2.39\\
     \beta_v &= \frac{D}{1}\left|\frac1{u_o}-\frac1{u_f}\right| = ${texNum(blurV * 1000, 3)}\ \text{mrad},\quad \beta_h = \beta_v/s

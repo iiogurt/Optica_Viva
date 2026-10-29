@@ -115,7 +115,7 @@ export default function mount(root, meta) {
       ['Diffraction depth of focus ±2λN²', '±' + (2 * 0.55 * st.N * st.N).toFixed(1) + ' µm'],
     ]));
     const [a, b] = DOUBLETS[st.pair];
-    calc.say(`This ${st.glass} singlet (Abbe number ${V.toFixed(0)}) focuses red <strong>${(focal(sys.singlet, LINES.C) - focal(sys.singlet, LINES.F)).toFixed(2)} mm</strong> farther from the lens than blue. The ${st.pair} achromat leaves ${Math.abs(sp(sys.achromat)).toFixed(0)} µm between violet and blue (g and F lines), the apochromat ${Math.abs(sp(sys.apo)) < 0.05 ? 'less than 0.1' : Math.abs(sp(sys.apo)).toFixed(1)} µm.`);
+    calc.say(t('This {glass} singlet (Abbe number {V}) focuses red <strong>{dz} mm</strong> farther from the lens than blue. The {pair} achromat leaves {ach} µm between violet and blue (g and F lines), the apochromat {apo} µm.', { glass: st.glass, V: V.toFixed(0), dz: (focal(sys.singlet, LINES.C) - focal(sys.singlet, LINES.F)).toFixed(2), pair: st.pair, ach: Math.abs(sp(sys.achromat)).toFixed(0), apo: Math.abs(sp(sys.apo)) < 0.05 ? t('less than 0.1') : Math.abs(sp(sys.apo)).toFixed(1) }));
     calc.set(String.raw`\begin{aligned}
     \Delta f_\text{singlet} &\approx -\frac{f}{V_d} = -\frac{100}{${texNum(V, 4)}}\,\text{mm}\\
     \frac{\phi_1}{V_1} + \frac{\phi_2}{V_2} &= 0 \Rightarrow \phi_1 = \phi\frac{V_1}{V_1-V_2}\\

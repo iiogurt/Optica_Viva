@@ -126,9 +126,9 @@ export default function mount(root, meta) {
     ]));
     const m1 = (x) => fmt(x / 1000, 3) + ' m';
     calc.say((isFinite(Df)
-      ? `Sharp from <strong>${m1(Dn)}</strong> to <strong>${m1(Df)}</strong>, ${tot < 1000 ? fmt(tot / 10, 2) + ' cm' : fmt(tot / 1000, 2) + ' m'} deep: ${(((s - Dn) / tot) * 100).toFixed(0)} % of it in front of the focus, ${(((Df - s) / tot) * 100).toFixed(0)} % behind.`
-      : `Sharp from <strong>${m1(Dn)}</strong> to <strong>infinity</strong>: the focus is at or beyond the hyperfocal distance (${m1(H)}).`)
-      + (M.diff && airy > c ? ' At this f-number diffraction alone blurs more than the sharpness limit, so nothing is perfectly crisp.' : ''));
+      ? t('Sharp from <strong>{near}</strong> to <strong>{far}</strong>, {depth} deep: {front} % of it in front of the focus, {behind} % behind.', { near: m1(Dn), far: m1(Df), depth: tot < 1000 ? fmt(tot / 10, 2) + ' cm' : fmt(tot / 1000, 2) + ' m', front: (((s - Dn) / tot) * 100).toFixed(0), behind: (((Df - s) / tot) * 100).toFixed(0) })
+      : t('Sharp from <strong>{near}</strong> to <strong>infinity</strong>: the focus is at or beyond the hyperfocal distance ({H}).', { near: m1(Dn), H: m1(H) }))
+      + (M.diff && airy > c ? ' ' + t('At this f-number diffraction alone blurs more than the sharpness limit, so nothing is perfectly crisp.') : ''));
     calc.set(String.raw`\begin{aligned}
 H &= \frac{f^2}{Nc} + f = \frac{${texNum(f, 4)}^2}{${texNum(N, 3)}\times${texNum(c, 3)}} + ${texNum(f, 4)}\\ &= ${texNum(H / 1000, 4)}\ \text{m}\\[2pt]
 D_N &= \frac{s f^2}{f^2 + Nc(s-f)} = ${texNum(Dn / 1000, 4)}\ \text{m}\\[2pt]

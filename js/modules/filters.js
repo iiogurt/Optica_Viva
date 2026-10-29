@@ -45,7 +45,9 @@ export default function mount(root, meta) {
       ['Best pre-shift of the filter', '+' + best.shift.toFixed(2) + ' nm → ' + (best.T * 100).toFixed(0) + ' %'],
       ['Exposure cost', T > 0.01 ? (Math.log2(T0 / T)).toFixed(2) + ' stops' : 'line blocked'],
     ]));
-    calc.say(`At f/${st.N.toPrecision(2)}, rays cross the filter at up to ${((Math.atan(1 / (2 * st.N)) + chief) * 180 / Math.PI).toFixed(0)}°, shifting its passband up to ${edge.toFixed(1)} nm bluewards. The ${LINES[st.line][0]} line keeps <strong>${(T * 100).toFixed(0)} %</strong> of its light${st.pre ? ' with the pre-shifted filter' : `; a filter pre-shifted by ${best.shift.toFixed(1)} nm would keep ${(best.T * 100).toFixed(0)} %`}.`);
+    calc.say(st.pre
+      ? t('At f/{N}, rays cross the filter at up to {a}°, shifting its passband up to {edge} nm bluewards. The {line} line keeps <strong>{T} %</strong> of its light with the pre-shifted filter.', { N: st.N.toPrecision(2), a: ((Math.atan(1 / (2 * st.N)) + chief) * 180 / Math.PI).toFixed(0), edge: edge.toFixed(1), line: LINES[st.line][0], T: (T * 100).toFixed(0) })
+      : t('At f/{N}, rays cross the filter at up to {a}°, shifting its passband up to {edge} nm bluewards. The {line} line keeps <strong>{T} %</strong> of its light; a filter pre-shifted by {shift} nm would keep {best} %.', { N: st.N.toPrecision(2), a: ((Math.atan(1 / (2 * st.N)) + chief) * 180 / Math.PI).toFixed(0), edge: edge.toFixed(1), line: LINES[st.line][0], T: (T * 100).toFixed(0), shift: best.shift.toFixed(1), best: (best.T * 100).toFixed(0) }));
     calc.set(String.raw`\begin{aligned}
     \lambda(\theta) &= \lambda_0\sqrt{1 - \left(\frac{\sin\theta}{n^*}\right)^2}\\
     \theta_\text{max} &= \arctan\frac{1}{2N} = ${texNum(Math.atan(1 / (2 * st.N)) * 180 / Math.PI, 3)}^\circ \Rightarrow \Delta\lambda = ${texNum(-edge, 3)}\ \text{nm}

@@ -58,7 +58,9 @@ export default function mount(root, meta) {
       ['Display gamut, share of all chromaticities', (100 * gamutCoverage(st.gamut)).toFixed(1) + ' %'],
       ['Test colours the display cannot show', `${samplesOutside(S.spd, st.gamut)} of 14`],
     ]));
-    calc.say(`This light has a colour temperature of <strong>${r.cct.toFixed(0)} K</strong> and a colour rendering index of <strong>${r.Ra.toFixed(0)}</strong> (100 means colours look as under the reference light)` + (r.R[8] < 50 ? `; saturated red scores only ${r.R[8].toFixed(0)}, so reds look dull.` : '.'));
+    calc.say(r.R[8] < 50
+      ? t('This light has a colour temperature of <strong>{T} K</strong> and a colour rendering index of <strong>{Ra}</strong> (100 means colours look as under the reference light); saturated red scores only {R9}, so reds look dull.', { T: r.cct.toFixed(0), Ra: r.Ra.toFixed(0), R9: r.R[8].toFixed(0) })
+      : t('This light has a colour temperature of <strong>{T} K</strong> and a colour rendering index of <strong>{Ra}</strong> (100 means colours look as under the reference light).', { T: r.cct.toFixed(0), Ra: r.Ra.toFixed(0) }));
     calc.set(String.raw`\begin{aligned}
     T_{cp} &= \arg\min_T \lVert (u,v) - (u,v)_\text{Planck}(T)\rVert = ${texNum(r.cct, 4)}\ \text{K}\\
     R_i &= 100 - 4.6\,\Delta E_{U^*V^*W^*,i}\\
