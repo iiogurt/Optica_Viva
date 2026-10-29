@@ -6,6 +6,7 @@ import { wavelengthCSS } from '../lib/color.js';
 import { vertices } from '../lib/raytrace.js';
 import { index } from '../lib/glass.js';
 import { LE_GRAND, eyeAt, chromaticDifference, thibos, cocFromAcuity } from '../lib/eye.js';
+import { t } from '../lib/i18n.js';
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['photo', 'video'] }));
@@ -131,7 +132,7 @@ export default function mount(root, meta) {
     if (!E) return;
     const { freq, mtf, cutoff } = E.one, dl = (f) => { const s = Math.min(1, f / cutoff); return (2 / Math.PI) * (Math.acos(s) - s * Math.sqrt(1 - s * s)); };
     plot(ctx, w, hh, {
-      title: `Retinal MTF, ${E.st.p} mm pupil, 555 nm`, x: { min: 0, max: 90, label: 'cycles per degree' }, y: { min: 0, max: 1, label: 'MTF' },
+      title: t('Retinal MTF, {p} mm pupil, 555 nm', { p: E.st.p }), x: { min: 0, max: 90, label: 'cycles per degree' }, y: { min: 0, max: 1, label: 'MTF' },
       series: [{ data: freq.map((f) => [f, dl(f)]).filter((q) => q[0] <= 90), color: 'rgba(255,255,255,0.4)', width: 1.2, dash: [4, 3], label: 'diffraction limit' }, { data: freq.map((f, i) => [f, mtf[i]]).filter((q) => q[0] <= 90), color: '#ffb547', width: 2.2, label: 'eye' }],
       vlines: [{ x: 60, color: 'rgba(107,227,164,0.6)', label: 'cone Nyquist' }], legend: true, legendX: w - 170, legendY: 34,
     });

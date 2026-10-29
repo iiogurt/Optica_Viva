@@ -73,7 +73,7 @@ export default function mount(root, meta) {
     const st = R.st, Ns = Array.from({ length: 99 }, (_, i) => i + 2), T = (st.N - 1) * st.dt;
     const all = Ns.flatMap((n) => [Math.sqrt(slopeVarianceCDS(n, T / (n - 1), st.sigma, st.f)), Math.sqrt(slopeVarianceLS(n, T / (n - 1), st.sigma, st.f))]).concat([Math.sqrt(st.f / T)]);
     plot(ctx, w, hh, {
-      title: `Slope noise for a fixed exposure of ${T.toFixed(0)} s`, x: { min: 2, max: 100, log: true, label: 'reads per exposure' }, y: { min: Math.min(...all) * 0.7, max: Math.max(...all) * 1.4, log: true, label: 'σ(slope) (e⁻/s)' },
+      title: t('Slope noise for a fixed exposure of {T} s', { T: T.toFixed(0) }), x: { min: 2, max: 100, log: true, label: 'reads per exposure' }, y: { min: Math.min(...all) * 0.7, max: Math.max(...all) * 1.4, log: true, label: 'σ(slope) (e⁻/s)' },
       series: [
         { data: Ns.map((n) => [n, Math.sqrt(slopeVarianceCDS(n, T / (n - 1), st.sigma, st.f))]), color: '#6ad7ff', width: 2, label: 'CDS' },
         { data: Ns.map((n) => [n, Math.sqrt(slopeVarianceLS(n, T / (n - 1), st.sigma, st.f))]), color: '#ff9cc0', width: 2, label: 'least squares' },
@@ -147,7 +147,7 @@ export default function mount(root, meta) {
   const pplot = stage({ aspect: 2.6, label: '', draw: (ctx, w, hh) => {
     const ts = logRange(10, 1e4, 80);
     plot(ctx, w, hh, { title: 'Charge released after a bright exposure (power-law decay, illustrative)', x: { min: 10, max: 1e4, log: true, label: 'time after the bright exposure (s)' }, y: { min: 1e-3, max: 10, log: true, label: 'persistence (e⁻/s)' },
-      series: [1, 2, 5, 10].map((F, i) => ({ data: ts.map((t) => [t, Math.max(1e-3, persistenceRate(F, t))]), color: ['#6be3a4', '#6ad7ff', '#ffb547', '#ff6b6b'][i], width: 1.8, label: `${F}× full well` })), legend: true, legendX: w - 160, legendY: 34 });
+      series: [1, 2, 5, 10].map((F, i) => ({ data: ts.map((t) => [t, Math.max(1e-3, persistenceRate(F, t))]), color: ['#6be3a4', '#6ad7ff', '#ffb547', '#ff6b6b'][i], width: 1.8, label: t('{F}× full well', { F }) })), legend: true, legendX: w - 160, legendY: 34 });
   }, cls: 'plain', minH: 200 });
   sec4.append(h('div.card', { style: { padding: '6px' } }, pplot.el));
   root.append(sec4);

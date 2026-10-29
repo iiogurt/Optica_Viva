@@ -6,6 +6,7 @@ import { MODULES } from '../app.js';
 import { cameraOptions, resolveCamera } from '../lib/equipment.js';
 import { BORTLE, surfaceRate } from '../lib/stacking.js';
 import { plan, SIDEREAL } from '../lib/milkyway.js';
+import { t } from '../lib/i18n.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const fmtT = (t) => (t >= 60 ? (t / 60).toFixed(t >= 600 ? 0 : 1) + ' min' : (t >= 10 || Number.isInteger(t) ? t.toFixed(0) : t.toPrecision(2)) + ' s');
@@ -115,7 +116,7 @@ export default function mount(root, meta) {
       return { data: Ns.map((N) => [N, Math.sqrt(N) * s1]), color, label: `Bortle ${b}` };
     });
     plot(ctx, w, hh, {
-      title: `Signal-to-noise of ${st.mu.toFixed(1)} mag/″² detail vs number of frames`, x: { min: 1, max: Ns[Ns.length - 1], label: 'frames' }, y: { min: 0, max: 10, label: 'SNR' },
+      title: t('Signal-to-noise of {mu} mag/″² detail vs number of frames', { mu: st.mu.toFixed(1) }), x: { min: 1, max: Ns[Ns.length - 1], label: 'frames' }, y: { min: 0, max: 10, label: 'SNR' },
       series, hlines: [{ y: 5, color: 'rgba(255,255,255,0.35)', label: 'visible (SNR 5)' }], vlines: [{ x: P.frames, color: 'rgba(255,181,71,0.5)' }], legend: true, legendX: w - 130, legendY: hh - 90,
     });
   }

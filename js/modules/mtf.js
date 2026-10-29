@@ -5,6 +5,7 @@ import { fft2d } from '../lib/fft.js';
 import { latest } from '../lib/compute.js';
 import { cmf } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
+import { t } from '../lib/i18n.js';
 
 const sinc = (x) => (Math.abs(x) < 1e-9 ? 1 : Math.sin(Math.PI * x) / (Math.PI * x));
 
@@ -178,7 +179,7 @@ export default function mount(root, meta) {
     const peak = Math.max(...xs.map(I));
     const dip = I(0) / peak;
     plot(ctx, w, hh, {
-      title: `Two incoherent points ${s.toFixed(2)} λN apart: central dip ${(dip * 100).toFixed(1)} % of peak`,
+      title: t('Two incoherent points {s} λN apart: central dip {d} % of peak', { s: s.toFixed(2), d: (dip * 100).toFixed(1) }),
       x: { min: -3, max: 3, label: 'position (λN)' }, y: { min: 0, max: 1.05, label: 'intensity' },
       series: [
         { data: xs.map((x) => [x, airy(Math.PI * (x + s / 2)) / peak]), color: 'rgba(106,215,255,0.6)', width: 1 },

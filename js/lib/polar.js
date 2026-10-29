@@ -7,6 +7,7 @@
 // right-handed circular light as seen by the receiver. Angles of optical elements are measured
 // from e1 towards e2.
 import { spectralBasis, linspace, gamutClip } from './color.js';
+import { N_ } from './i18n.js';
 
 // ── Mueller algebra ─────────────────────────────────────────────────────────────────────────
 export const mmul = (A, B) => A.map((r) => [0, 1, 2, 3].map((j) => r[0] * B[0][j] + r[1] * B[1][j] + r[2] * B[2][j] + r[3] * B[3][j]));
@@ -358,9 +359,9 @@ export function michelLevy(Gmax = 4000, N = 2001, light = false) {
 // ── Birefringent walk-off (optical low-pass filters) ────────────────────────────────────────
 // Uniaxial crystals at 589 nm: ordinary and extraordinary indices.
 export const CRYSTALS = {
-  quartz: { name: 'Crystal quartz', no: 1.5443, ne: 1.5534 },
-  linbo3: { name: 'Lithium niobate', no: 2.3007, ne: 2.2116 },
-  calcite: { name: 'Calcite', no: 1.6584, ne: 1.4864 },
+  quartz: { name: N_('Crystal quartz'), no: 1.5443, ne: 1.5534 },
+  linbo3: { name: N_('Lithium niobate'), no: 2.3007, ne: 2.2116 },
+  calcite: { name: N_('Calcite'), no: 1.6584, ne: 1.4864 },
 };
 // Angle ρ between the extraordinary ray and the wave normal, for a wave normal at θ to the optic
 // axis: tan ρ = (1 − r) tan θ / (1 + r tan²θ), r = no²/ne². Signed: > 0 away from the axis.

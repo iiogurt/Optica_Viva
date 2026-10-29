@@ -128,8 +128,8 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Shadow profile: intensity relative to the unobstructed starlight', x: { min: 0, max: rm, label: 'distance from the shadow centre (m)' }, y: { min: 1e-16, max: 10, log: true, label: 'I / I₀' },
       series: [
-        { data: R.rhos.map((r, i) => [r, Math.max(1e-16, R.disk[i])]), color: 'rgba(255,255,255,0.45)', width: 1.4, dash: [4, 3], label: `opaque disk, ${R.st.lam} nm` },
-        ...R.p.lams.map((l, j) => ({ data: R.rhos.map((r, i) => [r, Math.max(1e-16, R.prof[j][i])]), color: css(l), width: 2, label: `starshade, ${Math.round(l * 1e9)} nm` })),
+        { data: R.rhos.map((r, i) => [r, Math.max(1e-16, R.disk[i])]), color: 'rgba(255,255,255,0.45)', width: 1.4, dash: [4, 3], label: t('opaque disk, {l} nm', { l: R.st.lam }) },
+        ...R.p.lams.map((l, j) => ({ data: R.rhos.map((r, i) => [r, Math.max(1e-16, R.prof[j][i])]), color: css(l), width: 2, label: t('starshade, {l} nm', { l: Math.round(l * 1e9) }) })),
       ],
       bands: [{ x: [0, R.st.D / 2], color: 'rgba(106,215,255,0.08)' }], hlines: [{ y: 1e-10, color: 'rgba(255,181,71,0.5)' }],
       legend: true, legendX: w - 230, legendY: 120,

@@ -4,6 +4,7 @@ import { plot } from '../lib/plot.js';
 import { wavelengthRGB } from '../lib/color.js';
 import { index } from '../lib/glass.js';
 import { SOURCES, diffractionAngle, wavelengthAt, blazeAngle, angularDispersion, gratingR, blazeEfficiency, dndl, prismDeviation, prismR, observe, intrinsic, slitR, combinedR, slitThroughput, sunAt, echellePosition, echelleOrders } from '../lib/spectro.js';
+import { t } from '../lib/i18n.js';
 
 const D2R = Math.PI / 180, L0 = 380, L1 = 760, APEX = 60 * D2R;
 const GLASS = ['N-SF11', 'N-SF5', 'F2', 'N-BK7', 'Fused silica', 'CaF2'];
@@ -144,14 +145,14 @@ export default function mount(root, meta) {
     let series;
     if (S.type === 'emission') {
       const pk = Math.max(...obs, 1e-9);
-      series = [{ data: lams.map((l, i) => [l, obs[i] / pk]), color: '#ffb547', width: 2.2, label: `observed, R = ${R.toFixed(0)}` }];
+      series = [{ data: lams.map((l, i) => [l, obs[i] / pk]), color: '#ffb547', width: 2.2, label: t('observed, R = {R}', { R: R.toFixed(0) }) }];
     } else {
       const intr = intrinsic(st.src, lams), mx = Math.max(...intr, ...obs);
-      series = [{ data: lams.map((l, i) => [l, intr[i] / mx]), color: 'rgba(255,255,255,0.45)', width: 1.2, label: 'intrinsic' }, { data: lams.map((l, i) => [l, obs[i] / mx]), color: '#ffb547', width: 2.2, label: `observed, R = ${R.toFixed(0)}` }];
+      series = [{ data: lams.map((l, i) => [l, intr[i] / mx]), color: 'rgba(255,255,255,0.45)', width: 1.2, label: 'intrinsic' }, { data: lams.map((l, i) => [l, obs[i] / mx]), color: '#ffb547', width: 2.2, label: t('observed, R = {R}', { R: R.toFixed(0) }) }];
     }
     const lines = S.lines.filter((L) => Math.abs(L[0] - st.zc) <= st.zw / 2);
     plot(ctx, w, hh, {
-      title: `Zoom: ${(st.zc - st.zw / 2).toFixed(2)}–${(st.zc + st.zw / 2).toFixed(2)} nm`, x: { min: lams[0], max: lams[n - 1], label: 'wavelength (nm)' }, y: { min: 0, max: 1.1, label: 'relative intensity' },
+      title: t('Zoom: {a}–{b} nm', { a: (st.zc - st.zw / 2).toFixed(2), b: (st.zc + st.zw / 2).toFixed(2) }), x: { min: lams[0], max: lams[n - 1], label: 'wavelength (nm)' }, y: { min: 0, max: 1.1, label: 'relative intensity' },
       series, vlines: lines.slice(0, 12).map((L, i) => ({ x: L[0], color: 'rgba(106,215,255,0.35)', label: L[3] || L[0].toFixed(2), dy: (i % 3) * 12 })), legend: true, legendX: w - 210, legendY: hh - 80,
     });
   }
@@ -162,13 +163,13 @@ export default function mount(root, meta) {
     if (st.disp === 'grating') {
       const cols = ['#ff6b6b', '#6be3a4', '#6ad7ff', '#c18cff'];
       plot(ctx, w, hh, {
-        title: `Blaze efficiency per order (scalar theory), blaze ${st.lamB.toFixed(0)} nm in order 1`, x: { min: 330, max: 1100, label: 'wavelength (nm)' }, y: { min: 0, max: 1.05, label: 'relative efficiency' },
+        title: t('Blaze efficiency per order (scalar theory), blaze {l} nm in order 1', { l: st.lamB.toFixed(0) }), x: { min: 330, max: 1100, label: 'wavelength (nm)' }, y: { min: 0, max: 1.05, label: 'relative efficiency' },
         series: [1, 2, 3, 4].map((k) => ({ data: ls.map((l) => [l, blazeEfficiency(k, l, st.rho, M.alpha, M.thB)]), color: cols[k - 1], width: k === +st.m ? 2.4 : 1.2, label: `m = ${k}` })),
         bands: [{ x: [L0, L1], color: 'rgba(255,255,255,0.04)' }], legend: true, legendX: w - 110, legendY: 34,
       });
     } else {
       plot(ctx, w, hh, {
-        title: `Resolving power of a ${st.base.toFixed(0)} mm prism vs wavelength`, x: { min: 380, max: 1000, label: 'wavelength (nm)' }, y: { min: 10, max: 1e5, log: true, label: 'R = b |dn/dλ|' },
+        title: t('Resolving power of a {b} mm prism vs wavelength', { b: st.base.toFixed(0) }), x: { min: 380, max: 1000, label: 'wavelength (nm)' }, y: { min: 10, max: 1e5, log: true, label: 'R = b |dn/dλ|' },
         series: GLASS.map((g, i) => ({ data: ls.filter((l) => l >= 380).map((l) => [l, Math.max(10, prismR(g, l, st.base))]), color: ['#ffb547', '#ff9cc0', '#c18cff', '#6ad7ff', '#6be3a4', '#ffffff'][i], width: g === st.glass ? 2.4 : 1.1, label: g })),
         legend: true, legendX: w - 130, legendY: 34,
       });
@@ -264,7 +265,7 @@ export default function mount(root, meta) {
     if (!E) return;
     const lams = Array.from({ length: 400 }, (_, i) => 588.6 + i * 0.0035), o = observe('sun', lams, E.R), I = intrinsic('sun', lams), mx = Math.max(...I);
     plot(ctx, w, hh, {
-      title: `Sodium D at R = ${E.R.toFixed(0)}`, x: { min: lams[0], max: lams[lams.length - 1], label: 'wavelength (nm)' }, y: { min: 0, max: 1.05, label: 'relative intensity' },
+      title: t('Sodium D at R = {R}', { R: E.R.toFixed(0) }), x: { min: lams[0], max: lams[lams.length - 1], label: 'wavelength (nm)' }, y: { min: 0, max: 1.05, label: 'relative intensity' },
       series: [{ data: lams.map((l, i) => [l, I[i] / mx]), color: 'rgba(255,255,255,0.4)', width: 1.1, label: 'intrinsic' }, { data: lams.map((l, i) => [l, o[i] / mx]), color: '#ffb547', width: 2, label: 'observed' }],
       legend: true, legendX: w - 130, legendY: hh - 80,
     });

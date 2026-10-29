@@ -4,14 +4,14 @@ import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { twoMirror, conics, seidelTwoMirror, fieldPoly, rmsPoly, astigNodes, sum, THREF } from '../lib/fieldpsf.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const INF = lut('inferno'), VIR = lut('viridis');
 const TELS = {
   hubble: { name: 'Hubble-like: 2.4 m, f/24, primary f/2.3', D: 2.4, N: 24, N1: 2.3, b: 1.5, eps: 0.33 },
   amateur: { name: 'Observatory RC: 0.4 m, f/8, primary f/3', D: 0.4, N: 8, N1: 3, b: 0.25, eps: 0.42 },
 };
-const FORMS = { cassegrain: 'Classical Cassegrain', rc: 'Ritchey–Chrétien', dk: 'Dall–Kirkham' };
+const FORMS = { cassegrain: N_('Classical Cassegrain'), rc: 'Ritchey–Chrétien', dk: 'Dall–Kirkham' };
 const ARCMIN = Math.PI / 180 / 60;
 
 export default function mount(root, meta) {
@@ -149,11 +149,11 @@ export default function mount(root, meta) {
   }
   function drawCurve(ctx, w, hh) {
     if (!S) return;
-    const st = ctl.state, T = S.T, t = S.t, lam = st.lam * 1e-9, fmax = Math.max(st.field * 1.5, 1), xs = Array.from({ length: 80 }, (_, i) => (fmax * (i + 0.5)) / 80);
+    const st = ctl.state, T = S.T, tel = S.t, lam = st.lam * 1e-9, fmax = Math.max(st.field * 1.5, 1), xs = Array.from({ length: 80 }, (_, i) => (fmax * (i + 0.5)) / 80);
     const colors = { cassegrain: '#6ad7ff', rc: '#ffb547', dk: '#c58bff' };
     const series = Object.keys(FORMS).map((f) => {
-      const c = conics(t, f), sd = seidelTwoMirror(t, c.K1, c.K2);
-      return { data: xs.map((a) => [a, Math.max(1, rmsPoly(fieldPoly(sd, [(a * ARCMIN) / THREF, 0], {}, st.curved), T.eps, 12, 24) * 1e9)]), color: colors[f], width: f === st.form ? 2.4 : 1.3, label: FORMS[f] + ' (aligned)' };
+      const c = conics(tel, f), sd = seidelTwoMirror(tel, c.K1, c.K2);
+      return { data: xs.map((a) => [a, Math.max(1, rmsPoly(fieldPoly(sd, [(a * ARCMIN) / THREF, 0], {}, st.curved), T.eps, 12, 24) * 1e9)]), color: colors[f], width: f === st.form ? 2.4 : 1.3, label: t('{form} (aligned)', { form: t(FORMS[f]) }) };
     });
     series.push({ data: xs.map((a) => [a, Math.max(1, rmsPoly(fieldPoly(S.sd, [(a * ARCMIN) / THREF, 0], S.mis, st.curved), T.eps, 12, 24) * 1e9)]), color: '#fff', width: 1.6, dash: [5, 3], label: 'current, with errors' });
     plot(ctx, w, hh, {

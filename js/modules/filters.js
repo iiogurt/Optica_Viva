@@ -3,6 +3,7 @@ import { h, controls, stage, readouts, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range, logRange } from '../lib/plot.js';
 import { LINES, shifted, passband, coneTransmission, bestPreshift } from '../lib/ifilter.js';
+import { t } from '../lib/i18n.js';
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['space', 'photo'] }));
@@ -59,7 +60,7 @@ export default function mount(root, meta) {
       title: 'Filter transmission: parallel light and this beam', x: { min: ls[0], max: ls[ls.length - 1], label: 'wavelength (nm)' }, y: { min: 0, max: 1.05, label: 'transmission' },
       series: [
         { data: ls.map((l) => [l, passband(l, o.centre, st.fwhm)]), color: '#9aa1b5', dash: [4, 4], label: 'parallel light' },
-        { data: ls.map((l) => [l, coneTransmission(l, { ...o, nr: 12, nt: 16 })]), color: '#ff6b6b', label: `f/${st.N.toPrecision(2)} beam` },
+        { data: ls.map((l) => [l, coneTransmission(l, { ...o, nr: 12, nt: 16 })]), color: '#ff6b6b', label: t('f/{N} beam', { N: st.N.toPrecision(2) }) },
       ],
       vlines: [{ x: line, color: '#ffb547', label: LINES[st.line][0] }], legend: true, legendX: 70, legendY: 36,
     });

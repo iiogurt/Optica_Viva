@@ -7,6 +7,7 @@ import { latest } from '../lib/compute.js';
 import { plot, logRange } from '../lib/plot.js';
 import { view3d } from '../lib/gl3d.js';
 import { coronagraphScene } from '../lib/coronagraph3d.js';
+import { N_ } from '../lib/i18n.js';
 
 const SCOPES = [
   { name: 'Hubble', D: 2.4, color: '#6ad7ff', band: [0.115, 2.5], space: true },
@@ -63,7 +64,7 @@ export default function mount(root, meta) {
   }
   function drawThermal(ctx, w, hh) {
     const L = logRange(0.5, 300, 240);
-    const Ts = [[5772, '#ffd27a', 'Sun-like surface (×10⁻⁶)'], [290, '#ff6b6b', 'telescope at 290 K'], [40, '#6ad7ff', 'JWST optics ≈ 40 K'], [7, '#c18cff', 'MIRI detector ≈ 7 K']];
+    const Ts = [[5772, '#ffd27a', N_('Sun-like surface (×10⁻⁶)')], [290, '#ff6b6b', N_('telescope at 290 K')], [40, '#6ad7ff', N_('JWST optics ≈ 40 K')], [7, '#c18cff', N_('MIRI detector ≈ 7 K')]];
     plot(ctx, w, hh, {
       title: 'Why infrared telescopes must be cold: Planck radiance', x: { min: 0.5, max: 300, log: true, label: 'wavelength (µm)' }, y: { min: 1e-10, max: 1e9, log: true, label: 'B_λ (W m⁻² sr⁻¹ µm⁻¹)' },
       series: Ts.map(([T, c, lab], i) => ({ data: L.map((l) => [l, planck(l, T) * 1e-6 * (i === 0 ? 1e-6 : 1)]), color: c, width: 2, label: lab })),

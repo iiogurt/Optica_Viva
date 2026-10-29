@@ -262,7 +262,7 @@ export default function mount(root, meta) {
     if (!G) return;
     const th = (G.st.angle * Math.PI) / 180, ls = range(380, 780, 81);
     const series = Object.entries(COATINGS).map(([k, c], i) => ({ data: ls.map((l) => [l, stackReflectance(c.layers(1.52), 1, 1.52, l, th).R * 100]), color: ['#9aa1b5', '#6be3a4', '#6ad7ff', '#ffb547'][i], width: k === G.st.coat ? 2.6 : 1.3, label: c.name.split(' (')[0] }));
-    const { X, Y } = plot(ctx, w, hh, { title: `One surface on n = 1.52 at ${G.st.angle}°`, x: { min: 380, max: 780, label: 'wavelength (nm)' }, y: { min: 0.01, max: 10, log: true, label: 'R (%)' }, series, legend: true, legendX: w - 180, legendY: hh - 100 });
+    const { X, Y } = plot(ctx, w, hh, { title: t('One surface on n = 1.52 at {a}°', { a: G.st.angle }), x: { min: 380, max: 780, label: 'wavelength (nm)' }, y: { min: 0.01, max: 10, log: true, label: 'R (%)' }, series, legend: true, legendX: w - 180, legendY: hh - 100 });
     // residual colour swatch of the selected coating
     if (G.st.coat !== 'none') {
       ctx.fillStyle = coatingColour(COATINGS[G.st.coat].layers(1.52), 1.52, th);
