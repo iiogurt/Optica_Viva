@@ -111,7 +111,7 @@ export function interfScene({ array, dec: decDeg, hours, H: Hh }) {
   labels.push({ p: at(0, -reach * 1.12), text: 'u-v plane, as the source sees the array', color: '#c9cfdc' });
   lines.push({ points: [[0, 0, 0].map((_, q) => S[q] * 1.02), C], color: [1, 1, 1, 0.3], width: 1, glow: false });
   lines.push({ points: [at(0, 0), C.map((x, q) => x + S[q] * 0.9)], color: [1, 0.71, 0.28, 0.9], width: 1.6 });
-  labels.push({ p: C.map((x, q) => x + S[q] * 1.0), text: `to the source, δ = ${decDeg}°`, color: '#ffb547' });
+  labels.push({ p: C.map((x, q) => x + S[q] * 1.0), text: 'to the source, δ = {d}°', vars: { d: decDeg }, color: '#ffb547' });
   // tracks: each baseline (and its mirror image) while both stations see the source
   let n = 0;
   for (const pair of runs) {
@@ -137,6 +137,6 @@ export function interfScene({ array, dec: decDeg, hours, H: Hh }) {
     for (const sgn of [1, -1]) dots.push(tint(sphere(np > 60 ? 0.012 : 0.028, at(sgn * sc(p.u), sgn * sc(p.v)), 6, 3), [1, 1, 1]));
   }
   meshes.push({ mesh: merge(dots), color: [1, 1, 1] });
-  if (st.k !== 1) labels.push({ p: scene(turn(st.up[0], H)).map((x) => x * 1.35), text: `array enlarged × ${Math.round(st.k).toLocaleString('en')}`, color: '#ffcf8a' });
+  if (st.k !== 1) labels.push({ p: scene(turn(st.up[0], H)).map((x) => x * 1.35), text: 'array enlarged × {k}', vars: { k: Math.round(st.k).toLocaleString('en') }, color: '#ffcf8a' });
   return { meshes, lines, labels, frame: { centre: C.map((x) => x * 0.5), size: (d + reach + 1) * 1.4 } };
 }

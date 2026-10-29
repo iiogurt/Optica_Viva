@@ -83,7 +83,7 @@ export default function mount(root, meta) {
       const sz = Math.min(w / 2, hh) - 16, x0 = side * (w / 2) + (w / 2 - sz) / 2;
       ctx.imageSmoothingEnabled = true; ctx.drawImage(ic.c, x0, (hh - sz) / 2, sz, sz);
       ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px Inter, sans-serif';
-      ctx.fillText(`${side ? (st.adc ? 'with ADC' : 'ADC off') : 'without ADC'} · ${field.toFixed(2)}″ across`, x0 + 4, (hh + sz) / 2 - 6);
+      ctx.fillText(t('{s} · {f}″ across', { s: side ? (st.adc ? t('with ADC') : t('ADC off')) : t('without ADC'), f: field.toFixed(2) }), x0 + 4, (hh + sz) / 2 - 6);
     });
   }
   function drawDisp(ctx, w, hh) {

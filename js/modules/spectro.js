@@ -80,7 +80,7 @@ export default function mount(root, meta) {
     let angAt, lamsAt;
     if (st.disp === 'grating') {
       const b0 = diffractionAngle(m, L0, st.rho, M.alpha), b1 = diffractionAngle(m, L1, st.rho, M.alpha);
-      if (!Number.isFinite(b0) || !Number.isFinite(b1)) { ctx.fillStyle = '#fff'; ctx.font = '13px Inter, sans-serif'; ctx.fillText(`Order ${m} does not reach 760 nm at ${st.rho.toFixed(0)} lines/mm (|sin β| > 1).`, 16, hh / 2); return; }
+      if (!Number.isFinite(b0) || !Number.isFinite(b1)) { ctx.fillStyle = '#fff'; ctx.font = '13px Inter, sans-serif'; ctx.fillText(t('Order {m} does not reach 760 nm at {rho} lines/mm (|sin β| > 1).', { m, rho: st.rho.toFixed(0) }), 16, hh / 2); return; }
       angAt = (x) => b0 + ((x + 0.5) / Wp) * (b1 - b0);
       // every order k that lands on this column, with its blaze efficiency
       lamsAt = (beta) => { const out = []; for (let k = 1; k <= 8; k++) { const l = wavelengthAt(k, beta, st.rho, M.alpha); if (l >= 330 && l <= 1050 && (!st.filt || k === m)) out.push([l, blazeEfficiency(k, l, st.rho, M.alpha, M.thB)]); } return out; };
@@ -122,7 +122,7 @@ export default function mount(root, meta) {
     ctx.drawImage(M.img.c, 0, 0, M.img.W, 1, 0, top, w, sh);
     ctx.drawImage(M.img.c, 0, 1, M.img.W, 1, 0, top + sh + 3, w, dh);
     ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(w - 150, top + sh + 3, 150, 14);
-    ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'right'; ctx.fillText('detector signal (incl. UV/IR)', w - 4, top + sh + 13);
+    ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'right'; ctx.fillText(t('detector signal (incl. UV/IR)'), w - 4, top + sh + 13);
     // wavelength ticks of the selected order along the top
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
     const a0 = angAt(-0.5), a1 = angAt(Wp - 0.5);
@@ -131,7 +131,7 @@ export default function mount(root, meta) {
       ctx.fillRect(x, top - 4, 1, 4); ctx.fillText(l + '', x, top - 7);
     }
     ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.fillText(st.disp === 'grating' ? `order ${m}${st.filt ? '' : ' · other orders overlap where they land'}` : 'prism: blue spread out, red compressed', 6, hh - 6);
+    ctx.fillText(st.disp === 'grating' ? (st.filt ? t('order {m}', { m }) : t('order {m} · other orders overlap where they land', { m })) : t('prism: blue spread out, red compressed'), 6, hh - 6);
     // zoom window
     const za = (l) => ((st.disp === 'grating' ? diffractionAngle(m, l, st.rho, M.alpha) : prismDeviation(st.glass, l, APEX)) - a0) / (a1 - a0) * w;
     const x0 = za(st.zc - st.zw / 2), x1 = za(st.zc + st.zw / 2);

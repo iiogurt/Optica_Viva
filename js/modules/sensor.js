@@ -2,6 +2,7 @@ import { h, controls, stage, readouts, fmt, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS, diag, crop, pitchUm, FF_DIAG } from '../lib/sensors.js';
 import { plot, logRange } from '../lib/plot.js';
+import { t } from '../lib/i18n.js';
 
 const COLORS = ['#ff6b6b', '#ff9a5a', '#ffd27a', '#ffffff', '#ff9cc0', '#6be3a4', '#6ad7ff', '#8fa6ff', '#c18cff', '#9aa1b5'];
 const LAMBDA = 0.55; // µm
@@ -135,7 +136,7 @@ export default function mount(root, meta) {
       ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.setLineDash([4, 6]);
       ctx.beginPath(); ctx.arc(cx, cy, circR, 0, 7); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('image circle of a lens made for ' + ref.name + ': larger formats vignette', cx, Math.min(hh - 8, cy + circR + 14));
+      ctx.fillText(t('image circle of a lens made for {s}: larger formats vignette', { s: t(ref.name) }), cx, Math.min(hh - 8, cy + circR + 14));
       M.R.forEach((r) => {
         const W = r.S.w * sc, H = r.S.h * sc;
         ctx.strokeStyle = COLORS[r.i]; ctx.lineWidth = r.k === M.st.ref ? 2.5 : 1.2;
@@ -158,7 +159,7 @@ export default function mount(root, meta) {
         ctx.fillText(`${r.f.toFixed(0)}mm f/${r.N.toPrecision(2)}`, x, y + 30);
       });
       ctx.fillStyle = '#fff'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-      ctx.fillText('Identical framing, perspective, depth of field and total light: all share D = f/N = ' + (M.st.f / M.st.N).toFixed(1) + ' mm', 14, 20);
+      ctx.fillText(t('Identical framing, perspective, depth of field and total light: all share D = f/N = {D} mm', { D: (M.st.f / M.st.N).toFixed(1) }), 14, 20);
     }
   }
 
@@ -189,7 +190,7 @@ export default function mount(root, meta) {
       ctx.fillStyle = COLORS[r.i]; ctx.beginPath(); ctx.arc(X(data[i][0]), Y(data[i][1]), r.k === M.st.ref ? 5.5 : 4, 0, 7); ctx.fill();
     });
     ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('SNR ∝ √area: +1 EV of sensor area = +½ EV of SNR', w - 18, hh - 46);
+    ctx.fillText(t('SNR ∝ √area: +1 EV of sensor area = +½ EV of SNR'), w - 18, hh - 46);
   }
 
   update();

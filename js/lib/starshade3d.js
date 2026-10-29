@@ -44,7 +44,7 @@ export function starshadeScene({ a, b, n, N, z, D, lamNm, rhos = [], prof = [] }
   const Rt = a + b, Rm = OCCULTERS.hyper.Rmax({ a, b, n }), E = enlargement(Rt, z), s = E / 1e6, Z = z / 1e6;
   // the starshade at z, enlarged across
   meshes.push({ mesh: fan([0, 0], outline({ a, b, n }, N).map(([x, y]) => [x * s, y * s]), Z), color: [0.82, 0.86, 0.94] });
-  labels.push({ p: [0, Rm * s * 1.25, Z], text: `starshade, ${(2 * Rm).toFixed(0)} m tip to tip`, color: '#dfe6f2' });
+  labels.push({ p: [0, Rm * s * 1.25, Z], text: 'starshade, {d} m tip to tip', vars: { d: (2 * Rm).toFixed(0) }, color: '#dfe6f2' });
   // starlight from beyond the starshade, parallel to the axis: grazing past it, and its geometric shadow
   for (let k = 0; k < 8; k++) {
     const t = (k / 8) * 2 * Math.PI, r = Rm * s * 1.12;
@@ -58,7 +58,7 @@ export function starshadeScene({ a, b, n, N, z, D, lamNm, rhos = [], prof = [] }
   meshes.push({ mesh: { positions: tp, normals: normalsFrom(tp, ti), indices: ti }, color: [0.3, 0.34, 0.45], opacity: 0.08, glass: true });
   // the line of sight to a planet at the inner working angle, just past the tips
   lines.push({ points: [[0, 0, 0], [Rt * s * 1.3, 0, Z * 1.3]], color: [...CYAN, 0.85], width: 1.5 });
-  labels.push({ p: [Rt * s * 1.25, -Rt * s * 0.25, Z * 1.1], text: `planet at the inner working angle, ${((Rt / z) * 206264806).toFixed(0)} mas`, color: '#6ad7ff' });
+  labels.push({ p: [Rt * s * 1.25, -Rt * s * 0.25, Z * 1.1], text: 'planet at the inner working angle, {a} mas', vars: { a: ((Rt / z) * 206264806).toFixed(0) }, color: '#6ad7ff' });
   lines.push({ points: [[0, 0, 0], [0, 0, Z]], color: [1, 1, 1, 0.3], width: 1, glow: false });
   labels.push({ p: [-Rm * s * 1.5, 0, Z / 2], text: `${(z / 1e3).toLocaleString('en')} km`, color: '#c9cfdc' });
   // the shadow on the telescope's plane: log intensity on rings out to rhos' end, and the pupil
@@ -71,10 +71,10 @@ export function starshadeScene({ a, b, n, N, z, D, lamNm, rhos = [], prof = [] }
     for (let i = 0; i < rhos.length - 1; i++) for (let j = 0; j < seg; j++) { const p = i * (seg + 1) + j, q = p + seg + 1; idx.push(p, q, p + 1, p + 1, q, q + 1); }
     const pos = new Float32Array(P), ind = new Uint32Array(idx);
     meshes.push({ mesh: { positions: pos, normals: new Float32Array(P.length).map((_, k) => (k % 3 === 2 ? -1 : 0)), indices: ind, colors: new Float32Array(C) }, color: [1, 1, 1] });
-    labels.push({ p: [0, -rhos[rhos.length - 1] * s * 1.4, 0], text: `shadow at ${lamNm} nm (log intensity, 10⁻¹⁴ … 1)`, color: '#ffb547' });
+    labels.push({ p: [0, -rhos[rhos.length - 1] * s * 1.4, 0], text: 'shadow at {l} nm (log intensity, 10⁻¹⁴ … 1)', vars: { l: lamNm }, color: '#ffb547' });
   }
   lines.push({ points: circle((D / 2) * s, -Z * 0.002), color: [1, 1, 1, 0.95], width: 1.6 });
-  labels.push({ p: [(D / 2) * s * 1.6, (D / 2) * s * 1.6, 0], text: `telescope, ${D} m`, color: '#ffffff' });
-  labels.push({ p: [0, Rm * s * 1.6, Z / 2], text: `across the line of sight × ${E.toLocaleString('en')}`, color: 'rgba(255,255,255,0.55)' });
+  labels.push({ p: [(D / 2) * s * 1.6, (D / 2) * s * 1.6, 0], text: 'telescope, {D} m', vars: { D }, color: '#ffffff' });
+  labels.push({ p: [0, Rm * s * 1.6, Z / 2], text: 'across the line of sight × {E}', vars: { E: E.toLocaleString('en') }, color: 'rgba(255,255,255,0.55)' });
   return { meshes, lines, labels, frame: { centre: [0, 0, Z * 0.6], size: Z * 1.35 }, E };
 }

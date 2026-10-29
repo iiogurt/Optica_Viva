@@ -59,7 +59,7 @@ export function coronagraphScene(r, st, n, Dp) {
   // the focal plane: the star (and planet) image, with the occulting mask over its core
   meshes.push({ mesh: plane(r.dI, n, cropF, Z.focal, 96, inferno(10), relief(10)), color: [1, 1, 1] });
   if (st.mask > 0) meshes.push({ mesh: disc(st.mask * Q * sF, Z.focal - 0.37), color: [0.05, 0.05, 0.07] });
-  labels.push({ p: [0, H + 0.12, Z.focal], text: `focal plane: occulting mask, ${st.mask} λ/D`, color: '#c9cfdc' });
+  labels.push({ p: [0, H + 0.12, Z.focal], text: 'focal plane: occulting mask, {m} λ/D', vars: { m: st.mask }, color: '#c9cfdc' });
   // the Lyot plane: |E| after the mask, and the stop
   let lm = 0; for (const v of r.lyotPlane) lm = Math.max(lm, v);
   meshes.push({ mesh: plane(r.lyotPlane.map((v) => v / lm), n, cropP, Z.lyot, 80, inferno(3)), color: [1, 1, 1] });
@@ -71,7 +71,7 @@ export function coronagraphScene(r, st, n, Dp) {
   const sidx = []; for (let q = 0; q < k; q++) sidx.push(2 * q, 2 * q + 1, 2 * q + 2, 2 * q + 1, 2 * q + 3, 2 * q + 2);
   const sp = new Float32Array(stop.flat()), si = new Uint32Array(sidx);
   meshes.push({ mesh: { positions: sp, normals: normalsFrom(sp, si), indices: si }, color: [0.12, 0.13, 0.17], opacity: 0.8 });
-  labels.push({ p: [0, H + 0.12, Z.lyot], text: `Lyot plane: stop at ${(st.lyot * 100).toFixed(0)} % D`, color: '#6ad7ff' });
+  labels.push({ p: [0, H + 0.12, Z.lyot], text: 'Lyot plane: stop at {p} % D', vars: { p: (st.lyot * 100).toFixed(0) }, color: '#6ad7ff' });
   // the final image
   meshes.push({ mesh: plane(r.cI, n, cropF, Z.image, 96, inferno(10), relief(10)), color: [1, 1, 1] });
   labels.push({ p: [0, H + 0.12, Z.image], text: 'coronagraphic image', color: '#c9cfdc' });
@@ -89,6 +89,6 @@ export function coronagraphScene(r, st, n, Dp) {
     if (q % 2 === 0) lines.push({ points: path(p0, [xp, 0]), color: [...PLANET, 0.7], width: 1.2 });
   }
   labels.push({ p: [0, -H - 0.3, Z.focal], text: 'starlight stops at the mask', color: '#ff8a8a' });
-  labels.push({ p: [xp, -H - 0.12, Z.image], text: `planet at ${st.sep} λ/D`, color: '#ffb547' });
+  labels.push({ p: [xp, -H - 0.12, Z.image], text: 'planet at {s} λ/D', vars: { s: st.sep }, color: '#ffb547' });
   return { meshes, lines, labels, frame: { centre: [0, 0, Z.image / 2], size: Z.image * 0.95 } };
 }

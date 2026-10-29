@@ -4,6 +4,7 @@ import { latest } from '../lib/compute.js';
 import { oetf } from '../lib/color.js';
 import { LENSES, hasMirrors } from '../lib/raytrace.js';
 import { cardinalPoints, disparity } from '../lib/panorama.js';
+import { t } from '../lib/i18n.js';
 
 const D2R = Math.PI / 180, PX = 0.006; // 24 MP full-frame pixel (mm)
 
@@ -105,8 +106,8 @@ export default function mount(root, meta) {
     });
     ctx.fillStyle = '#ffb547'; ctx.beginPath(); ctx.arc(X(0), Y(0), 4, 0, 7); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('rotation axis', X(0) + 8, Y(0) + 14);
-    ctx.fillText(`↑ to the pole, ${dn.toFixed(2)} m away`, 8, hh - 10);
+    ctx.fillText(t('rotation axis'), X(0) + 8, Y(0) + 14);
+    ctx.fillText(t('↑ to the pole, {dn} m away', { dn: dn.toFixed(2) }), 8, hh - 10);
     // scale bar
     const bar = 0.05 * sc; ctx.fillRect(w - bar - 14, hh - 16, bar, 2); ctx.textAlign = 'right'; ctx.fillText('50 mm', w - 14, hh - 22);
   }

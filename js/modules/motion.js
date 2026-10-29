@@ -1,6 +1,7 @@
 import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
+import { t } from '../lib/i18n.js';
 
 const wrap = (a) => { a = (a + Math.PI) % (2 * Math.PI); if (a < 0) a += 2 * Math.PI; return a - Math.PI; };
 
@@ -143,7 +144,7 @@ export default function mount(root, meta) {
     }
     ctx.restore();
     ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
-    ctx.fillText(`${st.fps} fps · ${st.angle}° · frame ${frame}`, w - 10, hh - 10);
+    ctx.fillText(t('{fps} fps · {angle}° · frame {frame}', { fps: st.fps, angle: st.angle, frame }), w - 10, hh - 10);
   }
   // with prefers-reduced-motion the wheel shows a single integrated frame instead of playing
   const loop = () => { wheel.redraw(); if (!reducedMotion()) raf = requestAnimationFrame(loop); };

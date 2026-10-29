@@ -93,7 +93,7 @@ export default function mount(root, meta) {
     ctx.beginPath(); ctx.ellipse(-0.42 * hw, 0.05 * k, 0.17 * k, 0.22 * k, 0, 0, 7); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(-0.42 * hw - 0.55 * k, hh / 2); ctx.quadraticCurveTo(-0.42 * hw - 0.5 * k, 0.32 * k, -0.42 * hw, 0.3 * k); ctx.quadraticCurveTo(-0.42 * hw + 0.5 * k, 0.32 * k, -0.42 * hw + 0.55 * k, hh / 2); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.restore();
-    if (raw) { ctx.strokeStyle = 'rgba(255,181,71,0.7)'; ctx.setLineDash([5, 4]); ctx.strokeRect(w / 2 - w / 2 / s, 1, w / s, hh - 2); ctx.setLineDash([]); ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '11px Inter, sans-serif'; ctx.fillText('recorded (squeezed) image', w / 2 - w / 2 / s + 6, 16); }
+    if (raw) { ctx.strokeStyle = 'rgba(255,181,71,0.7)'; ctx.setLineDash([5, 4]); ctx.strokeRect(w / 2 - w / 2 / s, 1, w / s, hh - 2); ctx.setLineDash([]); ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '11px Inter, sans-serif'; ctx.fillText(t('recorded (squeezed) image'), w / 2 - w / 2 / s + 6, 16); }
   }
 
   // ── focus breathing ──

@@ -57,7 +57,7 @@ export function flareScene({ lens, sd, coat, blades, theta, show = 3 }) {
   // the image-forming light, faint, and the sun's image
   const direct = traceGrid(sys, tracer, -1, -1, theta, 17, true);
   for (const r of some(direct.rays, 16)) lines.push({ points: lead(tri(r.pts), dir), color: [1, 0.95, 0.75, 0.12], width: 1, glow: false });
-  if (direct.rays.length) labels.push({ p: [0, 14, zImg + 2], text: "image-forming light (faint white)", color: '#fff2c4' });
+  if (direct.rays.length) labels.push({ p: [0, 14, zImg + 2], text: 'image-forming light (faint white)', color: '#fff2c4' });
   // the brightest ghosts: their paths (14 rays from a 17 × 17 grid) and their spots on the sensor
   const ranked = rankGhosts(sys, theta).slice(0, show);
   ranked.forEach((g, n) => {
@@ -68,7 +68,7 @@ export function flareScene({ lens, sd, coat, blades, theta, show = 3 }) {
     for (let k = 1; k <= g.hull.length; k++) idx.push(0, k, k === g.hull.length ? 1 : k + 1);
     const positions = new Float32Array(P.flat()), indices = new Uint32Array(idx);
     meshes.push({ mesh: { positions, normals: normalsFrom(positions, indices), indices }, color: col, opacity: 0.55 });
-    labels.push({ p: [0, 14 + (show - n) * 4.5, zImg + 2], text: `ghost ${n + 1}: surfaces ${g.j + 1} → ${g.i + 1}, ${g.E.toExponential(0)} of the sun`, color: `rgb(${col.map((v) => Math.round(v * 255)).join(',')})` });
+    labels.push({ p: [0, 14 + (show - n) * 4.5, zImg + 2], text: 'ghost {n}: surfaces {a} → {b}, {E} of the sun', vars: { n: n + 1, a: g.j + 1, b: g.i + 1, E: g.E.toExponential(0) }, color: `rgb(${col.map((v) => Math.round(v * 255)).join(',')})` });
   });
   labels.push({ p: [-dir[0] * 40, -dir[1] * 40 + Math.max(...sd) * 1.3, sys.zv[0] - dir[2] * 40], text: 'sunlight', color: '#fff2c4' });
   return { meshes, lines, labels, frame: base.frame, ranked };

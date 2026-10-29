@@ -136,7 +136,7 @@ export default function mount(root, meta) {
     if (!M) return;
     const rows = M.rows, top = 30, rh = (hh - top - 10) / rows.length, x0 = 200, bw = w - x0 - 60;
     ctx.font = '12px Inter, sans-serif'; ctx.fillStyle = '#e9ebf3'; ctx.textAlign = 'left';
-    ctx.fillText('Each quality relative to the better option', 10, 18);
+    ctx.fillText(t('Each quality relative to the better option'), 10, 18);
     ctx.fillStyle = A; ctx.fillText('■ A', w - 90, 18); ctx.fillStyle = B; ctx.fillText('■ B', w - 50, 18);
     rows.forEach(([name, a, b], i) => {
       const y = top + i * rh, m = Math.max(a, b) || 1;

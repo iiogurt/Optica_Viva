@@ -6,6 +6,7 @@ import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { view3d } from '../lib/gl3d.js';
 import { wavefrontMesh, psfMesh, ring } from '../lib/surf3d.js';
+import { t } from '../lib/i18n.js';
 
 const MODES = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 22];
 const PRESETS = {
@@ -100,8 +101,8 @@ export default function mount(root, meta) {
       meshes: [{ mesh: wf3.mesh }, { mesh: psf3 }],
       lines: [{ points: ring(1, -1.25), color: [1, 1, 1, 0.35], width: 1 }, { points: sq, color: [1, 1, 1, 0.25], width: 1 }],
       labels: [
-        { p: [-1.25, 0.75, -1.15], text: `W(ρ, θ), height ±${wf3.wmax.toFixed(2)} λ` },
-        { p: [1.25, 1.15, -1.15], text: `PSF, log brightness · Strehl ${r.strehl.toFixed(3)}` },
+        { p: [-1.25, 0.75, -1.15], text: 'W(ρ, θ), height ±{w} λ', vars: { w: wf3.wmax.toFixed(2) } },
+        { p: [1.25, 1.15, -1.15], text: 'PSF, log brightness · Strehl {s}', vars: { s: r.strehl.toFixed(3) } },
       ],
     }, shown3d);
     shown3d = true;
@@ -124,7 +125,7 @@ export default function mount(root, meta) {
       ic.put(); ctx.imageSmoothingEnabled = true;
       ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);
       ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
-      ctx.fillText(`S = ${D.strehl.toFixed(3)} (peak rel. to perfect)`, w - 10, hh - 10);
+      ctx.fillText(t('S = {strehl} (peak rel. to perfect)', { strehl: D.strehl.toFixed(3) }), w - 10, hh - 10);
       return;
     }
     const crop = Dpx + 4, off = (n - crop) / 2, ic = imageCanvas(crop, crop);
@@ -148,7 +149,7 @@ export default function mount(root, meta) {
     ic.put(); ctx.imageSmoothingEnabled = true;
     ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);
     ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
-    ctx.fillText(kind === 'wf' ? `±${wmax.toFixed(2)} λ` : 'double pass: 1 fringe = λ/2', w - 10, hh - 10);
+    ctx.fillText(kind === 'wf' ? `±${wmax.toFixed(2)} λ` : t('double pass: 1 fringe = λ/2'), w - 10, hh - 10);
   }
 
   function drawThrough(ctx, w, hh) {
@@ -230,7 +231,7 @@ export default function mount(root, meta) {
       ic.put(); ctx.imageSmoothingEnabled = false;
       ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);
       ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
-      ctx.fillText(`±${wm.toFixed(2)} µm OPD`, w - 10, hh - 10);
+      ctx.fillText(t('±{wm} µm OPD', { wm: wm.toFixed(2) }), w - 10, hh - 10);
       return;
     }
     const crop = SD.st.stage === 'raw' ? nS : 160, off = (nS - crop) / 2, ic = imageCanvas(crop, crop);
@@ -243,7 +244,7 @@ export default function mount(root, meta) {
     ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);
     const mas = (crop / 4) * (SD.st.lam * 1e-6 / 6.6) * 206265 * 1000;
     ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
-    ctx.fillText(`field ${mas > 2000 ? (mas / 1000).toFixed(1) + '″' : mas.toFixed(0) + ' mas'} · λ ${SD.st.lam} µm`, w - 10, hh - 10);
+    ctx.fillText(t('field {f} · λ {l} µm', { f: mas > 2000 ? (mas / 1000).toFixed(1) + '″' : mas.toFixed(0) + ' mas', l: SD.st.lam }), w - 10, hh - 10);
   }
   recomputeSeg();
 

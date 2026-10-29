@@ -5,6 +5,7 @@ import { plot } from '../lib/plot.js';
 import { MODULES } from '../app.js';
 import { SENSORS, pitchUm } from '../lib/sensors.js';
 import { SUBJECTS, exposure, nearestShutter, coronaQ, driftLimit, fFor, SUN_RADIUS } from '../lib/eclipse.js';
+import { t } from '../lib/i18n.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const fmtT = (t) => (t >= 1 ? t.toPrecision(2) + ' s' : '1/' + Math.round(1 / t) + ' s');
@@ -109,8 +110,8 @@ export default function mount(root, meta) {
     ctx.drawImage(make(true), gap, 40);
     ctx.drawImage(make(false), 2 * gap + n, 40);
     ctx.fillStyle = '#9aa1b5'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(`one exposure at Q = ${P.st.showQ} (${fmtT(nearestShutter(exposure(P.st.N, P.st.iso, P.st.showQ)))})`, gap, 34);
-    ctx.fillText('merged ladder (logarithmic)', 2 * gap + n, 34);
+    ctx.fillText(t('one exposure at Q = {showQ} ({v2})', { showQ: P.st.showQ, v2: fmtT(nearestShutter(exposure(P.st.N, P.st.iso, P.st.showQ))) }), gap, 34);
+    ctx.fillText(t('merged ladder (logarithmic)'), 2 * gap + n, 34);
   }
 
   function drawLadder(ctx, w, hh) {

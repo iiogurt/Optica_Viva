@@ -111,7 +111,7 @@ export default function mount(root, meta) {
     }
     ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(ox + 8, oy + dh - 26, 300, 20);
     ctx.fillStyle = '#fff'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
-    ctx.fillText('Tissot: red = area enlarged, blue = shrunk', ox + 14, oy + dh - 12);
+    ctx.fillText(t('Tissot: red = area enlarged, blue = shrunk'), ox + 14, oy + dh - 12);
   }
 
   function drawCurves(ctx, w, hh) {

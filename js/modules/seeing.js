@@ -125,7 +125,7 @@ export default function mount(root, meta) {
     ctx.drawImage(img, (w - side) / 2, (hh - side) / 2, side, side);
     const arcsec = (CROP / 4) * (P.lam * 1e-6 / P.D) * 206265;
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
-    ctx.fillText(`${arcsec.toFixed(2)}″ field · log`, w - 10, hh - 10);
+    ctx.fillText(t('{arcsec}″ field · log', { arcsec: arcsec.toFixed(2) }), w - 10, hh - 10);
   }
 
   function drawScreen(ctx, w, hh) {
@@ -144,7 +144,7 @@ export default function mount(root, meta) {
     const ps = H, px0 = 8 + W2 + (w - W2 - 8 - ps) / 2;
     ctx.imageSmoothingEnabled = true; ctx.drawImage(frame.pupil, px0, 8, ps, ps);
     ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
-    ctx.fillText(`residual ${frame.rms.toFixed(2)} λ RMS`, px0, hh - 4);
+    ctx.fillText(t('residual {rms} λ RMS', { rms: frame.rms.toFixed(2) }), px0, hh - 4);
   }
 
   reset();

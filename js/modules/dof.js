@@ -7,6 +7,7 @@ import { blurredCanvas, diskBlurredCanvas } from '../lib/blur.js';
 import { runOn, parallel, rowBands } from '../lib/compute.js';
 import { view3d } from '../lib/gl3d.js';
 import { dofScene, sceneDepth, CARDS, cardAngle } from '../lib/dof3d.js';
+import { t } from '../lib/i18n.js';
 
 const LAMBDA = 0.00055; // mm
 
@@ -267,7 +268,7 @@ c(d) &= \frac{f}{N}\cdot\frac{f\,|d-s|}{d\,(s-f)}
     ctx.strokeStyle = '#ffb547'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(s), y - 34); ctx.lineTo(X(s), y + 30); ctx.stroke();
     ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.strokeStyle = '#c18cff';
     ctx.beginPath(); ctx.moveTo(X(H), y - 34); ctx.lineTo(X(H), y + 30); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = '#ffb547'; ctx.textAlign = 'center'; ctx.fillText('focus', X(s), y - 40);
+    ctx.fillStyle = '#ffb547'; ctx.textAlign = 'center'; ctx.fillText(t('focus'), X(s), y - 40);
     ctx.fillStyle = '#c18cff'; ctx.fillText('H', X(H), y + 42);
     // card positions
     for (const d of CARDS) {
@@ -278,7 +279,7 @@ c(d) &= \frac{f}{N}\cdot\frac{f\,|d-s|}{d\,(s-f)}
     // camera icon
     ctx.fillStyle = '#e9ebf3'; ctx.fillRect(6, y - 8, 20, 16); ctx.fillRect(26, y - 5, 6, 10);
     ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.textAlign = 'left'; ctx.font = '600 10.5px Inter, sans-serif';
-    ctx.fillText('DEPTH OF FIELD (log distance) · ● card within c   ● card outside c', x0, 16);
+    ctx.fillText(t('DEPTH OF FIELD (log distance) · ● card within c   ● card outside c'), x0, 16);
   }
 
   function drawBlurPlot(ctx, w, hh) {

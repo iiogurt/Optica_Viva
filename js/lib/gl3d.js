@@ -109,7 +109,7 @@ function program(gl, vs, fs) {
 //   meshes: [{ mesh, color: [r, g, b] (0–1), opacity = 1, glass = false }] (mesh.colors, if present:
 //           per-vertex RGB, replacing color),
 //   lines:  [{ points: [[x, y, z], …], color: [r, g, b, a], width = 1.5 (px), glow = true }],
-//   labels: [{ p: [x, y, z], text, color = '#fff' }],
+//   labels: [{ p: [x, y, z], text, vars, color = '#fff' }] (text is translated with t(text, vars)),
 //   frame:  optional { centre, size } to aim the camera at (default: everything)
 // }
 export function view3d({ label = '', aspect = 2, minH = 260, maxH = 620, yaw = -0.75, pitch = 0.32 } = {}) {
@@ -236,7 +236,7 @@ export function view3d({ label = '', aspect = 2, minH = 260, maxH = 620, yaw = -
     const dpr = W / Math.max(1, canvas.clientWidth);
     ctx.save(); ctx.font = `${11 * dpr}px Inter, system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 4 * dpr;
-    for (const l of labels) { const q = project(l.p); if (!q) continue; ctx.fillStyle = l.color || 'rgba(255,255,255,0.85)'; ctx.fillText(l.text, q[0], q[1]); }
+    for (const l of labels) { const q = project(l.p); if (!q) continue; ctx.fillStyle = l.color || 'rgba(255,255,255,0.85)'; ctx.fillText(t(l.text, l.vars), q[0], q[1]); }
     ctx.restore();
   }
   const redraw = () => { dirty = true; if (!raf) raf = requestAnimationFrame(render); };

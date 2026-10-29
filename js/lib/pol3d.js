@@ -2,6 +2,7 @@
 // along a beam through polarisers and wave plates, and the Poincaré sphere. Pure: no DOM.
 import { ellipse } from './polar.js';
 import { sphere, lathe } from './mesh3d.js';
+import { N_ } from './i18n.js';
 
 const SEG = 2.6, PERIOD = 0.85; // beam section length and drawn wavelength (scene units)
 const COLS = [[0.85, 0.88, 1.0], [0.42, 0.84, 1.0], [0.42, 0.89, 0.64], [1.0, 0.71, 0.28]];
@@ -74,7 +75,7 @@ export function poincareScene(states) {
   const P = states.map(toP);
   P.forEach((p, k) => {
     meshes.push({ mesh: sphere(0.065, p, 16, 8), color: COLS[k] });
-    labels.push({ p: [p[0], p[1] + 0.16, p[2]], text: k ? `after ${k}` : 'input', color: `rgb(${COLS[k].map((c) => Math.round(c * 255)).join(',')})` });
+    labels.push({ p: [p[0], p[1] + 0.16, p[2]], text: k ? N_('after {k}') : N_('input'), vars: { k }, color: `rgb(${COLS[k].map((c) => Math.round(c * 255)).join(',')})` });
     if (k) { // the path from the previous state, along the great circle when both are polarised
       const a = P[k - 1], la = Math.hypot(...a), lb = Math.hypot(...p);
       const pts = Array.from({ length: 41 }, (_, i) => {

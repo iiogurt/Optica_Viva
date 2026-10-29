@@ -267,7 +267,7 @@ export default function mount(root, meta) {
     if (G.st.coat !== 'none') {
       ctx.fillStyle = coatingColour(COATINGS[G.st.coat].layers(1.52), 1.52, th);
       ctx.beginPath(); ctx.arc(w - 22, 13, 8, 0, 7); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'right'; ctx.fillText('tint', w - 34, 17);
+      ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'right'; ctx.fillText(t('tint'), w - 34, 17);
     }
   }
 

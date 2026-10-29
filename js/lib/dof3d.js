@@ -4,6 +4,7 @@
 // ground and the distance cards, each coloured by how sharp it is. Pure: no DOM.
 import { blurDiameter } from './optics.js';
 import { box, quad, normalsFrom } from './mesh3d.js';
+import { N_ } from './i18n.js';
 
 // The photograph's layout, shared with js/modules/dof.js: cards at these distances (m) along a
 // receding diagonal, a camera 0.45 m above the ground, the horizon 32 % down the frame (the
@@ -66,15 +67,15 @@ export function dofScene({ sen, f, N, s, c, Dn, Df }) {
   if (isFinite(Dfm) && Dfm <= D) lines.push({ points: outline(section(sen, f, Dfm)), color: [...SHARP, 0.9], width: 1.5 });
   // a thin zone gets one label under its bottom edge; a deep one a label at each limit
   const below = (d) => { const q = section(sen, f, d); return [0, q[3][1] - 0.05 * d, d]; };
-  if (zFar - Dnm < 0.15 * D) labels.push({ p: below((Dnm + zFar) / 2), text: `sharp ${m(Dnm)} – ${isFinite(Dfm) ? m(Dfm) : '∞'}`, color: '#6be3a4' });
+  if (zFar - Dnm < 0.15 * D) labels.push({ p: below((Dnm + zFar) / 2), text: 'sharp {a} – {b}', vars: { a: m(Dnm), b: isFinite(Dfm) ? m(Dfm) : '∞' }, color: '#6be3a4' });
   else {
-    labels.push({ p: below(Dnm), text: `near limit ${m(Dnm)}`, color: '#6be3a4' });
-    labels.push({ p: below(zFar), text: isFinite(Dfm) && Dfm <= D ? `far limit ${m(Dfm)}` : 'sharp to ∞', color: '#6be3a4' });
+    labels.push({ p: below(Dnm), text: 'near limit {d}', vars: { d: m(Dnm) }, color: '#6be3a4' });
+    labels.push({ p: below(zFar), text: isFinite(Dfm) && Dfm <= D ? N_('far limit {d}') : N_('sharp to ∞'), vars: { d: m(Dfm) }, color: '#6be3a4' });
   }
   const fp = section(sen, f, S);
   meshes.push({ mesh: quad([0, (fp[0][1] + fp[3][1]) / 2, S], [1, 0, 0], [0, 1, 0], fp[1][0], (fp[0][1] - fp[3][1]) / 2), color: GOLD, opacity: 0.2, glass: true });
   lines.push({ points: outline(fp), color: [...GOLD, 0.95], width: 1.8 });
-  labels.push({ p: [0, fp[0][1] + 0.04 * S, S], text: `focus ${m(S)}`, color: '#ffb547' });
+  labels.push({ p: [0, fp[0][1] + 0.04 * S, S], text: 'focus {d}', vars: { d: m(S) }, color: '#ffb547' });
   // cards (and the subject at the focus): green while the blur stays within c, then fading to a
   // dull red over three stops of blur
   const cards = CARDS.map((d, i) => ({ d, x: d * Math.tan(cardAngle(i)) }));

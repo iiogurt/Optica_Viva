@@ -150,7 +150,7 @@ export default function mount(root, meta) {
     ctx.strokeStyle = '#ff6b6b'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(w / 2, hh / 2, rN, 0, 7); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect((w - side) / 2 + 6, hh - 24, 190, 18);
     ctx.fillStyle = '#ff9c9c'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
-    ctx.fillText('┄ Nyquist radius (moiré inside)', (w - side) / 2 + 10, hh - 11);
+    ctx.fillText(t('┄ Nyquist radius (moiré inside)'), (w - side) / 2 + 10, hh - 11);
   }
 
   function drawChart(ctx, w, hh) {

@@ -65,7 +65,7 @@ export function projectionScene({ proj, f, sw, sh, yaw, pitch }) {
   // the image plane at z = f: the sensor, and for fisheyes the image of the hemisphere
   meshes.push({ mesh: quad([0, 0, f * 0.999], [1, 0, 0], [0, 1, 0], sw / 2, sh / 2), color: [0.1, 0.11, 0.14], opacity: 0.4, glass: true });
   lines.push({ points: [[-sw / 2, sh / 2, f], [sw / 2, sh / 2, f], [sw / 2, -sh / 2, f], [-sw / 2, -sh / 2, f], [-sw / 2, sh / 2, f]], color: [...SENSOR, 0.9], width: 1.5 });
-  labels.push({ p: [0, -sh / 2 - sw * 0.05, f], text: `image plane, sensor ${sw} × ${sh} mm`, color: '#c9cfdc' });
+  labels.push({ p: [0, -sh / 2 - sw * 0.05, f], text: 'image plane, sensor {w} × {h} mm', vars: { w: sw, h: sh }, color: '#c9cfdc' });
   if (!P.cyl && P.max >= Math.PI / 2) {
     const r = P.R(Math.PI / 2, f), pts = [];
     for (let k = 0; k <= 96; k++) pts.push([r * Math.cos((k / 96) * 2 * Math.PI), r * Math.sin((k / 96) * 2 * Math.PI), f]);

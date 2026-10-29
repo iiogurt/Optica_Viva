@@ -2,6 +2,7 @@ import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js'
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, logRange } from '../lib/plot.js';
 import { moire, renderWall, bandProfile, bandAmplitude } from '../lib/virtual.js';
+import { t } from '../lib/i18n.js';
 
 const D2R = Math.PI / 180;
 
@@ -67,7 +68,7 @@ export default function mount(root, meta) {
     // actor silhouette (in focus, in front of the wall)
     ctx.fillStyle = '#16100c'; ctx.beginPath(); ctx.ellipse(w * 0.22, hh * 0.38, hh * 0.13, hh * 0.17, 0, 0, 7); ctx.fill();
     ctx.beginPath(); ctx.moveTo(w * 0.02, hh); ctx.quadraticCurveTo(w * 0.05, hh * 0.58, w * 0.22, hh * 0.56); ctx.quadraticCurveTo(w * 0.39, hh * 0.58, w * 0.42, hh); ctx.fill();
-    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(w - 170, hh - 22, 170, 22); ctx.fillStyle = '#fff'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'right'; ctx.fillText(`contrast stretched ×${gain.toFixed(0)}`, w - 8, hh - 7); ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(w - 170, hh - 22, 170, 22); ctx.fillStyle = '#fff'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'right'; ctx.fillText(t('contrast stretched ×{gain}', { gain: gain.toFixed(0) }), w - 8, hh - 7); ctx.textAlign = 'left';
   }
   function drawCurve(ctx, w, hh) {
     if (!M) return;
@@ -79,7 +80,7 @@ export default function mount(root, meta) {
       bands: firstAliased ? [{ x: [firstAliased[0], 30], color: 'rgba(255,107,107,0.08)' }] : [],
       vlines: [{ x: st.Z, color: 'rgba(255,255,255,0.4)', label: 'camera' }, { x: st.s, color: 'rgba(107,227,164,0.5)', label: 'focus', dy: 14 }],
     });
-    ctx.fillStyle = 'rgba(255,107,107,0.8)'; ctx.font = '11px Inter, sans-serif'; ctx.fillText('red: grid finer than Nyquist → aliased (moiré)', 60, hh - 44);
+    ctx.fillStyle = 'rgba(255,107,107,0.8)'; ctx.font = '11px Inter, sans-serif'; ctx.fillText(t('red: grid finer than Nyquist → aliased (moiré)'), 60, hh - 44);
   }
 
   // ── refresh and rolling shutter ──

@@ -43,7 +43,7 @@ export function earthobsScene({ H, gsd, v, ground, pixels = 12000, T = 60 }) {
   lines.push({ points: [[0, h, 0], [0, h, 0.3]], color: [...CYAN, 1], width: 2 });
   labels.push({ p: [0, h + 0.07, 0.24], text: `${(v / 1000).toFixed(2)} km/s`, color: '#6ad7ff' });
   lines.push({ points: [[0, h, 0], [0, 0, 0]], color: [1, 1, 1, 0.25], width: 1, glow: false });
-  labels.push({ p: [-0.05, h / 2, 0], text: `height ${km(H)}`, color: '#c9cfdc' });
+  labels.push({ p: [-0.05, h / 2, 0], text: 'height {h}', vars: { h: km(H) }, color: '#c9cfdc' });
   // the strip imaged in the last T seconds: a ribbon on the ground behind nadir, with its edges
   const n = 48, P = [], idx = [];
   for (let i = 0; i <= n; i++) { const phi = -phiS * (1 - i / n); P.push(onSphere(-sw / 2, phi, R + lift), onSphere(sw / 2, phi, R + lift)); }
@@ -51,14 +51,14 @@ export function earthobsScene({ H, gsd, v, ground, pixels = 12000, T = 60 }) {
   const pos = new Float32Array(P.flat()), ind = new Uint32Array(idx);
   meshes.push({ mesh: { positions: pos, normals: normalsFrom(pos, ind), indices: ind }, color: GOLD, opacity: 0.55 });
   for (const side of [0, 1]) lines.push({ points: P.filter((_, k) => k % 2 === side), color: [...GOLD, 0.95], width: 1.4 });
-  labels.push({ p: onSphere(sw / 2 + 0.3, -phiS, R), text: `imaged in the last ${T} s: ${km(ground * T)}`, color: '#ffb547' });
+  labels.push({ p: onSphere(sw / 2 + 0.3, -phiS, R), text: 'imaged in the last {T} s: {d}', vars: { T, d: km(ground * T) }, color: '#ffb547' });
   // the fan of view to the swath, and the detector line's footprint at nadir
   const l = onSphere(-sw / 2, 0, R + lift), r = onSphere(sw / 2, 0, R + lift);
   const fp = new Float32Array([[0, h, 0], l, r].flat()), fi = new Uint32Array([0, 1, 2]);
   meshes.push({ mesh: { positions: fp, normals: normalsFrom(fp, fi), indices: fi }, color: GOLD, opacity: 0.18, glass: true });
   lines.push({ points: [l, [0, h, 0], r], color: [...GOLD, 0.6], width: 1, glow: false });
   lines.push({ points: [l, r], color: [1, 1, 1, 1], width: 2.4 });
-  labels.push({ p: onSphere(-sw / 2 - 0.42, 0.1 / R, R), text: `swath ${km(gsd * pixels)}: ${pixels.toLocaleString('en')} pixels × ${gsd < 1 ? (gsd * 100).toFixed(0) + ' cm' : gsd.toPrecision(3) + ' m'}`, color: '#ffffff' });
+  labels.push({ p: onSphere(-sw / 2 - 0.42, 0.1 / R, R), text: 'swath {w}: {n} pixels × {gsd}', vars: { w: km(gsd * pixels), n: pixels.toLocaleString('en'), gsd: gsd < 1 ? (gsd * 100).toFixed(0) + ' cm' : gsd.toPrecision(3) + ' m' }, color: '#ffffff' });
   labels.push({ p: onSphere(-0.75 * A, (-0.35 * A) / R, R), text: 'true scale (satellite marker enlarged)', color: 'rgba(255,255,255,0.5)' });
   return { meshes, lines, labels, frame: { centre: [0, h * 0.3, -0.15], size: Math.hypot(1.6 * A, h) * 0.75 } };
 }

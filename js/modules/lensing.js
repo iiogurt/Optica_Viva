@@ -5,6 +5,7 @@ import { FOV, SFOV } from '../lib/lensing.js';
 import { runOn, parallel, rowBands, poolSize } from '../lib/compute.js';
 import { view3d } from '../lib/gl3d.js';
 import { lensingScene, comoving } from '../lib/lensing3d.js';
+import { t } from '../lib/i18n.js';
 
 const ARC = Math.PI / 180 / 3600;
 
@@ -118,7 +119,7 @@ export default function mount(root, meta) {
     for (const [a, b] of L.crit) { ctx.moveTo(X(a[0]), Y(a[1])); ctx.lineTo(X(b[0]), Y(b[1])); }
     ctx.stroke();
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
-    ctx.fillText(`${FOV}″ field · cyan = critical curves`, w - 10, hh - 10);
+    ctx.fillText(t('{FOV}″ field · cyan = critical curves', { FOV }), w - 10, hh - 10);
   }
   function drawSource(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
@@ -131,7 +132,7 @@ export default function mount(root, meta) {
     ctx.stroke();
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X(0), Y(0), 3, 0, 7); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
-    ctx.fillText(`${SFOV}″ field · amber = caustics · ● lens axis`, w - 10, hh - 10);
+    ctx.fillText(t('{SFOV}″ field · amber = caustics · ● lens axis', { SFOV }), w - 10, hh - 10);
   }
 
   update();

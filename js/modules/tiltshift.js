@@ -5,6 +5,7 @@ import { TILT, SHIFT, BLUR_LEVELS, camH, camPitch } from '../lib/scenes.js';
 import { runOn, parallel, rowBands, poolSize } from '../lib/compute.js';
 import { view3d } from '../lib/gl3d.js';
 import { scheimpflugScene, townScene } from '../lib/tilt3d.js';
+import { t } from '../lib/i18n.js';
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['photo', 'video'] }));
@@ -145,9 +146,9 @@ export default function mount(root, meta) {
       ctx.strokeStyle = '#6ad7ff'; ctx.strokeRect(cx - 12 * S, cy - 18 * S, 24 * S, 36 * S);
       ctx.strokeStyle = '#ffb547'; ctx.lineWidth = 2; ctx.strokeRect(cx - 12 * S, cy - (18 + st.shift) * S, 24 * S, 36 * S); ctx.lineWidth = 1;
       ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-      ctx.fillText('dashed: 64 mm image circle of a shift lens', cx + 34 * S, cy - 10);
-      ctx.fillStyle = '#6ad7ff'; ctx.fillText('blue: centred sensor', cx + 34 * S, cy + 8);
-      ctx.fillStyle = '#ffb547'; ctx.fillText(`amber: sensor window after ${st.shift} mm rise`, cx + 34 * S, cy + 26);
+      ctx.fillText(t('dashed: 64 mm image circle of a shift lens'), cx + 34 * S, cy - 10);
+      ctx.fillStyle = '#6ad7ff'; ctx.fillText(t('blue: centred sensor'), cx + 34 * S, cy + 8);
+      ctx.fillStyle = '#ffb547'; ctx.fillText(t('amber: sensor window after {shift} mm rise', { shift: st.shift }), cx + 34 * S, cy + 26);
       return;
     }
     const G = geom(st);
@@ -178,10 +179,10 @@ export default function mount(root, meta) {
     const lp = 0.022;
     ctx.strokeStyle = '#6ad7ff'; ctx.beginPath(); ctx.moveTo(Xi(lp * Math.sin(G.a)), Yi(lp * Math.cos(G.a))); ctx.lineTo(Xi(-lp * Math.sin(G.a)), Yi(-lp * Math.cos(G.a))); ctx.stroke(); ctx.lineWidth = 1;
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('sensor', Xi(-G.v), Yi(0.012) - 6); ctx.fillStyle = '#6ad7ff'; ctx.fillText(`lens (α = ${st.alpha}°)`, lensX, Yi(lp) - 6);
-    ctx.textAlign = 'left'; ctx.fillStyle = '#6be3a4'; ctx.fillText('plane of focus + DoF wedge', lensX + 60, 18);
-    ctx.fillStyle = '#ffb547'; ctx.fillText('ground', w - 60, Math.min(hh - 8, Yo(-camH / Math.cos(camPitch) + 400 * Math.tan(-camPitch)) + 14));
-    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText('image space: true scale · object space: log distance', 10, hh - 8);
+    ctx.fillText(t('sensor'), Xi(-G.v), Yi(0.012) - 6); ctx.fillStyle = '#6ad7ff'; ctx.fillText(t('lens (α = {alpha}°)', { alpha: st.alpha }), lensX, Yi(lp) - 6);
+    ctx.textAlign = 'left'; ctx.fillStyle = '#6be3a4'; ctx.fillText(t('plane of focus + DoF wedge'), lensX + 60, 18);
+    ctx.fillStyle = '#ffb547'; ctx.fillText(t('ground'), w - 60, Math.min(hh - 8, Yo(-camH / Math.cos(camPitch) + 400 * Math.tan(-camPitch)) + 14));
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillText(t('image space: true scale · object space: log distance'), 10, hh - 8);
   }
 
   update();

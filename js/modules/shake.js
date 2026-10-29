@@ -78,7 +78,7 @@ export default function mount(root, meta) {
     ctx.strokeStyle = 'rgba(107,227,164,0.6)'; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.arc(cx, cy, (R.limit * 1000 / 2) * sc, 0, 7); ctx.stroke(); ctx.setLineDash([]);
     ctx.strokeStyle = '#ffb547'; ctx.lineWidth = 1.6; ctx.beginPath();
     p.forEach(([x, y], i) => (i ? ctx.lineTo(cx + (x - mx) * sc, cy + (y - my) * sc) : ctx.moveTo(cx + (x - mx) * sc, cy + (y - my) * sc))); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px Inter, sans-serif'; ctx.fillText(`${(2 * ext).toFixed(0)} µm across · green: sharpness limit`, 8, hh - 8);
+    ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px Inter, sans-serif'; ctx.fillText(t('{v1} µm across · green: sharpness limit', { v1: (2 * ext).toFixed(0) }), 8, hh - 8);
   }
   function drawCurve(ctx, w, hh) {
     if (!R) return;
