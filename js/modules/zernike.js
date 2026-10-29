@@ -100,8 +100,8 @@ export default function mount(root, meta) {
       meshes: [{ mesh: wf3.mesh }, { mesh: psf3 }],
       lines: [{ points: ring(1, -1.25), color: [1, 1, 1, 0.35], width: 1 }, { points: sq, color: [1, 1, 1, 0.25], width: 1 }],
       labels: [
-        { p: [-1.25, 0.75, -1.15], text: `W(ρ, θ), height ±${wf3.wmax.toFixed(2)} λ` },
-        { p: [1.25, 1.15, -1.15], text: `PSF, log brightness · Strehl ${r.strehl.toFixed(3)}` },
+        { p: [-1.25, 0.75, -1.15], text: 'W(ρ, θ), height ±{w} λ', vars: { w: wf3.wmax.toFixed(2) } },
+        { p: [1.25, 1.15, -1.15], text: 'PSF, log brightness · Strehl {s}', vars: { s: r.strehl.toFixed(3) } },
       ],
     }, shown3d);
     shown3d = true;

@@ -8,6 +8,7 @@ import { paraxial, aimRay, trace, toPlane } from './raytrace.js';
 import { imagePlane } from './bokeh.js';
 import { lensScene } from './lens3d.js';
 import { normalsFrom } from './mesh3d.js';
+import { N_ } from './i18n.js';
 
 const LAM = 587.56, COLOURS = [[0.42, 0.84, 1], [1, 0.71, 0.28]];
 
@@ -87,9 +88,9 @@ export function bokehScene({ lens: L0, sd, focus, stop, blades, round, corner = 
     const off = [wp + hp * 0.9, hp * (0.45 - 1.05 * i)];
     disc(h, c, g, off, i, zs);
     lines.push({ points: [[c[0], c[1], zs], [off[0], off[1], zs]], color: [...COLOURS[i], 0.3], width: 1, glow: false });
-    labels.push({ p: [off[0], off[1] + 0.42 * hp, zs], text: i ? `corner: cat's eye, ${((f.passed / f.total) * 100).toFixed(0)} % of the light` : 'on axis: the iris shape', color: i ? '#ffb547' : '#6ad7ff' });
+    labels.push({ p: [off[0], off[1] + 0.42 * hp, zs], text: i ? N_('corner: cat’s eye, {p} % of the light') : N_('on axis: the iris shape'), vars: { p: ((f.passed / f.total) * 100).toFixed(0) }, color: i ? '#ffb547' : '#6ad7ff' });
   });
-  labels.push({ p: [wp + hp * 0.9, -hp * 1.25, zs], text: `footprints enlarged × ${g}`, color: 'rgba(255,255,255,0.6)' });
-  labels.push({ p: [0, hp * 1.3, zs], text: `sensor focused at ${(focus / 1000).toFixed(2)} m; points at infinity`, color: 'rgba(255,255,255,0.7)' });
+  labels.push({ p: [wp + hp * 0.9, -hp * 1.25, zs], text: 'footprints enlarged × {g}', vars: { g }, color: 'rgba(255,255,255,0.6)' });
+  labels.push({ p: [0, hp * 1.3, zs], text: 'sensor focused at {d} m; points at infinity', vars: { d: (focus / 1000).toFixed(2) }, color: 'rgba(255,255,255,0.7)' });
   return { meshes, lines, labels, frame: sc.frame, zs, fps };
 }

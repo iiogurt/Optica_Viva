@@ -83,6 +83,11 @@ export function interfaceStrings(files = walk('js').filter((f) => !f.startsWith(
       const a = m.index + 'plot'.length, call = src.slice(a, matchEnd(src, a));
       for (const x of call.matchAll(new RegExp(String.raw`\b(?:title|label): (${PLAIN})\s*[,}]`, 'g'))) add(x[1]);
     }
+    // 3-D view labels { p: [x, y, z], text, vars }, translated by gl3d when drawn
+    for (const m of src.matchAll(new RegExp(String.raw`\btext: (${PLAIN})\s*[,}]`, 'g'))) {
+      const a = objStart(src, m.index);
+      if (/^\{\s*p: /.test(src.slice(a, m.index))) add(m[1]);
+    }
     for (const m of src.matchAll(/\b(?:stage|view3d)\(\{/g)) {
       const a = m.index + m[0].length - 1, obj = src.slice(a, matchEnd(src, a));
       const x = new RegExp(String.raw`\blabel: (${PLAIN})\s*[,}]`).exec(obj);

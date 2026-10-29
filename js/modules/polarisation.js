@@ -6,7 +6,7 @@ import { oetf, colormap, wavelengthRGB } from '../lib/color.js';
 import { polariser, retarder, mapply, ellipse, fresnelAmp, brewster, rayleighDoP, diskStress, principal, retardation, michelLevy, CRYSTALS, walkOff, maxWalkOff } from '../lib/polar.js';
 import { view3d } from '../lib/gl3d.js';
 import { beamScene, poincareScene } from '../lib/pol3d.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const D2R = Math.PI / 180;
 
@@ -267,9 +267,9 @@ export default function mount(root, meta) {
   }
   // 3-D: the field along the beam and the path on the Poincaré sphere; cameras stay put after the first scene
   let shown3d = false;
-  const MID_NAME = { pol: 'polariser 2', qwp: 'λ/4 plate', hwp: 'λ/2 plate', none: '' };
+  const MID_NAME = { pol: N_('polariser 2'), qwp: N_('λ/4 plate'), hwp: N_('λ/2 plate'), none: '' };
   function show3d(st, S) {
-    const els = [{ kind: 'pol', angle: st.a1 * D2R, name: `polariser 1 · ${st.a1}°` }, { kind: st.mid, angle: st.a2 * D2R, name: `${MID_NAME[st.mid]} · ${st.a2}°` }, { kind: 'pol', angle: st.a3 * D2R, name: `analyser · ${st.a3}°` }];
+    const els = [{ kind: 'pol', angle: st.a1 * D2R, name: t('polariser 1 · {a}°', { a: st.a1 }) }, { kind: st.mid, angle: st.a2 * D2R, name: `${t(MID_NAME[st.mid])} · ${st.a2}°` }, { kind: 'pol', angle: st.a3 * D2R, name: t('analyser · {a}°', { a: st.a3 }) }];
     beam3.setScene(beamScene(S, els), shown3d);
     sphere3.setScene(poincareScene(S), shown3d);
     shown3d = true;

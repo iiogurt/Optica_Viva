@@ -4,6 +4,7 @@
 import { tiltedLens, tiltedObject } from './optics.js';
 import { townObjects, camH, camPitch } from './scenes.js';
 import { quad, box, sphere, tint, merge, lathe } from './mesh3d.js';
+import { N_ } from './i18n.js';
 
 const C_COC = 0.00003; // circle of confusion on the sensor (m)
 
@@ -47,7 +48,7 @@ export function scheimpflugScene(st) {
     lensDisk.normals[i + 1] = ny * ca - nz * sa; lensDisk.normals[i + 2] = ny * sa + nz * ca;
   }
   meshes.push({ mesh: lensDisk, color: [0.45, 0.75, 1], opacity: 0.35, glass: true });
-  labels.push({ p: [0, 0.034 * ca, 0.034 * sa], text: `lens, tilted ${st.alpha}°`, color: '#6ad7ff' });
+  labels.push({ p: [0, 0.034 * ca, 0.034 * sa], text: 'lens, tilted {a}°', vars: { a: st.alpha }, color: '#6ad7ff' });
   // the plane of focus and the near and far limits of the depth of field
   const pof = conjugate(G, 0), near = conjugate(G, st.N * C_COC), far = conjugate(G, -st.N * C_COC);
   const zMin = -G.v * 1.3;
@@ -67,7 +68,7 @@ export function scheimpflugScene(st) {
     lines.push({ points: [[-hw, yS, -G.v], [hw, yS, -G.v]], color: [1, 0.71, 0.28, 1], width: 2.2 });
     labels.push({ p: [-hw * 1.45, yS, -G.v], text: 'Scheimpflug line', color: '#ffb547' });
     lines.push({ points: [[-hw, J, 0], [hw, J, 0]], color: [1, 0.61, 0.75, 1], width: 2.2 });
-    labels.push({ p: [hw * 1.55, J, 0], text: `hinge line, J = ${Math.abs(J).toFixed(2)} m`, color: '#ff9cc0' });
+    labels.push({ p: [hw * 1.55, J, 0], text: 'hinge line, J = {J} m', vars: { J: Math.abs(J).toFixed(2) }, color: '#ff9cc0' });
     // the plane through the lens parallel to the sensor, faint
     meshes.push({ mesh: strip({ p: [0, 0], d: [1, 0] }, -0.02, J * 1.15, hw), color: [1, 0.61, 0.75], opacity: 0.035, glass: true });
   }
@@ -109,7 +110,7 @@ export function townScene(st) {
     }
     return t0 === null ? null : [t0, t1];
   };
-  for (const [line, op, name] of [[pof, 0.28, 'plane of focus'], [near, 0.08, ''], [far, 0.08, '']]) {
+  for (const [line, op, name] of [[pof, 0.28, N_('plane of focus')], [near, 0.08, ''], [far, 0.08, '']]) {
     if (!line) continue;
     const r = clip(line);
     if (!r) continue;

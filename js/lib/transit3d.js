@@ -4,6 +4,7 @@
 // crosses it (the transit chord), and the impact parameter b at mid-transit. The telescope lies far
 // away along −z. Pure: no DOM.
 import { lathe, sphere } from './mesh3d.js';
+import { N_ } from './i18n.js';
 
 const STAR = [1, 0.86, 0.6], CYAN = [0.42, 0.84, 1], GOLD = [1, 0.71, 0.28];
 
@@ -16,7 +17,7 @@ export function transitScene({ aR, inc, k, b, name = '' }) {
   const meshes = [], lines = [], labels = [];
   // the star, and the cylinder of sight lines through it towards the telescope (−z)
   meshes.push({ mesh: sphere(1, [0, 0, 0], 48, 24), color: STAR });
-  labels.push({ p: [0, 1.25, 0], text: name ? `star (${name})` : 'star', color: '#ffd28a' });
+  labels.push({ p: [0, 1.25, 0], text: name ? N_('star ({name})') : N_('star'), vars: { name }, color: '#ffd28a' });
   const L = aR * 1.35;
   meshes.push({ mesh: lathe([[1, 0], [1, -L]], 64), color: [0.9, 0.85, 0.7], opacity: 0.07, glass: true });
   lines.push({ points: [[0, 0, 0], [0, 0, -L * 1.1]], color: [1, 1, 1, 0.35], width: 1, glow: false });
@@ -32,12 +33,12 @@ export function transitScene({ aR, inc, k, b, name = '' }) {
   lines.push({ points: back, color: [...CYAN, 0.3], width: 1, glow: false });
   lines.push({ points: front, color: [...CYAN, 0.75], width: 1.3 });
   if (chord.length > 1) lines.push({ points: chord, color: [...GOLD, 1], width: 2.4 });
-  labels.push({ p: planetAt(Math.PI / 2, aR, inc).map((x, i) => (i === 1 ? x + aR * 0.06 : x)), text: `orbit, a = ${aR < 20 ? aR.toFixed(1) : aR.toFixed(0)} R★, i = ${((inc * 180) / Math.PI).toFixed(1)}°`, color: '#6ad7ff' });
+  labels.push({ p: planetAt(Math.PI / 2, aR, inc).map((x, i) => (i === 1 ? x + aR * 0.06 : x)), text: 'orbit, a = {a} R★, i = {i}°', vars: { a: aR < 20 ? aR.toFixed(1) : aR.toFixed(0), i: ((inc * 180) / Math.PI).toFixed(1) }, color: '#6ad7ff' });
   // the planet at mid-transit and the impact parameter: its distance from the star's centre on the sky
   const P0 = planetAt(0, aR, inc);
   meshes.push({ mesh: sphere(Math.max(k, 1e-3), P0, 24, 12), color: [0.55, 0.62, 0.75] });
   lines.push({ points: [[0, 0, P0[2]], P0], color: [1, 1, 1, 0.9], width: 1.5 });
   labels.push({ p: [aR * 0.04 + k, P0[1] / 2, P0[2]], text: `b = ${b.toFixed(2)} R★`, color: '#ffffff' });
-  labels.push({ p: [0, -1.3 - k, P0[2]], text: chord.length > 1 ? 'transit: the planet crosses the star' : 'no transit: the planet misses the star', color: chord.length > 1 ? '#ffb547' : '#ff8a8a' });
+  labels.push({ p: [0, -1.3 - k, P0[2]], text: chord.length > 1 ? N_('transit: the planet crosses the star') : N_('no transit: the planet misses the star'), color: chord.length > 1 ? '#ffb547' : '#ff8a8a' });
   return { meshes, lines, labels, frame: { centre: [0, 0, -aR * 0.3], size: aR * 2.4 + 3 } };
 }

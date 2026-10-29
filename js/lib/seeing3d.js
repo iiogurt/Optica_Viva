@@ -8,6 +8,7 @@ import { NS, DP, STRIP_PAD, STRIP_STEP } from './seeing.js';
 import { diverging } from './color.js';
 import { heightField } from './mesh3d.js';
 import { wavefrontMesh, ring } from './surf3d.js';
+import { N_ } from './i18n.js';
 
 const UP = 1.15; // the residual relief floats this far above the screen
 
@@ -31,13 +32,13 @@ export function seeingScene({ strip, cols, rows, shift = 0, wave = null, rms = N
   const colors = new Float32Array(cols * rows * 3);
   for (let q = 0; q < cols * rows; q++) colors.set(diverging(Math.max(-1, Math.min(1, strip[q] / smax))), q * 3);
   meshes.push({ mesh: { ...hf, colors }, color: [1, 1, 1] });
-  labels.push({ p: [0, -0.2, z1 + 0.45], text: `phase screen: the turbulence, frozen and blown past at ${v} m/s`, color: '#c9cfdc' });
+  labels.push({ p: [0, -0.2, z1 + 0.45], text: 'phase screen: the turbulence, frozen and blown past at {v} m/s', vars: { v }, color: '#c9cfdc' });
   lines.push({ points: [[x1 - 0.2, 0.05, z1 + 0.18], [x1 - 1.4, 0.05, z1 + 0.18]], color: [1, 1, 1, 0.6], width: 1.6 });
   labels.push({ p: [x1 - 0.8, 0.15, z1 + 0.3], text: 'wind', color: '#c9cfdc' });
   // the pupil over the screen, where the wind has brought the screen by now
   const cx = colX((((shift % NS) + NS) % NS) + DP / 2);
   lines.push({ points: ring(0.5, cx, smax * k + 0.02), color: [1, 1, 1, 0.95], width: 1.8 });
-  labels.push({ p: [cx, -0.25, -0.75], text: `telescope pupil, ${D} m`, color: '#ffffff' });
+  labels.push({ p: [cx, -0.25, -0.75], text: 'telescope pupil, {D} m', vars: { D }, color: '#ffffff' });
   // the residual wavefront in the pupil, above it, at the same scale
   if (wave) {
     let wmax = 0.25;
@@ -47,8 +48,8 @@ export function seeingScene({ strip, cols, rows, shift = 0, wave = null, rms = N
     meshes.push({ mesh: r.mesh, color: [1, 1, 1] });
     lines.push({ points: ring(0.5, cx, UP), color: [1, 1, 1, 0.5], width: 1, glow: false });
     for (const a of [0, Math.PI]) lines.push({ points: [[cx + 0.5 * Math.cos(a), smax * k + 0.02, 0.5 * Math.sin(a)], [cx + 0.5 * Math.cos(a), UP, 0.5 * Math.sin(a)]], color: [1, 1, 1, 0.25], width: 1, glow: false });
-    const what = { off: 'no correction', tt: 'after tip–tilt correction', ao: 'after adaptive optics' }[ao] || '';
-    labels.push({ p: [cx, UP + 0.45, 0], text: `in the pupil, ${what}: ${rms.toFixed(2)} λ RMS`, color: '#ffb547' });
+    const what = { off: N_('in the pupil, no correction: {rms} λ RMS'), tt: N_('in the pupil, after tip–tilt correction: {rms} λ RMS'), ao: N_('in the pupil, after adaptive optics: {rms} λ RMS') }[ao] || N_('in the pupil: {rms} λ RMS');
+    labels.push({ p: [cx, UP + 0.45, 0], text: what, vars: { rms: rms.toFixed(2) }, color: '#ffb547' });
   }
   return { meshes, lines, labels, frame: { centre: [-0.3, 0.45, 0], size: (x1 - x0) * 0.95 }, k };
 }

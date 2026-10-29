@@ -58,7 +58,7 @@ export function lensingScene({ P, zl, zs, src, R, images = [], crit = [], caus =
     gal.positions[i] = -x; gal.positions[i + 1] = y; gal.positions[i + 2] = cl + gal.positions[i + 2] * a0 * 0.6;
   }
   meshes.push({ mesh: gal, color: GOLD, opacity: 0.85 });
-  labels.push({ p: [0, rl * 1.12, cl], text: `lens galaxy, z = ${zl.toFixed(2)} (${g(cl)})`, color: '#ffb547' });
+  labels.push({ p: [0, rl * 1.12, cl], text: 'lens galaxy, z = {z} ({d})', vars: { z: zl.toFixed(2), d: g(cl) }, color: '#ffb547' });
   for (const [a, b] of crit) lines.push({ points: [toScene(...a, cl), toScene(...b, cl)], color: [...CYAN, 0.8], width: 1.2, glow: false });
   // source plane: the source panel's field, the caustics and the background galaxy
   const rs = k * cs * SFOV / 2;
@@ -66,13 +66,13 @@ export function lensingScene({ P, zl, zs, src, R, images = [], crit = [], caus =
   lines.push({ points: [...circle(rs, cs), circle(rs, cs)[0]], color: [1, 1, 1, 0.25], width: 1, glow: false });
   for (const [a, b] of caus) if (Math.hypot(a[0] - b[0], a[1] - b[1]) <= 0.3) lines.push({ points: [toScene(...a, cs), toScene(...b, cs)], color: [...AMBER, 0.85], width: 1.2, glow: false });
   meshes.push({ mesh: disc(toScene(src[0], src[1], cs * 0.999), k * cs * R * 0.5), color: SRC, opacity: 0.85 });
-  labels.push({ p: [0, rs * 1.08, cs], text: `source galaxy, z = ${zs.toFixed(2)} (${g(cs)})`, color: '#9cc3ff' });
+  labels.push({ p: [0, rs * 1.08, cs], text: 'source galaxy, z = {z} ({d})', vars: { z: zs.toFixed(2), d: g(cs) }, color: '#9cc3ff' });
   // the Einstein ring: the cone of directions θ_E from the telescope, closing on the axis behind the lens
   const ring = circle(k * cl * P.b, cl, 72);
   meshes.push({ mesh: cone([0, 0, 0], ring), color: GOLD, opacity: 0.08, glass: true });
   meshes.push({ mesh: cone([0, 0, cs], ring), color: GOLD, opacity: 0.06, glass: true });
   lines.push({ points: [...ring, ring[0]], color: [...GOLD, 0.8], width: 1.4 });
-  labels.push({ p: [0, -rl * 1.15, cl], text: `Einstein ring θE = ${P.b.toFixed(2)}″`, color: '#ffb547' });
+  labels.push({ p: [0, -rl * 1.15, cl], text: 'Einstein ring θE = {b}″', vars: { b: P.b.toFixed(2) }, color: '#ffb547' });
   // every image: the light path telescope → lens plane → source, and where the image appears to be
   images.slice(0, RAYS.length).forEach((im, i) => {
     const L = toScene(im.x, im.y, cl), S = toScene(src[0], src[1], cs), col = RAYS[i];
@@ -80,7 +80,7 @@ export function lensingScene({ P, zl, zs, src, R, images = [], crit = [], caus =
     lines.push({ points: [L, toScene(im.x, im.y, cs)], color: [...col, 0.3], width: 1, glow: false });
     labels.push({ p: [L[0] * 1.25, L[1] * 1.25 + rl * 0.04, cl], text: `μ = ${im.mu.toFixed(1)}`, color: `rgb(${col.map((v) => Math.round(v * 255)).join(',')})` });
   });
-  labels.push({ p: [0, -rs * 0.9, cs * 0.5], text: `angles × ${ANGLE_SCALE.toLocaleString('en')}; distances comoving`, color: 'rgba(255,255,255,0.55)' });
+  labels.push({ p: [0, -rs * 0.9, cs * 0.5], text: 'angles × {k}; distances comoving', vars: { k: ANGLE_SCALE.toLocaleString('en') }, color: 'rgba(255,255,255,0.55)' });
   return { meshes, lines, labels, frame: { centre: [0, 0, cs * 0.5], size: Math.hypot(cs, 2 * rs) * 1.2 } };
 }
 
