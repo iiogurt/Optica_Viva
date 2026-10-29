@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.24.0] - 2026-10-29
+
 ### Changed
 - Chart titles and legend entries that carry values (“Mapping functions r(θ) for f = {f} mm”, “observed, R = {R}”, “T-stop of an f/{N} lens …”, about 45 of them) go through the translator with placeholders, and the names in the shared tables (sensor formats, coatings, crystals, projections, the cinema focusing schemes, the lucky-imaging views, the telescope temperatures) are marked for translation, so the charts' legends and the menus that list them change language too; 78 new strings in German, French and Spanish.
 - Chart text is translated: `plot()` passes titles, axis labels, marker labels and legend entries through the interface translation, like the toolkit's control labels, and the 333 such strings written in the pages now have German, French and Spanish versions; the string extractor collects them from every `plot(ctx, …)` call, so the i18n test keeps them complete. Legends move left when a translated entry would run off the plot.
@@ -751,7 +753,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.23.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.24.0...HEAD
+[1.24.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.23.0...v1.24.0
 [1.23.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.22.0...v1.23.0
 [1.22.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.20.0...v1.21.0
