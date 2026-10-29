@@ -17,6 +17,7 @@ import { diskBlurRGBA } from './blur.js';
 import { groundRows } from './dofphoto.js';
 import { projectionRows } from './projection.js';
 import { lensRows, sourceAndMagnification, criticalCurves, deflect, images } from './lensing.js';
+import { haloImage, dropProfiles, DROP_LAMS } from './atmo.js';
 import { perspectiveRows } from './perspective.js';
 import { seeingSession } from './seeing.js';
 import { renderRuler } from './macro.js';
@@ -616,4 +617,8 @@ function seeingStep(p) {
 }
 function shiftTask(p) { const r = shiftRows(p.st, p.y0, p.y1); return { result: r, transfer: [r.buffer] }; }
 
-export const TASKS = { psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };
+// Halo rays (one Monte-Carlo batch) and Mie profiles for a subset of the drop wavelengths
+function haloRays(p) { const r = haloImage(p); return { result: r, transfer: [r.X.buffer, r.Y.buffer, r.Z.buffer] }; }
+function dropMie(p) { return { result: p.lams.map((li) => ({ li, ...dropProfiles(DROP_LAMS[li], p.a, p.w) })) }; }
+
+export const TASKS = { haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };

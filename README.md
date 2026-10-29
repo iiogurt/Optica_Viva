@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Thirty-nine interactive simulations, a physics primer and a catalogue of 228 phenomena.
+Fifty-six interactive simulations, a physics primer and a catalogue of 233 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -334,6 +334,16 @@ Sellmeier dispersion, the Abbe diagram and the partial-dispersion normal line, w
 <img src="docs/screenshots/polarisation.webp" alt="Lake scene through a polarising filter, all-sky polarisation map and Fresnel reflectance curves" width="70%">
 
 A lake scene **rendered per pixel in Stokes vectors**. Skylight from a single-scattering **Rayleigh sky** (spectral radiance and E-vector), Fresnel reflection off rippled water in Mueller form, and light from the pebbles below (pure-water and CDOM absorption) all pass through a rotating **polarising filter** with a real extinction ratio. At **Brewster's angle** the glare vanishes and the bottom appears, and the sky darkens 90° from the sun. Also includes an all-sky map of the degree and angle of polarisation, Fresnel curves for water and glass, and a **polariser and wave-plate chain** (Malus's law, the three-polariser paradox, λ/4 and λ/2 plates). **Photoelasticity**: a disk in diametral compression (Hertz stress field) between circular or plane polarisers, with white-light Michel-Lévy colours, isochromatics and isoclinics, for plastics and optical glass. **Birefringent OLPF**: walk-off in quartz, lithium niobate and calcite, and the four-spot pattern on Bayer pixels.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Halos, rainbows & glories** · `#/atmospheric`<br>
+<img src="docs/screenshots/atmospheric.webp" alt="Sky around the Sun with the 22° halo, sundogs, parhelic circle and circumzenithal arc; a corona; a rainbow with supernumerary bows; and the Mie scattering profile" width="70%">
+
+**Ice-crystal halos** by Monte-Carlo ray tracing through hexagonal prisms (random orientations, horizontal plates and columns with a wobble, Fresnel reflection and total internal reflection at every face, the dispersion of ice): the 22° and 46° halos, sundogs, the parhelic circle, tangent arcs and the circumzenithal arc, built up progressively on all workers. **Water drops** by exact **Lorenz–Mie theory** (BHMIE, up to thousands of terms, 16 wavelengths, the solar disc): the rainbow with its supernumerary bows and Alexander's band, the white fogbow of small drops, the glory around your shadow and the corona around the Sun, all from one calculation.
 
 </td>
 </tr>
@@ -713,6 +723,8 @@ flowchart LR
 | Polarisation | Stokes vectors and Mueller matrices (diattenuators, retarders, frame rotations); Fresnel reflection and transmission in Mueller form | polarisation |
 | Birefringence | Stress-optic law with the Hertz/Frocht disk stress field, white-light interference colours from 61 wavelengths; extraordinary-ray walk-off in uniaxial crystals | polarisation |
 | Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
+| Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
+| Drop scattering | Lorenz–Mie series (Bohren & Huffman's BHMIE, downward-recurrence logarithmic derivative), real water index, 16 wavelengths × 3 radii, solar-disc smear, 5800 K sunlight | atmospheric |
 | Bokeh | Exact rays of the direct path from point sources (∞ and near) to the defocused sensor, same flux-conserving rasteriser | bokeh |
 | Lens flare | Exact ray tracing of all k(k−1)/2 two-reflection paths per wavelength, rasterised as flux-conserving triangles with a per-pixel aperture gauge; paraxial ghost matrices as the preview | flare |
 | Turbulence | von Kármán PSD, FFT screens plus 3-level subharmonics, frozen flow, bilinear-influence DM | seeing, wfs |
@@ -812,6 +824,7 @@ Optica_Viva/
 │   │   ├── exoimaging.js      Exoplanet mission: reflected-light contrast, separation, integration time
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
+│   │   ├── atmo.js            Atmospheric optics: ice-crystal halo ray tracing, Lorenz–Mie scattering, rainbow geometry
 │   │   ├── autofocus.js       Phase and contrast autofocus on a defocused scene strip
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
@@ -896,7 +909,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (41)
+│   └── modules/               One file per page (60)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -1027,6 +1040,14 @@ The numerical core was checked against published or analytically known values. E
 | Grating blaze (Littrow, 600 l/mm, λ_B = 500 nm) | η = 1 at 500 nm (m = 1) and 250 nm (m = 2) | scalar blaze condition |
 | Slit-limited R: R4 échelle, 200 mm beam, 1″ slit, 8.2 m telescope | 40 247 | UVES design value ≈ 40 000 (Dekker et al. 2000) |
 | Slit transmission, slit width = seeing FWHM | 0.761 | erf(√ln 2) = 0.7610 |
+| 22° and 46° halo radii (ice, n = 1.31) | 21.84°, 45.73° | minimum deviation of 60° and 90° prisms |
+| Monte-Carlo halo (random crystals) | peak at 22°, sharp inner edge | Tape (1994) |
+| Primary and secondary rainbow (n = 1.333) | 42.08°, 50.89° | Descartes: 42.08°, 50.9° |
+| Circumzenithal arc vanishes above solar elevation | 32.2° | arccos √(n² − 1) |
+| Mie, small spheres (x = 0.05) | Q_sca ratio 1.000, forward/side 2.00 | Rayleigh: (8/3) x⁴ \|(m²−1)/(m²+2)\|², 1 + cos²θ |
+| Mie, large spheres (x = 1000) | Q_ext = 2.016 | van de Hulst: 2 + 1.99 x<sup>−2/3</sup> = 2.020 |
+| Mie, 200 µm drops: brightest part of the bow | just inside 41.9° | Airy theory |
+| Mie, 10 µm droplets: first corona minimum | 1.83° | Fraunhofer 1.22λ/(2a) = 1.92° |
 
 ---
 

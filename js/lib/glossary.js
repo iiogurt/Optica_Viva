@@ -41,6 +41,11 @@ export const GLOSSARY = [
   { term: 'Interference', match: ['interference'], lab: 'interferometry', def: 'Light waves adding up where their crests meet and cancelling where crest meets trough.' },
   { term: 'Polarisation', match: ['polari[sz]ation', 'polari[sz]ed'], lab: 'polarisation', def: 'The direction in which a light wave vibrates, across its direction of travel.' },
   { term: 'Bokeh', match: ['bokeh'], lab: 'bokeh', def: 'The look of out-of-focus parts of a picture, especially the discs made by points of light.' },
+  { term: 'Sundog', match: ['sundogs?', 'parhelia', 'parhelion'], lab: 'atmospheric', def: 'A bright, often coloured spot beside the Sun, made by flat ice crystals that float horizontally like falling leaves.' },
+  { term: 'Glory', match: ['glory', 'glories'], lab: 'atmospheric', def: 'Coloured rings around the shadow of your head or of an aircraft on a cloud below, made by tiny cloud droplets sending light back.' },
+  { term: 'Fogbow', match: ['fogbows?'], lab: 'atmospheric', def: 'A broad, almost white rainbow made by fog or cloud droplets too small to separate the colours.' },
+  { term: 'Antisolar point', match: ['antisolar points?'], lab: 'atmospheric', def: 'The point in the sky exactly opposite the Sun, where the shadow of your head falls; rainbows and glories are centred on it.' },
+  { term: 'Supernumerary bow', match: ['supernumerary bows?', 'supernumeraries'], lab: 'atmospheric', def: 'A faint extra band just inside a rainbow, made by light waves that leave a drop at the same angle and interfere.' },
   // ── Light, sensor and time ──
   { term: 'Pixel pitch', match: ['pixel pitch(?:es)?'], lab: 'sampling', def: 'The distance from the centre of one pixel to the next.' },
   { term: 'Nyquist limit', match: ['nyquist(?: limit| frequency)?'], lab: 'sampling', def: 'The finest pattern a grid of pixels can record correctly: one dark and one light line per two pixels.' },
