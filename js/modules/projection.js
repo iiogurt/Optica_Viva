@@ -6,6 +6,7 @@ import { PROJ, tissotCircles, tissotColour } from '../lib/projection.js';
 import { parallel, rowBands } from '../lib/compute.js';
 import { view3d } from '../lib/gl3d.js';
 import { projectionScene } from '../lib/projection3d.js';
+import { t } from '../lib/i18n.js';
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['photo', 'video', 'space'] }));
@@ -118,10 +119,10 @@ export default function mount(root, meta) {
     const th = range(0, 180, 181);
     const radial = ['rectilinear', 'stereographic', 'equidistant', 'equisolid', 'orthographic'];
     plot(ctx, w, hh, {
-      title: `Mapping functions r(θ) for f = ${st.f.toPrecision(3)} mm`, x: { min: 0, max: 180, label: 'field angle θ (°), from the optical axis' }, y: { min: 0, max: Math.max(hd * 2, st.f * 4), label: 'image height r (mm)' },
-      series: radial.map((p) => ({ data: th.filter((t) => (t * Math.PI) / 180 <= PROJ[p].max).map((t) => [t, PROJ[p].R((t * Math.PI) / 180, st.f)]), color: PROJ[p].color, width: p === st.proj ? 2.6 : 1.3, label: p })),
+      title: t('Mapping functions r(θ) for f = {f} mm', { f: st.f.toPrecision(3) }), x: { min: 0, max: 180, label: 'field angle θ (°), from the optical axis' }, y: { min: 0, max: Math.max(hd * 2, st.f * 4), label: 'image height r (mm)' },
+      series: radial.map((p) => ({ data: th.filter((t) => (t * Math.PI) / 180 <= PROJ[p].max).map((t) => [t, PROJ[p].R((t * Math.PI) / 180, st.f)]), color: PROJ[p].color, width: p === st.proj ? 2.6 : 1.3, label: PROJ[p].name })),
       hlines: [{ y: hd, color: '#ff6b6b', label: 'sensor half-diagonal' }, { y: S.w / 2, color: 'rgba(255,107,107,0.5)', label: 'half-width' }],
-      legend: true, legendX: w - 130,
+      legend: true,
     });
   }
 

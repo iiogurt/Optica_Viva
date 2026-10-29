@@ -6,6 +6,7 @@ import { ILLUMINANTS, TCS, CMF } from '../lib/colordata.js';
 import { view3d } from '../lib/gl3d.js';
 import { colourSolidScene, gamutCoverage, samplesOutside } from '../lib/colour3d.js';
 import { LAMBDA, xyz, chromaticity, uv1960, blackbody, daylight, cri, sampleSRGB, planck, CAMERAS, EXTRA_PATCHES, cameraColour, wbGains, lutherResidual, metamer, xyzToSRGB, lab as cielab, adapt, deltaE00, D65_XYZ } from '../lib/colorsci.js';
+import { t } from '../lib/i18n.js';
 
 const css = (rgb) => `rgb(${rgb.map((v) => Math.round(255 * oetf(Math.min(1, Math.max(0, v))))).join(',')})`;
 const TCS_NAMES = ['Light greyish red', 'Dark greyish yellow', 'Strong yellow green', 'Moderate yellowish green', 'Light bluish green', 'Light blue', 'Light violet', 'Light reddish purple', 'Strong red (R9)', 'Strong yellow', 'Strong green', 'Strong blue', 'Light yellowish pink (skin)', 'Moderate olive green (leaf)'];
@@ -84,10 +85,10 @@ export default function mount(root, meta) {
   function drawSPD(ctx, w, hh) {
     if (!C) return;
     const n = (s) => { const m = Math.max(...s); return s.map((v) => v / m); };
-    const t = n(C.S.spd), rf = n(C.r.ref);
+    const spd = n(C.S.spd), rf = n(C.r.ref);
     const P = plot(ctx, w, hh, {
-      title: `Spectral power distribution: ${C.S.name}`, x: { min: 380, max: 780, label: 'wavelength (nm)' }, y: { min: 0, max: 1.08, label: 'relative power' },
-      series: [{ data: LAMBDA.map((l, i) => [l, rf[i]]), color: 'rgba(255,255,255,0.6)', width: 1.4, dash: [5, 3], label: `reference (${C.r.cct.toFixed(0)} K)` }, { data: LAMBDA.map((l, i) => [l, t[i]]), color: '#ffffff', width: 2, label: 'test source' }],
+      title: t('Spectral power distribution: {s}', { s: C.S.name }), x: { min: 380, max: 780, label: 'wavelength (nm)' }, y: { min: 0, max: 1.08, label: 'relative power' },
+      series: [{ data: LAMBDA.map((l, i) => [l, rf[i]]), color: 'rgba(255,255,255,0.6)', width: 1.4, dash: [5, 3], label: t('reference ({T} K)', { T: C.r.cct.toFixed(0) }) }, { data: LAMBDA.map((l, i) => [l, spd[i]]), color: '#ffffff', width: 2, label: 'test source' }],
       legend: true, legendX: w - 200, legendY: 34,
     });
     // rainbow fill under the test spectrum
@@ -102,7 +103,7 @@ export default function mount(root, meta) {
 
   function drawBars(ctx, w, hh) {
     if (!C) return;
-    const P = plot(ctx, w, hh, { title: `Special colour rendering indices (Ra = ${C.r.Ra.toFixed(1)})`, x: { min: 0.5, max: 14.5, step: 1, label: 'test colour sample', fmt: (v) => 'R' + v }, y: { min: Math.min(0, Math.floor(Math.min(...C.r.R) / 20) * 20), max: 100, label: 'Rᵢ' }, series: [] });
+    const P = plot(ctx, w, hh, { title: t('Special colour rendering indices (Ra = {Ra})', { Ra: C.r.Ra.toFixed(1) }), x: { min: 0.5, max: 14.5, step: 1, label: 'test colour sample', fmt: (v) => 'R' + v }, y: { min: Math.min(0, Math.floor(Math.min(...C.r.R) / 20) * 20), max: 100, label: 'Rᵢ' }, series: [] });
     C.r.R.forEach((R, i) => {
       const x = P.X(i + 1), bw = (P.X(2) - P.X(1)) * 0.7, y = P.Y(R);
       ctx.fillStyle = css(C.cols[i].ref); ctx.fillRect(x - bw / 2, Math.min(y, P.Y(0)), bw, Math.abs(P.Y(0) - y));
@@ -225,7 +226,7 @@ export default function mount(root, meta) {
     if (!K) return;
     const mx = Math.max(...K.sens.flat()), cm = Math.max(...CMF.flat());
     plot(ctx, w, hh, {
-      title: `Spectral sensitivities: ${CAMERAS[K.st.cam].name}`, x: { min: 380, max: 780, label: 'wavelength (nm)' }, y: { min: 0, max: 1.1, label: 'relative sensitivity' },
+      title: t('Spectral sensitivities: {c}', { c: CAMERAS[K.st.cam].name }), x: { min: 380, max: 780, label: 'wavelength (nm)' }, y: { min: 0, max: 1.1, label: 'relative sensitivity' },
       series: [
         ...['x̄', 'ȳ', 'z̄'].map((n, c) => ({ data: LAMBDA.map((l, i) => [l, CMF[c][i] / cm]), color: 'rgba(255,255,255,0.35)', width: 1, dash: [4, 3], label: c === 0 ? 'CIE x̄ ȳ z̄ (eye)' : undefined })),
         ...K.sens.map((s, c) => ({ data: LAMBDA.map((l, i) => [l, s[i] / mx]), color: ['#ff6b6b', '#6be3a4', '#6ad7ff'][c], width: 2.2, label: ['R', 'G', 'B'][c] })),

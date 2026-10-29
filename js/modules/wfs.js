@@ -250,7 +250,7 @@ export default function mount(root, meta) {
   function drawPyrCurve(ctx, w, hh) {
     const R = pctl.state.rmod, th = Array.from({ length: 91 }, (_, i) => (i / 90) * 4.5);
     const series = [];
-    if (R > 0) series.push({ data: th.map((t) => [t, pyramidGeometric(t, R)]), color: '#6ad7ff', width: 1.6, dash: [5, 3], label: `geometric optics, R = ${R} λ/D` });
+    if (R > 0) series.push({ data: th.map((t) => [t, pyramidGeometric(t, R)]), color: '#6ad7ff', width: 1.6, dash: [5, 3], label: t('geometric optics, R = {R} λ/D', { R }) });
     if (Pc) series.push({ data: Pc.curve, color: '#ffb547', width: 2.4, label: 'diffraction model (FFT)' });
     plot(ctx, w, hh, {
       title: Pc ? 'Pyramid response to a tilt' : 'Pyramid response to a tilt (computing…)', x: { min: 0, max: 4.5, label: 'tilt (λ/D)' }, y: { min: 0, max: 1.05, label: '⟨Sx⟩' },

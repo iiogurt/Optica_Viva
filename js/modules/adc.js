@@ -3,6 +3,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot } from '../lib/plot.js';
 import { wavelengthRGB } from '../lib/color.js';
 import { airRefractivityPT, refraction, dispersion, adcPrism, adcAngle, residual } from '../lib/adc.js';
+import { t } from '../lib/i18n.js';
 
 const D2R = Math.PI / 180;
 const SITES = { sea: { name: 'Sea level (1013 hPa, 15 °C)', P: 101325, T: 15 }, paranal: { name: 'Paranal, 2635 m (743 hPa, 10 °C)', P: 74300, T: 10 }, mk: { name: 'Mauna Kea, 4205 m (615 hPa, 2 °C)', P: 61500, T: 2 } };
@@ -89,7 +90,7 @@ export default function mount(root, meta) {
     if (!M) return;
     const lo = Math.min(...M.air, ...M.res), hi = Math.max(...M.air, ...M.res);
     plot(ctx, w, hh, {
-      title: `Image position relative to ${M.lc.toFixed(0)} nm`, x: { min: M.st.l0, max: M.st.l1, label: 'wavelength (nm)' }, y: { min: lo - 0.05 * (hi - lo + 0.01), max: hi + 0.05 * (hi - lo + 0.01), label: 'offset towards zenith (″)' },
+      title: t('Image position relative to {l} nm', { l: M.lc.toFixed(0) }), x: { min: M.st.l0, max: M.st.l1, label: 'wavelength (nm)' }, y: { min: lo - 0.05 * (hi - lo + 0.01), max: hi + 0.05 * (hi - lo + 0.01), label: 'offset towards zenith (″)' },
       series: [{ data: M.lams.map((l, i) => [l, M.air[i]]), color: '#ff9cc0', width: 2, label: 'atmosphere' }, ...(M.st.adc ? [{ data: M.lams.map((l, i) => [l, M.res[i]]), color: '#6be3a4', width: 2, label: 'with ADC (residual)' }] : [])],
       hlines: [{ y: 0, color: 'rgba(255,255,255,0.2)' }], legend: true, legendX: w - 190, legendY: 34,
     });
@@ -98,7 +99,7 @@ export default function mount(root, meta) {
     if (!M) return;
     const zs = Array.from({ length: 76 }, (_, i) => i), s = M.s;
     plot(ctx, w, hh, {
-      title: `Dispersion ${M.st.l0}–${M.st.l1} nm vs zenith angle`, x: { min: 0, max: 75, label: 'zenith angle (°)' }, y: { min: 0, max: Math.max(0.5, dispersion(M.st.l0, M.st.l1, 75 * D2R, s.P, s.T) * 1.05), label: 'dispersion (″)' },
+      title: t('Dispersion {a}–{b} nm vs zenith angle', { a: M.st.l0, b: M.st.l1 }), x: { min: 0, max: 75, label: 'zenith angle (°)' }, y: { min: 0, max: Math.max(0.5, dispersion(M.st.l0, M.st.l1, 75 * D2R, s.P, s.T) * 1.05), label: 'dispersion (″)' },
       series: Object.entries(SITES).map(([key, si], i) => ({ data: zs.map((z) => [z, dispersion(M.st.l0, M.st.l1, z * D2R, si.P, si.T)]), color: ['#ff9cc0', '#ffb547', '#6ad7ff'][i], width: key === M.st.site ? 2.4 : 1.2, label: si.name.split(' (')[0] })),
       hlines: [{ y: M.st.seeing, color: 'rgba(255,255,255,0.35)', label: 'seeing FWHM' }], vlines: [{ x: M.st.z, color: 'rgba(255,255,255,0.35)' }], legend: true, legendX: 70, legendY: 34,
     });

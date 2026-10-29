@@ -178,7 +178,7 @@ export default function mount(root, meta) {
     const geo = (N) => (st.m * st.m * half) / (N * (1 + st.m / L.mp)) * 1000, dif = (N) => airyDiameter(N * (1 + st.m / L.mp), LAM) * 1000;
     const all = Ns.map((N) => [N, Math.hypot(geo(N), dif(N))]);
     plot(ctx, w, hh, {
-      title: `Blur at ±${half.toPrecision(2)} mm from focus vs set f-number`, x: { min: 1.4, max: 64, log: true, label: 'set f-number N' }, y: { min: 1, max: 5000, log: true, label: 'blur diameter on sensor (µm)' },
+      title: t('Blur at ±{d} mm from focus vs set f-number', { d: half.toPrecision(2) }), x: { min: 1.4, max: 64, log: true, label: 'set f-number N' }, y: { min: 1, max: 5000, log: true, label: 'blur diameter on sensor (µm)' },
       series: [
         { data: Ns.map((N) => [N, geo(N)]), color: '#6ad7ff', width: 1.6, dash: [5, 3], label: 'geometric (defocus)' },
         { data: Ns.map((N) => [N, dif(N)]), color: '#c18cff', width: 1.6, dash: [5, 3], label: 'diffraction (Airy Ø)' },
@@ -194,7 +194,7 @@ export default function mount(root, meta) {
     if (!S) return;
     const ms = logRange(0.05, 5, 120), cols = { 0.5: '#ff9cc0', 1: '#6ad7ff', 2: '#6be3a4' };
     const series = [0.5, 1, 2].map((mp) => ({ data: ms.map((m) => [m, 2 * Math.log2(1 + m / mp)]), color: cols[mp], width: 1.4, dash: [4, 3], label: `m_p = ${mp}` }));
-    series.push({ data: ms.map((m) => [m, 2 * Math.log2(1 + m / S.L.mp)]), color: '#ffb547', width: 2.4, label: `this lens (m_p = ${S.L.mp})` });
+    series.push({ data: ms.map((m) => [m, 2 * Math.log2(1 + m / S.L.mp)]), color: '#ffb547', width: 2.4, label: t('this lens (m_p = {mp})', { mp: S.L.mp }) });
     plot(ctx, w, hh, {
       title: 'Exposure loss vs magnification', x: { min: 0.05, max: 5, log: true, label: 'magnification m' }, y: { min: 0, max: 7, label: 'stops lost  (N_w = N·2^(ΔEV/2))' },
       series, vlines: [{ x: S.st.m, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: 60, legendY: 34,

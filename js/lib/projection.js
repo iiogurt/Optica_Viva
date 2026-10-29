@@ -1,15 +1,16 @@
 // Lens projections (rectilinear, fisheye mappings, panoramic) and the hall scene of the projection
 // laboratory, as pure functions so that row bands can be rendered by the compute workers.
+import { N_ } from './i18n.js';
 
 // Mapping functions r = R(θ) (radial) or explicit forward/inverse maps (cylindrical families).
 export const PROJ = {
-  rectilinear: { name: 'Rectilinear (gnomonic)  r = f tan θ', R: (t, f) => f * Math.tan(t), Rinv: (r, f) => Math.atan(r / f), max: Math.PI / 2 - 0.01, color: '#ffffff' },
-  stereographic: { name: 'Stereographic (conformal)  r = 2f tan(θ/2)', R: (t, f) => 2 * f * Math.tan(t / 2), Rinv: (r, f) => 2 * Math.atan(r / (2 * f)), max: Math.PI * 0.98, color: '#6ad7ff' },
-  equidistant: { name: 'Equidistant  r = f θ', R: (t, f) => f * t, Rinv: (r, f) => r / f, max: Math.PI, color: '#6be3a4' },
-  equisolid: { name: 'Equisolid (equal-area)  r = 2f sin(θ/2)', R: (t, f) => 2 * f * Math.sin(t / 2), Rinv: (r, f) => (r <= 2 * f ? 2 * Math.asin(r / (2 * f)) : NaN), max: Math.PI, color: '#ffb547' },
-  orthographic: { name: 'Orthographic  r = f sin θ', R: (t, f) => f * Math.sin(t), Rinv: (r, f) => (r <= f ? Math.asin(r / f) : NaN), max: Math.PI / 2, color: '#c18cff' },
-  panini: { name: 'Panini (d = 1), panoramic', cyl: true, color: '#ff9cc0' },
-  equirect: { name: 'Equirectangular (cylindrical)', cyl: true, color: '#9aa1b5' },
+  rectilinear: { name: N_('Rectilinear (gnomonic)  r = f tan θ'), R: (t, f) => f * Math.tan(t), Rinv: (r, f) => Math.atan(r / f), max: Math.PI / 2 - 0.01, color: '#ffffff' },
+  stereographic: { name: N_('Stereographic (conformal)  r = 2f tan(θ/2)'), R: (t, f) => 2 * f * Math.tan(t / 2), Rinv: (r, f) => 2 * Math.atan(r / (2 * f)), max: Math.PI * 0.98, color: '#6ad7ff' },
+  equidistant: { name: N_('Equidistant  r = f θ'), R: (t, f) => f * t, Rinv: (r, f) => r / f, max: Math.PI, color: '#6be3a4' },
+  equisolid: { name: N_('Equisolid (equal-area)  r = 2f sin(θ/2)'), R: (t, f) => 2 * f * Math.sin(t / 2), Rinv: (r, f) => (r <= 2 * f ? 2 * Math.asin(r / (2 * f)) : NaN), max: Math.PI, color: '#ffb547' },
+  orthographic: { name: N_('Orthographic  r = f sin θ'), R: (t, f) => f * Math.sin(t), Rinv: (r, f) => (r <= f ? Math.asin(r / f) : NaN), max: Math.PI / 2, color: '#c18cff' },
+  panini: { name: N_('Panini (d = 1), panoramic'), cyl: true, color: '#ff9cc0' },
+  equirect: { name: N_('Equirectangular (cylindrical)'), cyl: true, color: '#9aa1b5' },
 };
 
 // camera-space direction (x right, y up, z forward) ↔ sensor (x, y) in mm

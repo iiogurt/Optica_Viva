@@ -1,5 +1,7 @@
 // Thin-film optics: Fresnel equations and the characteristic-matrix (transfer-matrix)
 // method for lossless multilayer stacks at oblique incidence (Macleod's formulation).
+import { N_ } from './i18n.js';
+
 
 // Fresnel power reflectances for a single interface n1 → n2 at incidence angle θ1 (rad).
 export function fresnel(n1, n2, th1) {
@@ -41,11 +43,11 @@ export function stackReflectance(layers, n0, ns, lambda, th0 = 0) {
 // Anti-reflection designs centred at λ0 = 550 nm (quarter-wave optical thickness = λ0/4n).
 const QW = (n, l0 = 550) => l0 / (4 * n);
 export const COATINGS = {
-  none: { name: 'Uncoated', layers: () => [] },
-  mgf2: { name: 'Single-layer MgF₂ (λ/4)', layers: () => [{ n: 1.38, d: QW(1.38) }] },
-  qhq: { name: '3-layer QHQ broadband (MgF₂ / ZrO₂ / Al₂O₃)', layers: () => [{ n: 1.38, d: QW(1.38) }, { n: 2.05, d: 2 * QW(2.05) }, { n: 1.63, d: QW(1.63) }] },
+  none: { name: N_('Uncoated'), layers: () => [] },
+  mgf2: { name: N_('Single-layer MgF₂ (λ/4)'), layers: () => [{ n: 1.38, d: QW(1.38) }] },
+  qhq: { name: N_('3-layer QHQ broadband (MgF₂ / ZrO₂ / Al₂O₃)'), layers: () => [{ n: 1.38, d: QW(1.38) }, { n: 2.05, d: 2 * QW(2.05) }, { n: 1.63, d: QW(1.63) }] },
   graded: {
-    name: 'Graded-index nanostructure (moth-eye, 300 nm)',
+    name: N_('Graded-index nanostructure (moth-eye, 300 nm)'),
     layers: (ns = 1.52) => {
       const N = 30, T = 300, out = [];
       for (let k = 0; k < N; k++) {

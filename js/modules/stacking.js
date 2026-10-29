@@ -2,6 +2,7 @@ import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js'
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, logRange } from '../lib/plot.js';
 import { BORTLE, surfaceRate, stackSNR, skyLimitedSub, galaxyRate, stackImage } from '../lib/stacking.js';
+import { t } from '../lib/i18n.js';
 
 const fmtT = (t) => (t >= 3600 ? (t / 3600).toFixed(1) + ' h' : t >= 60 ? (t / 60).toFixed(t < 600 ? 1 : 0) + ' min' : t.toFixed(t < 10 ? 1 : 0) + ' s');
 
@@ -69,7 +70,7 @@ export default function mount(root, meta) {
     if (!M) return;
     const st = M.st, ts = logRange(1, 900, 80);
     plot(ctx, w, hh, {
-      title: `SNR after ${fmtT(st.T)} vs sub-exposure length`, x: { min: 1, max: 900, log: true, label: 'sub-exposure (s)' }, y: { min: 0, max: 1.1, label: 'SNR / SNR without read noise' },
+      title: t('SNR after {T} vs sub-exposure length', { T: fmtT(st.T) }), x: { min: 1, max: 900, log: true, label: 'sub-exposure (s)' }, y: { min: 0, max: 1.1, label: 'SNR / SNR without read noise' },
       series: [1, 4, 7, 9].map((b, i) => { const Fs = surfaceRate(BORTLE[b], st.D, st.p, QE); return { data: ts.map((t) => { const N = Math.max(1, Math.round(st.T / t)); return [t, stackSNR(M.Fo, Fs, st.dark, st.sigma, t, N) / ((M.Fo * N * t) / Math.sqrt(N * (M.Fo + Fs + st.dark) * t))]; }), color: ['#6be3a4', '#6ad7ff', '#ffb547', '#ff6b6b'][i], width: b === st.bortle ? 2.4 : 1.3, label: `Bortle ${b}` }; }),
       vlines: [{ x: st.t, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: w - 130, legendY: hh - 110,
     });

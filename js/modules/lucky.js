@@ -4,7 +4,7 @@ import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { friedProbability } from '../lib/lucky.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const INF = lut('inferno');
 
@@ -24,7 +24,7 @@ export default function mount(root, meta) {
   }, () => update());
   const ro = h('div');
   const calc = liveCalc();
-  const names = { best: 'Best frame', worst: 'Worst frame', long: 'Long exposure (all frames)', tt: 'Shift-and-add (all frames)', lucky: 'Lucky: best frames, shift-and-add' };
+  const names = { best: N_('Best frame'), worst: N_('Worst frame'), long: N_('Long exposure (all frames)'), tt: N_('Shift-and-add (all frames)'), lucky: N_('Lucky: best frames, shift-and-add') };
   const views = Object.fromEntries(Object.keys(names).map((k) => [k, stage({ aspect: 1, label: names[k], draw: (c, w, hh) => drawImg(c, w, hh, k), minH: 150 })]));
   const hist = stage({ aspect: 2.2, label: '', draw: drawHist, cls: 'plain', minH: 200 });
   const curve = stage({ aspect: 2.2, label: '', draw: drawCurve, cls: 'plain', minH: 200 });

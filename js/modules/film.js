@@ -3,6 +3,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { stock, meanDensity, speedPoint, selwyn, reciprocityCorrection } from '../lib/film.js';
+import { t } from '../lib/i18n.js';
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['photo', 'video'] }));
@@ -65,7 +66,7 @@ export default function mount(root, meta) {
     const pts = [], { f, H0, st } = F;
     for (let l = -2.5; l <= 4.5; l += 0.05) pts.push([l, meanDensity(10 ** l, f)]);
     plot(ctx, w, hh, {
-      title: `Characteristic (H&D) curve, ISO ${Math.round(st.iso)}`, x: { min: -2.5, max: 4.5, label: 'log₁₀ exposure (photons/µm²)' }, y: { min: 0, max: 2.8, label: 'optical density D' },
+      title: t('Characteristic (H&D) curve, ISO {iso}', { iso: Math.round(st.iso) }), x: { min: -2.5, max: 4.5, label: 'log₁₀ exposure (photons/µm²)' }, y: { min: 0, max: 2.8, label: 'optical density D' },
       series: [{ data: pts, color: '#ffb547', width: 2.2 }],
       vlines: Array.from({ length: 8 }, (_, i) => ({ x: Math.log10(H0 * 2 ** st.ev) + 0.3 * (i - 3.5), color: 'rgba(255,255,255,0.15)' })),
     });

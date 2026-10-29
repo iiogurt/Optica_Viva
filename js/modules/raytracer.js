@@ -475,7 +475,7 @@ export default function mount(root, meta) {
     const N = Math.abs(model.pd.efl) / model.lens.epd, nuc = 1 / (587.56e-6 * N);
     const dl = (nu) => mtfDiffraction(Math.min(1, nu / nuc));
     plot(ctx, w, hh, {
-      title: `MTF across the field at the current image plane (588 nm, f/${N.toFixed(1)}): sagittal solid, tangential dashed`,
+      title: t('MTF across the field at the current image plane (588 nm, f/{N}): sagittal solid, tangential dashed', { N: N.toFixed(1) }),
       x: { min: 0, max: hmax, label: 'image height (mm)' }, y: { min: 0, max: 1, label: 'MTF' },
       series: [
         { data: rows.map((r) => [r.h, r.S[0]]), color: '#6ad7ff', width: 2.4, label: '10 lp/mm' },
@@ -591,8 +591,8 @@ export default function mount(root, meta) {
       h('td', {}, numIn(sf.t, (v) => editSurface(i, 't', v), { 'aria-label': `Surface ${i + 1} thickness` })),
       h('td', { style: { whiteSpace: 'nowrap' } }, typeof sf.glass === 'string'
         ? (() => { const opts = GLASS_OPTIONS.includes(sf.glass) ? GLASS_OPTIONS : [...GLASS_OPTIONS, sf.glass]; const sel = h('select.rx-glass', { 'aria-label': `Surface ${i + 1} glass` }, ...opts.map((g) => h('option', { value: g, selected: g === sf.glass }, g))); sel.addEventListener('change', () => editSurface(i, 'glass', sel.value)); return sel; })()
-        : h('span', { title: `model glass n_d = ${sf.glass.nd}, V_d = ${sf.glass.vd}` }, sf.glass.name + ' (model)'),
-        sf.glass === 'mirror' ? null : h('button.btn.rx-map', { type: 'button', title: t('Choose from the glass map (SCHOTT, OHARA, CDGM)'), 'aria-label': t('Surface {n}: choose glass from the glass map', { n: i + 1 }), onclick: () => openGlassMap({ current: typeof sf.glass === 'string' ? sf.glass : null, title: `Glass after surface ${i + 1}`, onPick: (g) => editSurface(i, 'glass', g) }) }, t('map'))),
+        : h('span', { title: t('model glass n_d = {nd}, V_d = {vd}', { nd: sf.glass.nd, vd: sf.glass.vd }) }, t('{g} (model)', { g: sf.glass.name })),
+        sf.glass === 'mirror' ? null : h('button.btn.rx-map', { type: 'button', title: t('Choose from the glass map (SCHOTT, OHARA, CDGM)'), 'aria-label': t('Surface {n}: choose glass from the glass map', { n: i + 1 }), onclick: () => openGlassMap({ current: typeof sf.glass === 'string' ? sf.glass : null, title: t('Glass after surface {n}', { n: i + 1 }), onPick: (g) => editSurface(i, 'glass', g) }) }, t('map'))),
       h('td', {}, numIn(sf.sd || '', (v) => editSurface(i, 'sd', v), { 'aria-label': `Surface ${i + 1} clear semi-diameter`, placeholder: 'auto' })),
       h('td', {}, numIn(sf.k || 0, (v) => editSurface(i, 'k', v), { 'aria-label': `Surface ${i + 1} conic` })),
       h('td', {}, numIn(sf.a ? sf.a[0] : 0, (v) => editSurface(i, 'a4', v), { 'aria-label': `Surface ${i + 1} a4` })),
@@ -665,7 +665,7 @@ export default function mount(root, meta) {
     if (!s || !s.rows.length) return;
     const rows = s.rows, pct = (v) => (100 * v) / s.nominal, mx = Math.max(...rows.flatMap((r) => [pct(r.decenter), pct(r.tilt)]), 0.1) * 1.15;
     const { X, Y } = plot(ctx, w, hh, {
-      title: `Sensitivity per element: one σ of decenter (${tolCtl.state.decenterUm} µm) or tilt (${tolCtl.state.tiltArcmin}′)`,
+      title: t('Sensitivity per element: one σ of decenter ({d} µm) or tilt ({a}′)', { d: tolCtl.state.decenterUm, a: tolCtl.state.tiltArcmin }),
       x: { min: 0, max: rows.length, step: 1, fmt: () => '', label: 'element (surfaces)' }, y: { min: 0, max: mx, label: 'RMS error growth (%)' }, padB: 44,
     });
     ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'center';

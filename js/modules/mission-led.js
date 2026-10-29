@@ -5,6 +5,7 @@ import { plot, logRange, range } from '../lib/plot.js';
 import { MODULES } from '../app.js';
 import { moire } from '../lib/virtual.js';
 import { plan } from '../lib/ledset.js';
+import { t } from '../lib/i18n.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const pct = (x) => (x * 100 < 0.1 ? '< 0.1 %' : (x * 100).toPrecision(2) + ' %');
@@ -75,13 +76,13 @@ export default function mount(root, meta) {
   // brightness of each row of the frame: mains flicker and the LED fixture's PWM
   function drawBands(ctx, w, hh) {
     if (!P) return;
-    const { st, t, fl } = P, rows = range(0, 1, 300), T = st.readout / 1000;
+    const { st, t: te, fl } = P, rows = range(0, 1, 300), T = st.readout / 1000;
     const span = Math.max(0.04, 0.7 * Math.max(P.mainsBands, P.fixtureBands));
-    const mainsRow = (y) => { const t0 = y * T; let a = 0; const n = 60; for (let k = 0; k < n; k++) a += 1 + st.depth * Math.cos(2 * Math.PI * fl * (t0 + ((k + 0.5) / n) * t)); return a / n; };
-    const pwmRow = (y) => { const t0 = y * T, Tp = 1 / st.pwm; let a = 0; const n = 400; for (let k = 0; k < n; k++) { const ph = (((t0 + ((k + 0.5) / n) * t) / Tp) % 1); a += ph < st.duty ? 1 : 0; } return a / n / st.duty; };
+    const mainsRow = (y) => { const t0 = y * T; let a = 0; const n = 60; for (let k = 0; k < n; k++) a += 1 + st.depth * Math.cos(2 * Math.PI * fl * (t0 + ((k + 0.5) / n) * te)); return a / n; };
+    const pwmRow = (y) => { const t0 = y * T, Tp = 1 / st.pwm; let a = 0; const n = 400; for (let k = 0; k < n; k++) { const ph = (((t0 + ((k + 0.5) / n) * te) / Tp) % 1); a += ph < st.duty ? 1 : 0; } return a / n / st.duty; };
     plot(ctx, w, hh, {
       title: 'Brightness down the frame (top to bottom)', x: { min: 0, max: 1, label: 'position in the frame' }, y: { min: 1 - span, max: 1 + span, label: 'relative brightness' },
-      series: [{ data: rows.map((y) => [y, mainsRow(y)]), color: '#ffb547', label: `mains ${fl} Hz` }, { data: rows.map((y) => [y, pwmRow(y)]), color: '#6ad7ff', label: `LED PWM ${Math.round(st.pwm)} Hz` }],
+      series: [{ data: rows.map((y) => [y, mainsRow(y)]), color: '#ffb547', label: t('mains {f} Hz', { f: fl }) }, { data: rows.map((y) => [y, pwmRow(y)]), color: '#6ad7ff', label: t('LED PWM {f} Hz', { f: Math.round(st.pwm) }) }],
       legend: true, legendX: w - 170, legendY: 34,
     });
   }

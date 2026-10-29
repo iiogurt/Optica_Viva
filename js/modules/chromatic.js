@@ -5,6 +5,7 @@ import { wavelengthCSS, spectralBasis, linspace, oetf } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
 import { fft2d } from '../lib/fft.js';
 import { besselJ1 } from '../lib/pupil.js';
+import { t } from '../lib/i18n.js';
 
 const GL = Object.keys(GLASSES).filter((g) => g !== 'SK16');
 const DOUBLETS = { 'N-BK7/F2': ['N-BK7', 'F2'], 'N-FK51A/N-SF5': ['N-FK51A', 'N-SF5'], 'CaF2/N-BAK4': ['CaF2', 'N-BAK4'] };
@@ -208,9 +209,9 @@ export default function mount(root, meta) {
       title: 'Focal shift Δf(λ) of thin-lens systems, f = 100 mm', x: { min: 410, max: 700, label: 'wavelength (nm)' }, y: { min: lo - 20, max: hi + 20, label: 'Δf (µm)' },
       bands: [{ y: [-dof, dof], color: 'rgba(107,227,164,0.12)' }],
       series: [
-        { data: S.curves.singlet, color: '#ff8a5a', width: 2, label: `singlet ${S.st.glass}` },
-        { data: S.curves.achromat, color: '#6ad7ff', width: 2, label: `achromat ${S.st.pair}` },
-        { data: S.curves.apo, color: '#c18cff', width: 2, label: `apochromat ${S.st.triple}` },
+        { data: S.curves.singlet, color: '#ff8a5a', width: 2, label: t('singlet {g}', { g: S.st.glass }) },
+        { data: S.curves.achromat, color: '#6ad7ff', width: 2, label: t('achromat {g}', { g: S.st.pair }) },
+        { data: S.curves.apo, color: '#c18cff', width: 2, label: t('apochromat {g}', { g: S.st.triple }) },
       ],
       vlines: [['g', LINES.g], ['F', LINES.F], ['d', LINES.d], ['C', LINES.C]].map(([n, l]) => ({ x: l, color: wavelengthCSS(l, 0.5), label: n })),
       legend: true, legendX: w - 260, legendY: hh - 100,
@@ -270,7 +271,7 @@ export default function mount(root, meta) {
   function drawAbbe(ctx, w, hh) {
     const pts = GL.map((g) => [abbe(g), index(g, LINES.d), g]);
     const { X, Y } = plot(ctx, w, hh, {
-      title: `Abbe diagram · ${glassTable().filter((g) => g.maker !== 'core').length} glasses`, x: { min: 100, max: 15, label: 'Abbe number V_d' }, y: { min: 1.4, max: 2.06, label: 'n_d' },
+      title: t('Abbe diagram · {n} glasses', { n: glassTable().filter((g) => g.maker !== 'core').length }), x: { min: 100, max: 15, label: 'Abbe number V_d' }, y: { min: 1.4, max: 2.06, label: 'n_d' },
       bands: [{ x: [100, 50], color: 'rgba(106,215,255,0.04)' }],
       vlines: [{ x: 50, color: 'rgba(255,255,255,0.25)', label: 'crowns │ flints' }],
     });

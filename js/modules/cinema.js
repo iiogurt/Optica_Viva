@@ -5,6 +5,7 @@ import { oetf } from '../lib/color.js';
 import { COATINGS } from '../lib/thinfilm.js';
 import { uniform } from '../lib/random.js';
 import { anamorphicAspect, streakColour, angleOfView, breathing, surfaceReflectance, transmission, tStop } from '../lib/cinema.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const D2R = Math.PI / 180;
 
@@ -103,7 +104,7 @@ export default function mount(root, meta) {
   const bplot = stage({ aspect: 1.5, label: '', draw: drawBPlot, cls: 'plain', minH: 220 });
   sec2.append(lab([h('div.grid-2', {}, frames.el, h('div.card', { style: { padding: '6px' } }, bplot.el))], [h('div.card', {}, bctl.el), h('div.card', {}, bro)]));
   root.append(sec2);
-  const S35 = 24.89, SCHEMES = [['unit', 'Unit focusing (whole lens moves)', '#ffb547'], ['rear', 'Internal focus (rear group moves)', '#6ad7ff'], ['ideal', 'Breathing-compensated cinema lens', '#6be3a4']];
+  const S35 = 24.89, SCHEMES = [['unit', N_('Unit focusing (whole lens moves)'), '#ffb547'], ['rear', N_('Internal focus (rear group moves)'), '#6ad7ff'], ['ideal', N_('Breathing-compensated cinema lens'), '#6be3a4']];
   function updB() {
     const u = bctl.state.umin * 1000;
     bro.replaceChildren(readouts(SCHEMES.map(([k, n]) => [n, `${(100 * breathing(k, F, u, S35)).toFixed(1)} % angle of view`])));
@@ -151,7 +152,7 @@ export default function mount(root, meta) {
   function drawT(ctx, w, hh) {
     const ks = Array.from({ length: 20 }, (_, i) => 2 + 2 * i), st = tctl.state, cols = { none: '#ff6b6b', mgf2: '#ffb547', qhq: '#6ad7ff', graded: '#6be3a4' };
     plot(ctx, w, hh, {
-      title: `T-stop of an f/${st.N.toPrecision(2)} lens vs number of air–glass surfaces`, x: { min: 2, max: 40, label: 'air–glass surfaces' }, y: { min: st.N * 0.95, max: st.N * 2.2, label: 'T-stop' },
+      title: t('T-stop of an f/{N} lens vs number of air–glass surfaces', { N: st.N.toPrecision(2) }), x: { min: 2, max: 40, label: 'air–glass surfaces' }, y: { min: st.N * 0.95, max: st.N * 2.2, label: 'T-stop' },
       series: Object.keys(COATINGS).map((c) => ({ data: ks.map((k) => [k, tStop(st.N, transmission(c, k))]), color: cols[c] || '#fff', width: c === st.coat ? 2.4 : 1.3, label: COATINGS[c].name })),
       vlines: [{ x: st.k, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: 70, legendY: 34,
     });
