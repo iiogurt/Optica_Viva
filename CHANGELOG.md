@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.26.0] - 2026-10-29
+
 ### Changed
 - The names and one-line descriptions of the remaining catalogue groups (5–13, 150 entries) are translated, so the whole catalogue apart from its longer explanations and worked examples now changes language; 288 new strings in German, French and Spanish.
 - The catalogue of phenomena is translated in part: its frame (search, filters, navigator, counts, buttons), the 13 group titles and introductions, and the names and one-line descriptions of the first four groups (79 entries); search matches both the English and the translated text. 201 new strings in German, French and Spanish. The longer explanations and worked examples stay English, like the laboratories’ explanations.
@@ -767,7 +769,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.25.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.26.0...HEAD
+[1.26.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.25.0...v1.26.0
 [1.25.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.24.0...v1.25.0
 [1.24.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.23.0...v1.24.0
 [1.23.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.22.0...v1.23.0
