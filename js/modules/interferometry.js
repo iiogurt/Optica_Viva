@@ -42,7 +42,7 @@ export default function mount(root, meta) {
       ['First null of the visibility', B0.toFixed(2) + ' m'],
       ['A single telescope resolves (1.22 λ/D) with D = B', ((1.22 * lam / st.B) / MAS).toFixed(1) + ' mas'],
     ]));
-    calc.say(`The fringes have a visibility of <strong>${V.toFixed(2)}</strong> (1 would be a point source); they first vanish at a baseline of <strong>${B0.toFixed(2)} m</strong>.`);
+    calc.say(t('The fringes have a visibility of <strong>{V}</strong> (1 would be a point source); they first vanish at a baseline of <strong>{B0} m</strong>.', { V: V.toFixed(2), B0: B0.toFixed(2) }));
     calc.set(String.raw`\begin{aligned}
     V(B) &= \left|\frac{2J_1(\pi\theta B/\lambda)}{\pi\theta B/\lambda}\right| = ${texNum(V, 3)}\\
     B_0 &= 1.22\,\frac{\lambda}{\theta} = ${texNum(B0, 3)}\ \text{m}

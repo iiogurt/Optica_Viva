@@ -54,7 +54,7 @@ export default function mount(root, meta) {
       ['Dome: focus the lens at', (dome.fromPupil * 100).toFixed(0) + ' cm (infinity → ' + (dome.atInfinity * 100).toFixed(0) + ' cm)'],
       ['Strobe light enters the view at', (bs * 100).toFixed(0) + ' cm in front of the port'],
     ]));
-    calc.say(`After ${(st.z + st.r).toFixed(1)} m of ${WATERS[st.water][0].toLowerCase()}, <strong>${(bands.red * 100).toPrecision(2)} %</strong> of the red light is left against ${(bands.blue * 100).toPrecision(2)} % of the blue. A strobe's light travels only ${(2 * st.r).toFixed(1)} m. Behind a dome, the lens must focus at <strong>${(dome.fromPupil * 100).toFixed(0)} cm</strong> to see a subject ${st.r} m away.`);
+    calc.say(t('{water}: after {v1} m, <strong>{v3} %</strong> of the red light is left against {v4} % of the blue. A strobe\'s light travels only {v5} m. Behind a dome, the lens must focus at <strong>{v6} cm</strong> to see a subject {r} m away.', { v1: (st.z + st.r).toFixed(1), water: t(WATERS[st.water][0]), v3: (bands.red * 100).toPrecision(2), v4: (bands.blue * 100).toPrecision(2), v5: (2 * st.r).toFixed(1), v6: (dome.fromPupil * 100).toFixed(0), r: st.r }));
     calc.set(String.raw`\begin{aligned}
     T(\lambda) &= e^{-a(\lambda)\,(z + r)}\\
     a(650) &= ${texNum(absorption(650, ag), 3)}\ \text{m}^{-1}\\

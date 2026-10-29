@@ -155,10 +155,10 @@ export default function mount(root, meta) {
         calc.say(`The points are straightened by k = <strong>${d.k.toFixed(3)}</strong>: <strong>${Math.abs(d.corner).toFixed(1)} % ${d.k < 0 ? 'barrel' : 'pincushion'} distortion</strong> at the corner. The line's deviation drops from ${d.before.toFixed(1)} to ${d.after.toFixed(2)} pixels.`);
       } else {
         ro.replaceChildren(readouts([['Points', `${pts.length} (click at least 4 along one straight line)`]]));
-        calc.say('Click at least four points along a line that is straight in reality, preferably near the edge of the frame.');
+        calc.say(t('Click at least four points along a line that is straight in reality, preferably near the edge of the frame.'));
       }
     }
-    if (!R && st.test === 'sharp') { ro.replaceChildren(readouts([['Region', 'drag a box across a slightly tilted edge']])); calc.say('Drag a box across a dark-to-bright edge tilted by a few degrees.'); }
+    if (!R && st.test === 'sharp') { ro.replaceChildren(readouts([['Region', 'drag a box across a slightly tilted edge']])); calc.say(t('Drag a box across a dark-to-bright edge tilted by a few degrees.')); }
     calc.set(st.test === 'sharp' ? String.raw`\mathrm{MTF}(f) = \left|\frac{\mathcal{F}\{w\,\mathrm{LSF}\}(f)}{\mathcal{F}\{w\,\mathrm{LSF}\}(0)}\right|` : st.test === 'vig' ? String.raw`\Delta = \log_2\frac{E_\text{corner}}{E_\text{centre}}` : String.raw`x_u = c + \frac{x_d - c}{1 + k\,r_d^2}`);
     view.redraw(); chart.redraw();
   }

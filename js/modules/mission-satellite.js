@@ -60,7 +60,7 @@ export default function mount(root, meta) {
       why: `${fmt(r.pixelsAcross, 3)} pixels across the swath, ${fmt(r.lineRate, 3)} lines per second, 11 bits each: ${(r.dataRate * 60 / 8e9).toFixed(1)} GB per minute of imaging. Radio downlinks carry roughly 0.1–3 Gbit/s, so images are compressed and stored until the next ground-station pass.`,
       tex: String.raw`R = n_\text{px}\cdot\frac{v_g}{\text{GSD}}\cdot b`,
     });
-    calc.say(`For <strong>${len(st.gsd)} pixels from ${st.H} km</strong>: a ${len(r.D)} mirror, ${len(r.f)} focal length, ${r.N} TDI stages for SNR ${r.snr.toFixed(0)}, and ${(r.dataRate / 1e9).toPrecision(3)} Gbit/s of raw data over a ${st.swath} km swath.`);
+    calc.say(t('For <strong>{v1} pixels from {H} km</strong>: a {v3} mirror, {v4} focal length, {N} TDI stages for SNR {snr}, and {v7} Gbit/s of raw data over a {swath} km swath.', { v1: len(st.gsd), H: st.H, v3: len(r.D), v4: len(r.f), N: r.N, snr: r.snr.toFixed(0), v7: (r.dataRate / 1e9).toPrecision(3), swath: st.swath }));
     calc.set(String.raw`\begin{aligned}
     f &= ${texNum(r.f, 3)}\ \text{m},\quad D = ${texNum(r.D, 3)}\ \text{m},\quad N = f/D = ${texNum(r.f / r.D, 3)}\\
     \text{lines} &= ${texNum(r.lineRate, 3)}\ \text{s}^{-1}

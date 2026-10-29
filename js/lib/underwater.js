@@ -4,9 +4,10 @@
 import { LAMBDA, xyz, daylight, adapt, xyzToSRGB, D65_XYZ, planck } from './colorsci.js';
 import { TCS } from './colordata.js';
 import { waterAbsorption, cdomAbsorption } from './polar.js';
+import { N_ } from './i18n.js';
 
 // Water types: dissolved organic matter absorption at 440 nm (m⁻¹).
-export const WATERS = { ocean: ['Clear ocean', 0], coastal: ['Coastal water', 0.3], lake: ['Green lake', 1.2] };
+export const WATERS = { ocean: [N_('Clear ocean'), 0], coastal: [N_('Coastal water'), 0.3], lake: [N_('Green lake'), 1.2] };
 export const absorption = (lam, ag) => waterAbsorption(Math.min(700, Math.max(400, lam))) + cdomAbsorption(lam, ag) + (lam > 700 ? 2 : 0);
 // Refractive index of water (Cauchy fit to the F, D and C lines: 1.3373, 1.3331, 1.3314).
 export const nWater = (lam) => 1.3242 + 3090 / (lam * lam);

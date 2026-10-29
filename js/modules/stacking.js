@@ -49,7 +49,7 @@ export default function mount(root, meta) {
       ['Read noise costs', ((1 - snr / ideal) * 100).toFixed(1) + ' % of the SNR'],
       ['Sky-limited from (σ_r² = 0.1 F_sky t)', fmtT(tsky)],
     ]));
-    calc.say(`${N} subs of ${fmtT(st.t)} give the galaxy's outskirts a signal-to-noise ratio of <strong>${snr.toFixed(1)}</strong> per pixel (one sub: ${snr1.toFixed(2)}). Subs longer than <strong>${fmtT(tsky)}</strong> are sky-limited, so read noise hardly matters.`);
+    calc.say(t('{N} subs of {v2} give the galaxy\'s outskirts a signal-to-noise ratio of <strong>{snr}</strong> per pixel (one sub: {snr1}). Subs longer than <strong>{v5}</strong> are sky-limited, so read noise hardly matters.', { N, v2: fmtT(st.t), snr: snr.toFixed(1), snr1: snr1.toFixed(2), v5: fmtT(tsky) }));
     calc.set(String.raw`\begin{aligned}
     \mathrm{SNR} &= \frac{F_o N t}{\sqrt{N\left[(F_o+F_s+F_d)\,t+\sigma_r^2\right]}} = ${texNum(snr, 3)}\\
     t_\text{sky} &= \frac{\sigma_r^2}{0.1\,F_s} = ${texNum(tsky, 3)}\ \text{s}

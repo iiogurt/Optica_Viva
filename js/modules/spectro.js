@@ -51,7 +51,7 @@ export default function mount(root, meta) {
       rows.push(['Grooves illuminated N', N.toFixed(0)], ['Blaze angle (Littrow)', (thB / D2R).toFixed(2) + '°'], ['Diffraction angle β at λ', Number.isFinite(beta) ? (beta / D2R).toFixed(2) + '°' : 'evanescent'],
         ['Angular dispersion', Number.isFinite(beta) ? (angularDispersion(m, st.rho, beta) / D2R * 3600).toFixed(0) + '″/nm' : '—'], ['Blaze efficiency at λ (scalar)', (100 * blazeEfficiency(m, lc, st.rho, alpha, thB)).toFixed(0) + ' %'],
         ['Free spectral range λ/m', (lc / m).toFixed(0) + ' nm']);
-      calc.say(`With ${fmt(N, 4)} grooves in order ${m}, the resolving power is <strong>R = ${fmt(R, 4)}</strong>: at ${lc.toFixed(1)} nm it separates lines <strong>${(lc / R).toFixed(3)} nm</strong> apart.`);
+      calc.say(t('With {v1} grooves in order {m}, the resolving power is <strong>R = {v3}</strong>: at {lc} nm it separates lines <strong>{v5} nm</strong> apart.', { v1: fmt(N, 4), m, v3: fmt(R, 4), lc: lc.toFixed(1), v5: (lc / R).toFixed(3) }));
       calc.set(String.raw`\begin{aligned}
       m\lambda &= d(\sin\alpha + \sin\beta),\quad d = ${texNum(1e6 / st.rho, 4)}\ \text{nm}\\
       R &= mN = ${m}\times${texNum(N, 4)} = ${texNum(R, 4)}\\
@@ -61,7 +61,7 @@ export default function mount(root, meta) {
       const dn = dndl(st.glass, lc);
       rows.push(['n and dn/dλ at λ', `${index(st.glass, lc).toFixed(4)}, ${(dn * 1e3).toFixed(4)} /µm`], ['Deviation at minimum', (prismDeviation(st.glass, lc, APEX) / D2R).toFixed(2) + '°'],
         ['Angular dispersion', ((2 * Math.sin(APEX / 2) / Math.sqrt(1 - (index(st.glass, lc) * Math.sin(APEX / 2)) ** 2)) * Math.abs(dn) / D2R * 3600).toFixed(1) + '″/nm']);
-      calc.say(`This ${st.glass} prism with a ${st.base} mm base reaches <strong>R = ${fmt(R, 4)}</strong>: at ${lc.toFixed(1)} nm it separates lines <strong>${(lc / R).toFixed(3)} nm</strong> apart, and it spreads blue light far more than red.`);
+      calc.say(t('This {glass} prism with a {base} mm base reaches <strong>R = {v3}</strong>: at {lc} nm it separates lines <strong>{v5} nm</strong> apart, and it spreads blue light far more than red.', { glass: st.glass, base: st.base, v3: fmt(R, 4), lc: lc.toFixed(1), v5: (lc / R).toFixed(3) }));
       calc.set(String.raw`\begin{aligned}
       R &= b\left|\frac{dn}{d\lambda}\right| = ${texNum(st.base, 3)}\ \text{mm}\times${texNum(Math.abs(dn) * 1e6, 4)}\ \text{mm}^{-1} = ${texNum(R, 4)}\\
       \delta\lambda &= \lambda/R = ${texNum(lc / R, 3)}\ \text{nm}

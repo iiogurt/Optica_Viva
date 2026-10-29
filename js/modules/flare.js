@@ -186,7 +186,7 @@ export default function mount(root, meta) {
       ['Working f-number', 'f/' + par.fnum.toFixed(1)],
     ]));
     const Rm = Rsurf[0][3];
-    calc.say(`This lens has ${nGlassAir} glass–air surfaces, which allow ${(nGlassAir * (nGlassAir - 1)) / 2} two-reflection ghosts. Together they carry <strong>${(totalGhost * 100).toFixed(2)} %</strong> of the light, and the lens transmits ${(T * 100).toFixed(0)} %.`);
+    calc.say(t('This lens has {nGlassAir} glass–air surfaces, which allow {v2} two-reflection ghosts. Together they carry <strong>{v3} %</strong> of the light, and the lens transmits {v4} %.', { nGlassAir, v2: (nGlassAir * (nGlassAir - 1)) / 2, v3: (totalGhost * 100).toFixed(2), v4: (T * 100).toFixed(0) }));
     calc.set(String.raw`\begin{aligned}
     R_\perp &= \left(\tfrac{n_1-n_2}{n_1+n_2}\right)^2\\
     R_1(550) &= ${texNum(Rm * 100, 3)}\,\%\\

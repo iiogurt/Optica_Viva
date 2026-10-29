@@ -71,7 +71,7 @@ export default function mount(root, meta) {
       ['Diffraction-limited field (RMS < λ/14)', dlField(st, lam) ],
       ['Coma-free point', S.comaZero ? `(${(S.comaZero[0] * THREF / ARCMIN).toFixed(1)}′, ${(S.comaZero[1] * THREF / ARCMIN).toFixed(1)}′)` : 'none: coma is the same everywhere'],
     ]));
-    calc.say(`Stars are diffraction-limited (RMS error below λ/14) over a field of <strong>${dlField(st, lam)}</strong>; the diffraction limit itself is ${lamD.toFixed(1)} mas.`);
+    calc.say(t('Stars are diffraction-limited (RMS error below λ/14) over a field of <strong>{v1}</strong>; the diffraction limit itself is {lamD} mas.', { v1: dlField(st, lam), lamD: lamD.toFixed(1) }));
     calc.set(String.raw`\begin{aligned}
     W_{040} &= \tfrac18 S_I = ${texNum(W('SI', 8) * 1e9, 3)}\ \text{nm}\\
     W_{131} &= \tfrac12 S_{II}\,H = ${texNum(W('SII', 2) * ub * 1e9, 3)}\ \text{nm}\\
@@ -93,7 +93,7 @@ export default function mount(root, meta) {
     const sd = S.sd;
     let lo = 0;
     for (let a = 0.05; a <= 60; a += 0.05) { if (rmsPoly(fieldPoly(sd, [(a * ARCMIN) / THREF, 0], S.mis, st.curved), S.T.eps, 12, 24) > lam / 14) break; lo = a; }
-    return lo >= 60 ? '> 60′' : lo ? `±${lo.toFixed(2)}′` : 'none';
+    return lo >= 60 ? '> 60′' : lo ? `±${lo.toFixed(2)}′` : t('none');
   }
   function drawMosaic(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
