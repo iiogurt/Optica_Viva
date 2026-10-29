@@ -44,7 +44,7 @@ export default function mount(root, meta) {
         ['Selwyn constant σ_D √A', r.G.toFixed(3) + ' µm'],
         ['Detective quantum efficiency', (100 * r.dqe).toFixed(2) + ' %'],
       ]));
-      calc.say(`At ISO ${Math.round(st.iso)} the median grain is <strong>${(2 * f.r).toFixed(2)} µm</strong> across, and the film puts only <strong>${(100 * r.dqe).toFixed(1)} %</strong> of the photons to use (its detective quantum efficiency); a modern sensor reaches over 50 %.`);
+      calc.say(t('At ISO {v1} the median grain is <strong>{v2} µm</strong> across, and the film puts only <strong>{v3} %</strong> of the photons to use (its detective quantum efficiency); a modern sensor reaches over 50 %.', { v1: Math.round(st.iso), v2: (2 * f.r).toFixed(2), v3: (100 * r.dqe).toFixed(1) }));
       calc.set(String.raw`\begin{aligned}
       D &= 0.434\,L\,n\,\langle p\,\pi r^2\rangle + D_\text{fog}\\
       &= ${texNum(r.Dmid, 3)}\\

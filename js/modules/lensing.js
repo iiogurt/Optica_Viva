@@ -91,7 +91,7 @@ export default function mount(root, meta) {
       ['SIS velocity dispersion σ_v', sigma.toFixed(0) + ' km/s'],
       ['Total magnification (area ratio)', '…'],
     ]));
-    calc.say(`An Einstein radius of ${st.b}″ at these distances encloses about <strong>${fmt(M, 2)} solar masses</strong>, within a radius of ${RE.toFixed(1)} kpc at the lens.`);
+    calc.say(t('An Einstein radius of {b}″ at these distances encloses about <strong>{v2} solar masses</strong>, within a radius of {RE} kpc at the lens.', { b: st.b, v2: fmt(M, 2), RE: RE.toFixed(1) }));
     calc.set(String.raw`\begin{aligned}
     \boldsymbol\beta &= \boldsymbol\theta - \boldsymbol\alpha(\boldsymbol\theta)\\
     \theta_E &= \sqrt{\frac{4GM}{c^2}\frac{D_{ls}}{D_lD_s}} \Rightarrow M = ${texNum(M, 3)}\,M_\odot\\

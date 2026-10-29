@@ -65,7 +65,7 @@ export default function mount(root, meta) {
       why: `Detail at ${st.mu.toFixed(1)} mag/″² reaches a signal-to-noise ratio of 5, enough to show, after ${r.frames} shots of ${fmtT(r.t)}. Under a pristine Bortle 1 sky ${r.frames1} would do.${r.frames > 400 ? ' That many frames suggests a star tracker, which allows minutes per shot.' : ''}`,
       tex: String.raw`N = \left(\frac{5}{\mathrm{SNR}_1}\right)^2,\quad \mathrm{SNR}_1 = ${texNum(r.s1, 3)}`,
     });
-    calc.say(`<strong>f/${st.N.toPrecision(2)} · ${fmtT(r.t)} · ISO ${r.iso} · ${r.frames} frames</strong> (${fmtT(r.total)}). Each star trails ${r.trailPx.toFixed(1)} pixels per shot; the stack shows detail down to ${st.mu.toFixed(1)} mag/″² under a Bortle ${st.bortle} sky.`);
+    calc.say(t('<strong>f/{N} · {v2} · ISO {iso} · {frames} frames</strong> ({v5}). Each star trails {trailPx} pixels per shot; the stack shows detail down to {mu} mag/″² under a Bortle {bortle} sky.', { N: st.N.toPrecision(2), v2: fmtT(r.t), iso: r.iso, frames: r.frames, v5: fmtT(r.total), trailPx: r.trailPx.toFixed(1), mu: st.mu.toFixed(1), bortle: st.bortle }));
     calc.set(String.raw`\begin{aligned}
     p &= ${texNum(r.pitch, 3)}\ \mu\text{m}\ (${texNum(r.p, 3)}''/\text{px})\\
     F_s &= ${texNum(r.Fs, 3)}\ e^-/\text{s}\ \text{(sky)}\\

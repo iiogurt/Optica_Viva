@@ -5,7 +5,7 @@ import { LENSES, autoSemiDiameters, stopIndex, hasMirrors } from '../lib/raytrac
 import { linspace } from '../lib/color.js';
 import { latest } from '../lib/compute.js';
 import { view3d } from '../lib/gl3d.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const K = 112; // kernel resolution (px)
 const PALETTE = [[255, 196, 120], [255, 150, 90], [140, 200, 255], [255, 230, 190], [190, 160, 255], [255, 255, 255]];
@@ -191,7 +191,7 @@ export default function mount(root, meta) {
     const f = r.efl, N = r.fnum, s = st.focus, cThin = (f * f) / (N * (s - f));
     note.textContent = t('Traced: 18 kernels × {n} wavelengths through the {lens} in {s} s. Background lights at infinity, foreground lights at {near} m.', { n: LAMS.length, lens: lens.name.split(' (')[0], s: (ms / 1000).toFixed(1), near: (s / 2000).toFixed(2) });
     const rc = (k) => k.st.rim / k.st.centre;
-    const look = (q) => (q > 1.08 ? 'bright rim' : q < 0.92 ? 'soft edge, bright centre' : 'nearly uniform');
+    const look = (q) => t(q > 1.08 ? N_('bright rim') : q < 0.92 ? N_('soft edge, bright centre') : N_('nearly uniform'));
     ro.replaceChildren(readouts([
       ['Lens', lens.name.split(' (')[0]],
       ['Working f-number', 'f/' + N.toFixed(1)],
@@ -202,7 +202,7 @@ export default function mount(root, meta) {
       ['Foreground rim / centre', rc(f0).toFixed(2) + ' (' + look(rc(f0)) + ')'],
       ['Corner kernel flux', ((bc.flux / b0.flux) * 100).toFixed(0) + ' % of centre'],
     ]));
-    calc.say(`A point at infinity behind the subject becomes a disc <strong>${b0.st.Dmm.toFixed(2)} mm</strong> wide on the sensor (the thin-lens estimate gives ${cThin.toFixed(2)} mm), and its rim is ${rc(b0).toFixed(2)} times as bright as its centre: ${look(rc(b0))}.`);
+    calc.say(t('A point at infinity behind the subject becomes a disc <strong>{Dmm} mm</strong> wide on the sensor (the thin-lens estimate gives {cThin} mm), and its rim is {rc} times as bright as its centre: {look}.', { Dmm: b0.st.Dmm.toFixed(2), cThin: cThin.toFixed(2), rc: rc(b0).toFixed(2), look: look(rc(b0)) }));
     calc.set(String.raw`\begin{aligned}
     c &= \frac{f^2}{N(s-f)} = \frac{${texNum(f, 3)}^2}{${texNum(N, 2)}\,(${texNum(s, 4)} - ${texNum(f, 3)})} = ${texNum(cThin, 3)}\ \text{mm}\\
     \Delta z &= z_s - z_\infty = ${texNum(r.zs - r.zInf, 3)}\ \text{mm}\\

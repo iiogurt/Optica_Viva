@@ -53,7 +53,7 @@ export default function mount(root, meta) {
       M = { st, r };
       setTitle(0, 'Pixels on the person', 'sampling'); setTitle(1, 'Reach of each level', 'sensor'); setTitle(2, 'Motion blur', 'shake'); setTitle(3, 'Rolling shutter', 'motion');
       steps[0].set({
-        answer: `${r.ppm.toFixed(0)} px/m <small>(${r.level})</small>`,
+        answer: `${r.ppm.toFixed(0)} px/m <small>(${t(r.level)})</small>`,
         why: `At ${st.d} m the view is ${r.width.toFixed(1)} m wide, so each metre gets ${r.ppm.toFixed(0)} pixels and a face (16 cm wide) about ${(0.16 * r.ppm).toFixed(0)}. IEC 62676-4 asks for 25, 62.5, 125 and 250 px/m to detect, observe, recognise and identify a person.`,
         tex: String.raw`\rho = \frac{n_x f}{w\,d} = ${texNum(r.ppm, 3)}\ \text{px/m}`,
       });
@@ -72,7 +72,7 @@ export default function mount(root, meta) {
         why: `A 20 ms rolling readout lets a walking person move ${(st.v * 0.02 * 100).toFixed(0)} cm between the top and bottom rows, ${r.skew.toFixed(0)} pixels here: upright edges lean slightly.`,
         tex: String.raw`s = v\,T_\text{read}\,\rho`,
       });
-      calc.say(`At ${st.d} m this camera gives <strong>${r.ppm.toFixed(0)} pixels per metre</strong> (${r.level.toLowerCase()}); it can recognise a person up to <strong>${r.maxDist[2][1].toFixed(0)} m</strong> and identify one up to ${r.maxDist[3][1].toFixed(0)} m.`);
+      calc.say(t('At {d} m this camera gives <strong>{ppm} pixels per metre</strong> ({level}); it can recognise a person up to <strong>{rec} m</strong> and identify one up to {ident} m.', { d: st.d, ppm: r.ppm.toFixed(0), level: t(r.level), rec: r.maxDist[2][1].toFixed(0), ident: r.maxDist[3][1].toFixed(0) }));
       calc.set(String.raw`W = \frac{w\,d}{f} = ${texNum(r.width, 3)}\ \text{m},\quad \rho = \frac{n_x}{W}`);
     } else {
       const p = 2.4e-6, r = drone({ A: st.A, p, f: st.df / 1000, sw: 13.2e-3, sh: 8.8e-3, v: st.dv, overlap: st.overlap, t: 1 / st.dt, readout: st.shutter === 'rolling' ? 0.03 : 0 });

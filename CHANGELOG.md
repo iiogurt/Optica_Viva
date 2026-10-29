@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Changed
+- The first live-calculation sentences are translated (19 laboratories and missions whose sentence has no conditional parts, among them bokeh, flare, film, interferometry, lensing, lucky imaging, spectroscopy, stacking, starshade and underwater), together with the names they quote (the surveillance levels, water types, bokeh character); 30 new strings in German, French and Spanish.
 - Text drawn on the 2-D canvases (diagram labels, image captions, scale notes such as “top view: light, subject, wall”, “working distance {wd} mm”, “PSF log₁₀ (4 decades) …”) goes through the translator, with values as placeholders; 100 new strings in German, French and Spanish.
 - The labels in the 3-D views are translated: scene builders give each label its English text with the values as placeholders (`{ text: 'Lyot plane: stop at {p} % D', vars }`), `gl3d.js` translates it when drawing (the builders run in workers without the dictionary), and the string extractor collects label texts, so the i18n test covers them; 74 new strings in German, French and Spanish.
 

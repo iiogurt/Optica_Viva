@@ -45,7 +45,7 @@ export default function mount(root, meta) {
         ['Strehl: lucky selection', r.strehl.lucky.toFixed(3)],
         ['Fried probability of a lucky frame', friedProbability(st.Dr0) < 1 ? (100 * friedProbability(st.Dr0)).toFixed(2) + ' %' : '> 100 % (formula valid for D/r₀ ≥ 3.5)'],
       ]));
-      calc.say(`Keeping the best ${(st.keep * 100).toFixed(st.keep < 0.1 ? 1 : 0)} % of ${st.frames} short exposures gives a Strehl ratio of <strong>${r.strehl.lucky.toFixed(2)}</strong>, against ${r.strehl.tt.toFixed(2)} for re-centring all frames and ${r.strehl.long.toFixed(3)} for one long exposure.`);
+      calc.say(t('Keeping the best {v1} % of {frames} short exposures gives a Strehl ratio of <strong>{lucky}</strong>, against {tt} for re-centring all frames and {long} for one long exposure.', { v1: (st.keep * 100).toFixed(st.keep < 0.1 ? 1 : 0), frames: st.frames, lucky: r.strehl.lucky.toFixed(2), tt: r.strehl.tt.toFixed(2), long: r.strehl.long.toFixed(3) }));
       calc.set(String.raw`\begin{aligned}
       P(\sigma^2_\phi \le 1\,\text{rad}^2) &\approx 5.6\,e^{-0.1557\,(D/r_0)^2}\\
       &= ${texNum(friedProbability(st.Dr0), 3)}\quad(D/r_0 = ${st.Dr0})

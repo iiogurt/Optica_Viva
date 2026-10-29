@@ -1,15 +1,16 @@
 // Mission "Security camera or drone survey": pixels on target against the DORI levels of
 // IEC 62676-4, motion blur and rolling shutter for a security camera; ground sample distance,
 // shutter limit and photo interval for a mapping drone. Pure functions; SI units.
+import { N_ } from './i18n.js';
 
 // Pixel densities on the target (pixels per metre) for detection, observation, recognition and
 // identification of a person (IEC 62676-4:2015).
-export const DORI = [['Detection', 25], ['Observation', 62.5], ['Recognition', 125], ['Identification', 250]];
+export const DORI = [[N_('Detection'), 25], [N_('Observation'), 62.5], [N_('Recognition'), 125], [N_('Identification'), 250]];
 
 // Security camera: horizontal pixels nx, sensor width w and focal length f (m), distance d (m).
 export function security({ nx, w, f, d, v = 1.5, t = 1 / 100, readout = 0.02 }) {
   const width = (d * w) / f, ppm = nx / width;
-  const level = [...DORI].reverse().find(([, q]) => ppm >= q)?.[0] ?? 'below detection';
+  const level = [...DORI].reverse().find(([, q]) => ppm >= q)?.[0] ?? N_('below detection');
   const maxDist = DORI.map(([name, q]) => [name, (nx * f) / (w * q)]);
   return { width, ppm, level, maxDist, blur: v * t * ppm, skew: v * readout * ppm, hfov: 2 * Math.atan(w / (2 * f)) };
 }

@@ -2,6 +2,7 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { burst, portrait } from '../lib/computational.js';
+import { t } from '../lib/i18n.js';
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['photo', 'video'] }));
@@ -42,7 +43,7 @@ export default function mount(root, meta) {
       ['Long exposure smeared by', st.shake.toFixed(2) + ' px'],
       ['Depth map wrong on', P.wrongPct.toFixed(1) + ' % of the pixels'],
     ]));
-    calc.say(`Merging ${st.N} short frames raises the signal-to-noise ratio from <strong>${pr.single.toFixed(1)}</strong> to <strong>${pr.burst.toFixed(1)}</strong>, ${((pr.burst / pr.long) * 100).toFixed(0)} % of what one long exposure would give, but without its ${st.shake.toFixed(1)} px of shake. With a 1/${st.coarse} depth map, ${P.wrongPct.toFixed(1)} % of the portrait is blurred or kept sharp by mistake.`);
+    calc.say(t('Merging {N} short frames raises the signal-to-noise ratio from <strong>{single}</strong> to <strong>{burst}</strong>, {v4} % of what one long exposure would give, but without its {shake} px of shake. With a 1/{coarse} depth map, {wrongPct} % of the portrait is blurred or kept sharp by mistake.', { N: st.N, single: pr.single.toFixed(1), burst: pr.burst.toFixed(1), v4: ((pr.burst / pr.long) * 100).toFixed(0), shake: st.shake.toFixed(1), coarse: st.coarse, wrongPct: P.wrongPct.toFixed(1) }));
     calc.set(String.raw`\begin{aligned}
     \mathrm{SNR}_N &= \frac{N S}{\sqrt{N\,(S + \sigma_r^2)}} = \sqrt{N}\,\mathrm{SNR}_1\\
     \mathrm{SNR}_\text{long} &= \frac{N S}{\sqrt{N S + \sigma_r^2}}

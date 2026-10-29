@@ -66,7 +66,7 @@ export default function mount(root, meta) {
       why: `A ${cm(st.light)} light at ${st.ld.toFixed(1)} m looks ${(r.ang * 180 / Math.PI).toFixed(0)}° wide from the face${r.ang < 0.5 ? '; bring it closer, to about its own diameter, for soft light' : ''}. The background ${st.B.toFixed(1)} m behind gets ${r.fall.toFixed(1)} stops less light than the face.`,
       tex: String.raw`\theta = 2\arctan\frac{S}{2d} = ${texNum(r.ang * 180 / Math.PI, 3)}^\circ`,
     });
-    calc.say(`<strong>${fmm.toFixed(0)} mm · ${st.d.toFixed(1)} m · f/${nRec.toPrecision(2)} · ${cm(st.light)} light at ${st.ld.toFixed(1)} m</strong>. The nose is ${(r.nose * 100).toFixed(0)} % enlarged, ${cm(r.dof)} of depth is sharp at f/${st.N.toPrecision(2)}, and background lights become discs ${(r.bgShare * 100).toFixed(1)} % of the frame wide.`);
+    calc.say(t('<strong>{fmm} mm · {d} m · f/{nRec} · {v4} light at {ld} m</strong>. The nose is {v6} % enlarged, {v7} of depth is sharp at f/{N}, and background lights become discs {v9} % of the frame wide.', { fmm: fmm.toFixed(0), d: st.d.toFixed(1), nRec: nRec.toPrecision(2), v4: cm(st.light), ld: st.ld.toFixed(1), v6: (r.nose * 100).toFixed(0), v7: cm(r.dof), N: st.N.toPrecision(2), v9: (r.bgShare * 100).toFixed(1) }));
     calc.set(String.raw`\begin{aligned}
     c &= ${texNum(r.c * 1e6, 3)}\ \mu\text{m}\ (\text{diagonal}/1500)\\
     \text{near}, \text{far} &= ${texNum(r.near, 4)},\ ${texNum(r.far, 4)}\ \text{m}
