@@ -75,7 +75,7 @@ export default function mount(root, meta) {
       ['Depth (R_p/R★)²', fmt(o.depth * 1e6, 3) + ' ppm = ' + (o.depth * 100).toPrecision(2) + ' %'],
       ['Dip at mid-transit (with limb darkening)', fmt(centre * 1e6, 3) + ' ppm'],
       ['Orbit radius', (o.a / AU).toPrecision(3) + ' AU = ' + o.aR.toPrecision(3) + ' R★'],
-      ['Transit duration T₁₄', transits ? (o.T14 / 3600).toPrecision(3) + ' h' : 'no transit (b > 1 + k)'],
+      ['Transit duration T₁₄', transits ? (o.T14 / 3600).toPrecision(3) + ' h' : t('no transit (b > 1 + k)')],
       ['Chance that the orbit is aligned (R★/a)', (o.prob * 100).toPrecision(2) + ' %'],
       ['Precision per point', fmt(sig, 3) + ' ppm'],
       ['SNR of one transit', transits ? snr1.toFixed(1) : '—'],

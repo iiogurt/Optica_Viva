@@ -50,7 +50,7 @@ export default function mount(root, meta) {
       ['Correlated colour temperature', r.cct.toFixed(0) + ' K'],
       ['Distance from the Planckian locus Duv', (r.duv >= 0 ? '+' : '') + r.duv.toFixed(4)],
       ['Chromaticity x, y', `${xy[0].toFixed(4)}, ${xy[1].toFixed(4)}`],
-      ['Reference illuminant', r.cct < 5000 ? 'black body' : 'CIE daylight'],
+      ['Reference illuminant', r.cct < 5000 ? t('black body') : t('CIE daylight')],
       ['General CRI Ra (R1–R8)', r.Ra.toFixed(1)],
       ['Saturated red R9', r.R[8].toFixed(1)],
       ['Skin tone R13', r.R[12].toFixed(1)],

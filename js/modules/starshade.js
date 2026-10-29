@@ -70,10 +70,10 @@ export default function mount(root, meta) {
       R = { st: { ...st }, p, ...r };
       const k = R.p.lams.indexOf(lam), sp = r.supp[k];
       ro.replaceChildren(readouts([
-        ['Fresnel number at ' + st.lam + ' nm', F.toFixed(1)],
+        [t('Fresnel number at {l} nm', { l: st.lam }), F.toFixed(1)],
         ['Inner working angle', th.toFixed(0) + ' mas = ' + (th / ((lam / st.D) * MAS)).toFixed(1) + ' λ/D'],
         ['Suppression over the aperture (starshade)', sp.toExponential(1)],
-        ['Same-size opaque disk', r.diskSupp.toExponential(1) + ' (Poisson spot)'],
+        ['Same-size opaque disk', t('{s} (Poisson spot)', { s: r.diskSupp.toExponential(1) })],
         ['Band with suppression < 10⁻¹⁰', band(r.specSupp, 1e-10)],
       ]));
       calc.say(t('At {v1} thousand km the starshade dims the starlight over the telescope to <strong>{v2}</strong> of its unblocked level, against {v3} for a plain disc of the same size. Planets can be seen from <strong>{th} mas</strong> from the star outwards.', { v1: fmt(st.z / 1000, 3), v2: fmt(sp, 2), v3: fmt(r.diskSupp, 2), th: th.toFixed(0) }));

@@ -46,9 +46,9 @@ export default function mount(root, meta) {
     ro.replaceChildren(readouts([
       ['Sensor area used', `${sensorW.toFixed(1)} × ${GATE_H.toFixed(1)} mm${s > 1 ? ` (${(sensorW / GATE_H).toFixed(2)} : 1 recorded)` : ''}`],
       ['Horizontal angle of view', (hAov / D2R).toFixed(1) + '°'],
-      ['Bokeh of the lights: height × width', `${(blurV / D2R * 60).toFixed(1)}′ × ${(blurV / s / D2R * 60).toFixed(1)}′ (ratio ${s.toFixed(2)})`],
-      ['Streak strength (two reflections)', sc ? `${sc.strength.toExponential(1)} of the source → ${Math.log2(sc.strength * 2 ** st.hl).toFixed(1)} EV vs exposure` : '—'],
-      ['Same framing on a spherical lens needs', s > 1 ? `a ${(sensorW * s).toFixed(1)} mm wide sensor or ${(F / s).toFixed(0)} mm with a crop` : '—'],
+      ['Bokeh of the lights: height × width', t('{h}′ × {w}′ (ratio {r})', { h: (blurV / D2R * 60).toFixed(1), w: (blurV / s / D2R * 60).toFixed(1), r: s.toFixed(2) })],
+      ['Streak strength (two reflections)', sc ? t('{k} of the source → {ev} EV vs exposure', { k: sc.strength.toExponential(1), ev: Math.log2(sc.strength * 2 ** st.hl).toFixed(1) }) : '—'],
+      ['Same framing on a spherical lens needs', s > 1 ? t('a {w} mm wide sensor or {f} mm with a crop', { w: (sensorW * s).toFixed(1), f: (F / s).toFixed(0) }) : '—'],
     ]));
     calc.say(s > 1
       ? t('A {s}× anamorphic squeeze makes the background lights ovals {r} times taller than wide; each spans <strong>{a} arcminutes</strong> in height.', { s, r: s.toFixed(1), a: (blurV / D2R * 60).toFixed(0) })

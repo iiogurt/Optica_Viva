@@ -88,7 +88,7 @@ export default function mount(root, meta) {
       ['Exposure loss (bellows factor)', g.evLoss.toFixed(2) + ' EV'],
       ['Extension beyond ∞ focus', g.ext.toFixed(1) + ' mm'],
       ['Field of view on the subject', `${(36 / st.m).toPrecision(3)} × ${(24 / st.m).toPrecision(3)} mm`],
-      ['Working distance (front of lens)', wd > 0 ? wd.toFixed(1) + ' mm' : 'subject inside the lens!'],
+      ['Working distance (front of lens)', wd > 0 ? wd.toFixed(1) + ' mm' : t('subject inside the lens!')],
       ['Total depth of field (c = 0.03 mm)', dof < 1 ? (dof * 1000).toFixed(0) + ' µm' : dof.toFixed(2) + ' mm'],
       ['Airy diameter on the sensor', (airy * 1000).toFixed(1) + ' µm (' + (airy / PX).toFixed(1) + ' px)'],
       ['Optimum for the subject depth', 'f/' + Nopt.toPrecision(2) + ' (N_w ' + NwOpt.toPrecision(3) + ')'],

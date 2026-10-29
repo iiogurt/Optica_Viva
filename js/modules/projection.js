@@ -64,7 +64,7 @@ export default function mount(root, meta) {
     const circ = P.cyl ? null : P.R(Math.min(P.max, Math.PI / 2), st.f);
     ro.replaceChildren(readouts([
       ...['rectilinear', 'stereographic', 'equidistant', 'equisolid', 'orthographic'].map((p) => [`Diagonal FOV, ${p}`, isFinite(fovFor(p)) ? fovFor(p).toFixed(1) + '°' : 'circular image']),
-      ['180° image circle diameter', st.proj === 'rectilinear' ? '∞ (cannot reach 90°)' : circ && isFinite(circ) ? (2 * circ).toFixed(1) + ' mm' : '—'],
+      ['180° image circle diameter', st.proj === 'rectilinear' ? t('∞ (cannot reach 90°)') : circ && isFinite(circ) ? (2 * circ).toFixed(1) + ' mm' : '—'],
       ['Sensor half-diagonal', hd.toFixed(2) + ' mm'],
     ]));
     const th = 40 * Math.PI / 180;

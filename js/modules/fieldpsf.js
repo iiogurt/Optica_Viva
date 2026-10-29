@@ -69,7 +69,7 @@ export default function mount(root, meta) {
       ['Secondary: magnification, distance', `${tel.m.toFixed(2)}, ${tel.d.toFixed(3)} m`],
       ['Diffraction limit λ/D', lamD.toFixed(1) + ' mas'],
       ['Diffraction-limited field (RMS < λ/14)', dlField(st, lam) ],
-      ['Coma-free point', S.comaZero ? `(${(S.comaZero[0] * THREF / ARCMIN).toFixed(1)}′, ${(S.comaZero[1] * THREF / ARCMIN).toFixed(1)}′)` : 'none: coma is the same everywhere'],
+      ['Coma-free point', S.comaZero ? `(${(S.comaZero[0] * THREF / ARCMIN).toFixed(1)}′, ${(S.comaZero[1] * THREF / ARCMIN).toFixed(1)}′)` : t('none: coma is the same everywhere')],
     ]));
     calc.say(t('Stars are diffraction-limited (RMS error below λ/14) over a field of <strong>{v1}</strong>; the diffraction limit itself is {lamD} mas.', { v1: dlField(st, lam), lamD: lamD.toFixed(1) }));
     calc.set(String.raw`\begin{aligned}

@@ -124,7 +124,7 @@ export default function mount(root, meta) {
       ['Starlight at planet, direct', r.directAt.toExponential(1)],
       ['Starlight at planet, coronagraph', starAt.toExponential(1)],
       ['Planet / residual starlight', snrRatio.toExponential(1)],
-      ['Planet detectable?', snrRatio > 1 ? 'yes, above the speckle floor' : 'no, buried in speckles'],
+      ['Planet detectable?', snrRatio > 1 ? t('yes, above the speckle floor') : t('no, buried in speckles')],
     ]));
     const h0 = Math.sqrt(1e-10) * st.lam * 1000 / Math.PI;
     calc.say((snrRatio > 1

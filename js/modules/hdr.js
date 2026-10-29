@@ -49,7 +49,7 @@ export default function mount(root, meta) {
       ['Exposure times', times.map((t) => (t >= 1 ? t.toFixed(1) + ' s' : '1/' + Math.round(1 / t))).join(', ')],
       ['Single-frame dynamic range (SNR ≥ 1)', dr1.toFixed(1) + ' EV'],
       ['Bracket dynamic range', dr.toFixed(1) + ' EV (+' + (dr - dr1).toFixed(1) + ')'],
-      ['Graduated ND: OD', st.gnd ? (st.gnd / Math.log2(10)).toFixed(2) + ` (${st.gnd} stops)` : '—'],
+      ['Graduated ND: OD', st.gnd ? t('{d} ({s} stops)', { d: (st.gnd / Math.log2(10)).toFixed(2), s: st.gnd }) : '—'],
     ]));
     calc.say((st.n === '1' ? t('One frame of this sensor records <strong>{dr1} stops</strong>.', { dr1: dr1.toFixed(1) }) : t('One frame of this sensor records <strong>{dr1} stops</strong>; the bracket of {n} frames covers <strong>{dr} stops</strong>.', { dr1: dr1.toFixed(1), n: st.n, dr: dr.toFixed(1) }))
       + (st.gnd ? ' ' + t('The graduated filter holds the sky back by {g} more stops.', { g: st.gnd }) : '') + ' ' + t('The scene spans about 20 stops.') );

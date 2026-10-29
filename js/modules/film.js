@@ -37,7 +37,7 @@ export default function mount(root, meta) {
       const Hm = H0 * 2 ** st.ev, g = (meanDensity(Hm * 1.05, f) - meanDensity(Hm / 1.05, f)) / (2 * Math.log10(1.05));
       ro.replaceChildren(readouts([
         ['Median grain diameter', (2 * f.r).toFixed(2) + ' µm'],
-        ['Speed point (D = fog + 0.1)', Hs.toFixed(3) + ' photons/µm²'],
+        ['Speed point (D = fog + 0.1)', t('{h} photons/µm²', { h: Hs.toFixed(3) })],
         ['Density of this exposure', r.Dmid.toFixed(2)],
         ['Local contrast γ = dD/dlog H', g.toFixed(2)],
         ['RMS granularity at this aperture', (1000 * r.sigma).toFixed(1) + ' (σ_D × 1000)'],
@@ -90,7 +90,7 @@ export default function mount(root, meta) {
   root.append(sec2);
   function updR() {
     const st = rctl.state, tc = reciprocityCorrection(st.t, st.p);
-    rro.replaceChildren(readouts([['Corrected exposure time', tc.toFixed(1) + ' s'], ['Extra exposure needed', Math.log2(tc / st.t).toFixed(2) + ' EV'], ['Digital sensor', 'no failure (photon counting is linear)']]));
+    rro.replaceChildren(readouts([['Corrected exposure time', tc.toFixed(1) + ' s'], ['Extra exposure needed', Math.log2(tc / st.t).toFixed(2) + ' EV'], ['Digital sensor', t('no failure (photon counting is linear)')]]));
     rplot.redraw();
   }
   function drawR(ctx, w, hh) {

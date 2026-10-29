@@ -49,9 +49,9 @@ export default function mount(root, meta) {
     const eMax = (PX / st.f) * st.dn / (2 * Math.sin(delta / 2)) * 1000; // mm for a 1-px error
     ro.replaceChildren(readouts([
       ['Parallax of the near pole', `${(Math.abs(disp) / D2R * 60).toFixed(2)}′ = ${(Math.abs(disp) * pxPerRad).toFixed(1)} px`],
-      ['Frame overlap', overlap > 0 ? overlap.toFixed(1) + '°' : 'none (gap!)'],
+      ['Frame overlap', overlap > 0 ? overlap.toFixed(1) + '°' : t('none (gap!)')],
       ['Largest pupil offset for ≤ 1 px at this distance', eMax.toFixed(2) + ' mm'],
-      ['Nearest object stitchable to 1 px with this offset', e ? ((Math.abs(e) * 2 * Math.sin(delta / 2)) / (PX / st.f)).toFixed(1) + ' m' : '∞ (no parallax)'],
+      ['Nearest object stitchable to 1 px with this offset', e ? ((Math.abs(e) * 2 * Math.sin(delta / 2)) / (PX / st.f)).toFixed(1) + ' m' : t('∞ (no parallax)')],
     ]));
     calc.say((Math.abs(disp) * pxPerRad <= 1
       ? t('The near pole at {d} m shifts by <strong>{px} pixels</strong> between the two frames: invisible after stitching.', { d: fmt(st.dn, 2), px: (Math.abs(disp) * pxPerRad).toFixed(0) })

@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- Readouts whose name or value is built from values (“Refraction at {l} nm relative to 555”, “{d} D (measured: {m} D)”, “{s} stops”, “aliased → moiré at {nu} cycles/mm”, the verdicts such as “diffraction-limited” or “no transit”) go through the translator; 87 new strings in German, French and Spanish.
+
 ## [1.25.0] - 2026-10-29
 
 ### Changed

@@ -49,9 +49,9 @@ export default function mount(root, meta) {
     ro.replaceChildren(readouts([
       ['Size of the light seen from the subject', (ang * 180 / Math.PI).toFixed(1) + '°'],
       ['Soft edge of the wall shadow (each side)', (sg.pen * 100).toFixed(1) + ' cm'],
-      ['Fully dark core of the shadow', sg.umbra > 0 ? (sg.umbra * 100).toFixed(1) + ' cm' : 'none: all penumbra'],
-      ['Wall darker than the subject by', fo.stops.toFixed(2) + ' stops'],
-      ['Catchlight in the eye', (cl * 1000).toFixed(2) + ' mm across'],
+      ['Fully dark core of the shadow', sg.umbra > 0 ? (sg.umbra * 100).toFixed(1) + ' cm' : t('none: all penumbra')],
+      ['Wall darker than the subject by', t('{s} stops', { s: fo.stops.toFixed(2) })],
+      ['Catchlight in the eye', t('{d} mm across', { d: (cl * 1000).toFixed(2) })],
       ['Flash aperture at full power', 'f/' + N.toPrecision(2)],
       ['Specular reflectance of skin / cornea', (fresnel0(1.376) * 100).toFixed(1) + ' %'],
     ]));

@@ -41,9 +41,9 @@ export default function mount(root, meta) {
     let safe = null;
     for (const Z of logRange(1, 30, 200)) { const q = moire(params(st, Z)); if (q.aliased && q.contrast < 0.01) { safe = Z; break; } }
     ro.replaceChildren(readouts([
-      ['Wall grid on the sensor', `${r.nu.toFixed(1)} cycles/mm (pitch ${(1000 / r.nu).toFixed(1)} µm)`],
-      ['Sensor Nyquist frequency', r.nyquist.toFixed(1) + ' cycles/mm'],
-      ['Grid is', r.aliased ? `aliased → moiré at ${r.alias.toFixed(1)} cycles/mm` : 'resolved (visible as a grid if sharp)'],
+      ['Wall grid on the sensor', t('{nu} cycles/mm (pitch {p} µm)', { nu: r.nu.toFixed(1), p: (1000 / r.nu).toFixed(1) })],
+      ['Sensor Nyquist frequency', t('{nu} cycles/mm', { nu: r.nyquist.toFixed(1) })],
+      ['Grid is', r.aliased ? t('aliased → moiré at {nu} cycles/mm', { nu: r.alias.toFixed(1) }) : t('resolved (visible as a grid if sharp)')],
       ['Defocus blur of the wall', (r.b * 1000).toFixed(0) + ' µm'],
       ['Moiré / grid contrast', (100 * r.contrast).toFixed(2) + ' %'],
       ['Aliased and < 1 % from', safe ? safe.toFixed(1) + ' m' : '—'],
@@ -105,7 +105,7 @@ export default function mount(root, meta) {
     const st = bctl.state, texp = st.angle / 360 / 24, rows = 270, prof = bandProfile({ fp: st.fp, duty: st.duty, texp, tline: st.readout / 1000 / rows, phase: st.phase }, rows);
     const amp = bandAmplitude(texp, st.fp, st.duty), cycles = texp * st.fp;
     B = { st, prof, texp };
-    bro.replaceChildren(readouts([['Exposure', `1/${Math.round(1 / texp)} s = ${cycles.toFixed(2)} PWM periods`], ['Band amplitude (peak-to-peak)', (100 * amp).toFixed(2) + ' %'], ['Bands per frame', (st.readout / 1000 * st.fp).toFixed(1)], ['Remedy', amp < 0.005 ? 'none needed' : `exposure = ${Math.max(1, Math.round(cycles))} PWM periods (${(360 * 24 * Math.max(1, Math.round(cycles)) / st.fp).toFixed(1)}°) or a faster refresh`]]));
+    bro.replaceChildren(readouts([['Exposure', t('1/{s} s = {n} PWM periods', { s: Math.round(1 / texp), n: cycles.toFixed(2) })], ['Band amplitude (peak-to-peak)', (100 * amp).toFixed(2) + ' %'], ['Bands per frame', (st.readout / 1000 * st.fp).toFixed(1)], ['Remedy', amp < 0.005 ? t('none needed') : t('exposure = {n} PWM periods ({a}°) or a faster refresh', { n: Math.max(1, Math.round(cycles)), a: (360 * 24 * Math.max(1, Math.round(cycles)) / st.fp).toFixed(1) })]]));
     [bands, bplot].forEach((x) => x.redraw());
   }
   function drawBands(ctx, w, hh) {

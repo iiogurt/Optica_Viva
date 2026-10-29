@@ -122,7 +122,7 @@ export default function mount(root, meta) {
       ['Magnification m', fmt(m, 3) + '×'],
       ['Blur of ∞ background', (blur(f, N, s, 1e12) * 1000).toFixed(1) + ' µm'],
       ['Airy disk diameter', (airy * 1000).toFixed(1) + ' µm'],
-      ['Diffraction vs CoC', airy > c ? 'diffraction-limited ⚠' : (airy / c * 100).toFixed(0) + ' % of c'],
+      ['Diffraction vs CoC', airy > c ? t('diffraction-limited ⚠') : t('{p} % of c', { p: (airy / c * 100).toFixed(0) })],
     ]));
     const m1 = (x) => fmt(x / 1000, 3) + ' m';
     calc.say((isFinite(Df)

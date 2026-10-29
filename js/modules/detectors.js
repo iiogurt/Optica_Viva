@@ -42,7 +42,7 @@ export default function mount(root, meta) {
       ['True flux', st.f.toFixed(3) + ' e⁻/s'],
       ['CDS (last − first)', cds.toFixed(3) + ' e⁻/s'],
       ['Least-squares fit, all reads', ls.toFixed(3) + ' e⁻/s'],
-      ['Fit with jump detection', `${jf.slope.toFixed(3)} e⁻/s (jumps at read ${jf.jumps.join(', ') || '—'})`],
+      ['Fit with jump detection', t('{s} e⁻/s (jumps at read {j})', { s: jf.slope.toFixed(3), j: jf.jumps.join(', ') || '—' })],
       ['Slope noise: CDS · LS', `${Math.sqrt(vC).toFixed(3)} · ${Math.sqrt(vL).toFixed(3)} e⁻/s`],
     ]));
     calc.say(st.cr
@@ -134,7 +134,7 @@ export default function mount(root, meta) {
     }
     C = { W, H, out };
     const loss = 1 - Math.pow(1 - st.eps, st.rows);
-    cro.replaceChildren(readouts([['Flux lost from a star’s core', (100 * loss).toFixed(2) + ' %'], ['Equivalent astrometric bias', 'centroid pulled away from the register'], ['Charge transfer efficiency', (1 - st.eps).toFixed(6)]]));
+    cro.replaceChildren(readouts([['Flux lost from a star’s core', (100 * loss).toFixed(2) + ' %'], ['Equivalent astrometric bias', t('centroid pulled away from the register')], ['Charge transfer efficiency', (1 - st.eps).toFixed(6)]]));
     ctiView.redraw();
   }
   function drawCTI(ctx, w, hh) {

@@ -205,7 +205,7 @@ export default function mount(root, meta) {
     ero.replaceChildren(readouts([
       ['Slit-limited R', Rs.toFixed(0)], ['Diffraction-limited R = 2 D_col tan θB / λ', Rd.toExponential(2)], ['Effective R at 550 nm', R.toFixed(0)],
       ['Slit transmission of the seeing disk', (100 * T).toFixed(0) + ' %'], ['Orders 380–700 nm', `${ord.mMin}–${ord.mMax} (${ord.mMax - ord.mMin + 1})`],
-      ['Free spectral range at 550 nm', (550 / m550).toFixed(2) + ' nm (order ' + m550 + ')'], ['Resolution element on the detector', resPx.toFixed(1) + ' px' + (resPx < 2 ? ' (undersampled)' : '')],
+      ['Free spectral range at 550 nm', t('{d} nm (order {m})', { d: (550 / m550).toFixed(2), m: m550 })], ['Resolution element on the detector', resPx < 2 ? t('{n} px (undersampled)', { n: resPx.toFixed(1) }) : resPx.toFixed(1) + ' px'],
     ]));
     ecalc.set(String.raw`\begin{aligned}
     R_\text{slit} &= \frac{2\tan\theta_B\,D_\text{col}}{\phi\,D_\text{tel}} = ${texNum(Rs, 4)}\\

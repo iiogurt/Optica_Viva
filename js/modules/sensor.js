@@ -95,8 +95,8 @@ export default function mount(root, meta) {
       ['Crop factor vs 36×24', crop(S).toFixed(3)],
       ['Entrance pupil D = f/N', (st.f / st.N).toFixed(2) + ' mm'],
       ['Horizontal FOV', ref.hfov.toFixed(2) + '°'],
-      ['Pixel pitch (' + S.mp + ' MP)', ref.p.toFixed(2) + ' µm'],
-      ['Airy diameter at f/' + st.N.toPrecision(2), (2.44 * LAMBDA * st.N).toFixed(2) + ' µm = ' + ref.airyPx.toFixed(2) + ' px'],
+      [t('Pixel pitch ({mp} MP)', { mp: S.mp }), ref.p.toFixed(2) + ' µm'],
+      [t('Airy diameter at f/{N}', { N: st.N.toPrecision(2) }), (2.44 * LAMBDA * st.N).toFixed(2) + ' µm = ' + ref.airyPx.toFixed(2) + ' px'],
     ]));
     const k = crop(S);
     const mft = crop(SENSORS.mft);

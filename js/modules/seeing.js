@@ -77,7 +77,7 @@ export default function mount(root, meta) {
     const sTT = 1.03 * Math.pow(st.D / r0l, 5 / 3), sTTres = 0.134 * Math.pow(st.D / r0l, 5 / 3);
     const sTot = st.ao === 'ao' ? sFit + sLag : st.ao === 'tt' ? sTTres : sTT;
     ro.replaceChildren(readouts([
-      ['r₀ at λ = ' + lam + ' µm', (r0l * 100).toFixed(1) + ' cm'],
+      [t('r₀ at λ = {l} µm', { l: lam }), (r0l * 100).toFixed(1) + ' cm'],
       ['D / r₀', (st.D / r0l).toFixed(1)],
       ['Seeing FWHM 0.98 λ/r₀', seeing.toFixed(3) + '″'],
       ['Diffraction limit 1.22 λ/D', (dlim * 1000).toFixed(1) + ' mas'],
