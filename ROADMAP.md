@@ -36,6 +36,7 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.13 New laboratories: light, water and worlds](#v113-new-laboratories-light-water-and-worlds)
   - [v1.14 Your own gear and real images](#v114-your-own-gear-and-real-images)
   - [v1.20 3-D views](#v120-3-d-views)
+  - [v1.27 Sky and waves: visual showpieces](#v127-sky-and-waves-visual-showpieces)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -528,6 +529,20 @@ Candidates, in order of how much the third dimension adds:
 - [x] **P3 · M** **Bokeh and defocus**: real rays round the iris from a background point on axis and one in the corner through the traced lens, crossing in front of the sensor; the traced footprints (iris shape on axis, cat's eye in the corner) on the sensor and enlarged beside it.
 - [x] **P3 · M** **Flare**: real-ray ghost paths bouncing between surfaces inside the lens. *The three brightest ghosts for the sun's position (ranked by mean irradiance from a ray grid through every path), their exact paths, their spots on the sensor and the faint image-forming light.*
 
+### v1.27 Sky and waves: visual showpieces
+
+*Goal: new physics that is beautiful to look at and still computed from first principles, chosen after the October 2026 research round (comparable tools: 2-D ray-optics sandboxes, browser spectral path tracers, explorable essays). Order agreed with the owner: the atmospheric-optics laboratory, a live wave simulation, then a comparison mode for every page.*
+
+- [x] **P1 · L** **Halos, rainbows & glories** (`#/atmospheric`): Monte-Carlo rays through hexagonal ice prisms (random, plate and column orientations, Fresnel and total internal reflection, the dispersion of ice) for the 22° and 46° halos, sundogs, parhelic circle, tangent and circumzenithal arcs; exact Lorenz–Mie scattering by water drops (16 wavelengths, the solar disc) for rainbows with supernumerary bows, fogbows, glories and coronas.
+- [ ] **P1 · L** **Live wave simulation**: a 2-D FDTD solution of Maxwell's equations in WebGL 2 shaders, animated: diffraction at slits and edges, interference, the Poisson spot, lenses and gratings as wave objects. Grids around 512² should stay fluid on the Raspberry Pi 4.
+- [ ] **P1 · M** **Comparison mode**: a split slider or two states side by side ("f/2 against f/8") on every page.
+- [ ] **P2 · L** **Spectral 3-D optics bench**: progressive path tracing per wavelength with the real Sellmeier glasses (prisms, gem caustics, a prescription in 3-D).
+- [ ] **P2 · L** **Black-hole imaging**: light paths around a black hole (shadow, photon ring, lensed disc), then observed with the EHT array of the interferometry laboratory.
+- [ ] **P2 · M** **Photon-by-photon mode** for the noise, stacking, film and detector pages: photons arrive one at a time and shot noise builds up visibly.
+- [ ] **P2 · M** **Live webcam mode**: a page's physics (seeing, bokeh, aliasing, rolling shutter) applied to the camera feed, on the device only.
+- [ ] **P3 · S** 3-D view in the halo laboratory: a hexagonal crystal with the ray paths of the 22° halo, a sundog and the circumzenithal arc.
+- [ ] **P3 · S** Decimal commas in German, French and Spanish.
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -565,7 +580,7 @@ Ideas worth keeping but not yet scheduled:
 - *(from the October 2026 exploration)* Further phenomena:
   - Photography and cinema: in-camera lens corrections and their resolution cost; infrared and UV photography (Wood effect, IR focus shift); diffusion filters (Pro-Mist) and film halation; stereo 3D (interaxial, convergence, depth budget); HDR display transfer functions (PQ, HLG) and cinema screen luminance.
   - Astronomy and space: satellite trails and their rejection in stacks; radial-velocity precision; planetary-imaging sampling; free-space laser communication link budgets; star trackers; phase angle and sun glint; LIGO as an optical instrument (shot noise vs radiation pressure).
-  - Atmosphere and nature: lunar coronas, glories and Brocken spectres; supernumerary rainbows (Airy theory); caustics and apparent depth in water; mirages; extinction and airmass; zodiacal light and airglow.
+  - Atmosphere and nature: Brocken spectres; caustics and apparent depth in water; mirages; extinction and airmass; zodiacal light and airglow.
 
 ---
 
