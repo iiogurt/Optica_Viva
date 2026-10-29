@@ -3,6 +3,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { SENSORS, pitchUm } from '../lib/sensors.js';
 import { makeRng as sharedRng } from '../lib/random.js';
 import { plot, logRange } from '../lib/plot.js';
+import { t } from '../lib/i18n.js';
 
 const PHOTONS_PER_LUXS_UM2 = 1.2e4; // broadband daylight, 400–700 nm
 const K_METER = 12.5, T_LENS = 0.9;
@@ -136,7 +137,7 @@ export default function mount(root, meta) {
       legend: true, legendX: w - 150, legendY: hh - 120,
     });
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X(m.eMid), Y(m.snrMid), 5, 0, 7); ctx.fill();
-    ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'left'; ctx.fillText('18 % grey', X(m.eMid) + 8, Y(m.snrMid) - 6);
+    ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'left'; ctx.fillText(t('18 % grey'), X(m.eMid) + 8, Y(m.snrMid) - 6);
   }
 
   function drawDR(ctx, w, hh) {

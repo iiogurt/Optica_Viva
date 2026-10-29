@@ -6,6 +6,7 @@ import { makeRng } from '../lib/random.js';
 import { design, groundScene, imageFromOrbit, mtfDiff } from '../lib/earthobs.js';
 import { view3d } from '../lib/gl3d.js';
 import { earthobsScene } from '../lib/earthobs3d.js';
+import { t } from '../lib/i18n.js';
 
 const PRESETS = {
   cubesat: { name: 'CubeSat camera (9 cm aperture)', H: 500, D: 0.09, f: 0.58, p: 5.5, N: 1 },
@@ -91,9 +92,9 @@ export default function mount(root, meta) {
     show(scene.g, scene.W, scene.H, gap);
     show(M.img.img, M.img.w, M.img.h, 2 * gap + side);
     ctx.fillStyle = '#9aa1b5'; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('ground truth (10 cm)', gap, 38);
+    ctx.fillText(t('ground truth (10 cm)'), gap, 38);
     ctx.fillStyle = '#6ad7ff';
-    ctx.fillText(`from ${M.st.H} km: ${M.img.w} × ${M.img.h} pixels`, 2 * gap + side, 38);
+    ctx.fillText(t('from {H} km: {w} × {h} pixels', { H: M.st.H, w: M.img.w, h: M.img.h }), 2 * gap + side, 38);
   }
 
   function drawMTF(ctx, w, hh) {

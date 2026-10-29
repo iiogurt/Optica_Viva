@@ -224,7 +224,7 @@ export default function mount(root, meta) {
         for (let k = 0; k <= 12; k++) { const y = -r + (2 * r * k) / 12, x = X(zv[i] + surfaceSag(s, y)); ctx.moveTo(x, Y(y)); ctx.lineTo(x + back * 6, Y(y) + 6); }
         ctx.stroke();
         ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('mirror', X(zv[i]), Y(-r) + 14);
+        ctx.fillText(t('mirror'), X(zv[i]), Y(-r) + 14);
         continue;
       }
       const s2 = L.surfaces[i + 1];
@@ -255,7 +255,7 @@ export default function mount(root, meta) {
     ctx.strokeStyle = '#ffb547'; ctx.lineWidth = 3;
     const zs = X(zv[si] + surfaceSag(L.surfaces[si], sr));
     ctx.beginPath(); ctx.moveTo(zs, Y(sr)); ctx.lineTo(zs, Y(sr + yMax * 0.25)); ctx.moveTo(zs, Y(-sr)); ctx.lineTo(zs, Y(-sr - yMax * 0.25)); ctx.stroke();
-    ctx.fillStyle = '#ffb547'; ctx.font = '600 10px Inter, sans-serif'; ctx.fillText('STOP', zs, Y(sr + yMax * 0.25) - 5);
+    ctx.fillStyle = '#ffb547'; ctx.font = '600 10px Inter, sans-serif'; ctx.fillText(t('STOP'), zs, Y(sr + yMax * 0.25) - 5);
     // rays
     ctx.globalCompositeOperation = 'lighter';
     for (const f of m.fans) {
@@ -276,7 +276,7 @@ export default function mount(root, meta) {
     ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(X(m.zImg), Y(yMax * 0.9)); ctx.lineTo(X(m.zImg), Y(-yMax * 0.9)); ctx.stroke();
     ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('image plane', X(m.zImg) - 5, Y(yMax * 0.9) + 10);
+    ctx.fillText(t('image plane'), X(m.zImg) - 5, Y(yMax * 0.9) + 10);
     // scale bar
     // scale bar: the round length closest to 80 px
     const bar = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000].reduce((b, v) => (Math.abs(v * sc - 80) < Math.abs(b * sc - 80) ? v : b), 10);
@@ -333,8 +333,8 @@ export default function mount(root, meta) {
     ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.setLineDash([4, 4]);
     ctx.beginPath(); ctx.moveTo(X(zc), 0); ctx.lineTo(X(zc), hh); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
-    ctx.fillText(`z: ±${(half * 1000).toFixed(0)} µm   y: ±${(yspan * 1000 * 2).toFixed(1)} µm (anamorphic)`, 10, hh - 10);
-    ctx.fillText('● paraxial focus per λ   ┆ current image plane', 10, 30);
+    ctx.fillText(t('z: ±{v1} µm   y: ±{v2} µm (anamorphic)', { v1: (half * 1000).toFixed(0), v2: (yspan * 1000 * 2).toFixed(1) }), 10, hh - 10);
+    ctx.fillText(t('● paraxial focus per λ   ┆ current image plane'), 10, 30);
   }
 
   function drawSpot(ctx, w, hh) {
@@ -361,7 +361,7 @@ export default function mount(root, meta) {
     ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillRect(12, hh - 16, nice * sc, 2);
     ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
     ctx.fillText(nice + ' µm', 12, hh - 22);
-    ctx.textAlign = 'right'; ctx.fillText('┄ Airy disk', w - 10, hh - 12);
+    ctx.textAlign = 'right'; ctx.fillText(t('┄ Airy disk'), w - 10, hh - 12);
   }
 
   function drawFan(ctx, w, hh) {
@@ -378,7 +378,7 @@ export default function mount(root, meta) {
       hlines: [{ y: 0, color: 'rgba(255,255,255,0.25)', dash: [] }],
     });
     ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('— tangential   ┄ sagittal', w - 18, hh - 46);
+    ctx.fillText(t('— tangential   ┄ sagittal'), w - 18, hh - 46);
   }
 
   // Astigmatic field curves (exact Coddington foci) with the third-order prediction, and distortion
@@ -470,7 +470,7 @@ export default function mount(root, meta) {
       .then((r) => { mtfData = r; mtfSt.redraw(); }).catch(console.error);
   }, 250);
   function drawMTFField(ctx, w, hh) {
-    if (!mtfData || !model) { ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '12px Inter, sans-serif'; ctx.fillText('computing MTF across the field…', 20, 30); return; }
+    if (!mtfData || !model) { ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '12px Inter, sans-serif'; ctx.fillText(t('computing MTF across the field…'), 20, 30); return; }
     const rows = mtfData.rows, hmax = Math.max(1, ...rows.map((r) => r.h));
     const N = Math.abs(model.pd.efl) / model.lens.epd, nuc = 1 / (587.56e-6 * N);
     const dl = (nu) => mtfDiffraction(Math.min(1, nu / nuc));
@@ -541,10 +541,10 @@ export default function mount(root, meta) {
     const x2 = (3 * w) / 4 - side / 2;
     ctx.drawImage(ip.c, x2, y1, side, side);
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
-    ctx.fillText(`OPD  P-V ${d.pvW.toFixed(2)} λ   RMS ${d.rmsW.toFixed(3)} λ${d.transmitted < 0.995 ? `   pupil ${(d.transmitted * 100).toFixed(0)} % (vignetted)` : `   (±${(wmax / (d.lam / 1000)).toFixed(2)} λ)`}`, x1, hh - 10);
+    ctx.fillText(`OPD  P-V ${d.pvW.toFixed(2)} λ   RMS ${d.rmsW.toFixed(3)} λ   ${d.transmitted < 0.995 ? t('pupil {p} % (vignetted)', { p: (d.transmitted * 100).toFixed(0) }) : `(±${(wmax / (d.lam / 1000)).toFixed(2)} λ)`}`, x1, hh - 10);
     const field = crop * d.lam / 1000 * d.N / 2; // µm across crop (Q = 2)
-    ctx.fillText(`PSF log₁₀ (4 decades)  ${field.toFixed(0)} µm field   Strehl ${d.strehl.toFixed(3)}`, x2, hh - 10);
-    if (d.aliased) { ctx.fillStyle = '#ff6b6b'; ctx.fillText('⚠ wavefront slope exceeds sampling: geometric regime, trust the spot diagram', x2 - side * 0.4, 18); }
+    ctx.fillText(t('PSF log₁₀ (4 decades)  {field} µm field   Strehl {strehl}', { field: field.toFixed(0), strehl: d.strehl.toFixed(3) }), x2, hh - 10);
+    if (d.aliased) { ctx.fillStyle = '#ff6b6b'; ctx.fillText(t('⚠ wavefront slope exceeds sampling: geometric regime, trust the spot diagram'), x2 - side * 0.4, 18); }
   }
 
   // ── Prescription editor ───────────────────────────────────────────────────────────────
@@ -676,7 +676,7 @@ export default function mount(root, meta) {
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
       ctx.fillText(r.first === r.last ? `S${r.first + 1}` : `S${r.first + 1}–${r.last + 1}`, X(i + 0.5), Y(0) + 14);
     });
-    ctx.textAlign = 'left'; ctx.fillStyle = '#6ad7ff'; ctx.fillText('■ decenter', X(0) + 6, Y(mx) + 14); ctx.fillStyle = '#ffb547'; ctx.fillText('■ tilt', X(0) + 80, Y(mx) + 14);
+    ctx.textAlign = 'left'; ctx.fillStyle = '#6ad7ff'; ctx.fillText(t('■ decenter'), X(0) + 6, Y(mx) + 14); ctx.fillStyle = '#ffb547'; ctx.fillText(t('■ tilt'), X(0) + 80, Y(mx) + 14);
   }
   function drawTol(ctx, w, hh) {
     if (!tolData || !tolData.scores.length) return;

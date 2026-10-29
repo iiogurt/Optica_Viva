@@ -3,6 +3,7 @@ import { h, controls, stage, imageCanvas, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc, missionStep } from '../lib/page.js';
 import { MODULES } from '../app.js';
 import { DORI, security, drone } from '../lib/survey.js';
+import { t } from '../lib/i18n.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const isSec = (st) => st.mode === 'sec', isDrone = (st) => st.mode === 'drone';
@@ -114,7 +115,7 @@ export default function mount(root, meta) {
       ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(M.st.d), 34); ctx.lineTo(X(M.st.d), 72); ctx.stroke();
       ctx.fillStyle = '#9aa1b5'; ctx.textAlign = 'center';
       for (const tk of [1, 2, 5, 10, 20, 50, 100]) if (tk <= dmax) { ctx.fillRect(X(tk), 66, 1, 5); ctx.fillText(tk + ' m', X(tk), 84); }
-      ctx.textAlign = 'left'; ctx.fillText('distance to the person (logarithmic)', x0, 104); ctx.fillText(`person at ${M.st.d} m`, Math.min(X(M.st.d) + 4, x1 - 80), 30);
+      ctx.textAlign = 'left'; ctx.fillText(t('distance to the person (logarithmic)'), x0, 104); ctx.fillText(t('person at {d} m', { d: M.st.d }), Math.min(X(M.st.d) + 4, x1 - 80), 30);
       // a face 16 × 22 cm drawn on the pixel grid
       const n = Math.max(1, Math.round(0.16 * r.ppm)), m = Math.max(1, Math.round(0.22 * r.ppm)), ic = imageCanvas(n, m);
       for (let j = 0; j < m; j++) for (let i = 0; i < n; i++) {
@@ -135,7 +136,7 @@ export default function mount(root, meta) {
       ctx.imageSmoothingEnabled = false;
       const fh = hh - 30, fw = (fh * 0.16) / 0.22;
       ctx.drawImage(ic.c, w - 20 - fw, 14, fw, fh);
-      ctx.fillStyle = '#9aa1b5'; ctx.textAlign = 'right'; ctx.fillText(`face: ${n} × ${m} px`, w - 20, hh - 4);
+      ctx.fillStyle = '#9aa1b5'; ctx.textAlign = 'right'; ctx.fillText(t('face: {n} × {m} px', { n, m }), w - 20, hh - 4);
     } else {
       // footprints along the flight line with the forward overlap
       const r = M.r, s = Math.min((w - 40) / (r.along * 3.2), (hh - 60) / r.across);
@@ -145,7 +146,7 @@ export default function mount(root, meta) {
         ctx.fillRect(x, 30, r.along * s, r.across * s); ctx.strokeRect(x, 30, r.along * s, r.across * s);
       }
       ctx.fillStyle = '#9aa1b5'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-      ctx.fillText(`photo footprints ${r.along.toFixed(0)} m along × ${r.across.toFixed(0)} m across, ${(M.st.overlap * 100).toFixed(0)} % overlap; flight direction →`, 20, 20);
+      ctx.fillText(t('photo footprints {along} m along × {across} m across, {v3} % overlap; flight direction →', { along: r.along.toFixed(0), across: r.across.toFixed(0), v3: (M.st.overlap * 100).toFixed(0) }), 20, 20);
     }
   }
 

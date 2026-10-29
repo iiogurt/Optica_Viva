@@ -79,12 +79,12 @@ export default function mount(root, meta) {
   function drawPixels(ctx, w, hh) {
     ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
     if (!P) return;
-    const panels = [[`your exposure: ${fmtT(P.t)}`, P.t], [`500 rule: ${fmtT(P.t500)}`, P.t500]];
+    const panels = [[t('your exposure: {T}', { T: fmtT(P.t) }), P.t], [t('500 rule: {T}', { T: fmtT(P.t500) }), P.t500]];
     const n = 15, gap = 24, side = Math.min((w - gap * 3) / 2, hh - 60), cell = side / n;
-    panels.forEach(([label, t], k) => {
+    panels.forEach(([label, te], k) => {
       const ox = gap + k * (side + gap), oy = 50;
       const pitch = P.pitch / 1000, sig = Math.max(0.45 * pitch, (1.03 * 0.55e-3 * P.st.N) / 2.355); // mm
-      const L = P.trail.speed * t; // trail length, mm
+      const L = P.trail.speed * te; // trail length, mm
       const img = new Float64Array(n * n); let mx = 0;
       const steps = 60;
       for (let s = 0; s < steps; s++) {
@@ -103,7 +103,7 @@ export default function mount(root, meta) {
       ctx.strokeStyle = 'rgba(255,255,255,0.06)';
       for (let i = 0; i <= n; i++) { ctx.beginPath(); ctx.moveTo(ox + i * cell, oy); ctx.lineTo(ox + i * cell, oy + side); ctx.moveTo(ox, oy + i * cell); ctx.lineTo(ox + side, oy + i * cell); ctx.stroke(); }
       ctx.fillStyle = k ? '#ff9a7a' : '#6be3a4'; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'left';
-      ctx.fillText(`${label} · trail ${((L * 1000) / P.pitch).toFixed(1)} px`, ox, 40);
+      ctx.fillText(t('{label} · trail {px} px', { label, px: ((L * 1000) / P.pitch).toFixed(1) }), ox, 40);
     });
   }
 

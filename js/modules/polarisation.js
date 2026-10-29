@@ -125,7 +125,7 @@ export default function mount(root, meta) {
       ctx.strokeStyle = 'rgba(255,181,71,0.75)'; ctx.setLineDash([6, 5]); ctx.lineWidth = 1.2;
       ctx.beginPath(); ctx.moveTo(0, yb); ctx.lineTo(w, yb); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(255,181,71,0.95)'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-      ctx.fillText('Brewster angle (53.1° incidence)', 8, yb - 5);
+      ctx.fillText(t('Brewster angle (53.1° incidence)'), 8, yb - 5);
     }
     if (st.pol) {
       // filter-orientation glyph
@@ -195,8 +195,8 @@ export default function mount(root, meta) {
     ctx.fillStyle = '#ffd27a'; ctx.beginPath(); ctx.arc(sx, sy, 6, 0, 7); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.arc(sx, sy, 9, 0, 7); ctx.stroke();
     ctx.font = '11px Inter, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.textAlign = 'center';
-    ctx.fillText('view ↑', cx, cy - R - 5); ctx.fillText('zenith', cx, cy + 4);
-    ctx.textAlign = 'left'; ctx.fillText('DoP 0', 6, hh - 8); ctx.textAlign = 'right'; ctx.fillText(`DoP ${(st.pmax * 100).toFixed(0)} %`, w - 6, hh - 8);
+    ctx.fillText(t('view ↑'), cx, cy - R - 5); ctx.fillText(t('zenith'), cx, cy + 4);
+    ctx.textAlign = 'left'; ctx.fillText(t('DoP 0'), 6, hh - 8); ctx.textAlign = 'right'; ctx.fillText(t('DoP {v1} %', { v1: (st.pmax * 100).toFixed(0) }), w - 6, hh - 8);
   }
 
   function drawFresnel(ctx, w, hh) {
@@ -412,7 +412,7 @@ export default function mount(root, meta) {
       ctx.beginPath(); ctx.moveTo(x0 - R * Math.cos(a), y0 + R * Math.sin(a)); ctx.lineTo(x0 + R * Math.cos(a), y0 - R * Math.sin(a)); ctx.stroke();
       ctx.strokeStyle = '#ff9cc0';
       ctx.beginPath(); ctx.moveTo(x0 + R * Math.sin(a), y0 + R * Math.cos(a)); ctx.lineTo(x0 - R * Math.sin(a), y0 - R * Math.cos(a)); ctx.stroke();
-      ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('polariser / analyser', x0 - 10, y0 + R + 14);
+      ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(t('polariser / analyser'), x0 - 10, y0 + R + 14);
     }
   }
   function drawML(ctx, w, hh) {
@@ -490,10 +490,10 @@ export default function mount(root, meta) {
     ctx.strokeStyle = '#ff9cc0'; ctx.beginPath(); ctx.moveTo(x0, yc); ctx.lineTo(x1, yc); ctx.lineTo(w - 20, yc); ctx.stroke();
     ctx.strokeStyle = '#6be3a4'; ctx.beginPath(); ctx.moveTo(x0, yc); ctx.lineTo(x1, yc - dy); ctx.lineTo(w - 20, yc - dy); ctx.stroke();
     ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillStyle = '#ff9cc0'; ctx.fillText('ordinary (⊥ principal plane)', x1 + 10, yc + 15);
-    ctx.fillStyle = '#6be3a4'; ctx.fillText('extraordinary (in principal plane)', x1 + 10, yc - dy - 7);
+    ctx.fillStyle = '#ff9cc0'; ctx.fillText(t('ordinary (⊥ principal plane)'), x1 + 10, yc + 15);
+    ctx.fillStyle = '#6be3a4'; ctx.fillText(t('extraordinary (in principal plane)'), x1 + 10, yc - dy - 7);
     ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.textAlign = 'center';
-    ctx.fillText(`optic axis at ${B.st.th}° · d = ${B.d.toFixed(2)} µm · lateral scale × ${ex}`, (x0 + x1) / 2, y1 + 16);
+    ctx.fillText(t('optic axis at {th}° · d = {d} µm · lateral scale × {ex}', { th: B.st.th, d: B.d.toFixed(2), ex }), (x0 + x1) / 2, y1 + 16);
   }
   function drawWalk(ctx, w, hh) {
     if (!B) return;
@@ -524,7 +524,7 @@ export default function mount(root, meta) {
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, Math.max(3, p * sc * 0.25), 0, 7); ctx.fill();
     }
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(`d = ${B.d.toFixed(2)} µm, pitch ${p} µm`, 8, hh - 8);
+    ctx.fillText(t('d = {d} µm, pitch {p} µm', { d: B.d.toFixed(2), p }), 8, hh - 8);
   }
 
   update();

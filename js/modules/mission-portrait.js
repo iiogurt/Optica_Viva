@@ -4,6 +4,7 @@ import { header, lab, idea, rule, theory, references, liveCalc, missionStep } fr
 import { MODULES } from '../app.js';
 import { SENSORS } from '../lib/sensors.js';
 import { plan, FRAMINGS } from '../lib/portrait.js';
+import { t } from '../lib/i18n.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const cm = (m) => (m < 1 ? (m * 100).toFixed(m < 0.1 ? 1 : 0) + ' cm' : m.toFixed(2) + ' m');
@@ -93,9 +94,9 @@ export default function mount(root, meta) {
     ctx.strokeStyle = '#ffb547'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(X(zl - hs * Math.sin(a)), Y(xl - hs * Math.cos(a))); ctx.lineTo(X(zl + hs * Math.sin(a)), Y(xl + hs * Math.cos(a))); ctx.stroke();
     ctx.strokeStyle = 'rgba(255,181,71,0.25)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(X(st.d), Y(0)); ctx.stroke();
     ctx.fillStyle = '#9aa1b5'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('camera', X(0), cy + 28); ctx.fillText('face', X(st.d), cy + 30); ctx.fillText('background', X(st.d + st.B), hh - 2);
-    ctx.fillStyle = '#6be3a4'; ctx.fillText(`sharp zone ${cm(P.dof)}`, X(st.d), cy - 46);
-    ctx.fillStyle = '#ffb547'; ctx.fillText('light', lx, Math.max(12, ly - 10));
+    ctx.fillText(t('camera'), X(0), cy + 28); ctx.fillText(t('face'), X(st.d), cy + 30); ctx.fillText(t('background'), X(st.d + st.B), hh - 2);
+    ctx.fillStyle = '#6be3a4'; ctx.fillText(t('sharp zone {v1}', { v1: cm(P.dof) }), X(st.d), cy - 46);
+    ctx.fillStyle = '#ffb547'; ctx.fillText(t('light'), lx, Math.max(12, ly - 10));
   }
 
   update();

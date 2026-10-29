@@ -4,6 +4,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot, range } from '../lib/plot.js';
 import { oetf, gamutClip } from '../lib/color.js';
 import { WATERS, absorption, patchColours, bandsLeft, flatPort, domeImage, backscatterStart } from '../lib/underwater.js';
+import { t } from '../lib/i18n.js';
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['photo', 'video'] }));
@@ -105,7 +106,7 @@ export default function mount(root, meta) {
     ctx.strokeStyle = '#ff6b6b'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(X(bs), 12); ctx.lineTo(X(bs), hh - 8); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = '#e9ebf3'; ctx.fillRect(X(0) - 12, cy - 8, 12, 16);
     ctx.fillStyle = '#9aa1b5'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(`top view: strobe light enters the view at ${(bs * 100).toFixed(0)} cm`, 8, 14);
+    ctx.fillText(t('top view: strobe light enters the view at {v1} cm', { v1: (bs * 100).toFixed(0) }), 8, 14);
   }
 
   update();

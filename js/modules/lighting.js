@@ -5,6 +5,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot, logRange } from '../lib/plot.js';
 import { latest } from '../lib/compute.js';
 import { makeLight, shadowGeometry, angularSize, catchlight, falloff, flashAperture, fresnel0 } from '../lib/lighting.js';
+import { t } from '../lib/i18n.js';
 
 const PRESETS = { bulb: ['Bare flash or bulb', 5], small: ['Small softbox', 60], large: ['Large softbox', 120], window: ['Window or scrim', 200] };
 const R_HEAD = 0.1;
@@ -111,8 +112,8 @@ export default function mount(root, meta) {
     ctx.fillStyle = '#e9ebf3'; ctx.beginPath(); ctx.arc(X(0), Y(0), Math.max(3, R_HEAD * sc), 0, 2 * Math.PI); ctx.fill();
     ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(X(edges[0][1]), Y(edges[0][0])); ctx.lineTo(X(edges[1][1]), Y(edges[1][0])); ctx.stroke();
     ctx.fillStyle = '#9aa1b5'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('top view: light, subject, wall · shaded: penumbra (soft edges)', 10, 14);
-    ctx.fillText(`camera →`, w - 70, hh - 8);
+    ctx.fillText(t('top view: light, subject, wall · shaded: penumbra (soft edges)'), 10, 14);
+    ctx.fillText(t('camera →'), w - 70, hh - 8);
   }
 
   function drawFall(ctx, w, hh) {

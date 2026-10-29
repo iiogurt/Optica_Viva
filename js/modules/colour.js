@@ -175,7 +175,7 @@ export default function mount(root, meta) {
     for (let u = 0.16; u <= u1; u += 0.04) ctx.fillText(u.toFixed(2), X(u), Y(v0) + 14);
     ctx.textAlign = 'right';
     for (let v = 0.26; v <= v1; v += 0.04) ctx.fillText(v.toFixed(2), X(u0) - 4, Y(v) + 4);
-    ctx.textAlign = 'left'; ctx.fillText('dashed: Duv = ±0.01, ±0.02', X(u0) + 6, Y(v0) - 6);
+    ctx.textAlign = 'left'; ctx.fillText(t('dashed: Duv = ±0.01, ±0.02'), X(u0) + 6, Y(v0) - 6);
   }
 
   // ── camera colour: sensitivities, white balance and the colour matrix ──

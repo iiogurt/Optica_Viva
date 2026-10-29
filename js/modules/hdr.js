@@ -3,6 +3,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { latest } from '../lib/compute.js';
 import { plot, logRange } from '../lib/plot.js';
 import { snr, dynamicRange } from '../lib/hdr.js';
+import { t } from '../lib/i18n.js';
 
 const CAMS = {
   ff: { name: 'Full-frame CMOS (FWC 50 000 e⁻, read 3 e⁻)', k: 1000, fwc: 50000, read: 3, bits: 14 },
@@ -66,7 +67,7 @@ export default function mount(root, meta) {
   }
   function drawImg(ctx, w, hh, key) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
-    if (!R || !R[key]) { ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '12px Inter, sans-serif'; ctx.fillText(key === 'fused' ? 'needs ≥ 3 frames and fusion on' : '…', 12, 22); return; }
+    if (!R || !R[key]) { ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '12px Inter, sans-serif'; ctx.fillText(key === 'fused' ? t('needs ≥ 3 frames and fusion on') : '…', 12, 22); return; }
     if (!R['c_' + key]) {
       const ic = imageCanvas(R.W, R.H), a = R[key];
       for (let p = 0; p < R.W * R.H; p++) { for (let c = 0; c < 3; c++) ic.data[p * 4 + c] = 255 * a[p * 3 + c]; ic.data[p * 4 + 3] = 255; }

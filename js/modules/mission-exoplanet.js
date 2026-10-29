@@ -4,6 +4,7 @@ import { header, lab, idea, rule, theory, references, liveCalc, missionStep } fr
 import { plot, logRange } from '../lib/plot.js';
 import { MODULES } from '../app.js';
 import { PLANETS, plan } from '../lib/exoimaging.js';
+import { t } from '../lib/i18n.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const hours = (s) => (s < 3600 ? (s / 60).toFixed(0) + ' min' : s < 86400 * 3 ? (s / 3600).toPrecision(2) + ' h' : (s / 86400).toPrecision(2) + ' days');
@@ -83,7 +84,7 @@ export default function mount(root, meta) {
     const px = cx + R.sepLD * s * 0.7071, py = cy - R.sepLD * s * 0.7071;
     ctx.fillStyle = R.outside ? '#6ad7ff' : '#ff6b6b'; ctx.beginPath(); ctx.arc(px, py, 4, 0, 2 * Math.PI); ctx.fill();
     ctx.font = '11px Inter, sans-serif'; ctx.fillStyle = '#9aa1b5'; ctx.textAlign = 'left';
-    ctx.fillText(`planet at ${R.sep.toFixed(0)} mas`, px + 8, py - 4);
+    ctx.fillText(t('planet at {sep} mas', { sep: R.sep.toFixed(0) }), px + 8, py - 4);
   }
 
   function drawCurve(ctx, w, hh) {

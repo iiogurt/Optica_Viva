@@ -6,6 +6,7 @@ import { makeRng } from '../lib/random.js';
 import { fluxAt, intensity, orbit, zAt, precision, transitSNR, REARTH, RSUN, AU, DAY } from '../lib/transit.js';
 import { view3d } from '../lib/gl3d.js';
 import { transitScene } from '../lib/transit3d.js';
+import { t } from '../lib/i18n.js';
 
 // Planet radius (Earth radii), period (d), stellar mass and radius (solar), impact parameter, V.
 const SYSTEMS = {
@@ -112,7 +113,7 @@ export default function mount(root, meta) {
     ctx.strokeStyle = 'rgba(106,215,255,0.5)'; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(cx - 1.8 * R, yb); ctx.lineTo(cx + 1.8 * R, yb); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(cx, yb, Math.max(1.2, o.k * R), 0, 2 * Math.PI); ctx.fill();
     ctx.fillStyle = '#9aa1b5'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(`planet to scale: ${(o.k * 100).toPrecision(2)} % of the star's radius`, 12, hh - 12);
+    ctx.fillText(t('planet to scale: {v1} % of the star\'s radius', { v1: (o.k * 100).toPrecision(2) }), 12, hh - 12);
   }
 
   function drawCurve(ctx, w, hh) {

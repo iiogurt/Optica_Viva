@@ -102,7 +102,7 @@ export default function mount(root, meta) {
     ctx.beginPath(); ctx.arc(cx, cy, sc * st.a, 0, 2 * Math.PI); ctx.fill();
     ctx.strokeStyle = 'rgba(255,181,71,0.7)'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(cx, cy, sc * (st.a + st.b), 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px "JetBrains Mono", monospace';
-    ctx.fillText(`diameter ${(2 * Rm).toFixed(0)} m tip to tip`, 8, hh - 24); ctx.fillStyle = 'rgba(255,181,71,0.9)'; ctx.fillText('a + b (IWA radius)', 8, hh - 9);
+    ctx.fillText(t('diameter {v1} m tip to tip', { v1: (2 * Rm).toFixed(0) }), 8, hh - 24); ctx.fillStyle = 'rgba(255,181,71,0.9)'; ctx.fillText(t('a + b (IWA radius)'), 8, hh - 9);
   }
   function drawMap(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);

@@ -75,9 +75,9 @@ export default function mount(root, meta) {
       }
     }
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px Inter, sans-serif';
-    ctx.fillText('cornea', X(-1), Y(6.2)); ctx.fillText('lens', X(z[2]), Y(4.8)); ctx.fillText('retina', X(zR) - 10, Y(4.8));
+    ctx.fillText(t('cornea'), X(-1), Y(6.2)); ctx.fillText(t('lens'), X(z[2]), Y(4.8)); ctx.fillText(t('retina'), X(zR) - 10, Y(4.8));
     const zf = rays(st.lam, 1).zf, z5 = rays(555, 1).zf;
-    ctx.fillText(`focus shift ${((zf - z5) * 1000).toFixed(0)} µm`, X(zR) - 120, hh - 8);
+    ctx.fillText(t('focus shift {v1} µm', { v1: ((zf - z5) * 1000).toFixed(0) }), X(zR) - 120, hh - 8);
   }
   function drawLoca(ctx, w, hh) {
     const ls = Array.from({ length: 53 }, (_, i) => 420 + i * 5);
@@ -126,7 +126,7 @@ export default function mount(root, meta) {
     for (let k = 0; k < C * C; k++) { const t = Math.max(0, 1 + Math.log10(Math.max(psf[k], 1e-5)) / 4), o = k * 4; img.data[o] = 255 * t; img.data[o + 1] = 225 * t * t; img.data[o + 2] = 170 * t ** 3; img.data[o + 3] = 255; }
     const c2 = document.createElement('canvas'); c2.width = C; c2.height = C; c2.getContext('2d').putImageData(img, 0, 0);
     ctx.imageSmoothingEnabled = true; ctx.drawImage(c2, (w - sz) / 2, (hh - sz) / 2, sz, sz);
-    ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px Inter, sans-serif'; ctx.fillText(`${(C * pxArcmin).toFixed(1)}′ across · log, 4 decades · peak ${(Math.max(...psf)).toFixed(2)} of diffraction-limited`, 8, hh - 8);
+    ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px Inter, sans-serif'; ctx.fillText(t('{v1}′ across · log, 4 decades · peak {v2} of diffraction-limited', { v1: (C * pxArcmin).toFixed(1), v2: (Math.max(...psf)).toFixed(2) }), 8, hh - 8);
   }
   function drawMTF(ctx, w, hh) {
     if (!E) return;

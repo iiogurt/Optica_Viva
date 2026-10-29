@@ -165,11 +165,11 @@ export default function mount(root, meta) {
     ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'center';
     ctx.fillStyle = '#6ad7ff'; ctx.fillText('EP', X(zEP), yc - Y(f / st.N / 2) - 6);
     ctx.fillStyle = '#c18cff'; ctx.fillText('XP', X(zXP), yc + Y((f / st.N / 2) * L.mp) + 14);
-    ctx.fillStyle = '#fff'; ctx.fillText('subject', X(zObj), yc + 16);
-    ctx.fillStyle = '#ff9cc0'; ctx.fillText('sensor', X(zImg), yc + bh + 14);
+    ctx.fillStyle = '#fff'; ctx.fillText(t('subject'), X(zObj), yc + 16);
+    ctx.fillStyle = '#ff9cc0'; ctx.fillText(t('sensor'), X(zImg), yc + bh + 14);
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.fillText(`working distance ${S.wd.toFixed(0)} mm`, (X(zObj) + X(zFront)) / 2, yc - bh - 8);
-    ctx.fillText(`extension ${g.ext.toFixed(0)} mm`, (X(zRear) + X(zImg)) / 2, yc - bh - 8);
+    ctx.fillText(t('working distance {wd} mm', { wd: S.wd.toFixed(0) }), (X(zObj) + X(zFront)) / 2, yc - bh - 8);
+    ctx.fillText(t('extension {ext} mm', { ext: g.ext.toFixed(0) }), (X(zRear) + X(zImg)) / 2, yc - bh - 8);
   }
 
   function drawBlur(ctx, w, hh) {

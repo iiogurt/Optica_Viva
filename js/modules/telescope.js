@@ -7,7 +7,7 @@ import { latest } from '../lib/compute.js';
 import { plot, logRange } from '../lib/plot.js';
 import { view3d } from '../lib/gl3d.js';
 import { coronagraphScene } from '../lib/coronagraph3d.js';
-import { N_ } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const SCOPES = [
   { name: 'Hubble', D: 2.4, color: '#6ad7ff', band: [0.115, 2.5], space: true },
@@ -158,7 +158,7 @@ export default function mount(root, meta) {
     const px = w / 2 + C.st.sep * Q * sc;
     ctx.strokeStyle = '#6be3a4'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(px, hh / 2, 3 * Q * sc, 0, 7); ctx.stroke();
     ctx.fillStyle = '#6be3a4'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
-    ctx.fillText('planet', px, hh / 2 - 3 * Q * sc - 5);
+    ctx.fillText(t('planet'), px, hh / 2 - 3 * Q * sc - 5);
     if (kind === 'coro' && C.st.mask) { ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(w / 2, hh / 2, C.maskR * sc, 0, 7); ctx.stroke(); ctx.setLineDash([]); }
   }
   function drawPlanes(ctx, w, hh) {
@@ -180,7 +180,7 @@ export default function mount(root, meta) {
     }
     [p, m, l].forEach((c, i) => { c.put(); ctx.imageSmoothingEnabled = i !== 1; ctx.drawImage(c.c, (w / 3) * i + (w / 3 - side) / 2, 8, side, side); });
     ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('hatched = blocked by the Lyot stop', (5 * w) / 6, hh - 4);
+    ctx.fillText(t('hatched = blocked by the Lyot stop'), (5 * w) / 6, hh - 4);
   }
   function drawProf(ctx, w, hh) {
     if (!C) return;

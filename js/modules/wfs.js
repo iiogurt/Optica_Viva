@@ -4,7 +4,7 @@ import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { run, latest } from '../lib/compute.js';
 import { nollResidual, pyramidGeometric } from '../lib/wfs.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const NP = 120, D = 8, DX = D / NP, NPSF = 256; // 8 m telescope, 120 px pupil, WFS at 600 nm (see js/lib/wfs.js)
 const DIV = lut('diverging'), INF = lut('inferno');
@@ -132,7 +132,7 @@ export default function mount(root, meta) {
       ctx.imageSmoothingEnabled = true; ctx.drawImage(ic.c, side * (w / 2) + (w / 2 - half) / 2, (hh - half) / 2, half, half);
     });
     ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(`${(C / (NPSF / NP)).toFixed(0)} λ/D across · 5 decades`, 8, hh - 8);
+    ctx.fillText(t('{v1} λ/D across · 5 decades', { v1: (C / (NPSF / NP)).toFixed(0) }), 8, hh - 8);
   }
   function drawPhase(ctx, w, hh) {
     ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
@@ -153,7 +153,7 @@ export default function mount(root, meta) {
       const x = (w / 3) * i + (w / 3 - sz) / 2;
       ctx.drawImage(ic.c, x, 4, sz, sz);
       ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText(['turbulence', 'mirror', 'residual'][i] + ` · ${rms(m).toFixed(0)} nm RMS`, x + sz / 2, hh - 6);
+      ctx.fillText(t('{what} · {rms} nm RMS', { what: t([N_('turbulence'), N_('mirror'), N_('residual')][i]), rms: rms(m).toFixed(0) }), x + sz / 2, hh - 6);
     });
   }
   function drawSeries(ctx, w, hh) {

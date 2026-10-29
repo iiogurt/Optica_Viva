@@ -296,7 +296,7 @@ export default function mount(root, meta) {
       const dev = p - (0.6438 - 0.001682 * v);
       ctx.fillStyle = dev > 0.008 ? '#c18cff' : GLASSES[g].type.includes('flint') ? '#ffb547' : '#6ad7ff';
       ctx.beginPath(); ctx.arc(X(v), Y(p), 4, 0, 7); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.textAlign = 'left'; ctx.fillText(g + (dev > 0.008 ? ' (anomalous)' : ''), X(v) + 6, Y(p) + 3);
+      ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.textAlign = 'left'; ctx.fillText(dev > 0.008 ? t('{g} (anomalous)', { g }) : g, X(v) + 6, Y(p) + 3);
     }
   }
 

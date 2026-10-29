@@ -3,6 +3,7 @@ import { h, controls, stage, fmt, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc, missionStep } from '../lib/page.js';
 import { MODULES } from '../app.js';
 import { designFor } from '../lib/satellite.js';
+import { t } from '../lib/i18n.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const len = (m) => (m < 1 ? (m * 100).toFixed(0) + ' cm' : m.toPrecision(3) + ' m');
@@ -81,7 +82,7 @@ export default function mount(root, meta) {
     ctx.fillRect(x0, base - td - 6, tw, td + 6); ctx.strokeRect(x0, base - td - 6, tw, td + 6);
     ctx.fillStyle = '#ffd27a'; ctx.fillRect(x0 + tw - 4, base - td - 3, 4, td);
     ctx.fillStyle = '#e9ebf3'; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(`mirror ${len(R.D)} · tube about ${len(tube)} (focal length ${len(R.f)} folded ×${fold})`, x0, Math.max(14, base - td - 14));
+    ctx.fillText(t('mirror {v1} · tube about {v2} (focal length {v3} folded ×{fold})', { v1: len(R.D), v2: len(tube), v3: len(R.f), fold }), x0, Math.max(14, base - td - 14));
   }
 
   update();
