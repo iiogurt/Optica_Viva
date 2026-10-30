@@ -19,6 +19,7 @@ import { projectionRows } from './projection.js';
 import { lensRows, sourceAndMagnification, criticalCurves, deflect, images } from './lensing.js';
 import { haloImage, dropProfiles, DROP_LAMS } from './atmo.js';
 import { makeSim, step as waveAdvance } from './fdtd.js';
+import { orbitTable, diskImage } from './blackhole.js';
 import { perspectiveRows } from './perspective.js';
 import { seeingSession } from './seeing.js';
 import { renderRuler } from './macro.js';
@@ -632,4 +633,8 @@ function waveStep(p) {
   return { result: { ez, I, nI: WAVE.nI, t: WAVE.t }, transfer: I ? [ez.buffer, I.buffer] : [ez.buffer] };
 }
 
-export const TASKS = { waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };
+// Black-hole disk image: the orbit table is built once per worker
+let BH_TABLE = null;
+function bhRows(p) { BH_TABLE ||= orbitTable(); const r = diskImage({ ...p, table: BH_TABLE }); return { result: r, transfer: [r.buffer] }; }
+
+export const TASKS = { bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };

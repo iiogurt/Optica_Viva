@@ -280,6 +280,8 @@ export const GROUPS = [
       [N_('Zodiacal light'), null, 's', N_('Sunlight scattered by interplanetary dust sets the background for space telescopes.'), r`B_\text{zodi}(\lambda,\epsilon)`],
       [N_('Gravitational lensing'), 'lensing', 's', N_('Mass bends light into arcs, rings and multiple images.'), r`\boldsymbol\beta=\boldsymbol\theta-\boldsymbol\alpha(\boldsymbol\theta)`],
       [N_('Einstein radius & mass'), 'lensing', 's', N_('Ring size measures the enclosed mass.'), r`\theta_E=\sqrt{\frac{4GM}{c^2}\frac{D_{ls}}{D_lD_s}}`],
+      [N_('Black-hole shadow'), 'blackhole', 's', N_('Light passing a black hole closer than 3√3 GM/c² falls in, so the hole shows a dark disk against the glowing gas around it.'), r`\theta_\text{sh}=2\sqrt{27}\,\frac{GM}{c^2D}`],
+      [N_('Photon sphere & photon ring'), 'blackhole', 's', N_('At r = 3GM/c² light can orbit; rays that wind round the hole before escaping pile up in a thin ring around the shadow.'), r`r_\text{ph}=\frac{3GM}{c^2},\quad b_c=3\sqrt3\,\frac{GM}{c^2}`],
       [N_('Cosmological redshift'), 'telescope', 's', N_('Distant galaxies\' light is stretched into the infrared: JWST\'s raison d\'être.'), r`\lambda_\text{obs}=(1+z)\lambda_\text{emit}`],
       [N_('Exoplanet transits'), 'transits', 's', N_('A planet crossing its star dims it by the ratio of their areas: 84 ppm for an Earth in front of a Sun, 1 % for a Jupiter.'), r`\delta=\left(\frac{R_p}{R_\star}\right)^2`],
       [N_('Exoplanet contrast'), 'starshade', 's', N_('In reflected light an Earth is 10⁻¹⁰ of its star and a Jupiter about 10⁻⁹; thermal emission is more favourable in the infrared.'), r`C=A_g\,\Phi(\alpha)\left(\frac{R_p}{a}\right)^2`],

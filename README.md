@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Fifty-seven interactive simulations, a physics primer and a catalogue of 233 phenomena.
+Fifty-eight interactive simulations, a physics primer and a catalogue of 233 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -522,6 +522,16 @@ Resolution and Nyquist sampling for eight real cameras, Planck thermal emission,
 </td>
 </tr>
 <tr>
+<td valign="top" colspan="2">
+
+**Imaging a black hole** · `#/blackhole`<br>
+<img src="docs/screenshots/blackhole.webp" alt="Thin accretion disk around a black hole with its lensed far side and photon ring, the same image at EHT resolution, and light paths in 3-D" width="70%">
+
+**Exact light paths around a Schwarzschild black hole**: the photon orbit equation is integrated (RK4) for 1100 impact parameters, and every pixel reads where its ray crosses a thin Page–Thorne disk (direct image, lensed far side, photon ring) with g⁴ redshift and Doppler beaming (Luminet 1979). Scaled to M87* or Sgr A* and blurred to the Event Horizon Telescope's beam, with the shadow's edge at 3√3 GM/c², a cut through both images, and light paths that fall in, loop or escape in 3-D.
+
+</td>
+</tr>
+<tr>
 <td valign="top">
 
 **Gravitational lensing** · `#/lensing`<br>
@@ -735,6 +745,7 @@ flowchart LR
 | Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
 | Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
 | Drop scattering | Lorenz–Mie series (Bohren & Huffman's BHMIE, downward-recurrence logarithmic derivative), real water index, 16 wavelengths × 3 radii, solar-disc smear, 5800 K sunlight | atmospheric |
+| Black hole | Schwarzschild photon orbits u'' = 3u² − u by RK4 (Δφ = 0.004) for 1100 impact parameters; disk crossings at φ₀ + nπ (Luminet 1979); Page–Thorne flux; I ∝ g⁴F with Keplerian orbits; Gaussian EHT beam | blackhole |
 | Waves | 2-D FDTD (Yee 1966), TM<sub>z</sub>, S = 0.5, 280 × 190 cells, matched cubic-graded absorbing layer, perfect conductors and dielectrics per cell; time-averaged ⟨E<sub>z</sub>²⟩; 2-D Huygens–Fresnel integral for comparison | waves |
 | Bokeh | Exact rays of the direct path from point sources (∞ and near) to the defocused sensor, same flux-conserving rasteriser | bokeh |
 | Lens flare | Exact ray tracing of all k(k−1)/2 two-reflection paths per wavelength, rasterised as flux-conserving triangles with a per-pixel aperture gauge; paraxial ghost matrices as the preview | flare |
@@ -838,6 +849,7 @@ Optica_Viva/
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
 │   │   ├── atmo.js            Atmospheric optics: ice-crystal halo ray tracing, Lorenz–Mie scattering, rainbow geometry
 │   │   ├── autofocus.js       Phase and contrast autofocus on a defocused scene strip
+│   │   ├── blackhole.js       Schwarzschild photon orbits, thin-disk image with redshift and beaming, M87* and Sgr A* scales
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
 │   │   ├── scenes.js          Tilt–shift scenes (toy town, facade) and their row-band renders
@@ -924,7 +936,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (61)
+│   └── modules/               One file per page (62)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -1065,6 +1077,8 @@ The numerical core was checked against published or analytically known values. E
 | Mie, 10 µm droplets: first corona minimum | 1.83° | Fraunhofer 1.22λ/(2a) = 1.92° |
 | FDTD wavelength in vacuum and in glass (n = 1.5), 16 cells per λ | 16.02, 10.56 cells | 16, 10.67 (numerical dispersion below 1.5 %) |
 | FDTD double slit against the Huygens–Fresnel integral | RMS difference below 0.12, central fringe within 3 cells | 2-D Huygens–Fresnel |
+| Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
+| Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
 
 ---
 

@@ -46,6 +46,8 @@ export const GLOSSARY = [
   { term: 'Fogbow', match: ['fogbows?'], lab: 'atmospheric', def: 'A broad, almost white rainbow made by fog or cloud droplets too small to separate the colours.' },
   { term: 'Antisolar point', match: ['antisolar points?'], lab: 'atmospheric', def: 'The point in the sky exactly opposite the Sun, where the shadow of your head falls; rainbows and glories are centred on it.' },
   { term: 'Supernumerary bow', match: ['supernumerary bows?', 'supernumeraries'], lab: 'atmospheric', def: 'A faint extra band just inside a rainbow, made by light waves that leave a drop at the same angle and interfere.' },
+  { term: 'Photon sphere', match: ['photon spheres?'], lab: 'blackhole', def: 'The distance from a black hole, one and a half times its horizon, at which light can travel round it in a circle.' },
+  { term: 'Gravitational radius', match: ['gravitational radius', 'gravitational radii'], lab: 'blackhole', def: 'The natural length of a black hole, its mass times the gravitational constant divided by the speed of light squared; half the horizon radius.' },
   // ── Light, sensor and time ──
   { term: 'Pixel pitch', match: ['pixel pitch(?:es)?'], lab: 'sampling', def: 'The distance from the centre of one pixel to the next.' },
   { term: 'Nyquist limit', match: ['nyquist(?: limit| frequency)?'], lab: 'sampling', def: 'The finest pattern a grid of pixels can record correctly: one dark and one light line per two pixels.' },
