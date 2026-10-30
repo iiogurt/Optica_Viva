@@ -1,5 +1,5 @@
 // Small DOM toolkit: element builder, controls, responsive hi-DPI canvases, KaTeX helpers.
-import { t } from './i18n.js';
+import { t, localNum, decimalComma } from './i18n.js';
 
 export function h(tag, props = {}, ...children) {
   const [name, ...classes] = tag.split('.');
@@ -48,15 +48,16 @@ export function prose(html, cls = '') {
 export function fmt(v, digits = 3) {
   if (!isFinite(v)) return v > 0 ? '∞' : '—';
   const a = Math.abs(v);
-  if (a !== 0 && (a >= 1e5 || a < 1e-3)) return v.toExponential(digits - 1).replace('e', '×10^').replace(/\^\+?(-?\d+)/, (_, e) => toSup(e));
-  return (+v.toPrecision(digits)).toLocaleString('en-US', { maximumFractionDigits: 6 });
+  if (a !== 0 && (a >= 1e5 || a < 1e-3)) return localNum(v.toExponential(digits - 1).replace('e', '×10^').replace(/\^\+?(-?\d+)/, (_, e) => toSup(e)));
+  const out = (+v.toPrecision(digits)).toLocaleString('en-US', { maximumFractionDigits: 6 });
+  return decimalComma() ? out.replace(/,/g, '\u202f').replace('.', ',') : out;
 }
 function toSup(s) { const m = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }; return s.split('').map((c) => m[c] ?? c).join(''); }
 export const texNum = (v, d = 3) => {
   if (!isFinite(v)) return '\\infty';
   const a = Math.abs(v);
-  if (a !== 0 && (a >= 1e5 || a < 1e-3)) { const e = Math.floor(Math.log10(a)); return `${(v / 10 ** e).toPrecision(d)}\\times10^{${e}}`; }
-  return String(+v.toPrecision(d));
+  if (a !== 0 && (a >= 1e5 || a < 1e-3)) { const e = Math.floor(Math.log10(a)), m = (v / 10 ** e).toPrecision(d); return `${decimalComma() ? m.replace('.', '{,}') : m}\\times10^{${e}}`; }
+  return decimalComma() ? String(+v.toPrecision(d)).replace('.', '{,}') : String(+v.toPrecision(d));
 };
 
 // ── Controls ─────────────────────────────────────────────────────────────────────────────
@@ -132,7 +133,7 @@ export function controls(spec, onChange) {
       };
       const input = h('input', { type: 'range', min: 0, max: 1000, step: 1, value: Math.round(toPos(state[key]) * 1000), 'aria-label': tr(s.label) });
       const out = h('output');
-      const show = () => { out.textContent = (s.fmt ? s.fmt(state[key]) : fmt(state[key])) + (s.unit ? ' ' + s.unit : ''); };
+      const show = () => { out.textContent = localNum(s.fmt ? s.fmt(state[key]) : fmt(state[key])) + (s.unit ? ' ' + s.unit : ''); };
       input.addEventListener('input', () => { state[key] = fromPos(+input.value / 1000); show(); fire(); });
       api.set[key] = (v) => { state[key] = v; input.value = Math.round(toPos(v) * 1000); show(); writeUrlSoon(); };
       show();
@@ -238,7 +239,7 @@ export function imageCanvas(w, hgt) {
 
 // Readout grid: rows = [[label, valueNode|string]]
 export function readouts(rows) {
-  return h('dl.readouts', { role: 'group', 'aria-label': t('Results') }, ...rows.flatMap(([k, v]) => [h('dt', {}, tr(k)), h('dd', {}, v)]));
+  return h('dl.readouts', { role: 'group', 'aria-label': t('Results') }, ...rows.flatMap(([k, v]) => [h('dt', {}, tr(k)), h('dd', {}, localNum(v))]));
 }
 
 // Section scaffold shared by all modules.

@@ -56,7 +56,7 @@ export default function mount(root, meta) {
       for (const p of parts) for (let k = 0; k < N * N; k++) { acc.X[k] += p.X[k]; acc.Y[k] += p.Y[k]; acc.Z[k] += p.Z[k]; }
       haloRays += RAYS * nw;
       paintHalo(); sky.redraw();
-      note.textContent = pass < PASSES - 1 ? t('Tracing rays through ice crystals: {n} so far…', { n: haloRays.toLocaleString('en') }) : t('{n} rays traced through ice crystals.', { n: haloRays.toLocaleString('en') });
+      note.textContent = pass < PASSES - 1 ? t('Tracing rays through ice crystals: {n} so far…', { n: haloRays }) : t('{n} rays traced through ice crystals.', { n: haloRays });
     }
   }
   // sky (a simple blue-sky gradient, brighter towards the horizon and the Sun), ground, the halo light

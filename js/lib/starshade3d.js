@@ -60,7 +60,7 @@ export function starshadeScene({ a, b, n, N, z, D, lamNm, rhos = [], prof = [] }
   lines.push({ points: [[0, 0, 0], [Rt * s * 1.3, 0, Z * 1.3]], color: [...CYAN, 0.85], width: 1.5 });
   labels.push({ p: [Rt * s * 1.25, -Rt * s * 0.25, Z * 1.1], text: 'planet at the inner working angle, {a} mas', vars: { a: ((Rt / z) * 206264806).toFixed(0) }, color: '#6ad7ff' });
   lines.push({ points: [[0, 0, 0], [0, 0, Z]], color: [1, 1, 1, 0.3], width: 1, glow: false });
-  labels.push({ p: [-Rm * s * 1.5, 0, Z / 2], text: `${(z / 1e3).toLocaleString('en')} km`, color: '#c9cfdc' });
+  labels.push({ p: [-Rm * s * 1.5, 0, Z / 2], text: '{d} km', vars: { d: Math.round(z / 1e3) }, color: '#c9cfdc' });
   // the shadow on the telescope's plane: log intensity on rings out to rhos' end, and the pupil
   if (rhos.length > 1) {
     const seg = 72, P = [], C = [], idx = [];
@@ -75,6 +75,6 @@ export function starshadeScene({ a, b, n, N, z, D, lamNm, rhos = [], prof = [] }
   }
   lines.push({ points: circle((D / 2) * s, -Z * 0.002), color: [1, 1, 1, 0.95], width: 1.6 });
   labels.push({ p: [(D / 2) * s * 1.6, (D / 2) * s * 1.6, 0], text: 'telescope, {D} m', vars: { D }, color: '#ffffff' });
-  labels.push({ p: [0, Rm * s * 1.6, Z / 2], text: 'across the line of sight × {E}', vars: { E: E.toLocaleString('en') }, color: 'rgba(255,255,255,0.55)' });
+  labels.push({ p: [0, Rm * s * 1.6, Z / 2], text: 'across the line of sight × {E}', vars: { E: E }, color: 'rgba(255,255,255,0.55)' });
   return { meshes, lines, labels, frame: { centre: [0, 0, Z * 0.6], size: Z * 1.35 }, E };
 }

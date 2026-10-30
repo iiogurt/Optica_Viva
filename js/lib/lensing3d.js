@@ -80,7 +80,7 @@ export function lensingScene({ P, zl, zs, src, R, images = [], crit = [], caus =
     lines.push({ points: [L, toScene(im.x, im.y, cs)], color: [...col, 0.3], width: 1, glow: false });
     labels.push({ p: [L[0] * 1.25, L[1] * 1.25 + rl * 0.04, cl], text: `μ = ${im.mu.toFixed(1)}`, color: `rgb(${col.map((v) => Math.round(v * 255)).join(',')})` });
   });
-  labels.push({ p: [0, -rs * 0.9, cs * 0.5], text: 'angles × {k}; distances comoving', vars: { k: ANGLE_SCALE.toLocaleString('en') }, color: 'rgba(255,255,255,0.55)' });
+  labels.push({ p: [0, -rs * 0.9, cs * 0.5], text: 'angles × {k}; distances comoving', vars: { k: ANGLE_SCALE }, color: 'rgba(255,255,255,0.55)' });
   return { meshes, lines, labels, frame: { centre: [0, 0, cs * 0.5], size: Math.hypot(cs, 2 * rs) * 1.2 } };
 }
 

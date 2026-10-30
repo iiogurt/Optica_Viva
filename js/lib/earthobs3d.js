@@ -58,7 +58,7 @@ export function earthobsScene({ H, gsd, v, ground, pixels = 12000, T = 60 }) {
   meshes.push({ mesh: { positions: fp, normals: normalsFrom(fp, fi), indices: fi }, color: GOLD, opacity: 0.18, glass: true });
   lines.push({ points: [l, [0, h, 0], r], color: [...GOLD, 0.6], width: 1, glow: false });
   lines.push({ points: [l, r], color: [1, 1, 1, 1], width: 2.4 });
-  labels.push({ p: onSphere(-sw / 2 - 0.42, 0.1 / R, R), text: 'swath {w}: {n} pixels × {gsd}', vars: { w: km(gsd * pixels), n: pixels.toLocaleString('en'), gsd: gsd < 1 ? (gsd * 100).toFixed(0) + ' cm' : gsd.toPrecision(3) + ' m' }, color: '#ffffff' });
+  labels.push({ p: onSphere(-sw / 2 - 0.42, 0.1 / R, R), text: 'swath {w}: {n} pixels × {gsd}', vars: { w: km(gsd * pixels), n: pixels, gsd: gsd < 1 ? (gsd * 100).toFixed(0) + ' cm' : gsd.toPrecision(3) + ' m' }, color: '#ffffff' });
   labels.push({ p: onSphere(-0.75 * A, (-0.35 * A) / R, R), text: 'true scale (satellite marker enlarged)', color: 'rgba(255,255,255,0.5)' });
   return { meshes, lines, labels, frame: { centre: [0, h * 0.3, -0.15], size: Math.hypot(1.6 * A, h) * 0.75 } };
 }

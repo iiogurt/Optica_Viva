@@ -77,7 +77,7 @@ export default function mount(root, meta) {
         ['Band with suppression < 10⁻¹⁰', band(r.specSupp, 1e-10)],
       ]));
       calc.say(t('At {v1} thousand km the starshade dims the starlight over the telescope to <strong>{v2}</strong> of its unblocked level, against {v3} for a plain disc of the same size. Planets can be seen from <strong>{th} mas</strong> from the star outwards.', { v1: fmt(st.z / 1000, 3), v2: fmt(sp, 2), v3: fmt(r.diskSupp, 2), th: th.toFixed(0) }));
-      note.textContent = t('Shadow of a hypergaussian starshade (a = {a} m, b = {b} m, n = {n}) at {z} km. The telescope aperture is the dashed circle. Scalar Fresnel diffraction, azimuthally averaged petals.', { a: st.a, b: st.b, n: st.n, z: st.z.toLocaleString('en') });
+      note.textContent = t('Shadow of a hypergaussian starshade (a = {a} m, b = {b} m, n = {n}) at {z} km. The telescope aperture is the dashed circle. Scalar Fresnel diffraction, azimuthally averaged petals.', { a: st.a, b: st.b, n: st.n, z: Math.round(st.z) });
       [map, prof, spec].forEach((x) => x.redraw());
       show3d(st, z, r.rhos, r.prof[k]);
     });
