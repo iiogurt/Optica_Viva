@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.28.0] - 2026-10-30
+
 ### Added
 - **Light as a wave** (`#/waves`): a new laboratory that solves Maxwell's equations live by the finite-difference time-domain method (Yee grid, matched absorbing edges, perfect conductors and glass per cell) in a compute worker and animates the field or its time-averaged brightness: one and two slits and a grating (with the screen compared against the Huygens–Fresnel integral), a straight edge, a round obstacle with its Poisson–Arago line, refraction and reflection at a glass surface, focusing by a glass lens and a thin film. Two new catalogue entries (Young's double slit, FDTD); tests check the wavelength in vacuum and glass, the fringes and stability.
 
@@ -778,7 +780,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.27.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.28.0...HEAD
+[1.28.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.27.0...v1.28.0
 [1.27.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.26.0...v1.27.0
 [1.26.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.25.0...v1.26.0
 [1.25.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.24.0...v1.25.0
