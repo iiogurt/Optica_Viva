@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Fifty-eight interactive simulations, a physics primer and a catalogue of 233 phenomena.
+Fifty-nine interactive simulations, a physics primer and a catalogue of 233 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -296,6 +296,16 @@ FFT PSFs for 13 apertures, from 5/6/7/9-blade irises to Hubble, **JWST**, Keck a
 <img src="docs/screenshots/zernike.webp" alt="Zernike wavefront, Fizeau interferogram, PSF and Strehl curves">
 
 Eleven Noll Zernike modes with a wavefront map, Fizeau interferogram, through-focus series, and exact Strehl against Maréchal. Also simulates **JWST's segment phasing**: deployed, stacked, then coarse- and fine-phased.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Spectral optics bench** · `#/bench`<br>
+<img src="docs/screenshots/bench.webp" alt="A white beam fanned into a spectrum by a flint prism in 3-D, with the traced spectrum on the screen" width="70%">
+
+**Photons of single wavelengths traced forward** from a white beam through a prism, a biconvex lens or a glass ball of real glass (Sellmeier data, Fresnel reflection by Russian roulette, total internal reflection) onto a screen, on all workers: the prism's spectrum, the lens's chromatic focus and the ball's caustic ring, in a 3-D bench with rays of five colours and the screen painted by the traced light.
 
 </td>
 </tr>
@@ -745,6 +755,7 @@ flowchart LR
 | Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
 | Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
 | Drop scattering | Lorenz–Mie series (Bohren & Huffman's BHMIE, downward-recurrence logarithmic derivative), real water index, 16 wavelengths × 3 radii, solar-disc smear, 5800 K sunlight | atmospheric |
+| Optics bench | Forward photon tracing, one wavelength per photon (400–700 nm), through convex glass shapes (half-spaces, spheres, a cylinder); Sellmeier index, unpolarised Fresnel by Russian roulette, TIR; CIE 1931 colour on the screen | bench |
 | Black hole | Schwarzschild photon orbits u'' = 3u² − u by RK4 (Δφ = 0.004) for 1100 impact parameters; disk crossings at φ₀ + nπ (Luminet 1979); Page–Thorne flux; I ∝ g⁴F with Keplerian orbits; Gaussian EHT beam | blackhole |
 | Waves | 2-D FDTD (Yee 1966), TM<sub>z</sub>, S = 0.5, 280 × 190 cells, matched cubic-graded absorbing layer, perfect conductors and dielectrics per cell; time-averaged ⟨E<sub>z</sub>²⟩; 2-D Huygens–Fresnel integral for comparison | waves |
 | Bokeh | Exact rays of the direct path from point sources (∞ and near) to the defocused sensor, same flux-conserving rasteriser | bokeh |
@@ -849,6 +860,7 @@ Optica_Viva/
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
 │   │   ├── atmo.js            Atmospheric optics: ice-crystal halo ray tracing, Lorenz–Mie scattering, rainbow geometry
 │   │   ├── autofocus.js       Phase and contrast autofocus on a defocused scene strip
+│   │   ├── bench.js           Spectral optics bench: convex glass shapes, forward photon tracer, screen frame
 │   │   ├── blackhole.js       Schwarzschild photon orbits, thin-disk image with redshift and beaming, M87* and Sgr A* scales
 │   │   ├── blur.js            Safari-safe blurs: Gaussian (3 box passes) and exact disk (pillbox), premultiplied alpha
 │   │   ├── optics.js          DoF, tilted-lens (Scheimpflug) and ΛCDM formulas
@@ -936,7 +948,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (62)
+│   └── modules/               One file per page (63)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -1079,6 +1091,8 @@ The numerical core was checked against published or analytically known values. E
 | FDTD double slit against the Huygens–Fresnel integral | RMS difference below 0.12, central fringe within 3 cells | 2-D Huygens–Fresnel |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
+| Bench: traced prism deviation, N-SF11 at 60° incidence (450 / 550 / 650 nm) | 72.261° / 67.639° / 65.564° | i + arcsin(n sin(A − r₁)) − A, same to 10⁻⁶° |
+| Bench: ball lens paraxial focus (N-BK7, R = 0.6) | 0.8802 | nR/(2(n − 1)) = 0.8805 |
 
 ---
 
