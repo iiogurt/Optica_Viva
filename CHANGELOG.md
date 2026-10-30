@@ -8,8 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 - Rolling shutter & time: **your camera**. After *Use my camera*, the live feed is shown with a global shutter and with a rolling shutter whose rows are each taken from the scene at their own time (a slowed-down readout of up to 2 s, top to bottom or left to right), interpolated between buffered frames (`js/lib/rollingcam.js`, tested). The feed stays on the device and stops when the page closes. The browser smoke test runs it with Chromium's fake camera (`launch({ flags })`).
-
-### Added
+- **Imaging a black hole** (`#/blackhole`): a new laboratory. Exact light paths around a Schwarzschild black hole (the photon orbit equation integrated for 1100 impact parameters) image a thin Page–Thorne accretion disk with its lensed far side and photon ring, redshift and Doppler beaming (Luminet 1979), scaled to M87* or Sgr A* and blurred to the Event Horizon Telescope's resolution; a 3-D view shows light falling in, looping round and escaping. Two catalogue entries and two glossary terms; tests check the capture threshold 3√3 M, the weak-field deflection and the 39.7 µas shadow of M87*.
 - Halos, rainbows & glories: a 3-D view of a hexagonal ice crystal (a column, or a plate for plate clouds) with the exact ray paths of the 22° and 46° halos at minimum deviation and of the circumzenithal arc for the current solar elevation, the exit rays drawn for red and blue light (`js/lib/halo3d.js`, tested against minimum deviation and the arc's elevation).
 - Noise & exposure: **photon by photon**. A small test scene builds up from single Poisson photon arrivals, each new photon flashing as it lands, with the photon count, the measured signal-to-noise ratio of a flat patch and the √N shot-noise limit beside it; it does not start by itself under *reduce motion* (`js/lib/photons.js`, tested for variance = mean and SNR = √N).
 

@@ -8,7 +8,7 @@ import { exercises } from './lib/exercises.js';
 import { t, loadLocale, pickLang, setLang, LANGS, lang } from './lib/i18n.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'waves', 'atmospheric', 'gallery', 'gear', 'computational', 'autofocus', 'filters', 'underwater', 'mission-survey', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'blackhole', 'waves', 'atmospheric', 'gallery', 'gear', 'computational', 'autofocus', 'filters', 'underwater', 'mission-survey', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -76,6 +76,7 @@ export const MODULES = [
   { id: 'earthobs', group: 'Astronomy & space', title: 'Earth observation from orbit', c: '#8fd8ff', blurb: 'Ground sample distance, push-broom scanning at 7 km/s, time-delay integration and diffraction: a city block as seen by a CubeSat, a mapping satellite and a very-high-resolution one.' },
   { id: 'telescope', group: 'Astronomy & space', title: 'Space telescopes', c: '#8fd8ff', blurb: 'Resolution limits, sampling, light-gathering, and a Lyot coronagraph simulation for exoplanet imaging.' },
   { id: 'lensing', group: 'Astronomy & space', title: 'Gravitational lensing', c: '#8fd8ff', blurb: 'The universe as a lens: Einstein rings, arcs and multiple images by inverse ray-shooting.' },
+  { id: 'blackhole', group: 'Astronomy & space', title: 'Imaging a black hole', c: '#ffb547', blurb: 'Light paths around a black hole traced exactly: the shadow, the photon ring and the lensed accretion disk of M87* and Sgr A*, then blurred to the Event Horizon Telescope\'s resolution.' },
 ];
 
 const nav = document.getElementById('nav');

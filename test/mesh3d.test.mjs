@@ -438,3 +438,18 @@ test('halo 3-D: exact paths at minimum deviation, dispersion and the circumzenit
   assert.equal(haloScene({ kind: 'plate', h: 40 * D }).paths.cza, undefined, 'no arc above 32°');
   const m = s.meshes[0].mesh; unitNormals(m); indicesValid(m);
 });
+
+test('black hole: capture at b_c = 3√3 M, weak-field deflection, the shadow of M87*, and the 3-D paths', async () => {
+  const { orbit, B_CRIT, muasPerM, diskFlux, diskImage, orbitTable } = await import('../js/lib/blackhole.js');
+  const { blackholeScene } = await import('../js/lib/blackhole3d.js');
+  assert.ok(orbit(B_CRIT - 0.01).captured && !orbit(B_CRIT + 0.01).captured, 'capture threshold');
+  const b = 100, dphi = orbit(b).phiEnd - Math.PI;
+  near(dphi, 4 / b + (15 * Math.PI) / (4 * b * b) + 128 / (3 * b ** 3), 2e-5, 'deflection 4M/b + …');
+  near(2 * B_CRIT * muasPerM(6.5e9, 16.8e6), 39.7, 0.1, 'M87* shadow (µas)');
+  assert.equal(diskFlux(5.9), 0, 'no emission inside the ISCO');
+  const img = diskImage({ N: 60, fov: 22, incl: 0.3, table: orbitTable() });
+  assert.equal(img[30 * 60 + 30], 0, 'the centre is dark (the shadow)');
+  assert.ok(Math.max(...img) > 0, 'the disk shines');
+  const s = blackholeScene({});
+  assert.ok(s.lines.length >= 9 && s.meshes.length === 2);
+});
