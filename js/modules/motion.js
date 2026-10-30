@@ -1,6 +1,7 @@
 import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
+import { composeRolling, framesNeeded } from '../lib/rollingcam.js';
 import { t } from '../lib/i18n.js';
 
 const wrap = (a) => { a = (a + Math.PI) % (2 * Math.PI); if (a < 0) a += 2 * Math.PI; return a - Math.PI; };
@@ -39,6 +40,56 @@ export default function mount(root, meta) {
   const band = stage({ aspect: 1.6, label: 'Flicker banding (rolling shutter)', draw: (c, w, hh) => blit(c, w, hh, P.band) });
   const bandP = stage({ aspect: 1.6, label: '', draw: drawBand, cls: 'plain' });
   root.append(lab([h('div.grid-2', {}, rs.el, gs.el), h('div.grid-2', {}, wheel.el, h('div.card', { style: { padding: '6px' } }, alias.el)), h('div.grid-2', {}, band.el, h('div.card', { style: { padding: '6px' } }, bandP.el))], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+
+  // ── Your camera: the rolling shutter applied to the live feed, on this device only ──
+  const CW = 192, CH = 144;
+  const cctl = controls({
+    camReadout: { type: 'range', label: 'Readout time, top to bottom (slowed down)', min: 20, max: 2000, log: true, value: 400, unit: 'ms' },
+    camDir: { type: 'seg', label: 'Read direction', value: 'down', options: [['down', 'Top to bottom'], ['right', 'Left to right']] },
+  }, () => {});
+  const camLive = stage({ aspect: CW / CH, label: 'Your camera: global shutter (every row at once)', draw: (c, w, hh) => camBlit(c, w, hh, camIn), minH: 160 });
+  const camRS = stage({ aspect: CW / CH, label: 'Your camera: rolling shutter (rows read one after another)', draw: (c, w, hh) => camBlit(c, w, hh, camOut), minH: 160 });
+  const camNote = h('p.note', { role: 'status' }, t('The camera stays on this device: nothing is recorded or sent. Wave a hand or pan the camera.'));
+  const camBtn = h('button.btn', { type: 'button', onClick: () => (stream ? stopCam() : startCam()) }, t('Use my camera'));
+  root.append(lab([h('div.grid-2', {}, camLive.el, camRS.el), h('div.rx-actions', { style: { alignItems: 'center' } }, camBtn, camNote)], [h('div.card', {}, cctl.el)]));
+  const video = h('video', { muted: true, playsInline: true }), grab = h('canvas', { width: CW, height: CH }), gctx = grab.getContext('2d', { willReadFrequently: true });
+  const camIn = imageCanvas(CW, CH), camOut = imageCanvas(CW, CH);
+  let stream = null, frames = [], camRaf = 0, lastT = 0, period = 33;
+  async function startCam() {
+    if (!navigator.mediaDevices?.getUserMedia) { camNote.textContent = t('This browser offers no camera access.'); return; }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+      video.srcObject = stream; await video.play();
+      camBtn.textContent = t('Stop camera'); frames = [];
+      camRaf = requestAnimationFrame(camLoop);
+    } catch (e) { stream = null; camNote.textContent = t('No camera available ({e}).', { e: e.name || e.message }); }
+  }
+  function stopCam() {
+    cancelAnimationFrame(camRaf); camRaf = 0;
+    if (stream) stream.getTracks().forEach((tr) => tr.stop());
+    stream = null; video.srcObject = null; frames = []; camBtn.textContent = t('Use my camera');
+  }
+  function camLoop(now) {
+    camRaf = requestAnimationFrame(camLoop);
+    if (!stream || video.readyState < 2) return;
+    // grab a frame (centre crop to 4:3), keep enough of them to span the readout time
+    const vw = video.videoWidth, vh = video.videoHeight, s = Math.min(vw / CW, vh / CH);
+    gctx.drawImage(video, (vw - CW * s) / 2, (vh - CH * s) / 2, CW * s, CH * s, 0, 0, CW, CH);
+    const data = gctx.getImageData(0, 0, CW, CH).data;
+    if (lastT) period = 0.9 * period + 0.1 * (now - lastT);
+    lastT = now;
+    frames.unshift({ t: now, data });
+    frames.length = Math.min(frames.length, framesNeeded(cctl.state.camReadout, period));
+    camIn.data.set(data); camIn.put();
+    composeRolling(frames, CW, CH, now, cctl.state.camReadout, cctl.state.camDir, camOut.data); camOut.put();
+    camLive.redraw(); camRS.redraw();
+  }
+  function camBlit(ctx, w, hh, ic) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
+    if (!stream) return;
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(ic.c, 0, 0, w, hh);
+  }
+
 
   const P = {};
   function blit(ctx, w, hh, c) {
@@ -199,5 +250,5 @@ export default function mount(root, meta) {
     'E. H. Adelson &amp; J. R. Bergen, "Spatiotemporal energy models for the perception of motion", JOSA A 2, 284 (1985).',
     'IEEE 1789-2015, "Recommended practices for modulating current in high-brightness LEDs for mitigating health risks to viewers".',
   ]));
-  return () => { cancelAnimationFrame(raf); [rs, gs, wheel, alias, band, bandP].forEach((s) => s.destroy()); };
+  return () => { cancelAnimationFrame(raf); stopCam(); [rs, gs, wheel, alias, band, bandP, camLive, camRS].forEach((s) => s.destroy()); };
 }

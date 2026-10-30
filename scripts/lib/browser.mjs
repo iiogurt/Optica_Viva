@@ -9,7 +9,8 @@ import { join } from 'node:path';
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-export async function launch({ width = 1440, height = 1200 } = {}) {
+// flags: extra Chromium switches, e.g. a fake camera for the live-camera tests
+export async function launch({ width = 1440, height = 1200, flags = [] } = {}) {
   if (typeof WebSocket !== 'function') throw new Error('global WebSocket missing: use Node 22 or later');
   const exe = ['chromium', 'chromium-browser', 'google-chrome', 'google-chrome-stable']
     .find((b) => { try { execSync(`command -v ${b}`, { stdio: 'ignore', shell: '/bin/sh' }); return true; } catch { return false; } });
@@ -25,7 +26,7 @@ export async function launch({ width = 1440, height = 1200 } = {}) {
     // D-Bus before its first request, and never loads a page if the keyring does not answer
     proc = spawn(exe, ['--headless=new', '--no-sandbox', '--password-store=basic', '--use-angle=swiftshader', '--enable-unsafe-swiftshader',
       '--disable-accelerated-2d-canvas', '--disable-gpu-compositing', '--hide-scrollbars', `--remote-debugging-port=${port}`,
-      `--user-data-dir=${profile}`, `--window-size=${width},${height}`, 'about:blank'], { stdio: 'ignore' });
+      `--user-data-dir=${profile}`, `--window-size=${width},${height}`, ...flags, 'about:blank'], { stdio: 'ignore' });
     for (let i = 0; i < 160 && !target; i++) {
       await sleep(250);
       try { target = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find((t) => t.type === 'page'); } catch {}

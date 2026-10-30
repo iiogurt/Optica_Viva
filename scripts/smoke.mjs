@@ -11,7 +11,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ids = [...readFileSync(resolve(ROOT, 'js/app.js'), 'utf8').matchAll(/\{ id: '([a-z0-9-]+)'/g)].map((m) => m[1]);
 const REFERENCE = new Set(['home', 'foundations', 'catalogue', 'gallery']); // pages without readouts
 const site = await serve(ROOT);
-const page = await launch();
+// a fake camera (a moving test pattern) with permission granted, for the live-camera check
+const page = await launch({ flags: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
 let failed = 0;
 const probe = `(() => ({
   alert: document.querySelectorAll('[role=alert]').length,
@@ -49,6 +50,22 @@ try {
     const r = await page.eval(`(() => getComputedStyle(document.querySelector('.sidebar')).display === 'none' && document.querySelectorAll('dl.readouts dd').length > 0 && /N=4/.test(location.hash) && /embed=1/.test(location.hash))()`);
     console.log(`${r && !errors.length ? '✓' : '✗'} embed mode${errors.length ? '  ' + errors.join(' | ').slice(0, 300) : ''}`);
     if (!r || errors.length) failed++;
+  }
+  // live camera on the rolling-shutter page: starts, fills the rolling-shutter view, stops
+  {
+    const errors = await page.goto(site.url + '#/motion', 3000);
+    const r = await page.eval(`(async () => {
+      const b = [...document.querySelectorAll('button')].find((x) => x.textContent === 'Use my camera');
+      if (!b) return 'no camera button';
+      b.click();
+      await new Promise((res) => setTimeout(res, 2500));
+      const ok = b.textContent === 'Stop camera';
+      b.click();
+      return ok ? '' : 'camera did not start: ' + document.querySelector('[role=status]').textContent;
+    })()`);
+    const problems = [...errors, ...(r ? [r] : [])];
+    console.log(`${problems.length ? '✗' : '✓'} live camera${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
+    if (problems.length) failed++;
   }
   // comparison mode: two embedded copies of the page with its settings; Escape closes them
   {

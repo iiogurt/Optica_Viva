@@ -394,7 +394,7 @@ A full photon-transfer chain from scene EV to photoelectrons, with Poisson shot 
 **Rolling shutter & time** · `#/motion`<br>
 <img src="docs/screenshots/motion.webp" alt="Rolling vs global shutter propeller, wagon wheel and flicker banding">
 
-Row-timed propeller rendering with exposure integration, comparing rolling and global shutters. Live wagon-wheel playback at your frame rate and **shutter angle**. Flicker banding from mains and PWM LED lighting.
+Row-timed propeller rendering with exposure integration, comparing rolling and global shutters. Live wagon-wheel playback at your frame rate and **shutter angle**. Flicker banding from mains and PWM LED lighting. **Your camera**: the live feed with a slowed-down rolling shutter beside a global one, computed on the device.
 
 </td>
 </tr>
@@ -845,6 +845,7 @@ Optica_Viva/
 │   │   ├── projection.js      Lens projections and the hall scene of the projection laboratory
 │   │   ├── lensing.js         Lens deflection (point, SIS, SIE + shear), source galaxy, critical curves, renders
 │   │   ├── perspective.js     Portrait scene of the perspective laboratory
+│   │   ├── rollingcam.js      Rolling shutter on a live camera feed: rows from buffered frames at their own time
 │   │   ├── seeing.js          Frozen-flow turbulence + AO session for the seeing laboratory (runs in a worker)
 │   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
 │   │   ├── shake.js           Hand-held shake model, type-2 stabiliser servo with gyro random walk, Monte-Carlo sharpness
