@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.31.0] - 2026-10-30
+
 ### Added
 - Astrophotography stacking: **sub by sub**. Each animation frame adds one sub-exposure of Poisson photons from the galaxy, sky and dark current plus read noise; the newest sub and the running stack are shown side by side, with the stack's measured signal-to-noise ratio (against the known noiseless image) next to the √N prediction with read noise (`js/lib/photons.js`, tested).
 
@@ -803,7 +805,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.30.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.31.0...HEAD
+[1.31.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.30.0...v1.31.0
 [1.30.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.29.0...v1.30.0
 [1.29.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.28.0...v1.29.0
 [1.28.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.27.0...v1.28.0
