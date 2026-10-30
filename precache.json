@@ -81,6 +81,7 @@
     "js/lib/pupil.js",
     "js/lib/random.js",
     "js/lib/raytrace.js",
+    "js/lib/rollingcam.js",
     "js/lib/satellite.js",
     "js/lib/scenes.js",
     "js/lib/seeing.js",
