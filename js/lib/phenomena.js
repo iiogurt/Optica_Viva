@@ -90,6 +90,7 @@ export const GROUPS = [
       [N_('Diffraction gratings & resolving power'), 'spectro', 's', N_('Grooves diffract each wavelength into its own direction; N grooves in order m resolve λ/(mN).'), r`m\lambda=d(\sin\alpha+\sin\beta),\ R=mN`],
       [N_('Blaze & order overlap'), 'spectro', 's', N_('Tilted facets concentrate light in one order; λ in order 1 lands where λ/2 does in order 2.'), r`\Delta\lambda_\text{FSR}=\lambda/m`],
       [N_('Prism spectroscopy'), 'spectro', 'ps', N_('Glass dispersion separates wavelengths; resolving power set by the base length.'), r`R=b\left|\frac{dn}{d\lambda}\right|`],
+      [N_('Caustics'), 'bench', 'pv', N_('Light concentrated by curved glass or water onto bright lines and rings: the envelope of the refracted rays.'), r`\text{caustic: } \det\frac{\partial \mathbf{x}}{\partial \mathbf{a}} = 0`],
       [N_('Airy disk'), 'psf', 'pvs', N_('Fraunhofer pattern of a circular pupil; sets the diffraction limit.'), r`I(v)=\left[\frac{2J_1(v)}{v}\right]^2,\ r_1=1.22\lambda N`],
       [N_('Rayleigh, Sparrow & Dawes limits'), 'mtf', 'ps', N_('Conventional two-point resolution criteria.'), r`\theta_R=1.22\frac{\lambda}{D},\ \theta_S=0.947\frac{\lambda}{D}`],
       [N_('Diffraction-limited aperture'), 'sensor', 'p', N_('The f-number beyond which the Airy disk outgrows the pixels.'), r`N_\text{DLA}\approx\frac{p}{1.22\lambda}`],

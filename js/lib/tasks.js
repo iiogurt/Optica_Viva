@@ -20,6 +20,7 @@ import { lensRows, sourceAndMagnification, criticalCurves, deflect, images } fro
 import { haloImage, dropProfiles, DROP_LAMS } from './atmo.js';
 import { makeSim, step as waveAdvance } from './fdtd.js';
 import { orbitTable, diskImage } from './blackhole.js';
+import { benchPhotons } from './bench.js';
 import { perspectiveRows } from './perspective.js';
 import { seeingSession } from './seeing.js';
 import { renderRuler } from './macro.js';
@@ -637,4 +638,6 @@ function waveStep(p) {
 let BH_TABLE = null;
 function bhRows(p) { BH_TABLE ||= orbitTable(); const r = diskImage({ ...p, table: BH_TABLE }); return { result: r, transfer: [r.buffer] }; }
 
-export const TASKS = { bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };
+function benchRays(p) { const r = benchPhotons(p); return { result: r, transfer: [r.X.buffer, r.Y.buffer, r.Z.buffer] }; }
+
+export const TASKS = { benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };
