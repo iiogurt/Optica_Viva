@@ -18,6 +18,7 @@ import { groundRows } from './dofphoto.js';
 import { projectionRows } from './projection.js';
 import { lensRows, sourceAndMagnification, criticalCurves, deflect, images } from './lensing.js';
 import { haloImage, dropProfiles, DROP_LAMS } from './atmo.js';
+import { makeSim, step as waveAdvance } from './fdtd.js';
 import { perspectiveRows } from './perspective.js';
 import { seeingSession } from './seeing.js';
 import { renderRuler } from './macro.js';
@@ -621,4 +622,14 @@ function shiftTask(p) { const r = shiftRows(p.st, p.y0, p.y1); return { result: 
 function haloRays(p) { const r = haloImage(p); return { result: r, transfer: [r.X.buffer, r.Y.buffer, r.Z.buffer] }; }
 function dropMie(p) { return { result: p.lams.map((li) => ({ li, ...dropProfiles(DROP_LAMS[li], p.a, p.w) })) }; }
 
-export const TASKS = { haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };
+// The wave simulation keeps its state in the worker it was created on (always pool worker 0)
+let WAVE = null;
+function waveInit(p) { WAVE = makeSim(p); return { result: { eps: WAVE.eps.slice(), pec: WAVE.pec.slice() } }; }
+function waveStep(p) {
+  if (!WAVE) return { result: null };
+  waveAdvance(WAVE, p.n);
+  const ez = WAVE.Ez.slice(), I = p.intensity ? WAVE.I.slice() : null;
+  return { result: { ez, I, nI: WAVE.nI, t: WAVE.t }, transfer: I ? [ez.buffer, I.buffer] : [ez.buffer] };
+}
+
+export const TASKS = { waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };

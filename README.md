@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Fifty-six interactive simulations, a physics primer and a catalogue of 233 phenomena.
+Fifty-seven interactive simulations, a physics primer and a catalogue of 233 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -334,6 +334,16 @@ Sellmeier dispersion, the Abbe diagram and the partial-dispersion normal line, w
 <img src="docs/screenshots/polarisation.webp" alt="Lake scene through a polarising filter, all-sky polarisation map and Fresnel reflectance curves" width="70%">
 
 A lake scene **rendered per pixel in Stokes vectors**. Skylight from a single-scattering **Rayleigh sky** (spectral radiance and E-vector), Fresnel reflection off rippled water in Mueller form, and light from the pebbles below (pure-water and CDOM absorption) all pass through a rotating **polarising filter** with a real extinction ratio. At **Brewster's angle** the glare vanishes and the bottom appears, and the sky darkens 90° from the sun. Also includes an all-sky map of the degree and angle of polarisation, Fresnel curves for water and glass, and a **polariser and wave-plate chain** (Malus's law, the three-polariser paradox, λ/4 and λ/2 plates). **Photoelasticity**: a disk in diametral compression (Hertz stress field) between circular or plane polarisers, with white-light Michel-Lévy colours, isochromatics and isoclinics, for plastics and optical glass. **Birefringent OLPF**: walk-off in quartz, lithium niobate and calcite, and the four-spot pattern on Bayer pixels.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Light as a wave** · `#/waves`<br>
+<img src="docs/screenshots/waves.webp" alt="Live FDTD field of a plane wave passing two slits: two circular waves overlap and interfere" width="70%">
+
+**Maxwell's equations solved live** by the finite-difference time-domain method (Yee grid, TM polarisation, Courant number 0.5, matched absorbing edges) in a compute worker, animated frame by frame: light through one or two slits and a grating (compared on a screen with the Huygens–Fresnel integral), round a straight edge and a round obstacle (the Poisson–Arago line), into a glass surface (Snell and Fresnel), through a glass lens to its focus, and back from a thin film. Field or time-averaged brightness, plane wave or point source.
 
 </td>
 </tr>
@@ -725,6 +735,7 @@ flowchart LR
 | Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
 | Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
 | Drop scattering | Lorenz–Mie series (Bohren & Huffman's BHMIE, downward-recurrence logarithmic derivative), real water index, 16 wavelengths × 3 radii, solar-disc smear, 5800 K sunlight | atmospheric |
+| Waves | 2-D FDTD (Yee 1966), TM<sub>z</sub>, S = 0.5, 280 × 190 cells, matched cubic-graded absorbing layer, perfect conductors and dielectrics per cell; time-averaged ⟨E<sub>z</sub>²⟩; 2-D Huygens–Fresnel integral for comparison | waves |
 | Bokeh | Exact rays of the direct path from point sources (∞ and near) to the defocused sensor, same flux-conserving rasteriser | bokeh |
 | Lens flare | Exact ray tracing of all k(k−1)/2 two-reflection paths per wavelength, rasterised as flux-conserving triangles with a per-pixel aperture gauge; paraxial ghost matrices as the preview | flare |
 | Turbulence | von Kármán PSD, FFT screens plus 3-level subharmonics, frozen flow, bilinear-influence DM | seeing, wfs |
@@ -822,6 +833,7 @@ Optica_Viva/
 │   │   ├── equipment.js       Camera bodies, planetary cameras and telescopes for the missions
 │   │   ├── esfr.js            Slanted-edge MTF (ISO 12233 e-SFR) and synthetic test edges
 │   │   ├── exoimaging.js      Exoplanet mission: reflected-light contrast, separation, integration time
+│   │   ├── fdtd.js            Maxwell's equations on a Yee grid: scenes, absorbing layer, time stepping, Huygens–Fresnel comparison
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
 │   │   ├── atmo.js            Atmospheric optics: ice-crystal halo ray tracing, Lorenz–Mie scattering, rainbow geometry
@@ -909,7 +921,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (60)
+│   └── modules/               One file per page (61)
 ├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -1048,6 +1060,8 @@ The numerical core was checked against published or analytically known values. E
 | Mie, large spheres (x = 1000) | Q_ext = 2.016 | van de Hulst: 2 + 1.99 x<sup>−2/3</sup> = 2.020 |
 | Mie, 200 µm drops: brightest part of the bow | just inside 41.9° | Airy theory |
 | Mie, 10 µm droplets: first corona minimum | 1.83° | Fraunhofer 1.22λ/(2a) = 1.92° |
+| FDTD wavelength in vacuum and in glass (n = 1.5), 16 cells per λ | 16.02, 10.56 cells | 16, 10.67 (numerical dispersion below 1.5 %) |
+| FDTD double slit against the Huygens–Fresnel integral | RMS difference below 0.12, central fringe within 3 cells | 2-D Huygens–Fresnel |
 
 ---
 
