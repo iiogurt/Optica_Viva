@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 - Halos, rainbows & glories: a 3-D view of a hexagonal ice crystal (a column, or a plate for plate clouds) with the exact ray paths of the 22° and 46° halos at minimum deviation and of the circumzenithal arc for the current solar elevation, the exit rays drawn for red and blue light (`js/lib/halo3d.js`, tested against minimum deviation and the arc's elevation).
+- Noise & exposure: **photon by photon**. A small test scene builds up from single Poisson photon arrivals, each new photon flashing as it lands, with the photon count, the measured signal-to-noise ratio of a flat patch and the √N shot-noise limit beside it; it does not start by itself under *reduce motion* (`js/lib/photons.js`, tested for variance = mean and SNR = √N).
 
 ### Changed
 - German, French and Spanish show decimal commas (2,17 m, f/1,8) and group thousands with a thin space: in translated sentences and notes, readouts, slider values, chart ticks, 3-D labels and the numbers in the live equations ({,} in TeX). One helper (`localNum`, safe to apply twice) and a grouping formatter (`fmtInt`) in `js/lib/i18n.js`; English is unchanged. Numbers that a few canvases draw directly still use points.

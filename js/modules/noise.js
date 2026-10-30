@@ -1,9 +1,10 @@
-import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, fmt, texNum, reducedMotion } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS, pitchUm } from '../lib/sensors.js';
 import { makeRng as sharedRng } from '../lib/random.js';
 import { plot, logRange } from '../lib/plot.js';
-import { t } from '../lib/i18n.js';
+import { photonScene, arrive, patchStats, photonRng, PW, PH, PATCH } from '../lib/photons.js';
+import { t, fmtInt } from '../lib/i18n.js';
 
 const PHOTONS_PER_LUXS_UM2 = 1.2e4; // broadband daylight, 400–700 nm
 const K_METER = 12.5, T_LENS = 0.9;
@@ -38,6 +39,55 @@ export default function mount(root, meta) {
   const ptc = stage({ aspect: 1.6, label: '', draw: drawPTC, cls: 'plain' });
   const dr = stage({ aspect: 1.6, label: '', draw: drawDR, cls: 'plain' });
   root.append(lab([imgSt.el, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, ptc.el), h('div.card', { style: { padding: '6px' } }, dr.el))], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+
+  // ── Photon by photon: the same physics as the wedge, watched as single photons arrive ──
+  const pctl = controls({ rate: { type: 'range', label: 'Photons per frame on the brightest pixel', min: 0.002, max: 5, step: 0.001, value: 0.02, log: true } }, () => restartPhotons());
+  const phSt = stage({ aspect: PW / PH, label: 'Photon by photon: each speck is one photon, and the picture emerges as they add up', draw: drawPhotons, minH: 220 });
+  const phRo = h('div');
+  const playBtn = h('button.btn', { type: 'button', onClick: () => { playing = !playing; playBtn.textContent = playing ? t('Pause') : t('Run'); if (playing) pstep(); } }, '');
+  const resetBtn = h('button.btn', { type: 'button', onClick: () => restartPhotons() }, t('Restart'));
+  root.append(lab([phSt.el, h('div.rx-actions', {}, playBtn, resetBtn)], [h('div.card', {}, pctl.el), h('div.card', {}, phRo)]));
+  const pb = photonScene(), pacc = new Float64Array(PW * PH), pfresh = new Uint16Array(PW * PH), pimg = imageCanvas(PW, PH);
+  let prng, pframes = 0, ptotal = 0, playing = !reducedMotion(), raf = 0;
+  playBtn.textContent = playing ? t('Pause') : t('Run');
+  function restartPhotons() { pacc.fill(0); pfresh.fill(0); prng = photonRng(7); pframes = 0; ptotal = 0; paintPhotons(); phSt.redraw(); photonReadouts(); if (playing && !raf) pstep(); }
+  function pstep() {
+    raf = 0;
+    if (!playing) return;
+    ptotal += arrive(pacc, pb, pctl.state.rate, prng, pfresh); pframes++;
+    paintPhotons(); phSt.redraw(); photonReadouts();
+    // stop once the flat patch holds about 10 000 photons per pixel: the picture no longer changes
+    if (pctl.state.rate * pframes < 1e4) raf = requestAnimationFrame(pstep);
+  }
+  // grey = counts relative to the expected count on a fully lit pixel; this frame's photons flash
+  // amber while counts are low enough for single photons to matter
+  function paintPhotons() {
+    const exp = Math.max(1e-9, pctl.state.rate * pframes), flash = Math.min(1, 3 / Math.sqrt(exp + 1)), d = pimg.data;
+    for (let k = 0; k < PW * PH; k++) {
+      const g = 255 * Math.pow(Math.min(1, pacc[k] / exp / 1.1), 1 / 2.2), f = pfresh[k] ? flash : 0;
+      d[k * 4] = g + (255 - g) * f; d[k * 4 + 1] = g + (181 - g) * f; d[k * 4 + 2] = g + (71 - g) * f; d[k * 4 + 3] = 255;
+    }
+    pimg.put();
+  }
+  function drawPhotons(ctx, w, hh) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
+    const sc = Math.min(w / PW, hh / PH), x0 = (w - PW * sc) / 2, y0 = (hh - PH * sc) / 2;
+    ctx.imageSmoothingEnabled = false; ctx.drawImage(pimg.c, x0, y0, PW * sc, PH * sc);
+    ctx.strokeStyle = 'rgba(106,215,255,0.8)'; ctx.lineWidth = 1;
+    ctx.strokeRect(x0 + PATCH.x0 * sc, y0 + PATCH.y0 * sc, (PATCH.x1 - PATCH.x0) * sc, (PATCH.y1 - PATCH.y0) * sc);
+  }
+  function photonReadouts() {
+    const s = patchStats(pacc);
+    phRo.replaceChildren(readouts([
+      ['Frames', fmtInt(pframes)],
+      ['Photons so far', fmtInt(ptotal)],
+      ['Mean photons per pixel in the blue square, N', fmt(s.mean, 3)],
+      ['Measured signal-to-noise ratio (mean / spread)', isFinite(s.snr) ? fmt(s.snr, 3) : '—'],
+      ['Shot-noise limit √N', fmt(Math.sqrt(s.mean), 3)],
+    ]));
+  }
+  restartPhotons();
+
 
   let M = null, img = null;
   function model() {
@@ -188,5 +238,5 @@ export default function mount(root, meta) {
     'ISO 12232:2019 and ISO 2720:1974, exposure index and meter calibration (K = 12.5).',
     'B. Rauscher et al., "New and better detectors for the JWST near-infrared spectrograph", PASP 126, 739 (2014).',
   ]));
-  return () => [imgSt, ptc, dr].forEach((s) => s.destroy());
+  return () => { playing = false; cancelAnimationFrame(raf); [imgSt, ptc, dr, phSt].forEach((s) => s.destroy()); };
 }
