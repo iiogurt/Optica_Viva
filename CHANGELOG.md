@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Comparison mode**: a *Compare* button on every page opens two embedded copies of the laboratory side by side, both starting from the current settings and adjusted independently ("f/2 against f/8"), with buttons to copy one side's settings to the other; Escape closes them and their workers. The browser smoke test opens and closes it.
+
 ## [1.28.0] - 2026-10-30
 
 ### Added
