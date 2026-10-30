@@ -1,5 +1,5 @@
 // Page scaffolding shared by every module.
-import { h, prose, section, copyLink, download, allSettings, embedCode } from './ui.js';
+import { h, prose, section, copyLink, download, allSettings, embedCode, withEmbed } from './ui.js';
 import { t, N_ } from './i18n.js';
 
 const TAG = { photo: N_('Photography'), video: N_('Cinematography'), space: N_('Astronomy & space') };
@@ -17,6 +17,34 @@ async function saveSettings(meta) {
   download(new Blob([JSON.stringify(j, null, 2) + '\n'], { type: 'application/json' }), `${j.page}-settings.json`);
 }
 
+// Comparison mode: two embedded copies of this laboratory side by side, both starting from the
+// current settings and adjusted independently ("f/2 against f/8"). Closing removes both copies,
+// with their workers.
+function compare(meta) {
+  const src = withEmbed(location.href, true);
+  const frame = (label) => h('iframe', { src, title: t('{title}, copy {k}', { title: meta.title, k: label }), loading: 'eager' });
+  const A = frame('A'), B = frame('B');
+  const copy = (from, to) => { try { to.src = withEmbed(from.contentWindow.location.href, true); } catch { to.src = src; } };
+  const close = () => { overlay.remove(); document.removeEventListener('keydown', esc); document.body.classList.remove('comparing'); };
+  const esc = (e) => { if (e.key === 'Escape') close(); };
+  const closeBtn = h('button.btn', { type: 'button', onClick: close }, t('Close'));
+  const overlay = h('div.compare-overlay', { role: 'dialog', 'aria-modal': 'true', 'aria-label': t('Compare: {title}', { title: meta.title }) },
+    h('div.compare-bar', {},
+      h('strong', {}, t('Compare: {title}', { title: meta.title })),
+      h('span.note', {}, t('Two copies of this laboratory, each with its own settings.')),
+      h('span.compare-gap'),
+      h('button.btn', { type: 'button', onClick: () => copy(A, B) }, t('Copy A → B')),
+      h('button.btn', { type: 'button', onClick: () => copy(B, A) }, t('Copy B → A')),
+      closeBtn),
+    h('div.compare-panes', {},
+      h('div.compare-pane', {}, h('span.compare-label', {}, 'A'), A),
+      h('div.compare-pane', {}, h('span.compare-label', {}, 'B'), B)));
+  document.body.append(overlay);
+  document.body.classList.add('comparing');
+  document.addEventListener('keydown', esc);
+  closeBtn.focus();
+}
+
 export function header(meta) {
   return h('header.mod-head', {},
     h('div.eyebrow', {}, meta.group),
@@ -26,6 +54,7 @@ export function header(meta) {
       h('button.tag.share', { type: 'button', title: t('Copy a link to this page with the current settings'), onClick: (e) => copyLink(e.currentTarget.querySelector('span')),
         html: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span>' + t('Copy link') + '</span>' })),
       h('button.tag.share', { type: 'button', title: t('Save the current settings of this page as a JSON file'), onClick: () => saveSettings(meta) }, t('Save settings')),
+      h('button.tag.share.compare-btn', { type: 'button', title: t('Open two copies of this laboratory side by side to compare two settings'), onClick: () => compare(meta) }, t('Compare')),
       h('button.tag.share.embed-code', { type: 'button', title: t('Copy HTML that embeds this laboratory, with its current settings, in a course page or blog'), onClick: (e) => copyLink(e.currentTarget, embedCode(location.href, meta.title), t('Embed code copied ✓')) }, t('Embed')),
   );
 }

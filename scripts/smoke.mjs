@@ -50,6 +50,19 @@ try {
     console.log(`${r && !errors.length ? '✓' : '✗'} embed mode${errors.length ? '  ' + errors.join(' | ').slice(0, 300) : ''}`);
     if (!r || errors.length) failed++;
   }
+  // comparison mode: two embedded copies of the page with its settings; Escape closes them
+  {
+    const errors = await page.goto(site.url + '#/dof?N=4', 3000);
+    const r = await page.eval(`(async () => {
+      document.querySelector('.compare-btn').click();
+      const f = [...document.querySelectorAll('.compare-overlay iframe')];
+      const ok = f.length === 2 && f.every((x) => /embed=1/.test(x.src) && /N=4/.test(x.src));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      return ok && !document.querySelector('.compare-overlay');
+    })()`);
+    console.log(`${r && !errors.length ? '✓' : '✗'} comparison mode${errors.length ? '  ' + errors.join(' | ').slice(0, 300) : ''}`);
+    if (!r || errors.length) failed++;
+  }
   // guided tours: each one starts from its link and plays to the end; every select it sets must hold the value
   const { TOURS } = await import('../js/lib/tours.js');
   for (const t of TOURS) {
