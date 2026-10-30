@@ -6,10 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
-## [1.27.0] - 2026-10-30
-
 ### Added
 - **Light as a wave** (`#/waves`): a new laboratory that solves Maxwell's equations live by the finite-difference time-domain method (Yee grid, matched absorbing edges, perfect conductors and glass per cell) in a compute worker and animates the field or its time-averaged brightness: one and two slits and a grating (with the screen compared against the Huygens–Fresnel integral), a straight edge, a round obstacle with its Poisson–Arago line, refraction and reflection at a glass surface, focusing by a glass lens and a thin film. Two new catalogue entries (Young's double slit, FDTD); tests check the wavelength in vacuum and glass, the fringes and stability.
+
+## [1.27.0] - 2026-10-30
 
 ### Added
 - **Halos, rainbows & glories** (`#/atmospheric`): a new laboratory. Ice-crystal halos by Monte-Carlo ray tracing through hexagonal prisms (random orientations, horizontal plates and columns, Fresnel and total internal reflection, the dispersion of ice), refined pass by pass on every worker: the 22° and 46° halos, sundogs, parhelic circle, tangent and circumzenithal arcs. Water drops by exact Lorenz–Mie theory (Bohren–Huffman, 16 wavelengths, three radii, the solar disc): rainbows with supernumerary bows and Alexander's band, white fogbows, glories around the antisolar point and coronas around the Sun, with the scattering profile against ray optics. Four new catalogue entries (halos and sundogs, supernumerary bows and fogbows, glory, coronas); validated against minimum deviation, Descartes's rainbow angles, the Rayleigh limit, the extinction paradox and the Fraunhofer corona.
