@@ -386,7 +386,7 @@ Zone plate, fabric, stripes and bricks sampled through pixel apertures and a bir
 **Noise & exposure** · `#/noise`<br>
 <img src="docs/screenshots/noise.webp" alt="Simulated noisy step wedge, photon-transfer curve and dynamic range vs ISO">
 
-A full photon-transfer chain from scene EV to photoelectrons, with Poisson shot noise, two-stage read noise (**ISO invariance**), dark current, PRNU, clipping and 14-bit quantisation. Charts show the PTC and dynamic range against ISO for five formats.
+A full photon-transfer chain from scene EV to photoelectrons, with Poisson shot noise, two-stage read noise (**ISO invariance**), dark current, PRNU, clipping and 14-bit quantisation. Charts show the PTC and dynamic range against ISO for five formats. **Photon by photon**: a test scene builds up from single photon arrivals, with the measured signal-to-noise ratio beside the √N limit.
 
 </td>
 <td valign="top">
@@ -911,6 +911,7 @@ Optica_Viva/
 │   │   ├── ifilter.js         Interference filters in converging beams: angle shift, cone average, pre-shift
 │   │   ├── interferometry.js  Visibility of extended sources, array u-v coverage, dirty beam/image, Högbom CLEAN
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
+│   │   ├── photons.js         Photon by photon: Poisson arrivals on a test scene, flat-patch statistics
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── survey.js          Survey mission: DORI pixel densities, drone GSD, shutter and overlap
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
