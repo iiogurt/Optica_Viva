@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.30.0] - 2026-10-30
+
 ### Added
 - **Spectral optics bench** (`#/bench`): a new laboratory. Photons of single wavelengths are traced forward from a white beam through a prism, lens or glass ball of real glass (Sellmeier dispersion, Fresnel reflection by Russian roulette, total internal reflection) onto a screen, progressively on all workers; a 3-D bench shows the glass, rays of five colours and the screen painted by the traced light. One catalogue entry (caustics); tests check the prism deviation and the ball lens's focus against analytic optics.
 - Rolling shutter & time: **your camera**. After *Use my camera*, the live feed is shown with a global shutter and with a rolling shutter whose rows are each taken from the scene at their own time (a slowed-down readout of up to 2 s, top to bottom or left to right), interpolated between buffered frames (`js/lib/rollingcam.js`, tested). The feed stays on the device and stops when the page closes. The browser smoke test runs it with Chromium's fake camera (`launch({ flags })`).
@@ -795,7 +797,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.29.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.30.0...HEAD
+[1.30.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.29.0...v1.30.0
 [1.29.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.28.0...v1.29.0
 [1.28.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.27.0...v1.28.0
 [1.27.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.26.0...v1.27.0
