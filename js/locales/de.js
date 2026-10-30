@@ -2744,6 +2744,7 @@ export default {
   "Copy A → B": "A → B kopieren",
   "Copy B → A": "B → A kopieren",
   "Open two copies of this laboratory side by side to compare two settings": "Zwei Kopien dieses Labors nebeneinander öffnen, um zwei Einstellungen zu vergleichen",
+  "{d} km": "{d} km",
   "3-D, true scale: what the camera sees, the plane of focus and the sharp zone": "3-D, maßstäblich: was die Kamera sieht, die Schärfeebene und der scharfe Bereich",
   "3-D: the coronagraph along the beam, with the computed field on each plane": "3-D: der Koronograph entlang des Strahls, mit dem berechneten Feld auf jeder Ebene",
   "3-D: the phase screen blowing past the telescope, and the wavefront left in the pupil after correction": "3-D: der Phasenschirm, der am Teleskop vorbeiweht, und die Wellenfront, die nach der Korrektur in der Pupille bleibt",

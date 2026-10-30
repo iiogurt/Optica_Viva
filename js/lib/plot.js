@@ -1,6 +1,6 @@
 // Minimal, crisp canvas charting: linear/log axes, nice ticks, series, fills, markers.
 import { theme } from './ui.js';
-import { t } from './i18n.js';
+import { t, localNum } from './i18n.js';
 
 // Chart text (title, axis labels, marker labels, legend) is translated here, like the toolkit's
 // control labels; text that is not a string, or has no translation, is drawn as given.
@@ -24,7 +24,7 @@ function ticks(ax, target) {
   for (let v = Math.ceil(lo / st - 1e-9) * st; v <= hi + st * 1e-9; v += st) out.push({ v: Math.abs(v) < st * 1e-9 ? 0 : v, major: true });
   return out;
 }
-const tickLabel = (v, ax) => ax.fmt ? ax.fmt(v) : Math.abs(v) >= 1e4 || (Math.abs(v) < 1e-2 && v !== 0) ? v.toExponential(0) : String(+v.toPrecision(4));
+const tickLabel = (v, ax) => localNum(ax.fmt ? ax.fmt(v) : Math.abs(v) >= 1e4 || (Math.abs(v) < 1e-2 && v !== 0) ? v.toExponential(0) : String(+v.toPrecision(4)));
 
 // Returns a mapper {X(v), Y(v), area} so callers can overlay custom marks.
 export function plot(ctx, w, h, opt) {

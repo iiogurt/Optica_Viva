@@ -137,6 +137,6 @@ export function interfScene({ array, dec: decDeg, hours, H: Hh }) {
     for (const sgn of [1, -1]) dots.push(tint(sphere(np > 60 ? 0.012 : 0.028, at(sgn * sc(p.u), sgn * sc(p.v)), 6, 3), [1, 1, 1]));
   }
   meshes.push({ mesh: merge(dots), color: [1, 1, 1] });
-  if (st.k !== 1) labels.push({ p: scene(turn(st.up[0], H)).map((x) => x * 1.35), text: 'array enlarged × {k}', vars: { k: Math.round(st.k).toLocaleString('en') }, color: '#ffcf8a' });
+  if (st.k !== 1) labels.push({ p: scene(turn(st.up[0], H)).map((x) => x * 1.35), text: 'array enlarged × {k}', vars: { k: Math.round(st.k) }, color: '#ffcf8a' });
   return { meshes, lines, labels, frame: { centre: C.map((x) => x * 0.5), size: (d + reach + 1) * 1.4 } };
 }

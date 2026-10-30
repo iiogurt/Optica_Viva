@@ -6,7 +6,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { interfaceStrings } from './lib/strings.mjs';
-import { LANGS, t, loadLocale } from '../js/lib/i18n.js';
+import { LANGS, t, loadLocale, localNum, fmtInt } from '../js/lib/i18n.js';
+import { fmt, texNum } from '../js/lib/ui.js';
 import { TOURS } from '../js/lib/tours.js';
 import { PATH } from '../js/lib/path.js';
 
@@ -47,4 +48,19 @@ test('t() falls back to English and fills placeholders', async () => {
   assert.equal(t('a string nobody translated'), 'a string nobody translated');
   assert.match(t('Start ({n} steps)', { n: 5 }), /5/);
   await loadLocale('en');
+});
+
+test('German, French and Spanish get decimal commas and grouped thousands; English is unchanged', async () => {
+  await loadLocale('de');
+  assert.equal(t('{d} km', { d: '2.17' }), '2,17 km');
+  assert.equal(t('{d} km', { d: 37000 }), '37\u202f000 km', 'whole numbers from 10 000 up are grouped');
+  assert.equal(localNum(localNum('f/1.8 and 2.170')), 'f/1,8 and 2,170', 'applying it twice changes nothing');
+  assert.equal(fmt(1234.5, 5), '1\u202f234,5');
+  assert.equal(texNum(2.17), '2{,}17');
+  assert.equal(fmtInt(1800000), '1\u202f800\u202f000');
+  await loadLocale('en');
+  assert.equal(t('{d} km', { d: '2.17' }), '2.17 km');
+  assert.equal(fmt(1234.5, 5), '1,234.5');
+  assert.equal(fmtInt(1800000), '1,800,000');
+  assert.equal(texNum(2.17), '2.17');
 });

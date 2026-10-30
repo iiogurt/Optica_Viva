@@ -1,4 +1,4 @@
-import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt, reducedMotion } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
@@ -79,8 +79,8 @@ export default function mount(root, meta) {
     const total = st.loop === 'closed' ? fit + temp + noise : open;
     B = { fit, temp, noise, open, total, fG, f3, lam, Dr0, tau0: (0.314 * st.r0) / Math.max(st.wind, 1e-6), r0sci: st.r0 * Math.pow(lam / 500, 1.2) };
     calc.say((st.loop === 'closed'
-      ? t('With the loop closed, the predicted wavefront error is <strong>{e} nm</strong> RMS, giving a Strehl ratio of about <strong>{S}</strong> at {lam} nm (error budget: fitting, delay and noise).', { e: texNum(Math.sqrt(total), 3), S: Math.exp(-(((2 * Math.PI * Math.sqrt(total)) / lam) ** 2)).toFixed(2), lam })
-      : t('With the loop open, the predicted wavefront error is <strong>{e} nm</strong> RMS, giving a Strehl ratio of about <strong>{S}</strong> at {lam} nm (error budget: fitting, delay and noise).', { e: texNum(Math.sqrt(total), 3), S: Math.exp(-(((2 * Math.PI * Math.sqrt(total)) / lam) ** 2)).toFixed(2), lam })));
+      ? t('With the loop closed, the predicted wavefront error is <strong>{e} nm</strong> RMS, giving a Strehl ratio of about <strong>{S}</strong> at {lam} nm (error budget: fitting, delay and noise).', { e: fmt(Math.sqrt(total), 3), S: Math.exp(-(((2 * Math.PI * Math.sqrt(total)) / lam) ** 2)).toFixed(2), lam })
+      : t('With the loop open, the predicted wavefront error is <strong>{e} nm</strong> RMS, giving a Strehl ratio of about <strong>{S}</strong> at {lam} nm (error budget: fitting, delay and noise).', { e: fmt(Math.sqrt(total), 3), S: Math.exp(-(((2 * Math.PI * Math.sqrt(total)) / lam) ** 2)).toFixed(2), lam })));
     calc.set(String.raw`\begin{aligned}
     \sigma^2_\text{fit} &= \Delta_{J}\left(\tfrac{D}{r_0}\right)^{5/3} \Rightarrow ${texNum(Math.sqrt(fit), 3)}\ \text{nm}\\
     \sigma^2_\text{temp} &= (f_G/f_{3\,\text{dB}})^{5/3} \Rightarrow ${texNum(Math.sqrt(temp), 3)}\ \text{nm}\\
