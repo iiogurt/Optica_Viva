@@ -1,8 +1,9 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt, reducedMotion } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, logRange } from '../lib/plot.js';
 import { BORTLE, surfaceRate, stackSNR, skyLimitedSub, galaxyRate, stackImage } from '../lib/stacking.js';
-import { t } from '../lib/i18n.js';
+import { subExposure, centreSNR, photonRng } from '../lib/photons.js';
+import { t, fmtInt } from '../lib/i18n.js';
 
 const fmtT = (t) => (t >= 3600 ? (t / 3600).toFixed(1) + ' h' : t >= 60 ? (t / 60).toFixed(t < 600 ? 1 : 0) + ' min' : t.toFixed(t < 10 ? 1 : 0) + ' s');
 
@@ -33,6 +34,55 @@ export default function mount(root, meta) {
   const totPlot = stage({ aspect: 2.2, label: '', draw: drawTot, cls: 'plain', minH: 210 });
   root.append(lab([h('div.grid-2', {}, single.el, stack.el), h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, subPlot.el), h('div.card', { style: { padding: '6px' } }, totPlot.el))], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
+  // ── Sub by sub: each frame of the animation is one more sub-exposure of Poisson photons plus read
+  // noise; the running average (the stack) gains signal-to-noise as √N ──
+  const liveSub = stage({ aspect: 1, label: 'Sub by sub: the newest sub-exposure', draw: (c, w, hh) => drawLive(c, w, hh, 'sub'), minH: 200 });
+  const liveStack = stage({ aspect: 1, label: 'Sub by sub: the running stack', draw: (c, w, hh) => drawLive(c, w, hh, 'stack'), minH: 200 });
+  const liveRo = h('div');
+  const liveBtn = h('button.btn', { type: 'button', onClick: () => { livePlay = !livePlay; liveBtn.textContent = livePlay ? t('Pause') : t('Run'); if (livePlay && !liveRaf) liveStep(); } }, '');
+  const liveRestart = h('button.btn', { type: 'button', onClick: () => resetLive() }, t('Restart'));
+  root.append(lab([h('div.grid-2', {}, liveSub.el, liveStack.el), h('div.rx-actions', {}, liveBtn, liveRestart)], [h('div.card', {}, liveRo)]));
+  let livePlay = !reducedMotion(), liveRaf = 0, liveN = 0, liveAcc = null, liveCur = null, liveRng = null;
+  const liveImgs = { sub: imageCanvas(160, 160), stack: imageCanvas(160, 160) };
+  liveBtn.textContent = livePlay ? t('Pause') : t('Run');
+  function resetLive() { liveN = 0; liveAcc = new Float64Array(160 * 160); liveCur = new Float32Array(160 * 160); liveRng = photonRng(5); paintLive(); if (livePlay && !liveRaf) liveStep(); }
+  function liveStep() {
+    liveRaf = 0;
+    if (!livePlay || !M) return;
+    const st = M.st;
+    subExposure(M.rate, M.Fs + st.dark, st.sigma, st.t, liveRng, liveCur);
+    for (let k = 0; k < liveAcc.length; k++) liveAcc[k] += liveCur[k];
+    liveN++;
+    paintLive();
+    if (liveN < Math.min(M.N, 400)) liveRaf = requestAnimationFrame(liveStep);
+  }
+  function paintLive() {
+    if (!M || !liveAcc) return;
+    // the same stretch as the images above: asinh, scaled to the galaxy's centre
+    const st = M.st, scale = M.rate[80 * 160 + 80] * st.t * 0.6, stretch = (v) => 0.06 + 0.94 * Math.asinh(Math.max(-1, v / scale) * 3) / Math.asinh(3);
+    for (const [key, src, div] of [['sub', liveCur, 1], ['stack', liveAcc, Math.max(1, liveN)]]) {
+      const d = liveImgs[key].data;
+      for (let k = 0; k < 160 * 160; k++) { const g = 255 * Math.max(0, Math.min(1, stretch(src[k] / div))); d[k * 4] = g; d[k * 4 + 1] = g; d[k * 4 + 2] = Math.min(255, g * 1.05); d[k * 4 + 3] = 255; }
+      liveImgs[key].put();
+    }
+    liveSub.redraw(); liveStack.redraw();
+    const expected = M.rate.map((v) => v * st.t), one = liveN ? centreSNR(liveCur, expected, 160) : NaN, all = liveN ? centreSNR(liveAcc.map((v) => v / liveN), expected, 160) : NaN;
+    let rc = 0; for (let y = 76; y < 84; y++) for (let x = 76; x < 84; x++) rc += M.rate[y * 160 + x] / 64;
+    const theory = stackSNR(rc, M.Fs, st.dark, st.sigma, st.t, Math.max(1, liveN));
+    liveRo.replaceChildren(readouts([
+      ['Sub-exposures so far', fmtInt(liveN)],
+      ['Galaxy core: measured SNR of the stack', isFinite(all) ? fmt(all, 3) : '—'],
+      ['… predicted (√N law with read noise)', fmt(theory, 3)],
+      ['… one sub alone', isFinite(one) ? fmt(one, 3) : '—'],
+    ]));
+  }
+  function drawLive(ctx, w, hh, key) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
+    const side = Math.min(w, hh);
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(liveImgs[key].c, (w - side) / 2, (hh - side) / 2, side, side);
+  }
+
+
   let M = null;
   const QE = 0.5, W = 160;
   function update() {
@@ -55,6 +105,7 @@ export default function mount(root, meta) {
     t_\text{sky} &= \frac{\sigma_r^2}{0.1\,F_s} = ${texNum(tsky, 3)}\ \text{s}
     \end{aligned}`);
     [single, stack, subPlot, totPlot].forEach((x) => x.redraw());
+    resetLive();
   }
   function drawImg(ctx, w, hh, key) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
@@ -106,5 +157,5 @@ export default function mount(root, meta) {
     'R. Glover, “Sub-exposure times and signal-to-noise ratio for astrophotography”, technical note (2009); C. Woodhouse, <em>The Astrophotography Manual</em>, 2nd ed. (2017).',
   ]));
 
-  return () => [single, stack, subPlot, totPlot].forEach((x) => x.destroy());
+  return () => { livePlay = false; cancelAnimationFrame(liveRaf); [single, stack, subPlot, totPlot, liveSub, liveStack].forEach((x) => x.destroy()); };
 }
