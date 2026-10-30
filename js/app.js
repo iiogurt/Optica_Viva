@@ -8,7 +8,7 @@ import { exercises } from './lib/exercises.js';
 import { t, loadLocale, pickLang, setLang, LANGS, lang } from './lib/i18n.js';
 
 // Laboratories that are implemented; the rest show an 'under construction' notice.
-export const READY = new Set(['home', 'atmospheric', 'gallery', 'gear', 'computational', 'autofocus', 'filters', 'underwater', 'mission-survey', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
+export const READY = new Set(['home', 'waves', 'atmospheric', 'gallery', 'gear', 'computational', 'autofocus', 'filters', 'underwater', 'mission-survey', 'mission-exoplanet', 'mission-satellite', 'mission-choose', 'mission-led', 'mission-eclipse', 'mission-portrait', 'earthobs', 'transits', 'lighting', 'mission-milkyway', 'mission-jupiter', 'foundations', 'raytracer', 'dof', 'psf', 'zernike', 'chromatic', 'sensor', 'projection', 'mtf', 'bokeh', 'flare', 'seeing', 'lucky', 'wfs', 'spectro', 'interferometry', 'detectors', 'adc', 'stacking', 'starshade', 'fieldpsf', 'telescope', 'lensing', 'sampling', 'noise', 'hdr', 'colour', 'cinema', 'motion', 'shake', 'film', 'vp', 'vignetting', 'perspective', 'tiltshift', 'panorama', 'macro', 'eye', 'polarisation', 'catalogue']);
 
 export const MODULES = [
   { id: 'home', group: 'Overview', title: 'Introduction', c: '#ffb547' },
@@ -42,6 +42,7 @@ export const MODULES = [
   { id: 'mtf', group: 'Wave optics', title: 'Sharpness: MTF & resolution', c: '#6ad7ff', blurb: 'Optical transfer function, pixel aperture, OLPF, Nyquist and Rayleigh, applied to a Siemens star.' },
   { id: 'chromatic', group: 'Wave optics', title: 'Chromatic aberration', c: '#6ad7ff', blurb: 'Sellmeier dispersion, Abbe diagram, achromats and apochromats, LoCA fringing and lateral colour.' },
   { id: 'bokeh', group: 'Wave optics', title: 'Bokeh', c: '#6ad7ff', blurb: 'Defocus kernels from blade geometry, cat-eye vignetting, spherical-aberration rims and mirror-lens donuts.' },
+  { id: 'waves', group: 'Wave optics', title: 'Light as a wave', c: '#ffb547', blurb: 'Maxwell\'s equations solved live on a grid (FDTD): watch light squeeze through slits, bend round edges, refract into glass, focus through a lens and interfere in a thin film.' },
   { id: 'polarisation', group: 'Wave optics', title: 'Polarisation', c: '#6ad7ff', blurb: 'Stokes vectors and Mueller matrices: Malus\'s law, Brewster reflections, the polarised Rayleigh sky and a polariser removing glare from a lake.' },
   { id: 'atmospheric', group: 'Wave optics', title: 'Halos, rainbows & glories', c: '#9be37a', blurb: 'Ice-crystal halos and sundogs by Monte-Carlo ray tracing, and rainbows, fogbows, glories and coronas from exact Lorenz–Mie theory.' },
 

@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Light as a wave** (`#/waves`): a new laboratory that solves Maxwell's equations live by the finite-difference time-domain method (Yee grid, matched absorbing edges, perfect conductors and glass per cell) in a compute worker and animates the field or its time-averaged brightness: one and two slits and a grating (with the screen compared against the Huygens–Fresnel integral), a straight edge, a round obstacle with its Poisson–Arago line, refraction and reflection at a glass surface, focusing by a glass lens and a thin film. Two new catalogue entries (Young's double slit, FDTD); tests check the wavelength in vacuum and glass, the fringes and stability.
+
 ## [1.27.0] - 2026-10-30
 
 ### Added
