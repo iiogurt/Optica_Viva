@@ -51,9 +51,9 @@ try {
     console.log(`${r && !errors.length ? '✓' : '✗'} embed mode${errors.length ? '  ' + errors.join(' | ').slice(0, 300) : ''}`);
     if (!r || errors.length) failed++;
   }
-  // live camera on the rolling-shutter page: starts, fills the rolling-shutter view, stops
-  {
-    const errors = await page.goto(site.url + '#/motion', 3000);
+  // live camera on the rolling-shutter and sampling pages: starts, feeds the views, stops
+  for (const camPage of ['motion', 'sampling']) {
+    const errors = await page.goto(site.url + '#/' + camPage, 3000);
     const r = await page.eval(`(async () => {
       const b = [...document.querySelectorAll('button')].find((x) => x.textContent === 'Use my camera');
       if (!b) return 'no camera button';
@@ -64,7 +64,7 @@ try {
       return ok ? '' : 'camera did not start: ' + document.querySelector('[role=status]').textContent;
     })()`);
     const problems = [...errors, ...(r ? [r] : [])];
-    console.log(`${problems.length ? '✗' : '✓'} live camera${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
+    console.log(`${problems.length ? '✗' : '✓'} live camera (${camPage})${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
     if (problems.length) failed++;
   }
   // comparison mode: two embedded copies of the page with its settings; Escape closes them

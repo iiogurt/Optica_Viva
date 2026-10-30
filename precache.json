@@ -16,6 +16,8 @@
     "js/lib/blur.js",
     "js/lib/bokeh.js",
     "js/lib/bokeh3d.js",
+    "js/lib/camera.js",
+    "js/lib/camsample.js",
     "js/lib/choose.js",
     "js/lib/cinema.js",
     "js/lib/color.js",

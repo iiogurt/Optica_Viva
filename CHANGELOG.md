@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- Aliasing, moiré & Bayer: **your camera** on a coarse virtual sensor. Each sensor pixel averages a block of the live image (the pixel aperture), with an optional 4-spot optical low-pass filter and a Bayer mosaic with bilinear demosaicing, so fine fabric, screens or text show real moiré and false colour (`js/lib/camsample.js`, tested). The camera handling is shared with the rolling-shutter page (`js/lib/camera.js`); the smoke test drives both pages with Chromium's fake camera.
+
 ## [1.30.0] - 2026-10-30
 
 ### Added
