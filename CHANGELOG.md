@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.27.0] - 2026-10-30
+
 ### Added
 - **Halos, rainbows & glories** (`#/atmospheric`): a new laboratory. Ice-crystal halos by Monte-Carlo ray tracing through hexagonal prisms (random orientations, horizontal plates and columns, Fresnel and total internal reflection, the dispersion of ice), refined pass by pass on every worker: the 22° and 46° halos, sundogs, parhelic circle, tangent and circumzenithal arcs. Water drops by exact Lorenz–Mie theory (Bohren–Huffman, 16 wavelengths, three radii, the solar disc): rainbows with supernumerary bows and Alexander's band, white fogbows, glories around the antisolar point and coronas around the Sun, with the scattering profile against ray optics. Four new catalogue entries (halos and sundogs, supernumerary bows and fogbows, glory, coronas); validated against minimum deviation, Descartes's rainbow angles, the Rayleigh limit, the extinction paradox and the Fraunhofer corona.
 - ROADMAP: milestone v1.27 *Sky and waves* with the next showpieces (live wave simulation, comparison mode, spectral 3-D bench, black-hole imaging, photon-by-photon and webcam modes).
@@ -773,7 +775,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.26.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.27.0...HEAD
+[1.27.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.26.0...v1.27.0
 [1.26.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.25.0...v1.26.0
 [1.25.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.24.0...v1.25.0
 [1.24.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.23.0...v1.24.0
