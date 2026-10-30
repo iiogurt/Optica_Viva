@@ -353,7 +353,7 @@ A lake scene **rendered per pixel in Stokes vectors**. Skylight from a single-sc
 **Halos, rainbows & glories** · `#/atmospheric`<br>
 <img src="docs/screenshots/atmospheric.webp" alt="Sky around the Sun with the 22° halo, sundogs, parhelic circle and circumzenithal arc; a corona; a rainbow with supernumerary bows; and the Mie scattering profile" width="70%">
 
-**Ice-crystal halos** by Monte-Carlo ray tracing through hexagonal prisms (random orientations, horizontal plates and columns with a wobble, Fresnel reflection and total internal reflection at every face, the dispersion of ice): the 22° and 46° halos, sundogs, the parhelic circle, tangent arcs and the circumzenithal arc, built up progressively on all workers. **Water drops** by exact **Lorenz–Mie theory** (BHMIE, up to thousands of terms, 16 wavelengths, the solar disc): the rainbow with its supernumerary bows and Alexander's band, the white fogbow of small drops, the glory around your shadow and the corona around the Sun, all from one calculation.
+**Ice-crystal halos** by Monte-Carlo ray tracing through hexagonal prisms (random orientations, horizontal plates and columns with a wobble, Fresnel reflection and total internal reflection at every face, the dispersion of ice): the 22° and 46° halos, sundogs, the parhelic circle, tangent arcs and the circumzenithal arc, built up progressively on all workers, and a 3-D crystal with the exact ray paths of the 22° and 46° halos and the circumzenithal arc. **Water drops** by exact **Lorenz–Mie theory** (BHMIE, up to thousands of terms, 16 wavelengths, the solar disc): the rainbow with its supernumerary bows and Alexander's band, the white fogbow of small drops, the glory around your shadow and the corona around the Sun, all from one calculation.
 
 </td>
 </tr>
@@ -885,6 +885,7 @@ Optica_Viva/
 │   │   ├── starshade3d.js     3-D starshade geometry: petals, separation, IWA line of sight, the shadow on the pupil
 │   │   ├── transit3d.js       3-D transit geometry at true scale: star, tilted orbit, sight-line cylinder, chord, b
 │   │   ├── interf3d.js        3-D aperture synthesis: the turning Earth, stations, and the baselines' u-v tracks
+│   │   ├── halo3d.js          3-D halo view: hexagonal ice crystal, exact minimum-deviation and circumzenithal ray paths
 │   │   ├── lensing3d.js       3-D lensing: comoving planes, light paths of every image, critical curves, caustics, ring cone
 │   │   ├── projection3d.js    3-D sphere of directions with Tissot circles, the image plane and the sensor's field
 │   │   ├── i18n.js            Interface translation: t(), N_(), language choice and loading

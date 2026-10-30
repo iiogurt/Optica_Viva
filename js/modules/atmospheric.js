@@ -4,6 +4,8 @@ import { plot } from '../lib/plot.js';
 import { xyzToLinearRGB, oetf } from '../lib/color.js';
 import { parallel, poolSize } from '../lib/compute.js';
 import { nIce, nWater, minDeviation, rainbowAngle, parhelion, circumzenithal, skyDir, HALO_FOV, DROP_LAMS, coronaAngles, antiAngles, CORONA_STEP, ANTI_STEP, CORONA_MAX, ANTI_MAX, sunSmear, profileXYZ } from '../lib/atmo.js';
+import { view3d } from '../lib/gl3d.js';
+import { haloScene } from '../lib/halo3d.js';
 import { t, N_ } from '../lib/i18n.js';
 
 const D2R = Math.PI / 180, N = 300;
@@ -42,7 +44,8 @@ export default function mount(root, meta) {
   const cor = stage({ aspect: 1, label: 'Around the Sun: the corona of the drops', draw: (c, w, hh) => drawDrop(c, w, hh, 'corona'), minH: 220 });
   const anti = stage({ aspect: 1, label: 'Around your shadow: glory, fogbow and rainbows (±60°)', draw: (c, w, hh) => drawDrop(c, w, hh, 'anti'), minH: 220 });
   const prof = stage({ aspect: 2.1, label: 'Scattered light around the antisolar point', draw: drawProfile, minH: 200 });
-  root.append(lab([sky.el, note, h('div.grid-2', {}, cor.el, anti.el), prof.el], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  const v3 = view3d({ label: '3-D: an ice crystal and the exact ray paths of the 22° and 46° halos and the circumzenithal arc', aspect: 1.7, minH: 260, yaw: -0.7, pitch: 0.35 });
+  root.append(lab([sky.el, note, v3.el, h('div.grid-2', {}, cor.el, anti.el), prof.el], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   // ── halos: progressive Monte-Carlo passes on all workers ──
   let acc = null, haloTicket = 0, haloCanvas = null, haloRays = 0;
@@ -194,6 +197,7 @@ export default function mount(root, meta) {
     S_1(\theta) &= \sum_n \tfrac{2n+1}{n(n+1)}\,(a_n\pi_n + b_n\tau_n)\\
     x &= 2\pi a/\lambda = ${texNum(x, 3)}
     \end{aligned}`);
+    if (changed(['cloud', 'elev'])) v3.setScene(haloScene({ kind: ['plates', 'cirrus'].includes(st.cloud) ? 'plate' : 'column', h: h0 }), !!last.cloud && last.cloud === st.cloud);
     if (changed(['cloud', 'elev', 'tilt'])) runHalo().catch(console.error);
     else if (changed(['exposure']) && acc) { paintHalo(); sky.redraw(); }
     if (changed(['a', 'w'])) runDrops().catch(console.error);
@@ -233,5 +237,5 @@ export default function mount(root, meta) {
     'P. Laven, "Simulation of rainbows, coronas, and glories by use of Mie theory", Applied Optics 42, 436 (2003).',
     'S. G. Warren &amp; R. E. Brandt, "Optical constants of ice from the ultraviolet to the microwave: a revised compilation", J. Geophys. Res. 113, D14220 (2008).',
   ]));
-  return () => { haloTicket++; dropTicket++; [sky, cor, anti, prof].forEach((s) => s.destroy()); };
+  return () => { haloTicket++; dropTicket++; [sky, cor, anti, prof, v3].forEach((s) => s.destroy()); };
 }
