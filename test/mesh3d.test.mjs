@@ -425,3 +425,16 @@ test('coronagraph 3-D: the mask, the Lyot stop and the planet image sit where th
   // the star's rays stop at the focal plane
   for (const l of sc.lines.filter((l) => l.points.length === 4)) near(l.points.at(-1)[2], Z.focal, 1e-9, 'star rays end at the mask');
 });
+
+test('halo 3-D: exact paths at minimum deviation, dispersion and the circumzenithal arc', async () => {
+  const { haloScene, pathDeviation } = await import('../js/lib/halo3d.js');
+  const { nIce, minDeviation, circumzenithal } = await import('../js/lib/atmo.js');
+  const D = Math.PI / 180, s = haloScene({ kind: 'plate', h: 20 * D });
+  near(pathDeviation(s.paths.halo22), minDeviation(60 * D, nIce(550)) / D, 1e-3, '22° path');
+  near(pathDeviation(s.paths.halo46), minDeviation(90 * D, nIce(550)) / D, 1e-3, '46° path');
+  assert.ok(pathDeviation(s.paths.halo22, 450) > pathDeviation(s.paths.halo22, 650), 'blue is bent more than red');
+  const o = s.paths.cza.out[550].out;
+  near(Math.asin(-o[2]) / D, circumzenithal(nIce(550), 20 * D).elevation, 1e-3, 'CZA elevation');
+  assert.equal(haloScene({ kind: 'plate', h: 40 * D }).paths.cza, undefined, 'no arc above 32°');
+  const m = s.meshes[0].mesh; unitNormals(m); indicesValid(m);
+});

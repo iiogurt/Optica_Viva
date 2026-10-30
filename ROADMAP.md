@@ -540,7 +540,7 @@ Candidates, in order of how much the third dimension adds:
 - [ ] **P2 · L** **Black-hole imaging**: light paths around a black hole (shadow, photon ring, lensed disc), then observed with the EHT array of the interferometry laboratory.
 - [ ] **P2 · M** **Photon-by-photon mode** for the noise, stacking, film and detector pages: photons arrive one at a time and shot noise builds up visibly.
 - [ ] **P2 · M** **Live webcam mode**: a page's physics (seeing, bokeh, aliasing, rolling shutter) applied to the camera feed, on the device only.
-- [ ] **P3 · S** 3-D view in the halo laboratory: a hexagonal crystal with the ray paths of the 22° halo, a sundog and the circumzenithal arc.
+- [x] **P3 · S** 3-D view in the halo laboratory: a hexagonal crystal with the exact ray paths of the 22° and 46° halos and the circumzenithal arc, in red and blue light.
 - [x] **P3 · S** Decimal commas in German, French and Spanish: translated sentences and notes, readouts, sliders, chart ticks, 3-D labels and equations. *Numbers some canvases draw directly still use points.*
 
 ### v2.0 Learning platform
