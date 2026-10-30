@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.29.0] - 2026-10-30
+
 ### Added
 - **Comparison mode**: a *Compare* button on every page opens two embedded copies of the laboratory side by side, both starting from the current settings and adjusted independently ("f/2 against f/8"), with buttons to copy one side's settings to the other; Escape closes them and their workers. The browser smoke test opens and closes it.
 
@@ -783,7 +785,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.28.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.29.0...HEAD
+[1.29.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.28.0...v1.29.0
 [1.28.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.27.0...v1.28.0
 [1.27.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.26.0...v1.27.0
 [1.26.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.25.0...v1.26.0
