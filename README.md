@@ -615,7 +615,7 @@ Short exposures through frozen-flow Kolmogorov turbulence are ranked by Strehl, 
 **Astrophotography stacking** · `#/stacking`<br>
 <img src="docs/screenshots/stacking.webp" alt="A faint galaxy in one sub-exposure and in the stack, with SNR curves vs sub length and total time">
 
-The **CCD equation for stacks**: a faint galaxy behind a sky set by the **Bortle class**, with dark current and read noise. The page compares one sub-exposure with the full stack and shows SNR vs sub length (the **sky-limited sub** t = 10σ²/F<sub>sky</sub>) and vs total time (**√T**), with the 2.5× time penalty per magnitude of brighter sky.
+The **CCD equation for stacks**: a faint galaxy behind a sky set by the **Bortle class**, with dark current and read noise. The page compares one sub-exposure with the full stack and shows SNR vs sub length (the **sky-limited sub** t = 10σ²/F<sub>sky</sub>) and vs total time (**√T**), with the 2.5× time penalty per magnitude of brighter sky. **Sub by sub**: Poisson photons and read noise, one sub-exposure per frame, the running stack's measured SNR beside the √N prediction.
 
 </td>
 <td width="50%" valign="top">
@@ -938,7 +938,7 @@ Optica_Viva/
 │   │   ├── ifilter.js         Interference filters in converging beams: angle shift, cone average, pre-shift
 │   │   ├── interferometry.js  Visibility of extended sources, array u-v coverage, dirty beam/image, Högbom CLEAN
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
-│   │   ├── photons.js         Photon by photon: Poisson arrivals on a test scene, flat-patch statistics
+│   │   ├── photons.js         Photon by photon: Poisson arrivals on a test scene, sub-exposures with read noise, measured SNR
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── survey.js          Survey mission: DORI pixel densities, drone GSD, shutter and overlap
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings

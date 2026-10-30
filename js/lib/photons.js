@@ -44,3 +44,20 @@ export function patchStats(acc, w = PW) {
 }
 
 export const photonRng = (seed) => makeRng(seed);
+
+// One sub-exposure of an astronomical frame: Poisson electrons from the object (rate[k] e⁻/s per
+// pixel), the sky and dark current (bg e⁻/s per pixel) over t seconds, plus Gaussian read noise
+// σ_r; the expected background is subtracted, as in calibration. Writes into `out` and returns it.
+export function subExposure(rate, bg, sigma, t, rng, out = new Float32Array(rate.length)) {
+  for (let k = 0; k < rate.length; k++) out[k] = rng.poisson((rate[k] + bg) * t) + sigma * rng.g() - bg * t;
+  return out;
+}
+
+// Signal-to-noise ratio over the central square (half-width r) of an n × n image, measured against
+// the known expected image: signal = mean of the expectation, noise = spread of (image − expected).
+export function centreSNR(img, expected, n, r = 4) {
+  let s = 0, d = 0, d2 = 0, c = 0;
+  for (let y = n / 2 - r; y < n / 2 + r; y++) for (let x = n / 2 - r; x < n / 2 + r; x++) { const k = y * n + x, e = img[k] - expected[k]; s += expected[k]; d += e; d2 += e * e; c++; }
+  const sd = Math.sqrt(Math.max(0, d2 / c - (d / c) ** 2) * (c / (c - 1)));
+  return sd > 0 ? s / c / sd : Infinity;
+}
