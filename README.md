@@ -386,7 +386,7 @@ A lake scene **rendered per pixel in Stokes vectors**. Skylight from a single-sc
 **Aliasing, moiré & Bayer** · `#/sampling`<br>
 <img src="docs/screenshots/sampling.webp" alt="Zone plate: continuous, mono-sampled and Bayer-demosaiced">
 
-Zone plate, fabric, stripes and bricks sampled through pixel apertures and a birefringent OLPF. RGGB mosaics are demosaiced with bilinear or **Malvar–He–Cutler** interpolation, with measured false colour and a spectral-folding chart.
+Zone plate, fabric, stripes and bricks sampled through pixel apertures and a birefringent OLPF. RGGB mosaics are demosaiced with bilinear or **Malvar–He–Cutler** interpolation, with measured false colour and a spectral-folding chart. **Your camera** on a coarse virtual sensor shows moiré and false colour in fine fabric, screens or text, with and without a low-pass filter.
 
 </td>
 </tr>
@@ -885,6 +885,8 @@ Optica_Viva/
 │   │   ├── compute.js         Worker API: run(task), latest-only channels, a pool for parallel row bands, main-thread fallback
 │   │   ├── cinema.js          Anamorphic aspect, streak colour, focus breathing models, T-stops
 │   │   ├── colordata.js       CIE tables at 5 nm: 1931 observer, daylight basis, illuminants, CRI test colours
+│   │   ├── camera.js          Your own camera as a light source: permission, frame grabber, stop on leaving
+│   │   ├── camsample.js       A camera feed on a coarse sensor: pixel aperture, 4-spot OLPF, Bayer mosaic and demosaicing
 │   │   ├── colorsci.js        CCT/Duv, CIE 13.3 CRI, Bradford adaptation, CIELAB, CIEDE2000
 │   │   ├── choose.js          Comparison mission: camera equivalence, telescope limits
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)

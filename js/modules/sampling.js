@@ -1,6 +1,8 @@
 import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
+import { cameraFeed } from '../lib/camera.js';
+import { sampleSensor, bayerDemosaic } from '../lib/camsample.js';
 import { t } from '../lib/i18n.js';
 
 const NPX = 150; // sensor pixels across
@@ -37,6 +39,34 @@ export default function mount(root, meta) {
   const bay = stage({ aspect: 1, label: 'Bayer + demosaic', draw: (c, w, hh) => blit(c, w, hh, R.bayer, false) });
   const fold = stage({ aspect: 2.6, label: '', draw: drawFold, cls: 'plain', minH: 220 });
   root.append(lab([h('div.grid-3', {}, ref.el, mono.el, bay.el), h('div.card', { style: { padding: '6px' } }, fold.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+
+  // ── Your camera, sampled by a coarse virtual sensor: fine fabric, screens or text alias ──
+  const CW = 384, CH = 288;
+  const cctl = controls({
+    camK: { type: 'range', label: 'Sensor pixel size (camera pixels per side)', min: 2, max: 12, step: 1, value: 6 },
+    camOlpf: { type: 'toggle', label: 'Optical low-pass filter', value: false },
+    camBayer: { type: 'toggle', label: 'Bayer colour mosaic + demosaicing', value: true },
+  }, () => cam.active() && last && process(last));
+  const camFull = stage({ aspect: CW / CH, label: 'Your camera at full resolution', draw: (c, w, hh) => camBlit(c, w, hh, fullImg), minH: 160 });
+  const camSensor = stage({ aspect: CW / CH, label: 'The same scene on a sensor with larger pixels', draw: (c, w, hh) => camBlit(c, w, hh, sensorImg, true), minH: 160 });
+  const cam = cameraFeed({ w: CW, h: CH, onFrame: (d) => process(d), onStop: () => { camFull.redraw(); camSensor.redraw(); } });
+  root.append(lab([h('div.grid-2', {}, camFull.el, camSensor.el), h('div.rx-actions', { style: { alignItems: 'center' } }, cam.button, cam.note)], [h('div.card', {}, cctl.el)]));
+  const fullImg = imageCanvas(CW, CH);
+  let sensorImg = null, last = null;
+  function process(data) {
+    last = data;
+    fullImg.data.set(data); fullImg.put();
+    const st = cctl.state, { S, w, h: hh } = sampleSensor(data, CW, CH, st.camK, st.camOlpf), rgb = st.camBayer ? bayerDemosaic(S, w, hh) : S;
+    if (!sensorImg || sensorImg.c.width !== w || sensorImg.c.height !== hh) sensorImg = imageCanvas(w, hh);
+    for (let k = 0; k < w * hh; k++) { for (let c = 0; c < 3; c++) sensorImg.data[k * 4 + c] = rgb[k * 3 + c]; sensorImg.data[k * 4 + 3] = 255; }
+    sensorImg.put(); camFull.redraw(); camSensor.redraw();
+  }
+  function camBlit(ctx, w, hh, ic, pixelated = false) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
+    if (!cam.active() || !ic) return;
+    ctx.imageSmoothingEnabled = !pixelated; ctx.drawImage(ic.c, 0, 0, w, hh);
+  }
+
 
   const R = {};
   function blit(ctx, w, hh, c, smooth) {
@@ -185,5 +215,5 @@ export default function mount(root, meta) {
     'C. E. Shannon, "Communication in the presence of noise", Proc. IRE 37, 10 (1949).',
     'J. E. Greivenkamp, "Color dependent optical prefilter for the suppression of aliasing artifacts", Appl. Opt. 29, 676 (1990).',
   ]));
-  return () => [ref, mono, bay, fold].forEach((s) => s.destroy());
+  return () => { cam.stop(); [ref, mono, bay, fold, camFull, camSensor].forEach((s) => s.destroy()); };
 }
