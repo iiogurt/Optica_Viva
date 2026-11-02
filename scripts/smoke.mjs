@@ -31,6 +31,8 @@ const probe = `(() => ({
   dl: [...document.querySelectorAll('dl')].filter((d) => d.hasAttribute('role') || [...d.children].some((c) => !['DT', 'DD', 'DIV'].includes(c.tagName))).length,
   // every slider announces its physical value and unit, the same text as its visible output (#201)
   sliders: [...document.querySelectorAll('input[type=range]')].filter((i) => { const o = i.closest('label')?.querySelector('output'); return o && i.getAttribute('aria-valuetext') !== o.textContent; }).length,
+  // links in running text carry an underline, not colour alone (#203)
+  bareLinks: [...document.querySelectorAll('main a[href]')].filter((a) => a.closest('p, li, dd, td, figcaption, .note, .callout') && !a.closest('nav') && getComputedStyle(a).display === 'inline' && !a.className && a.textContent.trim() && !getComputedStyle(a).textDecorationLine.includes('underline')).map((a) => a.textContent.trim().slice(0, 30)),
 }))()`;
 try {
   for (const id of ids) {
@@ -44,6 +46,7 @@ try {
     if (s.tex.length) problems.push('TeX errors: ' + s.tex.join(' | '));
     if (s.dl) problems.push(`${s.dl} description lists without dt/dd semantics`);
     if (s.sliders) problems.push(`${s.sliders} sliders without their value as aria-valuetext`);
+    if (s.bareLinks.length) problems.push('links without underline: ' + s.bareLinks.join(' | '));
     console.log(`${problems.length ? '✗' : '✓'} ${id}${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
     if (problems.length) failed++;
   }
