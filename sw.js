@@ -2,6 +2,10 @@
 // network-first (so the site is always current when online) and fall back to the cache; the whole
 // app (precache.json) is cached on install and again whenever the version in package.json changes.
 // Google Fonts are served from the cache and refreshed in the background.
+// A worker is installed only when the whole app is cached: if any file fails, installation fails,
+// the browser keeps the previous worker (or none) and tries again on the next visit. A refresh
+// after a version change uses Cache.addAll, which stores all files or none, so a failed refresh
+// keeps the previous complete copy and its version; the page is told the outcome.
 const CACHE = 'optica-viva', FONTS = 'optica-viva-fonts', TIMEOUT = 4000;
 
 async function precache() {
@@ -14,10 +18,14 @@ async function precache() {
   await c.put('precache-version', new Response(version));
 }
 
-self.addEventListener('install', (e) => { e.waitUntil(precache().catch(() => {})); self.skipWaiting(); });
+self.addEventListener('install', (e) => e.waitUntil(precache().then(() => self.skipWaiting())));
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 // the page asks for a refresh on every start; it does nothing unless the version changed
-self.addEventListener('message', (e) => { if (e.data === 'refresh') e.waitUntil(precache().catch(() => {})); });
+self.addEventListener('message', (e) => {
+  if (e.data !== 'refresh') return;
+  const reply = (msg) => e.source?.postMessage(msg);
+  e.waitUntil(precache().then(() => reply({ precache: 'ok' }), (err) => reply({ precache: 'failed', error: String(err?.message || err) })));
+});
 
 const timeout = (p, ms) => new Promise((res, rej) => { const t = setTimeout(() => rej(new Error('timeout')), ms); p.then((r) => { clearTimeout(t); res(r); }, (err) => { clearTimeout(t); rej(err); }); });
 

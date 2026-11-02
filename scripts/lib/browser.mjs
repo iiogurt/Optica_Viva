@@ -68,6 +68,35 @@ export async function launch({ width = 1440, height = 1200, flags = [] } = {}) {
   return page;
 }
 
+// A static server in Node for fault injection: fail is a set of paths ('js/modules/dof.js') answered
+// with 503, replace a map of path → body served instead of the file. stop() takes the site offline
+// (closing open connections); start() brings it back on the same port, so the origin is unchanged.
+export async function serveStatic(root, port = 8890 + Math.floor(Math.random() * 100)) {
+  const { createServer } = await import('node:http');
+  const { readFile } = await import('node:fs/promises');
+  const { extname, resolve: res, sep } = await import('node:path');
+  const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
+  const fail = new Set(), replace = new Map(), base = res(root);
+  let server;
+  const handle = async (req, out) => {
+    const path = decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/^\/+/, '') || 'index.html';
+    const file = res(base, path);
+    if (file !== base && !file.startsWith(base + sep)) { out.writeHead(403).end(); return; }
+    if (fail.has(path)) { out.writeHead(503).end('injected failure'); return; }
+    try {
+      const body = replace.has(path) ? replace.get(path) : await readFile(file);
+      out.writeHead(200, { 'Content-Type': TYPES[extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' }).end(body);
+    } catch { out.writeHead(404).end(); }
+  };
+  const site = {
+    url: `http://127.0.0.1:${port}/`, fail, replace,
+    start: () => new Promise((ok) => { server = createServer(handle); server.listen(port, '127.0.0.1', ok); }),
+    stop: () => new Promise((ok) => { if (!server) return ok(); server.closeAllConnections(); server.close(() => ok()); server = null; }),
+  };
+  await site.start();
+  return site;
+}
+
 // Serve the repository on a free local port (python3 http.server), returns {url, stop}.
 export async function serve(root, port = 8790 + Math.floor(Math.random() * 100)) {
   const proc = spawn('python3', ['-m', 'http.server', String(port), '--bind', '127.0.0.1'], { cwd: root, stdio: 'ignore' });

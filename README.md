@@ -108,7 +108,7 @@ Any static host works too (GitHub Pages, Netlify, an S3 bucket). The app uses ha
 
 </details>
 
-KaTeX is vendored in `vendor/katex/`, so the app runs **fully offline**. It is also an **installable app** (PWA): a service worker (`sw.js`) caches every file listed in `precache.json` on the first visit, keeps fetching fresh files while online, and refreshes the offline copy when the version changes. Browsers offer *Install* in the address bar or the share menu.
+KaTeX is vendored in `vendor/katex/`, so the app runs **fully offline**. It is also an **installable app** (PWA): a service worker (`sw.js`) caches every file listed in `precache.json` on the first visit, keeps fetching fresh files while online, and refreshes the offline copy when the version changes. It installs only once every file is cached, and a failed update keeps the previous complete copy; either way the next visit tries again. Browsers offer *Install* in the address bar or the share menu.
 
 The **interface is available in English, German, French and Spanish** (the language picker sits at the foot of the sidebar; the browser's language is the default). Navigation, laboratory titles and descriptions, the page chrome, every control (labels, options, hints), readout names, figure captions, guided-tour and exercise controls and the home page are translated, and so are the laboratories' buttons and notes, their charts' titles, axes and legends, the labels in the 3-D views, the text drawn into images and the live-calculation sentences; the explanations are still English, and translated pages say so. Web fonts (Fraunces, Inter, JetBrains Mono) load from Google Fonts and are cached after the first visit; without them the app falls back to system fonts.
 
@@ -963,6 +963,7 @@ Optica_Viva/
 │   ├── glasscat.mjs           Generates js/lib/glasscat.js from the refractiveindex.info database
 │   ├── site.mjs               Assembles the deployable site from an explicit list and checks it is complete
 │   ├── smoke.mjs              Every page of the assembled site in real-time headless Chrome; labs must render results
+│   ├── offline.mjs            Offline install and updates with injected HTTP 503 failures (part of npm run smoke)
 │   ├── bench.mjs              Kernel benchmarks (npm run bench)
 │   ├── release.sh             prepare: release PR (date changelog, bump) · publish: tag + GitHub release
 │   ├── worktree.sh            new / finish: one git worktree per branch, cleanup after merge
