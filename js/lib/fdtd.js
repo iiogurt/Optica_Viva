@@ -6,6 +6,32 @@
 // the simulation can live in a compute worker.
 
 export const S = 0.5;
+
+// Numerical dispersion of the 2-D Yee scheme. A plane wave of vacuum wavelength lam (cells) in a
+// medium of index n, travelling at angle theta to the x axis, has the grid wavenumber k that solves
+//   sin²(k cos θ / 2) + sin²(k sin θ / 2) = (n/S)² sin²(π S / lam)
+// (Taflove & Hagness, ch. 4). Returns the grid wavelength 2π/k in cells, or NaN beyond the
+// grid's cutoff (no propagating solution). Stability (S ≤ 1/√2) is a separate question.
+export function gridWavelength(lam, n = 1, theta = 0) {
+  const rhs = (n / S) ** 2 * Math.sin((Math.PI * S) / lam) ** 2, c = Math.abs(Math.cos(theta)), s = Math.abs(Math.sin(theta));
+  const f = (k) => Math.sin((k * c) / 2) ** 2 + Math.sin((k * s) / 2) ** 2 - rhs;
+  let lo = 0, hi = Math.PI / Math.max(c, s); // both terms grow monotonically up to here
+  if (f(hi) < 0) return NaN;
+  for (let i = 0; i < 80; i++) { const m = (lo + hi) / 2; if (f(m) < 0) lo = m; else hi = m; }
+  return (2 * Math.PI) / ((lo + hi) / 2);
+}
+// The phase-velocity error, 1 − λ_grid/(λ/n) (the grid wave is slow), worst over all directions:
+// on a square grid it is largest along the axes and smallest along the diagonals.
+export function phaseError(lam, n = 1) {
+  let worst = 0;
+  for (let a = 0; a <= 45; a += 5) {
+    const g = gridWavelength(lam, n, (a * Math.PI) / 180);
+    worst = Math.max(worst, Number.isFinite(g) ? 1 - (g * n) / lam : 1);
+  }
+  return worst;
+}
+// The accuracy the laboratory aims for: phase velocity within 2 % in the densest material.
+export const PHASE_TARGET = 0.02;
 const ABS = 28; // absorbing layer, cells
 
 // Scenes: each returns { eps, pec } masks for a grid nx × ny; λ, sizes and positions in cells.

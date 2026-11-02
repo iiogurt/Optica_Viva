@@ -2,7 +2,7 @@
 // integral, stability and the absorbing boundary.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { makeSim, step, column, huygens } from '../js/lib/fdtd.js';
+import { makeSim, step, column, huygens, gridWavelength, phaseError, PHASE_TARGET, S } from '../js/lib/fdtd.js';
 
 const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b} (±${tol})`);
 
@@ -42,4 +42,32 @@ test('stable at S = 0.5: with the absorbing edges the field does not grow', () =
   step(sim, 3000);
   const max2 = Math.max(...sim.Ez.map(Math.abs));
   assert.ok(isFinite(max2) && max2 < 3 * max1, `no growth: ${max1} → ${max2}`);
+});
+
+// Grid dispersion at the supported extremes (#209): the Yee relation against the on-axis closed form
+// and against wavelengths measured in the simulation, second-order convergence, and the warning.
+test('Yee dispersion: the relation matches the closed form and the measured grid wavelength, down to 3.5 cells in glass', () => {
+  // on axis the relation has the closed form λ_grid = π / asin(n sin(πS/λ)/S)
+  for (const [lam, n] of [[8, 1], [8, 2], [12, 1.5], [20, 2.5]]) near(gridWavelength(lam, n, 0), Math.PI / Math.asin((n * Math.sin((Math.PI * S) / lam)) / S), 1e-9, `closed form λ = ${lam}, n = ${n}`);
+  near(gridWavelength(8, 2, 0), 3.509205, 1e-6, 'the report');
+  for (const [lam, n] of [[8, 2], [8, 1], [12, 2.5]]) {
+    const sim = makeSim({ nx: 400, ny: 120, lam, scene: 'film', p: { w: 400, n }, x0: 120 });
+    step(sim, 1800);
+    const measured = period(sim, 150, 330), predicted = gridWavelength(lam, n, 0);
+    near(measured, predicted, 0.002 * predicted, `measured λ = ${lam}, n = ${n}`);
+    if (n * 8 / lam > 1.5) assert.ok(Math.abs(measured - lam / n) > 0.05 * lam / n, 'and far from the continuum λ/n');
+  }
+});
+
+test('Yee dispersion is largest along the axes and falls as the square of the resolution', () => {
+  assert.ok(gridWavelength(16, 1, Math.PI / 4) > gridWavelength(16, 1, 0), 'diagonal faster than axis');
+  const e = [8, 16, 32, 64].map((lam) => phaseError(lam, 1.5));
+  for (let i = 1; i < e.length; i++) near(e[i - 1] / e[i], 4, 0.4, `refinement ${i}`);
+  assert.ok(e[3] < 1e-3);
+});
+
+test('the laboratory flags settings beyond its 2 % phase target', () => {
+  assert.equal(PHASE_TARGET, 0.02);
+  assert.ok(phaseError(8, 2.5) > PHASE_TARGET && phaseError(12, 1.5) > PHASE_TARGET && phaseError(20, 2.5) > PHASE_TARGET, 'flagged');
+  assert.ok(phaseError(12, 1) < PHASE_TARGET && phaseError(16, 1.5) < PHASE_TARGET && phaseError(20, 2) < PHASE_TARGET, 'within target');
 });
