@@ -150,6 +150,23 @@ try {
     await page.size(1440, 1200);
     console.log(`${!bad ? '✓' : '✗'} scrolling equations at 375 px (${focusable} focusable, ${bad} unreachable)`);
     if (bad) failed++;
+  // reduced motion: the FDTD waves start still (one computed frame, no stepping) until Run (#207)
+  {
+    await page.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+    const errors = await page.goto(site.url + '#/waves', 2500);
+    const steps = () => page.eval(`+(document.querySelector('p.note[role=status]')?.textContent.match(/(\\d+) time steps/)?.[1] || 0)`);
+    let s0 = 0;
+    for (let k = 0; k < 40 && !(s0 = await steps()); k++) await sleep(500);
+    await sleep(2000);
+    const s1 = await steps(), label = await page.eval(`[...document.querySelectorAll('button')].find((b) => /^(Run|Pause)$/.test(b.textContent))?.textContent`);
+    await page.eval(`[...document.querySelectorAll('button')].find((b) => b.textContent === 'Run')?.click()`);
+    await sleep(2500);
+    const s2 = await steps();
+    await page.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
+    await page.goto(site.url + '#/', 1000);
+    const ok = s0 > 0 && s1 === s0 && label === 'Run' && s2 > s1 && !errors.length && !page.errors().length;
+    console.log(`${ok ? '✓' : '✗'} reduced motion: waves still at ${s0} steps, then running (${s2}) after Run${errors.length ? '  ' + errors.join(' | ') : ''}`);
+    if (!ok) failed++;
   }
   // guided tours: each one starts from its link and plays to the end; every select it sets must hold the value
   const { TOURS } = await import('../js/lib/tours.js');
