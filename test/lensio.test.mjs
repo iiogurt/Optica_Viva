@@ -130,3 +130,17 @@ test('legitimate prescriptions keep working: mirrors, aspheres, model glasses, e
   }
   assert.ok(Object.values(LENSES).some((L) => L.surfaces.some((s) => s.glass === 'mirror')), 'a mirror system is among them');
 });
+
+test('a shared link keeps names exactly: spaces, tabs, newlines, Unicode and quotes (#196)', () => {
+  const names = ['My test lens', 'tab\there', 'line\nbreak', 'Ölinse λ 𝛌 中文', 'say "f/2"\\'];
+  for (const name of names) {
+    const L = { name, epd: 12.5, field: 7.25, surfaces: [{ R: 40.125, k: -0.5, a: [1.5e-6, -2e-9], t: 6, glass: { name: name.slice(0, 40), nd: 1.5831, vd: 59.4 }, stop: true }, { R: Infinity, t: 60.0625, glass: 'air', sd: 9.5 }] };
+    for (const back of [decodeLens(encodeLens(L)), lensFromJSON(lensToJSON(L))]) {
+      assert.equal(back.name, name);
+      assert.equal(back.surfaces[0].glass.name, name.slice(0, 40));
+      assert.deepEqual([back.epd, back.field, back.surfaces[0].R, back.surfaces[0].k, back.surfaces[0].a, back.surfaces[1].R, back.surfaces[1].t, back.surfaces[1].sd],
+        [12.5, 7.25, 40.125, -0.5, [1.5e-6, -2e-9], Infinity, 60.0625, 9.5]);
+    }
+  }
+  assert.ok(!/\n/.test(lensToJSON(LENSES.cooke, 0)), 'compact JSON for links');
+});

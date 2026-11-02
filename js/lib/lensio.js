@@ -66,8 +66,9 @@ export function parseZmx(text) {
   return { lens: { name, epd, field, surfaces }, warnings };
 }
 
-// JSON round trip (Infinity is not valid JSON, so it is written as the string "inf").
-export function lensToJSON(lens) {
+// JSON round trip (Infinity is not valid JSON, so it is written as the string "inf"). indent 0 gives
+// compact JSON for links; strings such as names keep their spaces either way.
+export function lensToJSON(lens, indent = 2) {
   const surfaces = lens.surfaces.map((s) => {
     const o = { R: isFinite(s.R) ? +s.R.toPrecision(10) : 'inf', t: s.t, glass: s.glass };
     if (s.k) o.k = s.k;
@@ -76,7 +77,7 @@ export function lensToJSON(lens) {
     if (s.stop) o.stop = true;
     return o;
   });
-  return JSON.stringify({ format: 'optica-viva-lens', version: 1, name: lens.name, epd: lens.epd, field: lens.field, surfaces }, null, 2);
+  return JSON.stringify({ format: 'optica-viva-lens', version: 1, name: lens.name, epd: lens.epd, field: lens.field, surfaces }, null, indent || undefined);
 }
 // Limits for prescriptions from files, shared links and the editor: generous for real designs
 // (the built-in lenses reach 14 surfaces, a 6.5 m pupil, a 45° field and 10 m spacings) and
@@ -153,7 +154,7 @@ export function validateLens(lens) {
   return errs;
 }
 // Compact, URL-safe encoding for shareable custom lenses.
-export const encodeLens = (lens) => btoa(unescape(encodeURIComponent(lensToJSON(lens).replace(/\s+/g, '')))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+export const encodeLens = (lens) => btoa(unescape(encodeURIComponent(lensToJSON(lens, 0)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 export function decodeLens(s) {
   if (typeof s !== 'string' || s.length > Math.ceil((LENS_LIMITS.text * 4) / 3)) throw new Error('shared lens too long');
   return lensFromJSON(decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/')))));
