@@ -3,7 +3,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { runOn } from '../lib/compute.js';
-import { huygens, S } from '../lib/fdtd.js';
+import { huygens, S, phaseError, PHASE_TARGET } from '../lib/fdtd.js';
 import { t, N_ } from '../lib/i18n.js';
 
 const NX = 280, NY = 190, X0 = 90, SCREEN = NX - 36;
@@ -161,6 +161,16 @@ export default function mount(root, meta) {
       say = t('Behind a straight edge the light leaks into the geometric shadow and ripples beside it: Fresnel edge diffraction.');
       tex = String.raw`I(v) = \tfrac12\left[\left(C(v)+\tfrac12\right)^2 + \left(S(v)+\tfrac12\right)^2\right]`;
     }
+    // grid dispersion in the densest material, worst direction: quantified, and said when it is
+    // above the target, because the predictions above are for the continuum
+    const glass = ['lens', 'interface', 'film'].includes(st.scene), nMax = glass ? st.n : 1, err = phaseError(L, nMax);
+    rows.push([N_('Grid phase error (worst direction)'), t('{e} % at {c} cells per wavelength', { e: (err * 100).toFixed(1), c: (L / nMax).toFixed(1) })]);
+    if (err > PHASE_TARGET) {
+      const v = { c: (L / nMax).toFixed(1), e: (err * 100).toFixed(1), t: (PHASE_TARGET * 100).toFixed(0) };
+      say += ' ' + (glass
+        ? t('Careful: with {c} cells per wavelength in the glass, the grid slows the wave by up to <strong>{e} %</strong> (the target is {t} %), so the simulated pattern departs from these predictions. A longer wavelength or a lower index helps.', v)
+        : t('Careful: with {c} cells per wavelength, the grid slows the wave by up to <strong>{e} %</strong> (the target is {t} %), so the simulated pattern departs from these predictions. A longer wavelength helps.', v));
+    }
     ro.replaceChildren(readouts(rows));
     calc.say(say);
     calc.set(String.raw`\begin{aligned}
@@ -181,7 +191,9 @@ export default function mount(root, meta) {
 \[\partial_t H_x = -\frac{1}{\mu_0}\partial_y E_z,\qquad \partial_t H_y = \frac{1}{\mu_0}\partial_x E_z,\qquad \partial_t E_z = \frac{1}{\varepsilon}\left(\partial_x H_y - \partial_y H_x\right).\]
 <p>Yee (1966) staggered the three fields by half a cell in space and half a step in time, so every derivative is a centred difference, accurate to second order. The laboratory steps \(H\), then \(E\), on a 280 × 190 grid, with the Courant number \(S = c\,\Delta t/\Delta x = 0.5\), safely inside the two-dimensional stability limit \(1/\sqrt2\).</p>
 <h3>Numerical dispersion</h3>
-<p>On a grid, waves travel slightly slower than \(c\), more so for short wavelengths and oblique directions. With 12 cells per wavelength the phase-velocity error is below 1 %: the test suite measures a wavelength of 16.02 cells for 16 in vacuum and 10.56 for 10.67 in glass of \(n = 1.5\).</p>
+<p>On a grid, waves travel slower than \(c\), more so the fewer cells there are per wavelength. A plane wave of vacuum wavelength \(\lambda\) (in cells) in a medium of index \(n\), travelling at angle \(\theta\) to the grid, has the grid wavenumber \(k\) that solves</p>
+\[\sin^2\frac{k\cos\theta}{2} + \sin^2\frac{k\sin\theta}{2} = \frac{n^2}{S^2}\sin^2\frac{\pi S}{\lambda}.\]
+<p>The error is largest along the grid axes and smallest along the diagonals, and it falls as the square of the resolution. What counts is the number of cells per wavelength in the densest material, \(\lambda/n\). The laboratory aims at a phase-velocity error below 2 %. The readouts give the worst error for the current settings, and the live calculation warns when it is larger. That takes about 9 cells per wavelength in the material: a wavelength slider of at least 8.1 cells in vacuum, 13.1 for \(n = 1.5\) and 17.9 for \(n = 2\), while \(n = 2.5\) cannot reach it on this grid (2.6 % at 20 cells). The predictions in the live calculation are for the continuum, so the simulated pattern then departs from them: at 8 cells and \(n = 2\) the wavelength in the glass is 3.51 cells instead of 4, 12 % short. Stability is a separate condition, \(S \le 1/\sqrt2\), which holds at every setting. The test suite checks the relation against measured wavelengths, in vacuum and in glass up to \(n = 2\).</p>
 <h3>Materials and boundaries</h3>
 <p>Glass is a cell with \(\varepsilon = n^2\varepsilon_0\); a metal screen is a perfect conductor, where \(E_z = 0\). The edges of the grid are a 28-cell absorbing layer whose electric and magnetic losses grow as the cube of the depth and are matched (\(\sigma^*/\mu_0 = \sigma/\varepsilon_0\)), so an incoming wave meets no impedance step and dies away; a little light still returns at oblique incidence. The plane wave is a soft line source with a broad Gaussian profile, switched on smoothly over three periods; the point source is a single soft cell.</p>
 </div><div>
