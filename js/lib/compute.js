@@ -7,32 +7,59 @@ import { TASKS } from './tasks.js';
 let worker, nextId = 0;
 const pending = new Map();
 
+// A job is settled exactly once: its entry leaves `pending` before resolve or reject.
+function settle(id, ok, value) {
+  const p = pending.get(id);
+  if (!p) return;
+  pending.delete(id);
+  ok ? p.resolve(value) : p.reject(value);
+}
+const onReply = (e) => { const { id, result, error } = e.data; settle(id, !error, error ? new Error(error) : result); };
+// Jobs of a worker that failed: re-run on the main thread, unless their buffers were handed over
+// (transferred data is gone, so such a job cannot be repeated and is rejected).
+function rescue(w) {
+  for (const [id, p] of pending) {
+    if (p.worker !== w) continue;
+    if (p.transfer && p.transfer.length) settle(id, false, new Error(`compute worker failed during ${p.task}`));
+    else { pending.delete(id); runLocal(p.task, p.args).then(p.resolve, p.reject); }
+  }
+}
+// Post a job to worker w, or reject it if the message cannot be sent (e.g. uncloneable data).
+function post(w, task, args, transfer = []) {
+  const id = ++nextId;
+  return new Promise((resolve, reject) => {
+    pending.set(id, { resolve, reject, task, args, worker: w, transfer });
+    try { w.postMessage({ id, task, args }, transfer); } catch (e) { settle(id, false, e); }
+  });
+}
+
 function getWorker() {
   if (worker !== undefined) return worker;
   try {
-    worker = new Worker(new URL('../workers/compute.js', import.meta.url), { type: 'module' });
-    worker.onmessage = (e) => {
-      const { id, result, error } = e.data, p = pending.get(id);
-      if (!p) return;
-      pending.delete(id);
-      error ? p.reject(new Error(error)) : p.resolve(result);
-    };
-    worker.onerror = (e) => { // e.g. module workers unsupported: fall back for this and later jobs
+    const w = new Worker(new URL('../workers/compute.js', import.meta.url), { type: 'module' });
+    w.onmessage = onReply;
+    w.onerror = (e) => { // e.g. module workers unsupported: fall back for this and later jobs
       e.preventDefault?.();
       worker = null;
-      for (const [id, p] of pending) { pending.delete(id); runLocal(p.task, p.args).then(p.resolve, p.reject); }
+      w.terminate?.();
+      rescue(w);
     };
+    worker = w;
   } catch { worker = null; }
   return worker;
 }
 
-const runLocal = (task, args) => new Promise((resolve) => setTimeout(() => resolve(TASKS[task](args).result), 0));
+// The main-thread fallback; an exception in the task rejects the promise.
+const runLocal = (task, args) => new Promise((resolve, reject) => setTimeout(() => {
+  try {
+    if (typeof TASKS[task] !== 'function') throw new Error(`unknown compute task ${task}`);
+    resolve(TASKS[task](args).result);
+  } catch (e) { reject(e); }
+}, 0));
 
 export function run(task, args) {
   const w = typeof Worker === 'function' ? getWorker() : null;
-  if (!w) return runLocal(task, args);
-  const id = ++nextId;
-  return new Promise((resolve, reject) => { pending.set(id, { resolve, reject, task, args }); w.postMessage({ id, task, args }); });
+  return w ? post(w, task, args) : runLocal(task, args);
 }
 
 const channels = new Map();
@@ -55,17 +82,13 @@ export const poolSize = () => (typeof Worker === 'function' ? Math.max(1, Math.m
 function getPool() {
   if (pool !== undefined) return pool;
   try {
-    pool = Array.from({ length: poolSize() }, () => {
-      const w = new Worker(new URL('../workers/compute.js', import.meta.url), { type: 'module' });
-      w.onmessage = (e) => {
-        const { id, result, error } = e.data, p = pending.get(id);
-        if (!p) return;
-        pending.delete(id);
-        error ? p.reject(new Error(error)) : p.resolve(result);
-      };
-      w.onerror = (e) => { e.preventDefault?.(); pool = null; };
-      return w;
-    });
+    const ws = Array.from({ length: poolSize() }, () => new Worker(new URL('../workers/compute.js', import.meta.url), { type: 'module' }));
+    for (const w of ws) {
+      w.onmessage = onReply;
+      // a failed worker is terminated and its jobs rescued; later jobs run on the main thread
+      w.onerror = (e) => { e.preventDefault?.(); pool = null; w.terminate?.(); rescue(w); };
+    }
+    pool = ws;
   } catch { pool = null; }
   return pool;
 }
@@ -73,9 +96,7 @@ function getPool() {
 // transfer: ArrayBuffers handed to the worker (they become unusable here)
 export function runOn(i, task, args, transfer = []) {
   const p = typeof Worker === 'function' ? getPool() : null;
-  if (!p) return runLocal(task, args);
-  const id = ++nextId;
-  return new Promise((resolve, reject) => { pending.set(id, { resolve, reject, task, args }); p[i % p.length].postMessage({ id, task, args }, transfer); });
+  return p ? post(p[i % p.length], task, args, transfer) : runLocal(task, args);
 }
 export const parallel = (task, jobs) => Promise.all(jobs.map((args, i) => runOn(i, task, args)));
 
