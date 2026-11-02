@@ -19,6 +19,33 @@ export function h(tag, props = {}, ...children) {
 }
 
 // ── KaTeX ────────────────────────────────────────────────────────────────────────────────
+// Equations wider than their column scroll sideways (CSS). Such a region, and only such a region,
+// is made focusable and named, so it can be scrolled with the keyboard too (WCAG 2.1.1); checked
+// after every render and whenever such a box changes size (a scrollbar appearing narrows the column).
+const MATH_SCROLLERS = '.calc, .katex-display, .entry-body .eq, .mstep-eq';
+const watched = new Set();
+let sizes = null;
+export function markScrollableMath(root = document) {
+  if (!sizes && typeof ResizeObserver === 'function') sizes = new ResizeObserver(() => checkMathSoon());
+  for (const el of watched) if (!el.isConnected) { sizes.unobserve(el); watched.delete(el); }
+  for (const el of root.querySelectorAll(MATH_SCROLLERS)) {
+    if (sizes && !watched.has(el)) { watched.add(el); sizes.observe(el); }
+    const ox = getComputedStyle(el).overflowX;
+    const wide = (ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1 && !!el.querySelector('.katex');
+    if (wide && !el.hasAttribute('data-scrolls')) {
+      el.setAttribute('data-scrolls', ''); el.tabIndex = 0; el.setAttribute('role', 'group'); el.setAttribute('aria-label', t('Equation, scrolls sideways'));
+    } else if (!wide && el.hasAttribute('data-scrolls')) {
+      for (const a of ['data-scrolls', 'tabindex', 'role', 'aria-label']) el.removeAttribute(a);
+    }
+  }
+}
+let mathPending = false;
+const checkMathSoon = () => {
+  if (mathPending || typeof requestAnimationFrame !== 'function') return;
+  mathPending = true;
+  requestAnimationFrame(() => { mathPending = false; markScrollableMath(); });
+};
+if (typeof window !== 'undefined') { window.addEventListener('resize', checkMathSoon); document.fonts?.ready.then(checkMathSoon); }
 // One set of options for every formula. KaTeX's trust stays off: no page needs \href, \url,
 // \includegraphics or the \html… commands, so they render as errors instead of links or attributes.
 export const TEX_OPTIONS = Object.freeze({ throwOnError: false, strict: false });
@@ -26,11 +53,13 @@ export function tex(src, display = false) {
   const span = h(display ? 'div.tex-display' : 'span');
   try { window.katex.render(src, span, { ...TEX_OPTIONS, displayMode: display }); }
   catch { span.textContent = src; }
+  checkMathSoon();
   return span;
 }
 export function setTex(el, src, display = true) {
   try { window.katex.render(src, el, { ...TEX_OPTIONS, displayMode: display }); }
   catch { el.textContent = src; }
+  checkMathSoon();
 }
 export function renderMath(el) {
   if (window.renderMathInElement) {
@@ -39,6 +68,7 @@ export function renderMath(el) {
       ...TEX_OPTIONS,
     });
   }
+  checkMathSoon();
 }
 // Prose block: HTML string with \( \) and \[ \] math.
 export function prose(html, cls = '') {
