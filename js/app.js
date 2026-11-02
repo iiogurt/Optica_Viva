@@ -178,29 +178,15 @@ function localiseShell() {
 }
 localiseShell();
 buildNav();
-// Offline use and installation (sw.js). A page that already had a worker asks it to refresh the
-// offline copy, which it does only when the version changed. The worker installs only once the
-// whole app is cached; if caching fails the app keeps working online (with the previous offline
-// copy, if any), says so in the console, and tries again on the next visit.
+// Offline use and installation (sw.js). The worker installs only once the whole app is cached and
+// checks for a new version on every page load; if caching fails the app keeps working online (with
+// the previous offline copy, if any), says so in the console, and tries again on the next visit.
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  const had = !!navigator.serviceWorker.controller;
   const warn = (what) => console.warn(`Offline copy not ${what}; the app works online and tries again on the next visit.`);
   navigator.serviceWorker.addEventListener('message', (e) => {
     if (e.data?.precache === 'failed') warn(`${e.data.phase === 'install' ? 'saved' : 'updated'} (${e.data.error})${navigator.serviceWorker.controller ? ', the previous one is kept' : ''}`);
   });
-  // one caching job at a time: a new worker that is installing caches the app itself, so the
-  // refresh request waits until it has finished (or failed)
-  // (a worker that has already finished counts at once; after 60 s the page asks anyway)
-  const done = (w) => !w || w.state === 'activated' || w.state === 'redundant';
-  const settled = (w) => new Promise((ok) => {
-    if (done(w)) return ok();
-    const timer = setTimeout(ok, 60000);
-    w.addEventListener('statechange', () => { if (done(w)) { clearTimeout(timer); ok(); } });
-  });
-  // a returning visitor also checks for a new sw.js now, rather than whenever the browser decides
-  navigator.serviceWorker.register('sw.js')
-    .then((reg) => Promise.resolve(had && reg.update().catch(() => {})).then(() => settled(reg.installing || reg.waiting)).then(() => reg))
-    .then((reg) => { if (had && reg.active && !reg.installing) reg.active.postMessage('refresh'); }).catch(() => {});
+  navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 // the skip link must not change the hash (that would re-route): focus <main> directly
 document.querySelector('.skip-link')?.addEventListener('click', (e) => { e.preventDefault(); main.focus(); });

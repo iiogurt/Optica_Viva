@@ -65,6 +65,7 @@ try {
   await visit('#/', 6000);
   st = await state();
   check(st.version === V && st.entries >= before, 'failed refresh keeps the previous complete copy', JSON.stringify(st));
+  check(page.warnings().some((w) => /not updated/.test(w)), 'the failed update is reported to the page', page.warnings().join(' | '));
   check(await offlineWorks(), 'offline after a failed refresh');
   // 3b. a new sw.js as well: its installation fails and the old worker stays in charge
   site.replace.set('sw.js', readFileSync(join(DIST, 'sw.js'), 'utf8') + '\n// next\n');
