@@ -75,8 +75,12 @@ export default function mount(root, meta) {
     });
     steps[1].set({
       answer: `${(r.t * 1000).toFixed(1)} ms <small>(${r.rate.toFixed(0)} fps)</small>`,
-      why: `The air's pattern changes every ${(r.tau * 1000).toFixed(1)} ms (its coherence time with ${st.wind} m/s wind high up); shorter frames freeze it. Raise the gain until the histogram reaches about 70 %.`,
-      tex: String.raw`\tau_0 = 0.314\,\frac{r_0}{v} = 0.314\times\frac{${texNum(r.r0 * 100, 3)}\ \text{cm}}{${st.wind}\ \text{m/s}} = ${texNum(r.tau * 1000, 3)}\ \text{ms}`,
+      why: r.frozen
+        ? `The air's pattern changes every ${(r.tau * 1000).toFixed(1)} ms (its coherence time with ${st.wind} m/s wind high up); frames this short freeze it. Raise the gain until the histogram reaches about 70 %.`
+        : r.smear < 1.5
+        ? `<strong>Almost frozen.</strong> The air's pattern changes every ${(r.tau * 1000).toFixed(2)} ms (with ${st.wind} m/s wind high up and ${st.fwhm}″ seeing), a little faster than the 2 ms a planetary camera needs to collect enough light per frame. Each frame averages ${r.smear.toFixed(1)} coherence times, which softens the sharpest frames slightly: the stack will fall a little short of the telescope's full resolution. Raise the gain until the histogram reaches about 70 %.`
+        : `<strong>The air cannot be frozen tonight.</strong> Its pattern changes every ${(r.tau * 1000).toFixed(2)} ms (with ${st.wind} m/s wind high up and ${st.fwhm}″ seeing), faster than the 2 ms a planetary camera needs to collect enough light per frame. Each frame therefore averages ${r.smear.toFixed(1)} coherence times: fewer frames are sharp and even those are softened, so lucky imaging will not recover the telescope's full resolution. Calmer upper winds or better seeing help; a shorter frame only adds noise. Raise the gain until the histogram reaches about 70 %.`,
+      tex: String.raw`\tau_0 = 0.314\,\frac{r_0}{v} = 0.314\times\frac{${texNum(r.r0 * 100, 3)}\ \text{cm}}{${st.wind}\ \text{m/s}} = ${texNum(r.tau * 1000, 3)}\ \text{ms},\quad t = \max(\tau_0,\ 2\ \text{ms}) = ${texNum(r.t * 1000, 3)}\ \text{ms}${r.frozen ? '' : String.raw` = ${texNum(r.smear, 2)}\,\tau_0`}`,
     });
     steps[2].set({
       answer: `${fmtT(r.rot.t)} <small>(${fmt(r.frames, 3)} frames)</small>`,
@@ -97,7 +101,10 @@ export default function mount(root, meta) {
       why: `At ${st.alt}° altitude the air spreads violet to red over ${r.disp.toFixed(2)}″, ${r.disp > r.res ? `${(r.disp / r.res).toFixed(1)} times` : 'less than'} the telescope's resolution of ${r.res.toFixed(2)}″. ${r.adc ? 'Colour fringes will soften the detail unless a corrector or a monochrome camera with filters is used.' : 'The colours stay within half a resolution element.'}`,
       tex: String.raw`\Delta R = [n(400) - n(700)]\tan z = ${texNum(r.disp, 3)}''`,
     });
-    calc.say(t('<strong>f/{N} · {ms} ms · {fps} fps · {cap} per capture · keep {keep} %</strong>{adc}. Jupiter will be {px} pixels wide; seeing alone would blur it to {fwhm}″, the stack can reach {res}″.', { N: r.N.toFixed(1), ms: (r.t * 1000).toFixed(1), fps: r.rate.toFixed(0), cap: fmtT(r.rot.t), keep: (r.keep * 100).toFixed(0), adc: r.adc ? ' · ' + t('with ADC') : '', px: r.discPx.toFixed(0), fwhm: st.fwhm, res: r.res.toFixed(2) }));
+    const v = { N: r.N.toFixed(1), ms: (r.t * 1000).toFixed(1), fps: r.rate.toFixed(0), cap: fmtT(r.rot.t), keep: (r.keep * 100).toFixed(0), adc: r.adc ? ' · ' + t('with ADC') : '', px: r.discPx.toFixed(0), fwhm: st.fwhm, res: r.res.toFixed(2), x: r.smear.toFixed(1) };
+    calc.say(r.frozen
+      ? t('<strong>f/{N} · {ms} ms · {fps} fps · {cap} per capture · keep {keep} %</strong>{adc}. Jupiter will be {px} pixels wide; seeing alone would blur it to {fwhm}″, the stack can reach {res}″.', v)
+      : t('<strong>f/{N} · {ms} ms · {fps} fps · {cap} per capture · keep {keep} %</strong>{adc}. Jupiter will be {px} pixels wide; seeing alone would blur it to {fwhm}″. Each {ms} ms frame lasts <strong>{x} coherence times</strong> of the air, so the stack will fall short of the {res}″ the telescope could reach.', v));
     calc.set(String.raw`\begin{aligned}
     r_0(550\,\text{nm}) &= ${texNum(r.r0 * 100, 3)}\ \text{cm},\quad D/r_0 = ${texNum(r.Dr0, 3)}\\
     \lambda/D &= ${texNum(r.res, 3)}'',\quad \text{scale} = ${texNum(r.scale, 3)}''/\text{px}
@@ -170,7 +177,7 @@ export default function mount(root, meta) {
 <h3>Sampling</h3>
 <p>A telescope of diameter \(D\) passes no spatial frequency above \(D/\lambda\) (cycles per radian), which at focal ratio \(N\) is \(1/(\lambda N)\) cycles per millimetre on the sensor. Sampling it without aliasing needs pixels \(p \le \lambda N/2\), so \(N = 2p/\lambda\). The page uses \(\lambda = 0.5\) µm for a colour camera; the image scale is \(p/(DN)\) radians per pixel.</p>
 <h3>Freezing the seeing</h3>
-<p>The Fried parameter at 550 nm follows from the seeing FWHM at 500 nm as \(r_0 = 0.98\,\lambda/\text{FWHM}\), scaled by \(\lambda^{6/5}\). Frozen-flow turbulence decorrelates in \(\tau_0 = 0.314\,r_0/v\) (as in the seeing laboratory); frames are kept between 2 and 20 ms, and the frame rate is the smaller of \(1/t\) and the camera's maximum.</p>
+<p>The Fried parameter at 550 nm follows from the seeing FWHM at 500 nm as \(r_0 = 0.98\,\lambda/\text{FWHM}\), scaled by \(\lambda^{6/5}\). Frozen-flow turbulence decorrelates in \(\tau_0 = 0.314\,r_0/v\) (as in the seeing laboratory); the frame should last no longer than that to freeze the air. Planetary cameras need about 2 ms per frame to collect enough light, and gain little beyond 20 ms, so the plan takes \(t = \min(20\ \text{ms}, \max(\tau_0, 2\ \text{ms}))\). When \(\tau_0\) is shorter than 2 ms (fast winds aloft, poor seeing), this target cannot be met: each frame averages \(t/\tau_0\) coherence times, fewer frames are sharp, and the stack falls short of the telescope's resolution. The plan then says so, with the factor, instead of promising the diffraction limit. The frame rate is the smaller of \(1/t\) and the camera's maximum.</p>
 <h3>Lucky selection</h3>
 <p>Fried's estimate of the probability of a short exposure with less than 1 rad² of wavefront error, \(5.6\,e^{-0.1557(D/r_0)^2}\), is valid for \(D/r_0 \gtrsim 3.5\); below that most frames are good and about half are kept.</p>
 </div><div>

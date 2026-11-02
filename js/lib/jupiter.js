@@ -27,7 +27,12 @@ export function plan({ D = 0.2, N0 = 10, pitch = 2.9, fwhm = 2, wind = 10, alt =
   const discPx = diam / scale;
   const r0 = r0From(fwhm, 0.55), Dr0 = D / r0;
   const tau = tau0(r0, wind);
-  const t = Math.min(0.02, Math.max(0.002, tau)); // s, freeze the seeing but stay within 2–20 ms
+  // the frame should last at most τ₀ to freeze the air (the target), but planetary cameras need at
+  // least 2 ms per frame to collect enough light (the floor), and gain little beyond 20 ms. When
+  // τ₀ is below the floor the target cannot be met: frozen = false, and each frame averages
+  // smear = t/τ₀ coherence times.
+  const tFloor = 0.002, t = Math.min(0.02, Math.max(tFloor, tau)); // s
+  const frozen = t <= tau * (1 + 1e-9), smear = t / tau;
   const rate = Math.min(fps, 1 / t);
   const rot = rotationLimit(D, 0.55, diam);
   const frames = Math.round(rate * rot.t);
@@ -36,5 +41,5 @@ export function plan({ D = 0.2, N0 = 10, pitch = 2.9, fwhm = 2, wind = 10, alt =
   const z = ((90 - alt) * Math.PI) / 180;
   const disp = Math.abs(dispersion(400, 700, z, P, T)); // arcsec, 400–700 nm
   const res = rot.res;
-  return { N, barlow, scale, discPx, r0, Dr0, tau, t, rate, rot, frames, pLucky, keep, kept: Math.max(1, Math.round(frames * keep)), disp, res, adc: disp > res / 2, seeingRes: fwhm };
+  return { N, barlow, scale, discPx, r0, Dr0, tau, t, tFloor, frozen, smear, rate, rot, frames, pLucky, keep, kept: Math.max(1, Math.round(frames * keep)), disp, res, adc: disp > res / 2, seeingRes: fwhm };
 }
