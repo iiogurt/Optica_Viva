@@ -190,13 +190,37 @@ export function haloImage({ N, rays, seed, h, mix, cPlate = 0.15, cColumn = 2.5,
 }
 
 // ── Water drops: Lorenz–Mie theory ────────────────────────────────────────────
+// The logarithmic derivative D_N(z) = ψ_N'(z)/ψ_N(z) of the Riccati–Bessel function, from the
+// continued fraction D_N = −N/z + 1/((2N+1)/z − 1/((2N+3)/z − …)) (from j_{n−1}/j_n = (2n+1)/z −
+// j_{n+1}/j_n), evaluated by Lentz's method (Lentz 1976; modified form of Thompson & Barnett 1986)
+// until a step changes it by less than 1e-15 relative. Exact for any N and real z > 0, so the
+// downward recurrence that starts from it needs no guessed margin.
+export function logDerivCF(N, z) {
+  const tiny = 1e-300;
+  let f = (2 * N + 1) / z, C = f, Dl = 0;
+  for (let k = 1; k < 1e6; k++) {
+    const b = (2 * N + 2 * k + 1) / z;
+    Dl = b - Dl; if (Dl === 0) Dl = tiny;
+    C = b - 1 / C; if (C === 0) C = tiny;
+    Dl = 1 / Dl;
+    const step = C * Dl;
+    f *= step;
+    if (Math.abs(step - 1) < 1e-15) return f - N / z;
+  }
+  throw new Error(`D_${N}(${z}): continued fraction did not converge`);
+}
+
 // Scattering amplitudes S1, S2 of a sphere of size parameter x = 2πa/λ and real relative index m
-// at the cosines mu (Bohren & Huffman's BHMIE, with the logarithmic derivative D_n by downward
-// recurrence). Returns the unpolarised intensity i(θ) = (|S1|² + |S2|²)/2 and the efficiencies.
+// at the cosines mu (Bohren & Huffman's BHMIE). D_n(mx) comes from downward recurrence, which is
+// stable, started from the exact D_N of the continued fraction: starting from D = 0 a fixed
+// number of orders above max(n_stop, mx) leaves errors that the recurrence does not damp near
+// n ≈ mx (the backscatter of a 175 µm drop was 65 times too bright). Returns the unpolarised
+// intensity i(θ) = (|S1|² + |S2|²)/2 and the efficiencies.
 export function mie(x, m, mu) {
-  const nstop = Math.round(x + 4 * Math.cbrt(x) + 2), mx = m * x, nmx = Math.round(Math.max(nstop, mx) + 16);
-  const D = new Float64Array(nmx + 1);
-  for (let n = nmx; n > 0; n--) D[n - 1] = n / mx - 1 / (D[n] + n / mx);
+  const nstop = Math.round(x + 4 * Math.cbrt(x) + 2), mx = m * x;
+  const D = new Float64Array(nstop + 1);
+  D[nstop] = logDerivCF(nstop, mx);
+  for (let n = nstop; n > 1; n--) D[n - 1] = n / mx - 1 / (D[n] + n / mx);
   const na = mu.length;
   const s1r = new Float64Array(na), s1i = new Float64Array(na), s2r = new Float64Array(na), s2i = new Float64Array(na);
   const pi0 = new Float64Array(na), pi1 = new Float64Array(na).fill(1);

@@ -1,7 +1,7 @@
 // Atmospheric optics: halo geometry, the Monte-Carlo halo, and Lorenz–Mie scattering by drops.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { nIce, nWater, minDeviation, rainbowAngle, parhelion, circumzenithal, haloImage, HALO_FOV, mie, dropProfiles, coronaAngles, antiAngles, sunSmear } from '../js/lib/atmo.js';
+import { nIce, nWater, minDeviation, rainbowAngle, parhelion, circumzenithal, haloImage, HALO_FOV, mie, logDerivCF, dropProfiles, coronaAngles, antiAngles, sunSmear } from '../js/lib/atmo.js';
 
 const D = Math.PI / 180;
 const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b} (±${tol})`);
@@ -70,4 +70,43 @@ test('drop profiles cover both views, and the solar disc only smooths', () => {
   const s = sunSmear(spike, 0.05);
   near(s.reduce((a, b) => a + b, 0), 1, 1e-9, 'the smear conserves light');
   assert.ok(s[50] < 1 && s[47] > 0 && s[44] === 0, 'spread over the 0.27° solar radius only');
+});
+
+// Independent references for i(θ) = (|S1|² + |S2|²)/2, the same n_stop = x + 4x^(1/3) + 2 terms:
+// Bohren & Huffman eq. 4.53 at 40 digits (mpmath), with ψ_n(mx) by Miller's normalised downward
+// recurrence from far above (no logarithmic derivative), spot-checked against J_{n+1/2}.
+// θ = 180, 179.5, 175, 165, 142, 138, 90, 30°.
+const MIE_REF = [
+  [100, 1.333, [618.092808901, 628.893420726, 831.208441487, 572.29941559, 1125.11237818, 844.213752938, 95.4352400602, 5527.04366651]],
+  [500, 1.333, [24906.901862, 27490.5418058, 9326.21708571, 10422.5129231, 13016.3020794, 30070.3814782, 2969.13104951, 277177.483253]],
+  [1000, 1.333, [873619.056279, 32179.2621207, 59953.1878562, 19896.1302084, 36913.9992286, 192476.210799, 9473.83443275, 940420.73678]],
+  [2000, 1.333, [24850.3491837, 139492.7871, 47770.7629687, 150662.095913, 216799.29337, 805845.210722, 23046.0148167, 4154410.68589]],
+  [2000, 1.3363164591706695, [55472.6942053, 30372.2189446, 58119.1685416, 180835.424885, 538125.897899, 352982.539323, 23808.386171, 3089883.33449]],
+];
+const MIE_TH = [180, 179.5, 175, 165, 142, 138, 90, 30];
+
+test('Mie angular scattering of large drops matches independent references (backscatter, glory, rainbow, side)', () => {
+  const muOf = (th) => (th === 180 ? -1 : th === 90 ? 0 : Math.cos(th * D));
+  for (const [x, m, I] of MIE_REF) {
+    const r = mie(x, m, MIE_TH.map(muOf));
+    I.forEach((v, j) => near(r.I[j] / v, 1, 1e-8, `x = ${x}, m = ${m}, θ = ${MIE_TH[j]}°`));
+  }
+  // the values of the validation report (#208), from SciPy's spherical Bessel functions
+  const r = mie(2000, 1.333, [-1, -0.99, 0]);
+  [24850.349182, 40184.942908, 23046.014817].forEach((v, j) => near(r.I[j] / v, 1, 1e-8, `report value ${j}`));
+});
+
+test('Mie logarithmic derivative: the continued fraction and downward recurrence agree over the supported drops', () => {
+  // radii 1–300 µm (×1.2 for the size spread) at 405–705 nm: x up to about 5600
+  for (const x of [0.05, 3, 20, 80, 300, 1000, 2500, 5600]) for (const m of [1.331, 1.345]) {
+    const nstop = Math.round(x + 4 * Math.cbrt(x) + 2), z = m * x, Dn = new Float64Array(nstop + 1);
+    Dn[nstop] = logDerivCF(nstop, z);
+    for (let n = nstop; n > 1; n--) Dn[n - 1] = n / z - 1 / (Dn[n] + n / z);
+    for (const n of [1, Math.ceil(nstop / 3), Math.ceil((3 * nstop) / 4)]) {
+      const d = logDerivCF(n, z);
+      near(Dn[n], d, 1e-10 * Math.max(1, Math.abs(d)), `x = ${x}, m = ${m}, n = ${n}`);
+    }
+  }
+  // D_1(z) = −1/z + 1/(1/z − cot z) in closed form
+  for (const z of [0.3, 2, 17.5]) near(logDerivCF(1, z), -1 / z + 1 / (1 / z - 1 / Math.tan(z)), 1e-12, `D_1(${z})`);
 });
