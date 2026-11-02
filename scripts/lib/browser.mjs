@@ -36,7 +36,7 @@ export async function launch({ width = 1440, height = 1200, flags = [] } = {}) {
   if (!target) throw new Error('browser did not start (2 attempts)');
   const ws = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((r, j) => { ws.addEventListener('open', r); ws.addEventListener('error', j); });
-  let id = 0; const waiting = new Map(); let errors = [];
+  let id = 0; const waiting = new Map(); let errors = []; const warnings = [];
   ws.addEventListener('message', (m) => {
     const msg = JSON.parse(m.data);
     if (msg.id && waiting.has(msg.id)) { waiting.get(msg.id)(msg); waiting.delete(msg.id); }
@@ -44,6 +44,7 @@ export async function launch({ width = 1440, height = 1200, flags = [] } = {}) {
       const d = msg.params.exceptionDetails; errors.push(d.exception?.description || d.text);
     }
     if (msg.method === 'Runtime.consoleAPICalled' && msg.params.type === 'error') errors.push(msg.params.args.map((a) => a.value ?? a.description).join(' '));
+    if (msg.method === 'Runtime.consoleAPICalled' && msg.params.type === 'warning') warnings.push(msg.params.args.map((a) => a.value ?? a.description).join(' '));
   });
   const send = (method, params = {}) => new Promise((r) => { const i = ++id; waiting.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
   await send('Runtime.enable');
@@ -52,6 +53,7 @@ export async function launch({ width = 1440, height = 1200, flags = [] } = {}) {
     async size(w, h) { await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false }); },
     async goto(url, waitMs = 4000) { errors = []; await send('Page.navigate', { url }); await sleep(waitMs); return errors.slice(); },
     errors: () => errors.slice(), // console errors since the last goto
+    warnings: () => warnings.slice(), // every console warning since launch
     cdp: send, // raw DevTools Protocol call, e.g. cdp('Profiler.start')
     async eval(expression) {
       const r = await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });

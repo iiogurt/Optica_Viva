@@ -72,11 +72,12 @@ try {
   st = await settle(() => false, 10);
   check(st.active && !st.waiting && st.version === V, 'failed upgrade of the worker keeps the old one', JSON.stringify(st));
   check(await offlineWorks(), 'offline after a failed upgrade');
-  // 4. the file is back: the update completes
+  // 4. the file is back: the update completes on the next visit, or the one after (the page's
+  // refresh and the browser's own update of the changed sw.js can overlap)
   site.fail.clear();
-  await visit('#/', 3000);
-  st = await settle((s) => s.version === NEXT);
-  check(st.version === NEXT, 'update completes once the file is back', JSON.stringify(st));
+  let tries = 0;
+  for (; tries < 2 && st.version !== NEXT; tries++) { await visit('#/', 3000); st = await settle((s) => s.version === NEXT, 30); }
+  check(st.version === NEXT, `update completes once the file is back (visit ${tries})`, JSON.stringify(st) + '  warnings: ' + page.warnings().join(' | ').slice(0, 400));
 } finally {
   await page.close(); await site.stop(); rmSync(DIST, { recursive: true, force: true });
 }
