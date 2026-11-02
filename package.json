@@ -9,7 +9,7 @@
     "start": "python3 -m http.server 8000",
     "test": "node --test test/*.test.mjs",
     "check": "node scripts/check.mjs",
-    "smoke": "node scripts/smoke.mjs",
+    "smoke": "node scripts/smoke.mjs && node scripts/offline.mjs",
     "ci": "npm run check && npm test && npm run smoke",
     "bench": "node scripts/bench.mjs",
     "screenshots": "node scripts/screenshots.mjs"

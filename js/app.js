@@ -179,10 +179,21 @@ function localiseShell() {
 localiseShell();
 buildNav();
 // Offline use and installation (sw.js). A page that already had a worker asks it to refresh the
-// offline copy, which it does only when the version changed.
+// offline copy, which it does only when the version changed. The worker installs only once the
+// whole app is cached; if caching fails the app keeps working online (with the previous offline
+// copy, if any), says so in the console, and tries again on the next visit.
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   const had = !!navigator.serviceWorker.controller;
-  navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then((r) => { if (had) r.active?.postMessage('refresh'); }).catch(() => {});
+  const warn = (what) => console.warn(`Offline copy not ${what}; the app works online and tries again on the next visit.`);
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data?.precache === 'failed') warn(`${e.data.phase === 'install' ? 'saved' : 'updated'} (${e.data.error})${navigator.serviceWorker.controller ? ', the previous one is kept' : ''}`);
+  });
+  // one caching job at a time: a new worker that is installing caches the app itself, so the
+  // refresh request waits until it has finished (or failed)
+  const settled = (w) => new Promise((ok) => { if (!w) return ok(); w.addEventListener('statechange', () => { if (w.state === 'activated' || w.state === 'redundant') ok(); }); });
+  navigator.serviceWorker.register('sw.js')
+    .then((reg) => settled(reg.installing || reg.waiting).then(() => reg))
+    .then((reg) => { if (had && !reg.installing) reg.active?.postMessage('refresh'); }).catch(() => {});
 }
 // the skip link must not change the hash (that would re-route): focus <main> directly
 document.querySelector('.skip-link')?.addEventListener('click', (e) => { e.preventDefault(); main.focus(); });
