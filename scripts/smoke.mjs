@@ -26,7 +26,7 @@ const probe = `(() => ({
   readouts: document.querySelectorAll('dl.readouts dd').length + [...document.querySelectorAll('.mstep-answer')].filter((d) => d.textContent.trim()).length,
   emptyReadouts: [...document.querySelectorAll('dl.readouts dd')].filter((d) => d.textContent.trim() === '…').length,
   // equations that scroll sideways can be reached with the keyboard (#204)
-  mathScroll: [...document.querySelectorAll('.calc, .katex-display, .entry-body .eq, .mstep-eq')].filter((el) => { const ox = getComputedStyle(el).overflowX; return (ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1 && el.querySelector('.katex') && el.tabIndex < 0 && !el.querySelector('[tabindex="0"]'); }).length,
+  mathScroll: [...document.querySelectorAll('.calc, .katex-display, .entry-body .eq, .mstep-eq, .table-scroll')].filter((el) => { const ox = getComputedStyle(el).overflowX; return (ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1 && el.querySelector('.katex, table') && el.tabIndex < 0 && !el.querySelector('[tabindex="0"]'); }).length,
   // every drawing has its own accessible name, not just "Chart", and none repeats on the page (#205)
   charts: (() => { const n = [...document.querySelectorAll('canvas[role=img]')].map((c) => c.getAttribute('aria-label')); return { generic: n.filter((x) => !x || x === 'Chart').length, dup: n.length - new Set(n).size }; })(),
   // KaTeX renders unknown commands as a red box instead of throwing (throwOnError: false)
@@ -191,6 +191,24 @@ try {
     const ok = s0 > 0 && s1 === s0 && label === 'Run' && s2 > s1 && !errors.length && !page.errors().length;
     console.log(`${ok ? '✓' : '✗'} reduced motion: waves still at ${s0} steps, then running (${s2}) after Run${errors.length ? '  ' + errors.join(' | ') : ''}`);
     if (!ok) failed++;
+  }
+  // phones and 400 % zoom: pages reflow without sideways panning; only wide equations, tables and
+  // charts scroll inside their own boxes (#199). Mounted at desktop width, then resized.
+  {
+    const wide = [];
+    for (const id of ['raytracer', 'fieldpsf', 'zernike', 'waves', 'foundations', 'panorama', 'dof', 'catalogue']) {
+      await page.size(1440, 1200);
+      await page.goto(site.url + '#/' + id, 3000);
+      for (const w of [375, 320]) {
+        await page.size(w, 812);
+        await sleep(700);
+        const sw = await page.eval(`document.documentElement.scrollWidth`);
+        if (sw > w + 3) wide.push(`${id} ${sw}px at ${w}`);
+      }
+    }
+    await page.size(1440, 1200);
+    console.log(`${wide.length ? '✗' : '✓'} no page-wide overflow at 375 and 320 px${wide.length ? '  ' + wide.join(' | ') : ''}`);
+    if (wide.length) failed++;
   }
   // guided tours: each one starts from its link and plays to the end; every select it sets must hold the value
   const { TOURS } = await import('../js/lib/tours.js');

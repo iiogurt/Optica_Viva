@@ -22,7 +22,7 @@ export function h(tag, props = {}, ...children) {
 // Equations wider than their column scroll sideways (CSS). Such a region, and only such a region,
 // is made focusable and named, so it can be scrolled with the keyboard too (WCAG 2.1.1); checked
 // after every render and whenever such a box changes size (a scrollbar appearing narrows the column).
-const MATH_SCROLLERS = '.calc, .katex-display, .entry-body .eq, .mstep-eq';
+const MATH_SCROLLERS = '.calc, .katex-display, .entry-body .eq, .mstep-eq, .table-scroll';
 const watched = new Set();
 let sizes = null;
 export function markScrollableMath(root = document) {
@@ -31,9 +31,10 @@ export function markScrollableMath(root = document) {
   for (const el of root.querySelectorAll(MATH_SCROLLERS)) {
     if (sizes && !watched.has(el)) { watched.add(el); sizes.observe(el); }
     const ox = getComputedStyle(el).overflowX;
-    const wide = (ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1 && !!el.querySelector('.katex');
+    const table = el.classList.contains('table-scroll');
+    const wide = (ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1 && !!el.querySelector(table ? 'table' : '.katex');
     if (wide && !el.hasAttribute('data-scrolls')) {
-      el.setAttribute('data-scrolls', ''); el.tabIndex = 0; el.setAttribute('role', 'group'); el.setAttribute('aria-label', t('Equation, scrolls sideways'));
+      el.setAttribute('data-scrolls', ''); el.tabIndex = 0; el.setAttribute('role', 'group'); el.setAttribute('aria-label', table ? t('Table, scrolls sideways') : t('Equation, scrolls sideways'));
     } else if (!wide && el.hasAttribute('data-scrolls')) {
       for (const a of ['data-scrolls', 'tabindex', 'role', 'aria-label']) el.removeAttribute(a);
     }
@@ -73,6 +74,8 @@ export function renderMath(el) {
 // Prose block: HTML string with \( \) and \[ \] math.
 export function prose(html, cls = '') {
   const el = h('div.prose' + (cls ? '.' + cls : ''), { html });
+  // a wide table scrolls inside its own box instead of widening the page
+  for (const tb of el.querySelectorAll('table')) { const w = h('div.table-scroll'); tb.replaceWith(w); w.append(tb); }
   renderMath(el);
   return el;
 }
