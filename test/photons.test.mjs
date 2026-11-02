@@ -29,3 +29,15 @@ test('sub by sub: the stack of N subs reaches the √N signal-to-noise ratio, re
   const measured = centreSNR(acc.map((v) => v / N), expected, n, 12), predicted = stackSNR(2, bg, 0, sigma, t, N);
   assert.ok(Math.abs(measured / predicted - 1) < 0.12, `measured ${measured} vs predicted ${predicted}`);
 });
+
+test('film grain by grain: the developable share matches the model at every exposure', async () => {
+  const { stock, grainField, expose, predictedFraction } = await import('../js/lib/film.js');
+  const { makeRng } = await import('../js/lib/random.js');
+  const f = stock(400), field = grainField(f, 60, 40, 3), pois = makeRng(5).poisson;
+  let H = 0.5, out = expose(field, H, f, pois);
+  for (const target of [8, 32, 128]) {
+    while (H < target) { const dH = Math.min(H * 0.07, target - H); out = expose(field, dH, f, pois); H += dH; }
+    const counted = out.developed / field.N, predicted = predictedFraction(H, f);
+    assert.ok(Math.abs(counted - predicted) < 0.03, `H = ${H}: ${counted} vs ${predicted}`);
+  }
+});

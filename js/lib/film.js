@@ -116,3 +116,24 @@ export function filmLab(o) {
   const G = selwyn(H0, f), A = Math.PI * (o.ap / 2) ** 2, sigma = G / Math.sqrt(A);
   return { wedge, W, f, sigma, G, A, dqe: dqe(H0, f, sigma, A), Dmid: meanDensity(H0, f), H0, px };
 }
+
+// Photon by photon: one layer of grains in a W × H µm patch (positions uniform, radii log-normal),
+// each counting the photons it absorbs. expose() adds an exposure step dH (photons/µm²): every
+// grain gains a Poisson number of hits with mean dH·πr²·q, and is developable once it holds
+// f.hits of them. predictedFraction() is the expected developable share at total exposure H.
+export function grainField(f, W, H, seed = 1) {
+  const r = rng(seed), N = Math.round(f.n * W * H), gz = () => { for (;;) { const z = Math.sqrt(-2 * Math.log(r())) * Math.cos(2 * Math.PI * r()); if (Math.abs(z) <= ZMAX) return z; } };
+  const x = new Float32Array(N), y = new Float32Array(N), rad = new Float32Array(N), hits = new Uint8Array(N);
+  for (let i = 0; i < N; i++) { x[i] = r() * W; y[i] = r() * H; rad[i] = f.r * Math.exp(f.sig * gz()); }
+  return { x, y, rad, hits, N, W, H };
+}
+export function expose(field, dH, f, poisson) {
+  let developed = 0, fresh = 0;
+  for (let i = 0; i < field.N; i++) {
+    const before = field.hits[i], n = poisson(dH * Math.PI * field.rad[i] ** 2 * f.q);
+    if (n) { field.hits[i] = Math.min(255, before + n); fresh++; }
+    if (field.hits[i] >= f.hits) developed++;
+  }
+  return { developed, fresh };
+}
+export const predictedFraction = (H, f) => Q.reduce((a, [z, w]) => a + (w / QS) * pDevelop(H, f.r * Math.exp(f.sig * z), f.q, f.hits), 0);

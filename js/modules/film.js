@@ -1,8 +1,9 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt, reducedMotion } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
-import { stock, meanDensity, speedPoint, selwyn, reciprocityCorrection } from '../lib/film.js';
+import { stock, meanDensity, speedPoint, selwyn, reciprocityCorrection, grainField, expose, predictedFraction } from '../lib/film.js';
+import { makeRng } from '../lib/random.js';
 import { t } from '../lib/i18n.js';
 
 export default function mount(root, meta) {
@@ -27,9 +28,52 @@ export default function mount(root, meta) {
   const gr = stage({ aspect: 1.5, label: '', draw: drawGran, cls: 'plain', minH: 230 });
   root.append(lab([wedge.el, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, hd.el), h('div.card', { style: { padding: '6px' } }, gr.el))], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
+  // ── Photon by photon: single grains catching photons; two hits make a grain developable ──
+  const GW = 40, GH = 20;
+  const grains = stage({ aspect: GW / GH, label: 'Photon by photon: one layer of grains, 40 × 20 microns (grey: one photon caught; black: developable)', draw: drawGrains, minH: 180 });
+  const gRo = h('div');
+  const gBtn = h('button.btn', { type: 'button', onClick: () => { gPlay = !gPlay; gBtn.textContent = gPlay ? t('Pause') : t('Run'); if (gPlay && !gRaf) gStep(); } }, '');
+  const gRestart = h('button.btn', { type: 'button', onClick: () => resetGrains() }, t('Restart'));
+  root.append(lab([grains.el, h('div.rx-actions', {}, gBtn, gRestart)], [h('div.card', {}, gRo)]));
+  let gPlay = !reducedMotion(), gRaf = 0, gField = null, gStock = null, gH = 0, gDev = 0, gPois = null;
+  gBtn.textContent = gPlay ? t('Pause') : t('Run');
+  // the exposure doubles every 60 frames (about a second): each second is one stop
+  function resetGrains() { gStock = stock(ctl.state.iso, ctl.state.sig); gField = grainField(gStock, GW, GH, 3); gPois = makeRng(11).poisson; gH = 0.05; gDev = expose(gField, gH, gStock, gPois).developed; paintGrains(); if (gPlay && !gRaf) gStep(); }
+  function gStep() {
+    gRaf = 0;
+    if (!gPlay || !gField) return;
+    const dH = gH * (2 ** (1 / 60) - 1);
+    gDev = expose(gField, dH, gStock, gPois).developed; gH += dH;
+    paintGrains();
+    if (gDev < 0.995 * gField.N && gH < 1e5) gRaf = requestAnimationFrame(gStep);
+  }
+  function paintGrains() {
+    grains.redraw();
+    gRo.replaceChildren(readouts([
+      ['Exposure so far', fmt(gH, 3) + ' photons/µm²'],
+      ['Grains in the patch', String(gField.N)],
+      ['Developable: counted', (100 * gDev / gField.N).toFixed(1) + ' %'],
+      ['… predicted by the model', (100 * predictedFraction(gH, gStock)).toFixed(1) + ' %'],
+    ]));
+  }
+  function drawGrains(ctx, w, hh) {
+    ctx.fillStyle = '#e9e4d6'; ctx.fillRect(0, 0, w, hh);
+    if (!gField) return;
+    const sc = Math.min(w / GW, hh / GH), x0 = (w - GW * sc) / 2, y0 = (hh - GH * sc) / 2, need = gStock.hits;
+    for (let i = 0; i < gField.N; i++) {
+      const k = gField.hits[i];
+      if (!k) continue;
+      ctx.fillStyle = k >= need ? 'rgba(20,18,16,0.92)' : 'rgba(120,115,105,0.55)';
+      ctx.beginPath(); ctx.arc(x0 + gField.x[i] * sc, y0 + gField.y[i] * sc, Math.max(0.6, gField.rad[i] * sc), 0, 2 * Math.PI); ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(8,9,12,0.72)'; ctx.fillRect(0, 0, w, 30); // keeps the caption readable on the light film base
+  }
+
+
   const job = latest('film');
   let R = null, F = null;
   function update() {
+    if (!gStock || gStock.iso !== ctl.state.iso || gStock.sig !== ctl.state.sig) resetGrains();
     const st = ctl.state, f = stock(st.iso, st.sig), Hs = speedPoint(f), H0 = Hs * Math.pow(10, 0.8);
     F = { st, f, Hs, H0 };
     job('film', { iso: st.iso, sig: st.sig, W: 192, H0, ev: st.ev, ap: st.ap }).then((r) => {
@@ -130,5 +174,5 @@ export default function mount(root, meta) {
     'K. Schwarzschild, “On the deviations from the law of reciprocity for bromide of silver gelatine”, <em>Astrophys. J.</em> 11, 89 (1900).',
   ]));
 
-  return () => [wedge, hd, gr, rplot].forEach((x) => x.destroy());
+  return () => { gPlay = false; cancelAnimationFrame(gRaf); [wedge, hd, gr, rplot, grains].forEach((x) => x.destroy()); };
 }

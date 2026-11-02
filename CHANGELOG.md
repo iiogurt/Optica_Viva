@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- Film & grain: **photon by photon**. One layer of grains, 40 × 20 µm, catches Poisson photons as the exposure doubles every second; grains holding one photon turn grey and those holding two become developable, and the counted share is shown next to the model's prediction (`grainField`, `expose`, `predictedFraction` in `js/lib/film.js`, tested).
+
 ## [1.31.0] - 2026-10-30
 
 ### Added

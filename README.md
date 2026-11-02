@@ -454,7 +454,7 @@ Hand-held motion is simulated as drift plus physiological tremor. Each exposure'
 **Film & grain** · `#/film`<br>
 <img src="docs/screenshots/film.webp" alt="Simulated developed emulsion step wedge, characteristic curve and granularity vs film speed" width="70%">
 
-Film as a **Boolean model** of randomly placed silver-halide grains with a log-normal size distribution, each developable after a few absorbed photons. The **H&D curve** (toe, γ, shoulder) emerges from it, along with Nutting's law, grain that grows with speed, **Selwyn granularity** computed exactly from the overlap integral, film's few-per-cent **DQE**, and Schwarzschild **reciprocity failure**.
+Film as a **Boolean model** of randomly placed silver-halide grains with a log-normal size distribution, each developable after a few absorbed photons. The **H&D curve** (toe, γ, shoulder) emerges from it, along with Nutting's law, grain that grows with speed, **Selwyn granularity** computed exactly from the overlap integral, film's few-per-cent **DQE**, and Schwarzschild **reciprocity failure**. **Photon by photon**: single grains catching photons, two hits to develop, the counted share beside the model.
 
 </td>
 </tr>
