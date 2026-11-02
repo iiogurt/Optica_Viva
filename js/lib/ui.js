@@ -242,7 +242,10 @@ export function imageCanvas(w, hgt) {
 
 // Readout grid: rows = [[label, valueNode|string]]
 export function readouts(rows) {
-  return h('dl.readouts', { role: 'group', 'aria-label': t('Results') }, ...rows.flatMap(([k, v]) => [h('dt', {}, tr(k)), h('dd', {}, localNum(v))]));
+  // a native description list (each quantity a dt, its value the dd), inside a named group: a role
+  // on the dl itself would hide the name–value pairs from assistive technology
+  return h('div.readouts-group', { role: 'group', 'aria-label': t('Results') },
+    h('dl.readouts', {}, ...rows.flatMap(([k, v]) => [h('dt', {}, tr(k)), h('dd', {}, localNum(v))])));
 }
 
 // Section scaffold shared by all modules.

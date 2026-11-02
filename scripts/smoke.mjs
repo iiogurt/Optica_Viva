@@ -27,6 +27,8 @@ const probe = `(() => ({
   emptyReadouts: [...document.querySelectorAll('dl.readouts dd')].filter((d) => d.textContent.trim() === '…').length,
   // KaTeX renders unknown commands as a red box instead of throwing (throwOnError: false)
   tex: [...document.querySelectorAll('.katex-error')].map((e) => (e.title || e.textContent).slice(0, 90)),
+  // readouts must stay native description lists: dt/dd pairs only, no role overriding the dl (#200)
+  dl: [...document.querySelectorAll('dl')].filter((d) => d.hasAttribute('role') || [...d.children].some((c) => !['DT', 'DD', 'DIV'].includes(c.tagName))).length,
 }))()`;
 try {
   for (const id of ids) {
@@ -38,6 +40,7 @@ try {
     if (s.alert) problems.push('error panel shown');
     if (!REFERENCE.has(id) && s.readouts === 0) problems.push('no results rendered');
     if (s.tex.length) problems.push('TeX errors: ' + s.tex.join(' | '));
+    if (s.dl) problems.push(`${s.dl} description lists without dt/dd semantics`);
     console.log(`${problems.length ? '✗' : '✓'} ${id}${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
     if (problems.length) failed++;
   }
