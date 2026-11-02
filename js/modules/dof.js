@@ -7,7 +7,7 @@ import { blurredCanvas, diskBlurredCanvas } from '../lib/blur.js';
 import { runOn, parallel, rowBands } from '../lib/compute.js';
 import { view3d } from '../lib/gl3d.js';
 import { dofScene, sceneDepth, CARDS, cardAngle } from '../lib/dof3d.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const LAMBDA = 0.00055; // mm
 
@@ -89,7 +89,7 @@ export default function mount(root, meta) {
   let M = null;
 
   const photo = stage({ aspect: 1.5, label: 'Simulated photograph', draw: drawPhoto, minH: 260 });
-  const dia = stage({ aspect: 4.2, label: '', draw: drawDiagram, minH: 150, cls: 'plain' });
+  const dia = stage({ aspect: 4.2, label: '', name: N_('Depth of field on a distance scale: focus, near and far limits, hyperfocal distance'), draw: drawDiagram, minH: 150, cls: 'plain' });
   const bp = stage({ aspect: 2.6, label: '', draw: drawBlurPlot, minH: 220, cls: 'plain' });
   const view = view3d({ label: '3-D, true scale: what the camera sees, the plane of focus and the sharp zone', aspect: 1.9, minH: 260, yaw: -2.35, pitch: 0.38 });
   root.append(lab([photo.el, h('div.card', { style: { padding: '8px' } }, dia.el), view.el, h('div.card', { style: { padding: '8px' } }, bp.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));

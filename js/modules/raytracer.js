@@ -11,7 +11,7 @@ import { mtfDiffraction } from '../lib/pupil.js';
 import { lut } from '../lib/color.js';
 import { view3d } from '../lib/gl3d.js';
 import { lensScene } from '../lib/lens3d.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 
 const SPECTRA = {
@@ -60,7 +60,7 @@ export default function mount(root, meta) {
   const spot = stage({ aspect: 1, label: 'Spot diagram', draw: drawSpot });
   const fan = stage({ aspect: 1, label: '', draw: drawFan, cls: 'plain' });
   const chroma = stage({ aspect: 1, label: '', draw: drawChroma, cls: 'plain' });
-  const mtfSt = stage({ aspect: 2.7, label: '', draw: drawMTFField, cls: 'plain', minH: 230 });
+  const mtfSt = stage({ aspect: 2.7, label: '', name: N_('MTF across the field'), draw: drawMTFField, cls: 'plain', minH: 230 });
   const fieldSt = stage({ aspect: 2.7, label: '', draw: drawField, cls: 'plain', minH: 230 });
   const seidSt = stage({ aspect: 2.7, label: '', draw: drawSeidel, cls: 'plain', minH: 230 });
   const psfStage = stage({ aspect: 2, label: 'Wavefront (OPD) · diffraction PSF from the traced rays', draw: drawPSF, minH: 220 });
@@ -656,8 +656,8 @@ export default function mount(root, meta) {
     trials: { type: 'range', label: 'Monte-Carlo trials', min: 10, max: 200, step: 10, value: 40 },
   }, () => {});
   const tolRo = h('div.note', { role: 'status' }, t('Random manufacturing errors (radii, thicknesses, indices) and assembly errors (each element or cemented group decentered and tilted about its first vertex) are applied to the current lens; each trial is refocused (image distance as compensator) and scored by the RMS ray error over F, d, C and fields 0, ±0.7, ±1 (only +0.7, +1 without assembly errors, which keep the lens symmetric).'));
-  const tolHist = stage({ aspect: 2.6, label: '', draw: drawTol, cls: 'plain', minH: 200 });
-  const sensSt = stage({ aspect: 2.6, label: '', draw: drawSens, cls: 'plain', minH: 180 });
+  const tolHist = stage({ aspect: 2.6, label: '', name: N_('Tolerance analysis: spread of image quality over the simulated builds'), draw: drawTol, cls: 'plain', minH: 200 });
+  const sensSt = stage({ aspect: 2.6, label: '', name: N_('Tolerance analysis: sensitivity of each element'), draw: drawSens, cls: 'plain', minH: 180 });
   const tolJob = latest('tolerance');
   let tolData = null;
   const tolBtn = h('button.btn', { type: 'button', onClick: () => {

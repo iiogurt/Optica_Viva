@@ -2,7 +2,7 @@ import { h, controls, stage, readouts, fmt, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS, diag, crop, pitchUm, FF_DIAG } from '../lib/sensors.js';
 import { plot, logRange } from '../lib/plot.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const COLORS = ['#ff6b6b', '#ff9a5a', '#ffd27a', '#ffffff', '#ff9cc0', '#6be3a4', '#6ad7ff', '#8fa6ff', '#c18cff', '#9aa1b5'];
 const LAMBDA = 0.55; // µm
@@ -29,7 +29,7 @@ export default function mount(root, meta) {
   const calc = liveCalc();
   let M = null;
 
-  const over = stage({ aspect: 1.6, label: '', draw: drawOverlay, minH: 300 });
+  const over = stage({ aspect: 1.6, label: '', name: N_('Sensor formats drawn to scale over the image'), draw: drawOverlay, minH: 300 });
   const fov = stage({ aspect: 1.6, label: '', draw: drawFov, cls: 'plain' });
   const snr = stage({ aspect: 1.6, label: '', draw: drawSnr, cls: 'plain' });
   const tableWrap = h('div.card', { style: { overflowX: 'auto' } });

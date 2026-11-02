@@ -27,6 +27,8 @@ const probe = `(() => ({
   emptyReadouts: [...document.querySelectorAll('dl.readouts dd')].filter((d) => d.textContent.trim() === '…').length,
   // equations that scroll sideways can be reached with the keyboard (#204)
   mathScroll: [...document.querySelectorAll('.calc, .katex-display, .entry-body .eq, .mstep-eq')].filter((el) => { const ox = getComputedStyle(el).overflowX; return (ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1 && el.querySelector('.katex') && el.tabIndex < 0 && !el.querySelector('[tabindex="0"]'); }).length,
+  // every drawing has its own accessible name, not just "Chart", and none repeats on the page (#205)
+  charts: (() => { const n = [...document.querySelectorAll('canvas[role=img]')].map((c) => c.getAttribute('aria-label')); return { generic: n.filter((x) => !x || x === 'Chart').length, dup: n.length - new Set(n).size }; })(),
   // KaTeX renders unknown commands as a red box instead of throwing (throwOnError: false)
   tex: [...document.querySelectorAll('.katex-error')].map((e) => (e.title || e.textContent).slice(0, 90)),
   // readouts must stay native description lists: dt/dd pairs only, no role overriding the dl (#200)
@@ -47,6 +49,9 @@ try {
     if (!REFERENCE.has(id) && s.readouts === 0) problems.push('no results rendered');
     if (s.mathScroll) { await sleep(1500); s.mathScroll = (await page.eval(probe)).mathScroll; } // busy pages check a frame later
     if (s.mathScroll) problems.push(`${s.mathScroll} scrolling equations not reachable by keyboard`);
+    if (s.charts.generic || s.charts.dup) { await sleep(2500); s.charts = (await page.eval(probe)).charts; } // charts drawn late
+    if (s.charts.generic) problems.push(`${s.charts.generic} drawings named only "Chart"`);
+    if (s.charts.dup) problems.push(`${s.charts.dup} drawings sharing a name`);
     if (s.tex.length) problems.push('TeX errors: ' + s.tex.join(' | '));
     if (s.dl) problems.push(`${s.dl} description lists without dt/dd semantics`);
     if (s.sliders) problems.push(`${s.sliders} sliders without their value as aria-valuetext`);

@@ -40,7 +40,7 @@ export default function mount(root, meta) {
   const hint = h('p.note');
   const ro = h('div');
   const calc = liveCalc('Result');
-  const view = stage({ aspect: 1.5, label: '', draw: drawView, cls: 'plain', minH: 280 });
+  const view = stage({ aspect: 1.5, label: '', name: N_('Your photograph, with the measurement marked'), draw: drawView, cls: 'plain', minH: 280 });
   const chart = stage({ aspect: 2.4, label: '', draw: drawChart, cls: 'plain', minH: 220 });
   root.append(lab([view.el, h('div.card', { style: { padding: '8px' } }, chart.el)], [h('div.card', {}, ctl.el, h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' } }, loadBtn, demoBtn, clearBtn), fileIn, hint, status), h('div.card', {}, ro), calc.el]));
 

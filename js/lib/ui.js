@@ -231,9 +231,18 @@ export function debounce(fn, ms = 60) {
 // ── Canvas stage: responsive, hi-DPI, aspect-locked ──────────────────────────────────────
 export const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function stage({ aspect = 16 / 9, draw, minH = 160, maxH = Infinity, label, cls = '' }) {
+// A canvas without its own caption is named after the charts drawn on it, their titles and axes
+// ("Spot size: RMS radius (µm) against field (°)"), so several charts on a page can be told apart.
+function nameFromPlots(canvas) {
+  const plots = canvas._plots || [];
+  if (!plots.length) return;
+  const name = plots.map((p) => (p.title ? t('{title}: {y} against {x}', { title: tr(p.title), x: tr(p.x), y: tr(p.y) }) : t('Chart: {y} against {x}', { x: tr(p.x), y: tr(p.y) }))).join('; ');
+  if (canvas.getAttribute('aria-label') !== name) canvas.setAttribute('aria-label', name);
+}
+// name: an accessible name for a canvas without a visible caption that draws no chart of plot()
+export function stage({ aspect = 16 / 9, draw, minH = 160, maxH = Infinity, label, name, cls = '' }) {
   // canvases are images to assistive technology; the numeric results live in the readouts
-  const canvas = h('canvas', { role: 'img', 'aria-label': label ? tr(label) : t('Chart') });
+  const canvas = h('canvas', { role: 'img', 'aria-label': label ? tr(label) : name ? tr(name) : t('Chart') });
   const wrap = h('figure.stage' + (cls ? '.' + cls : ''), {}, canvas, label ? h('figcaption', {}, tr(label)) : null);
   wrap.append(exportTools(canvas, label));
   const ctx = canvas.getContext('2d');
@@ -255,6 +264,7 @@ export function stage({ aspect = 16 / 9, draw, minH = 160, maxH = Infinity, labe
     ctx.setTransform(st.dpr, 0, 0, st.dpr, 0, 0);
     ctx.clearRect(0, 0, st.w, st.h);
     st.draw && st.draw(ctx, st.w, st.h, st);
+    if (!label) nameFromPlots(canvas);
   };
   const ro = new ResizeObserver(() => resize());
   ro.observe(wrap);

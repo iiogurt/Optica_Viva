@@ -109,6 +109,8 @@ export default function mount(root, meta) {
   function drawView(ctx, w, hh) {
     ctx.clearRect(0, 0, w, hh);
     if (!M) return;
+    // no plot() here, so the canvas is named for what it shows in each mode
+    ctx.canvas.setAttribute('aria-label', isSec(M.st) ? t('Distances at which the camera can detect, observe, recognise and identify a person') : t('Photo footprints of the survey flight, with their overlap'));
     if (isSec(M.st)) {
       // the DORI zones along the distance axis, and the face at this pixel density
       const r = M.r, dmax = Math.max(80, r.maxDist[0][1] * 1.1), x0 = 20, x1 = w - 220, X = (d) => x0 + (Math.log(d / 1) / Math.log(dmax / 1)) * (x1 - x0);
