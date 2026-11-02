@@ -150,6 +150,7 @@ try {
     await page.size(1440, 1200);
     console.log(`${!bad ? '✓' : '✗'} scrolling equations at 375 px (${focusable} focusable, ${bad} unreachable)`);
     if (bad) failed++;
+  }
   // reduced motion: the FDTD waves start still (one computed frame, no stepping) until Run (#207)
   {
     await page.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
