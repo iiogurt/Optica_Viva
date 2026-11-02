@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 - Film & grain: **photon by photon**. One layer of grains, 40 × 20 µm, catches Poisson photons as the exposure doubles every second; grains holding one photon turn grey and those holding two become developable, and the counted share is shown next to the model's prediction (`grainField`, `expose`, `predictedFraction` in `js/lib/film.js`, tested).
+
 ### Security
 - Ray tracer: an imported or optimised prescription can no longer inject HTML. Error and validation messages (which can quote a file's glass names) are shown as text, and an imported lens is validated before its paraxial data are computed (#188). The browser smoke test imports a malicious file and checks that nothing runs.
 
@@ -528,6 +529,7 @@ Performance milestone (PRs [#7](https://github.com/iiogurt/Optica_Viva/pull/7)�
 
 ### Added
 - `scripts/bench.mjs` (`npm run bench`): kernel benchmarks as a Markdown table; a non-blocking CI job publishes them to the run summary.
+
 ### Removed
 - `scripts/smoke.sh` and `scripts/screenshots.py` (replaced by the Node/CDP versions).
 
