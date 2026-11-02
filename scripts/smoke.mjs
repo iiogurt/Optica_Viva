@@ -25,6 +25,8 @@ const probe = `(() => ({
   // laboratories show readouts; missions show the answers of their steps
   readouts: document.querySelectorAll('dl.readouts dd').length + [...document.querySelectorAll('.mstep-answer')].filter((d) => d.textContent.trim()).length,
   emptyReadouts: [...document.querySelectorAll('dl.readouts dd')].filter((d) => d.textContent.trim() === '…').length,
+  // KaTeX renders unknown commands as a red box instead of throwing (throwOnError: false)
+  tex: [...document.querySelectorAll('.katex-error')].map((e) => (e.title || e.textContent).slice(0, 90)),
 }))()`;
 try {
   for (const id of ids) {
@@ -35,6 +37,7 @@ try {
     const problems = [...errors];
     if (s.alert) problems.push('error panel shown');
     if (!REFERENCE.has(id) && s.readouts === 0) problems.push('no results rendered');
+    if (s.tex.length) problems.push('TeX errors: ' + s.tex.join(' | '));
     console.log(`${problems.length ? '✗' : '✓'} ${id}${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
     if (problems.length) failed++;
   }
@@ -116,7 +119,8 @@ try {
         document.querySelector('.tour .tour-btn.primary').click();
         await new Promise((res) => setTimeout(res, 250));
       }
-      return document.querySelector('.tour') ? 'tour did not finish' : bad.join(', ');
+      const tex = [...document.querySelectorAll('.katex-error')].map((e) => e.title.slice(0, 90));
+      return document.querySelector('.tour') ? 'tour did not finish' : [...bad, ...tex.map((x) => 'TeX error: ' + x)].join(', ');
     })()`);
     const problems = [...errors, ...page.errors().slice(errors.length), ...(r ? [r] : [])];
     console.log(`${problems.length ? '✗' : '✓'} tour ${t.id}${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
