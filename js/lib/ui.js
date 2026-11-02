@@ -73,6 +73,8 @@ export function renderMath(el) {
 // Prose block: HTML string with \( \) and \[ \] math.
 export function prose(html, cls = '') {
   const el = h('div.prose' + (cls ? '.' + cls : ''), { html });
+  // a wide table scrolls inside its own box instead of widening the page
+  for (const tb of el.querySelectorAll('table')) { const w = h('div.table-scroll'); tb.replaceWith(w); w.append(tb); }
   renderMath(el);
   return el;
 }

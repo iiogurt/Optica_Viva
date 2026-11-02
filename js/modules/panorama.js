@@ -36,7 +36,7 @@ export default function mount(root, meta) {
   // where are the entrance pupil and the nodal point of real designs?
   const rows = Object.entries(LENSES).filter(([, L]) => !hasMirrors(L)).map(([k, L]) => { const c = cardinalPoints(L); return [(L.name || k).replace(/\s*\(.*\)$/, ''), c.efl, c.zEP, c.zH]; });
   table.append(h('div', { style: { fontSize: '13px', fontWeight: 600, marginBottom: '6px' } }, 'No-parallax point vs nodal point of the library lenses (paraxial, mm behind the front vertex)'),
-    h('div.prose', {}, h('table', {}, h('thead', {}, h('tr', {}, ...['Lens', 'f', 'Entrance pupil', 'Front nodal point', 'Difference'].map((t) => h('th', {}, t)))),
+    h('div.prose.table-scroll', {}, h('table', {}, h('thead', {}, h('tr', {}, ...['Lens', 'f', 'Entrance pupil', 'Front nodal point', 'Difference'].map((t) => h('th', {}, t)))),
       h('tbody', {}, ...rows.map(([n, f, ep, hp]) => h('tr', {}, h('td', {}, n), h('td', {}, f.toFixed(1)), h('td', {}, ep.toFixed(1)), h('td', {}, hp.toFixed(1)), h('td', {}, (hp - ep).toFixed(1))))))),
     h('p.note', {}, 'The two coincide only when the stop sits at the front principal plane. For the Double-Gauss they are 8 mm apart; rotating about the nodal point, as often recommended, still leaves parallax.'));
 
