@@ -653,7 +653,7 @@ Interference filters pass bluer light at an angle: why a 3 nm hydrogen-alpha fil
 **Exoplanet transits** · `#/transits`<br>
 <img src="docs/screenshots/transits.webp" alt="Transit of HD 209458 b: a limb-darkened star with the planet's path and the light curve with simulated TESS measurements">
 
-The dip in starlight as a planet crosses its star: depth (R_p/R★)², limb darkening, duration from Kepler's law, transit probability, and the signal-to-noise ratio a backyard telescope, TESS, Kepler or JWST would reach. A **3-D view** at true scale shows the star, the tilted orbit, the cylinder of sight lines through the star towards the telescope, the transit chord and the impact parameter.
+The dip in starlight as a planet crosses its star: depth (R_p/R★)², limb darkening, duration from Kepler's law, transit probability, and the signal-to-noise ratio a backyard telescope, TESS, Kepler or JWST would reach, from exposure-averaged measurements with photon noise and a correlated floor that does not average away within a transit. Settings that describe no possible system (an orbit inside the star) are reported as such. A **3-D view** at true scale shows the star, the tilted orbit, the cylinder of sight lines through the star towards the telescope, the transit chord and the impact parameter.
 
 </td>
 </tr>
@@ -1097,6 +1097,8 @@ The numerical core was checked against published or analytically known values. E
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
 | Autofocus defocus blur, 50 mm f/2 at 2 m, subject 3 m; 200 mm f/2, 0.6 m ↔ 10 m | 213.675 µm; 31.973 mm and 47.000 mm, half-pupil shift 0.424 A Δv/v | Thin-lens similar triangles, b = A\|Δv\|/v(u), and a ray trace through both pupil halves |
 | FDTD grid wavelength, λ = 8 cells in glass of n = 2 (S = 0.5) | 3.509 cells, measured in the simulation within 0.2 % | Yee dispersion relation π/asin(n sin(πS/λ)/S) = 3.509205 (continuum λ/n = 4) |
+| Transit occultation, uniform star, z = 0…1 + k, k = 0.01…1.83 | 1 − F equals the circle overlap / π to 10⁻⁸; full coverage exactly 0 | Analytic area of overlap of two circles |
+| Transit SNR, box of depth δ, n exposures | δ/√(σ_w²/n + σ_r²) | Pont, Zucker & Queloz (2006) |
 | Mie intensity i(θ), x = 100–2000, m = 1.333 (and 1.3363 at 505 nm), θ = 180°, 179.5°, 175°, 165°, 142°, 138°, 90°, 30° | agrees to 10⁻⁸ (backscatter at x = 2000: 24 850.349) | Independent 40-digit Bohren–Huffman calculation (ψ_n by Miller recurrence); SciPy values of the validation report (#208) |
 | Page–Thorne disk flux, radial bracket at r = 7, 10, 20, 60 M | equals ∫ (t² − 6)/(t² − 3) dt from √6 to √r to 10⁻⁹; vanishes quadratically at the ISCO | Page & Thorne 1974, Schwarzschild limit (log coefficient √3/2) |
 | Bench: traced prism deviation, N-SF11 at 60° incidence (450 / 550 / 650 nm) | 72.261° / 67.639° / 65.564° | i + arcsin(n sin(A − r₁)) − A, same to 10⁻⁶° |
