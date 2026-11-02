@@ -1,16 +1,22 @@
 #!/usr/bin/env node
 // Load every page in real-time headless Chrome. Fails on uncaught errors, console errors,
 // error panels, or a laboratory that never produced results (empty readouts). Also checks
-// that a shared URL restores its controls. Usage: npm run smoke
-import { readFileSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+// that a shared URL restores its controls. Runs against the deployable site (scripts/site.mjs),
+// assembled into a temporary directory, so it tests what GitHub Pages serves. Usage: npm run smoke
+import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { resolve, dirname, join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { launch, serve, sleep } from './lib/browser.mjs';
+import { assemble, verify } from './site.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ids = [...readFileSync(resolve(ROOT, 'js/app.js'), 'utf8').matchAll(/\{ id: '([a-z0-9-]+)'/g)].map((m) => m[1]);
 const REFERENCE = new Set(['home', 'foundations', 'catalogue', 'gallery']); // pages without readouts
-const site = await serve(ROOT);
+const DIST = assemble(mkdtempSync(join(tmpdir(), 'optica-site-')));
+const incomplete = verify(DIST);
+if (incomplete.length) { console.error(incomplete.map((p) => `✗ site: ${p}`).join('\n')); rmSync(DIST, { recursive: true, force: true }); process.exit(1); }
+const site = await serve(DIST);
 // a fake camera (a moving test pattern) with permission granted, for the live-camera check
 const page = await launch({ flags: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
 let failed = 0;
@@ -101,6 +107,7 @@ try {
   const { TOURS } = await import('../js/lib/tours.js');
   for (const t of TOURS) {
     const errors = await page.goto(site.url + `#/${t.lab}?tour=${t.id}`, 2500);
+    for (let k = 0; k < 30 && !(await page.eval(`!!document.querySelector('.tour')`)); k++) await sleep(500); // a slow first load
     const r = await page.eval(`(async () => {
       const bad = [];
       for (let i = 0; i < ${t.steps.length}; i++) {
@@ -133,6 +140,29 @@ try {
     console.log(`${problems.length ? '✗' : '✓'} exercises ${lab}${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
     if (problems.length) failed++;
   }
+  // the deployed files: gallery photographs load, saved settings carry the app's version, the
+  // service worker registers
+  {
+    const errors = await page.goto(site.url + '#/gallery', 2500);
+    const version = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8')).version;
+    for (let t = 0; t < 30 && !(await page.eval(`document.querySelectorAll('figure img').length`)); t++) await sleep(500);
+    const r = await page.eval(`(async () => {
+      const imgs = [...document.querySelectorAll('figure img')];
+      for (const i of imgs) i.loading = 'eager';
+      await Promise.all(imgs.map((i) => (i.complete ? 0 : new Promise((res) => { i.onload = i.onerror = res; }))));
+      const broken = imgs.filter((i) => !i.naturalWidth).map((i) => i.getAttribute('src'));
+      const saved = await (await import('./js/lib/page.js')).settingsJSON({ title: 'x' });
+      const sw = !!(await navigator.serviceWorker.getRegistration());
+      return { n: imgs.length, broken, version: saved.version, sw };
+    })()`);
+    const problems = [...errors];
+    if (!r.n) problems.push('no gallery images');
+    if (r.broken.length) problems.push('broken: ' + r.broken.join(', '));
+    if (r.version !== version) problems.push(`saved settings version "${r.version}", expected ${version}`);
+    if (!r.sw) problems.push('service worker not registered');
+    console.log(`${problems.length ? '✗' : '✓'} deployed files (${r.n} gallery images, version ${r.version})${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
+    if (problems.length) failed++;
+  }
   // offline: once the service worker has cached the app, a reload with the server stopped still works
   {
     await page.goto(site.url + '#/dof', 1500);
@@ -140,12 +170,13 @@ try {
     for (let t = 0; t < 60 && !cached; t++) { await sleep(500); cached = await page.eval(`caches.open('optica-viva').then((c) => c.match('precache-version')).then((r) => !!r)`); }
     site.stop();
     const errors = await page.goto(site.url + '?offline#/dof', 4000);
-    const s = await page.eval(probe);
+    let s = await page.eval(probe);
+    for (let t = 0; t < 30 && !s.alert && s.readouts === 0; t++) { await sleep(500); s = await page.eval(probe); }
     const ok = cached && s.readouts > 0 && !s.alert;
     console.log(`${ok ? '✓' : '✗'} offline after install${cached ? '' : '  (app never cached)'}${errors.length ? '  ' + errors.join(' | ').slice(0, 300) : ''}`);
     if (!ok) failed++;
   }
 } finally {
-  await page.close(); site.stop();
+  await page.close(); site.stop(); rmSync(DIST, { recursive: true, force: true });
 }
 process.exit(failed ? 1 : 0);

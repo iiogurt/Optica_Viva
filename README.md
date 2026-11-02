@@ -956,12 +956,13 @@ Optica_Viva/
 ├── test/                      Physics and blur test suites (node --test)
 ├── .github/workflows/
 │   ├── ci.yml                 CI: syntax & links, physics tests, browser smoke test
-│   └── pages.yml              Deploys main to GitHub Pages
+│   └── pages.yml              Deploys main to GitHub Pages (the site from scripts/site.mjs)
 ├── scripts/
 │   ├── check.mjs              Syntax check + Markdown link/anchor check + offline file list
 │   ├── precache.mjs           Writes or checks precache.json (--write)
 │   ├── glasscat.mjs           Generates js/lib/glasscat.js from the refractiveindex.info database
-│   ├── smoke.mjs              Every page in real-time headless Chrome; labs must render results
+│   ├── site.mjs               Assembles the deployable site from an explicit list and checks it is complete
+│   ├── smoke.mjs              Every page of the assembled site in real-time headless Chrome; labs must render results
 │   ├── bench.mjs              Kernel benchmarks (npm run bench)
 │   ├── release.sh             prepare: release PR (date changelog, bump) · publish: tag + GitHub release
 │   ├── worktree.sh            new / finish: one git worktree per branch, cleanup after merge

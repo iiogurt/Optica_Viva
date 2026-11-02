@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 - Compute workers: every job now settles. A task that throws on the main thread rejects its promise; a crashed worker is terminated and its jobs are re-run on the main thread (or rejected if their buffers were transferred); a job whose message cannot be posted is rejected and removed (#191). Tested with a fake Worker.
+- The published site lacked the service worker, its file list, `package.json`, the web manifest, the icons and the gallery photographs, so the app could not be installed or used offline, the gallery images were broken and saved settings had no version. GitHub Pages now deploys the site assembled by `scripts/site.mjs` from an explicit list (no tests, scripts, docs or Markdown beyond the licence notices), which checks every precached file, manifest icon and file referenced from `index.html` or `js/`; the browser smoke test runs against that assembled site and checks the gallery images, the saved version, the service worker and the offline reload (#197).
 
 ### Added
 - Film & grain: **photon by photon**. One layer of grains, 40 × 20 µm, catches Poisson photons as the exposure doubles every second; grains holding one photon turn grey and those holding two become developable, and the counted share is shown next to the model's prediction (`grainField`, `expose`, `predictedFraction` in `js/lib/film.js`, tested).
