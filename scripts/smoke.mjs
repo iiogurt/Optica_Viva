@@ -25,6 +25,8 @@ const probe = `(() => ({
   // laboratories show readouts; missions show the answers of their steps
   readouts: document.querySelectorAll('dl.readouts dd').length + [...document.querySelectorAll('.mstep-answer')].filter((d) => d.textContent.trim()).length,
   emptyReadouts: [...document.querySelectorAll('dl.readouts dd')].filter((d) => d.textContent.trim() === '…').length,
+  // equations that scroll sideways can be reached with the keyboard (#204)
+  mathScroll: [...document.querySelectorAll('.calc, .katex-display, .entry-body .eq, .mstep-eq')].filter((el) => { const ox = getComputedStyle(el).overflowX; return (ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1 && el.querySelector('.katex') && el.tabIndex < 0 && !el.querySelector('[tabindex="0"]'); }).length,
   // KaTeX renders unknown commands as a red box instead of throwing (throwOnError: false)
   tex: [...document.querySelectorAll('.katex-error')].map((e) => (e.title || e.textContent).slice(0, 90)),
   // readouts must stay native description lists: dt/dd pairs only, no role overriding the dl (#200)
@@ -43,6 +45,8 @@ try {
     const problems = [...errors];
     if (s.alert) problems.push('error panel shown');
     if (!REFERENCE.has(id) && s.readouts === 0) problems.push('no results rendered');
+    if (s.mathScroll) { await sleep(1500); s.mathScroll = (await page.eval(probe)).mathScroll; } // busy pages check a frame later
+    if (s.mathScroll) problems.push(`${s.mathScroll} scrolling equations not reachable by keyboard`);
     if (s.tex.length) problems.push('TeX errors: ' + s.tex.join(' | '));
     if (s.dl) problems.push(`${s.dl} description lists without dt/dd semantics`);
     if (s.sliders) problems.push(`${s.sliders} sliders without their value as aria-valuetext`);
@@ -130,6 +134,21 @@ try {
     const ok = seen[0].v === '50 mm' && seen.every((x) => x.v && x.v === x.o) && new Set(seen.map((x) => x.v)).size === 4;
     console.log(`${ok && !errors.length ? '✓' : '✗'} slider values announced (${seen.map((x) => x.v).join(' → ')})`);
     if (!ok || errors.length) failed++;
+  // on a phone-sized screen, wide equations scroll and are keyboard-reachable (#204)
+  {
+    await page.size(375, 812);
+    let focusable = 0, bad = 0;
+    for (const id of ['mission-jupiter', 'raytracer', 'foundations']) {
+      await page.goto(site.url + '#/' + id, 3500);
+      await sleep(800);
+      let r = await page.eval(probe);
+      if (r.mathScroll) { await sleep(1500); r = await page.eval(probe); }
+      bad += r.mathScroll;
+      focusable += await page.eval(`document.querySelectorAll('[data-scrolls][tabindex="0"]').length`);
+    }
+    await page.size(1440, 1200);
+    console.log(`${!bad ? '✓' : '✗'} scrolling equations at 375 px (${focusable} focusable, ${bad} unreachable)`);
+    if (bad) failed++;
   }
   // guided tours: each one starts from its link and plays to the end; every select it sets must hold the value
   const { TOURS } = await import('../js/lib/tours.js');
