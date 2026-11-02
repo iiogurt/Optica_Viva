@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 - Film & grain: **photon by photon**. One layer of grains, 40 × 20 µm, catches Poisson photons as the exposure doubles every second; grains holding one photon turn grey and those holding two become developable, and the counted share is shown next to the model's prediction (`grainField`, `expose`, `predictedFraction` in `js/lib/film.js`, tested).
+### Security
+- Ray tracer: an imported or optimised prescription can no longer inject HTML. Error and validation messages (which can quote a file's glass names) are shown as text, and an imported lens is validated before its paraxial data are computed (#188). The browser smoke test imports a malicious file and checks that nothing runs.
 
 ## [1.31.0] - 2026-10-30
 
