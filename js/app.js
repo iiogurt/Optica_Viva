@@ -185,12 +185,15 @@ buildNav();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   const had = !!navigator.serviceWorker.controller;
   const warn = (what) => console.warn(`Offline copy not ${what}; the app works online and tries again on the next visit.`);
-  navigator.serviceWorker.addEventListener('message', (e) => { if (e.data?.precache === 'failed') warn(`updated (${e.data.error}), the previous one is kept`); });
-  navigator.serviceWorker.register('sw.js').then((reg) => {
-    const w = reg.installing;
-    w?.addEventListener('statechange', () => { if (w.state === 'redundant' && !reg.active) warn('saved'); });
-    return navigator.serviceWorker.ready;
-  }).then((r) => { if (had) r.active?.postMessage('refresh'); }).catch(() => {});
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data?.precache === 'failed') warn(`${e.data.phase === 'install' ? 'saved' : 'updated'} (${e.data.error})${navigator.serviceWorker.controller ? ', the previous one is kept' : ''}`);
+  });
+  // one caching job at a time: a new worker that is installing caches the app itself, so the
+  // refresh request waits until it has finished (or failed)
+  const settled = (w) => new Promise((ok) => { if (!w) return ok(); w.addEventListener('statechange', () => { if (w.state === 'activated' || w.state === 'redundant') ok(); }); });
+  navigator.serviceWorker.register('sw.js')
+    .then((reg) => settled(reg.installing || reg.waiting).then(() => reg))
+    .then((reg) => { if (had && !reg.installing) reg.active?.postMessage('refresh'); }).catch(() => {});
 }
 // the skip link must not change the hash (that would re-route): focus <main> directly
 document.querySelector('.skip-link')?.addEventListener('click', (e) => { e.preventDefault(); main.focus(); });

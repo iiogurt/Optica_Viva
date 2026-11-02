@@ -18,7 +18,12 @@ async function precache() {
   await c.put('precache-version', new Response(version));
 }
 
-self.addEventListener('install', (e) => e.waitUntil(precache().then(() => self.skipWaiting())));
+// a failed install is reported to every open page (it would otherwise go unnoticed), then fails
+const tell = async (msg) => { for (const c of await self.clients.matchAll({ includeUncontrolled: true })) c.postMessage(msg); };
+self.addEventListener('install', (e) => e.waitUntil(precache().then(() => self.skipWaiting(), async (err) => {
+  await tell({ precache: 'failed', phase: 'install', error: String(err?.message || err) });
+  throw err;
+})));
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 // the page asks for a refresh on every start; it does nothing unless the version changed
 self.addEventListener('message', (e) => {
