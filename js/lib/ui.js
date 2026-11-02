@@ -136,7 +136,9 @@ export function controls(spec, onChange) {
       };
       const input = h('input', { type: 'range', min: 0, max: 1000, step: 1, value: Math.round(toPos(state[key]) * 1000), 'aria-label': tr(s.label) });
       const out = h('output');
-      const show = () => { out.textContent = localNum(s.fmt ? s.fmt(state[key]) : fmt(state[key])) + (s.unit ? ' ' + s.unit : ''); };
+      // the input runs over positions 0–1000 (linear or logarithmic); assistive technology hears the
+      // physical value with its unit instead, on load, on every change and when a tour sets it
+      const show = () => { out.textContent = localNum(s.fmt ? s.fmt(state[key]) : fmt(state[key])) + (s.unit ? ' ' + s.unit : ''); input.setAttribute('aria-valuetext', out.textContent); };
       input.addEventListener('input', () => { state[key] = fromPos(+input.value / 1000); show(); fire(); });
       api.set[key] = (v) => { state[key] = v; input.value = Math.round(toPos(v) * 1000); show(); writeUrlSoon(); };
       show();

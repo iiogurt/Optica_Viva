@@ -29,6 +29,8 @@ const probe = `(() => ({
   tex: [...document.querySelectorAll('.katex-error')].map((e) => (e.title || e.textContent).slice(0, 90)),
   // readouts must stay native description lists: dt/dd pairs only, no role overriding the dl (#200)
   dl: [...document.querySelectorAll('dl')].filter((d) => d.hasAttribute('role') || [...d.children].some((c) => !['DT', 'DD', 'DIV'].includes(c.tagName))).length,
+  // every slider announces its physical value and unit, the same text as its visible output (#201)
+  sliders: [...document.querySelectorAll('input[type=range]')].filter((i) => { const o = i.closest('label')?.querySelector('output'); return o && i.getAttribute('aria-valuetext') !== o.textContent; }).length,
 }))()`;
 try {
   for (const id of ids) {
@@ -41,6 +43,7 @@ try {
     if (!REFERENCE.has(id) && s.readouts === 0) problems.push('no results rendered');
     if (s.tex.length) problems.push('TeX errors: ' + s.tex.join(' | '));
     if (s.dl) problems.push(`${s.dl} description lists without dt/dd semantics`);
+    if (s.sliders) problems.push(`${s.sliders} sliders without their value as aria-valuetext`);
     console.log(`${problems.length ? '✗' : '✓'} ${id}${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
     if (problems.length) failed++;
   }
@@ -108,6 +111,22 @@ try {
     })()`);
     console.log(`${r && !errors.length ? '✓' : '✗'} comparison mode${errors.length ? '  ' + errors.join(' | ').slice(0, 300) : ''}`);
     if (!r || errors.length) failed++;
+  }
+  // sliders announce physical values: restored from the URL, then after Arrow, End and Home (#201)
+  {
+    const errors = await page.goto(site.url + '#/dof?f=50', 2500);
+    for (let k = 0; k < 30 && !(await page.eval(`!!document.querySelector('input[type=range][aria-label="Focal length"]')`)); k++) await sleep(500);
+    const read = () => page.eval(`(() => { const i = document.querySelector('input[type=range][aria-label="Focal length"]'); return { v: i.getAttribute('aria-valuetext'), o: i.closest('label').querySelector('output').textContent }; })()`);
+    const key = async (k) => {
+      await page.eval(`document.querySelector('input[type=range][aria-label="Focal length"]').focus()`);
+      for (const type of ['keyDown', 'keyUp']) await page.cdp('Input.dispatchKeyEvent', { type, key: k, code: k, windowsVirtualKeyCode: { ArrowRight: 39, End: 35, Home: 36 }[k] });
+      await sleep(150);
+      return read();
+    };
+    const seen = [await read(), await key('ArrowRight'), await key('End'), await key('Home')];
+    const ok = seen[0].v === '50 mm' && seen.every((x) => x.v && x.v === x.o) && new Set(seen.map((x) => x.v)).size === 4;
+    console.log(`${ok && !errors.length ? '✓' : '✗'} slider values announced (${seen.map((x) => x.v).join(' → ')})`);
+    if (!ok || errors.length) failed++;
   }
   // guided tours: each one starts from its link and plays to the end; every select it sets must hold the value
   const { TOURS } = await import('../js/lib/tours.js');
