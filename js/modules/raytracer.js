@@ -562,12 +562,15 @@ export default function mount(root, meta) {
   };
   const parseR = (v) => (/^(inf|∞|infinity)$/i.test(v) ? Infinity : parseFloat(v));
   const fmtR = (R) => (isFinite(R) ? String(+R.toPrecision(8)) : '∞');
+  // problems come from files and URLs: shown as text, never as HTML
+  const showProblem = (label, text) => msg.replaceChildren(h('b', { style: { color: 'var(--warn)' } }, label), ' ', String(text));
+  // note: a string, or a function called only after the lens has passed validation
   function applyCustom(next, note = '') {
     const errs = validateLens(next);
-    if (errs.length) { msg.innerHTML = '<b style="color:var(--warn)">Not applied:</b> ' + errs.join('; '); renderTable(); return false; }
+    if (errs.length) { showProblem(t('Not applied:'), errs.join('; ')); renderTable(); return false; }
     LENSES.custom = { ...next, name: 'Custom (prescription editor)' };
     delete LENSES.custom._sd;
-    msg.textContent = note || `Applied: ${next.surfaces.length} surfaces, EFL ${paraxial(LENSES.custom).efl.toFixed(3)} mm.`;
+    msg.textContent = (typeof note === 'function' ? note() : note) || `Applied: ${next.surfaces.length} surfaces, EFL ${paraxial(LENSES.custom).efl.toFixed(3)} mm.`;
     ctl.set.lens('custom');
     renderTable(); update(); syncUrl();
     return true;
@@ -616,8 +619,8 @@ export default function mount(root, meta) {
     const text = buf[0] === 0xff && buf[1] === 0xfe ? new TextDecoder('utf-16le').decode(buf) : new TextDecoder().decode(buf);
     try {
       const { lens, warnings } = /\.json$/i.test(f.name) || text.trim().startsWith('{') ? { lens: lensFromJSON(text), warnings: [] } : parseZmx(text);
-      applyCustom(lens, `Imported ${f.name}: ${lens.surfaces.length} surfaces, EFL ${paraxial(lens).efl.toFixed(3)} mm.` + (warnings.length ? ' Warnings: ' + warnings.join('; ') : ''));
-    } catch (e) { msg.innerHTML = '<b style="color:var(--warn)">Import failed:</b> ' + e.message; }
+      applyCustom(lens, () => `Imported ${f.name}: ${lens.surfaces.length} surfaces, EFL ${paraxial(lens).efl.toFixed(3)} mm.` + (warnings.length ? ' Warnings: ' + warnings.join('; ') : ''));
+    } catch (e) { showProblem(t('Import failed:'), e.message); }
     fileIn.value = '';
   });
   // Levenberg–Marquardt on all curvatures + image distance; EFL held at its current value;
@@ -630,7 +633,7 @@ export default function mount(root, meta) {
     optJob('optimiseLens', { lens: start, opts: { iterations: 30 } }).then((r) => {
       const h = r.history;
       applyCustom(r.lens, `Optimised in ${h.length - 1} iterations: RMS ray error ${(h[0] * 1000).toFixed(2)} → ${(h[h.length - 1] * 1000).toFixed(2)} µm, EFL ${r.efl.toFixed(3)} mm.`);
-    }).catch((e) => { msg.innerHTML = '<b style="color:var(--warn)">Optimisation failed:</b> ' + e.message; })
+    }).catch((e) => { showProblem(t('Optimisation failed:'), e.message); })
       .finally(() => { btn.disabled = false; btn.textContent = label; });
   }
   const download = () => {

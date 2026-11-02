@@ -67,6 +67,23 @@ try {
     console.log(`${problems.length ? '✗' : '✓'} live camera (${camPage})${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
     if (problems.length) failed++;
   }
+  // security: a prescription file with HTML in a glass name must show a text error and run nothing (#188)
+  {
+    const errors = await page.goto(site.url + '#/raytracer', 3000);
+    const r = await page.eval(`(async () => {
+      const bad = { name: 'audit', epd: 10, field: 5, surfaces: [{ R: 50, t: 5, glass: '<img src=x onerror="window.__xss=1">', stop: true }, { R: -50, t: 40, glass: 'air' }] };
+      const input = document.querySelector('input[type=file][accept*="json"]') || document.querySelector('input[type=file]');
+      const dt = new DataTransfer(); dt.items.add(new File([JSON.stringify(bad)], 'bad.json', { type: 'application/json' }));
+      input.files = dt.files; input.dispatchEvent(new Event('change'));
+      await new Promise((res) => setTimeout(res, 800));
+      const imgs = [...document.querySelectorAll('main img')].filter((i) => i.getAttribute('src') === 'x').length;
+      const shown = document.body.textContent.includes('unknown glass');
+      return window.__xss ? 'script ran' : imgs ? 'img injected' : shown ? '' : 'no readable error';
+    })()`);
+    const problems = [...errors, ...(r ? [r] : [])];
+    console.log(`${problems.length ? '✗' : '✓'} lens import is safe${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
+    if (problems.length) failed++;
+  }
   // comparison mode: two embedded copies of the page with its settings; Escape closes them
   {
     const errors = await page.goto(site.url + '#/dof?N=4', 3000);
