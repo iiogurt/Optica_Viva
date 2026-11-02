@@ -24,11 +24,8 @@ jobs:
         with:
           node-version: 24
       - run: npm run check && npm test
-      - name: Assemble the static site
-        run: |
-          mkdir -p _site
-          cp -r index.html css js vendor docs _site/
-          touch _site/.nojekyll
+      - name: Assemble and verify the static site
+        run: node scripts/site.mjs _site
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
