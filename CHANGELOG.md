@@ -12,6 +12,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Security
 - Ray tracer: an imported or optimised prescription can no longer inject HTML. Error and validation messages (which can quote a file's glass names) are shown as text, and an imported lens is validated before its paraxial data are computed (#188). The browser smoke test imports a malicious file and checks that nothing runs.
 
+### Fixed
+- Your camera: a camera granted after leaving the page, or whose playback failed, is now stopped at once instead of staying live; only one request runs at a time, and the page's cleanup cancels a request still waiting for permission (`cameraSession` in `js/lib/camera.js`, with tests for late permission, failed playback, repeated clicks, stop and restart; #190).
+
 ## [1.31.0] - 2026-10-30
 
 ### Added
