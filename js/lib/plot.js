@@ -24,7 +24,10 @@ function ticks(ax, target) {
   for (let v = Math.ceil(lo / st - 1e-9) * st; v <= hi + st * 1e-9; v += st) out.push({ v: Math.abs(v) < st * 1e-9 ? 0 : v, major: true });
   return out;
 }
-const tickLabel = (v, ax) => localNum(ax.fmt ? ax.fmt(v) : Math.abs(v) >= 1e4 || (Math.abs(v) < 1e-2 && v !== 0) ? v.toExponential(0) : String(+v.toPrecision(4)));
+// Large and small ticks in exponent form with as few digits as still give the tick's value, so
+// neighbouring ticks never share a label (−15 000 is −1.5e+4, not −2e+4).
+const expLabel = (v) => { for (let p = 0; p < 4; p++) { const s = v.toExponential(p); if (Math.abs(+s - v) <= 1e-6 * Math.abs(v)) return s; } return v.toExponential(3); };
+export const tickLabel = (v, ax = {}) => localNum(ax.fmt ? ax.fmt(v) : Math.abs(v) >= 1e4 || (Math.abs(v) < 1e-2 && v !== 0) ? expLabel(v) : String(+v.toPrecision(4)));
 
 // Returns a mapper {X(v), Y(v), area} so callers can overlay custom marks.
 export function plot(ctx, w, h, opt) {
