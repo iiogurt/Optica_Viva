@@ -754,7 +754,7 @@ flowchart LR
 | Birefringence | Stress-optic law with the Hertz/Frocht disk stress field, white-light interference colours from 61 wavelengths; extraordinary-ray walk-off in uniaxial crystals | polarisation |
 | Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
 | Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
-| Drop scattering | Lorenz–Mie series (Bohren & Huffman's BHMIE, downward-recurrence logarithmic derivative), real water index, 16 wavelengths × 3 radii, solar-disc smear, 5800 K sunlight | atmospheric |
+| Drop scattering | Lorenz–Mie series (Bohren & Huffman's BHMIE; logarithmic derivative by downward recurrence from its exact top value, Lentz's continued fraction), real water index, 16 wavelengths × 3 radii, solar-disc smear, 5800 K sunlight | atmospheric |
 | Optics bench | Forward photon tracing, one wavelength per photon (400–700 nm), through convex glass shapes (half-spaces, spheres, a cylinder); Sellmeier index, unpolarised Fresnel by Russian roulette, TIR; CIE 1931 colour on the screen | bench |
 | Black hole | Schwarzschild photon orbits u'' = 3u² − u by RK4 (Δφ = 0.004) for 1100 impact parameters; disk crossings at φ₀ + nπ (Luminet 1979); Page–Thorne flux; I ∝ g⁴F with Keplerian orbits; Gaussian EHT beam | blackhole |
 | Waves | 2-D FDTD (Yee 1966), TM<sub>z</sub>, S = 0.5, 280 × 190 cells, matched cubic-graded absorbing layer, perfect conductors and dielectrics per cell; time-averaged ⟨E<sub>z</sub>²⟩; 2-D Huygens–Fresnel integral for comparison | waves |
@@ -1094,6 +1094,7 @@ The numerical core was checked against published or analytically known values. E
 | FDTD double slit against the Huygens–Fresnel integral | RMS difference below 0.12, central fringe within 3 cells | 2-D Huygens–Fresnel |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
+| Mie intensity i(θ), x = 100–2000, m = 1.333 (and 1.3363 at 505 nm), θ = 180°, 179.5°, 175°, 165°, 142°, 138°, 90°, 30° | agrees to 10⁻⁸ (backscatter at x = 2000: 24 850.349) | Independent 40-digit Bohren–Huffman calculation (ψ_n by Miller recurrence); SciPy values of the validation report (#208) |
 | Page–Thorne disk flux, radial bracket at r = 7, 10, 20, 60 M | equals ∫ (t² − 6)/(t² − 3) dt from √6 to √r to 10⁻⁹; vanishes quadratically at the ISCO | Page & Thorne 1974, Schwarzschild limit (log coefficient √3/2) |
 | Bench: traced prism deviation, N-SF11 at 60° incidence (450 / 550 / 650 nm) | 72.261° / 67.639° / 65.564° | i + arcsin(n sin(A − r₁)) − A, same to 10⁻⁶° |
 | Bench: ball lens paraxial focus (N-BK7, R = 0.6) | 0.8802 | nR/(2(n − 1)) = 0.8805 |
