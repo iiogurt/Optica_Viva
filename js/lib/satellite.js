@@ -10,11 +10,14 @@ export function designFor({ gsd, H, p, Q = 1, snrTarget = 100, swathKm = 15, bit
   const o = orbitSpeed(H), t = gsd / o.ground; // time per line
   // TDI stages for the SNR target (signal from the laboratory's sunlit-ground model)
   // panchromatic band of about 300 nm (450–750 nm); TDI sensors come with a few fixed stage counts
+  // targetMet says whether one of them reaches the SNR; if none does, the result is the best effort
+  // with the most stages, and the caller must say that the requirement is not met
   const STAGES = [1, 2, 4, 8, 16, 24, 32, 48, 64, 96, 128, 256];
   let N = 1, s = null;
   for (N of STAGES) { s = signal({ rho, el, band: 300, D, gsdM: gsd, H, t, N }); if (s.snr >= snrTarget) break; }
+  const targetMet = s.snr >= snrTarget;
   const pixelsAcross = (swathKm * 1000) / gsd, lineRate = 1 / t;
   const dataRate = pixelsAcross * lineRate * bits; // bit/s, one panchromatic band
   const nyq = 1 / (2 * p), nuC = D / (LAM * f), mtf = mtfDiff(nyq / nuC) * (2 / Math.PI) ** 2;
-  return { f, D, N, e: s.e, snr: s.snr, t, lineRate, pixelsAcross, dataRate, mtf, ground: o.ground, diffGround: (1.22 * LAM * H) / D };
+  return { f, D, N, e: s.e, snr: s.snr, snrTarget, targetMet, maxStages: STAGES[STAGES.length - 1], t, lineRate, pixelsAcross, dataRate, mtf, ground: o.ground, diffGround: (1.22 * LAM * H) / D };
 }

@@ -17,3 +17,18 @@ test('halving the GSD doubles the mirror; a wider swath raises the data rate in 
   near(b.D / a.D, 2, 1e-9, 'mirror');
   near(designFor({ gsd: 1, H: 500e3, p: 5.5e-6, swathKm: 30 }).dataRate / a.dataRate, 2, 1e-9, 'data rate');
 });
+
+test('TDI stages: the smallest standard count that reaches the SNR, or an explicit unmet requirement (#212)', async () => {
+  // feasible: the target is reached, and asking for a little more needs more stages
+  const ok = designFor({ gsd: 0.5, H: 500000, p: 5e-6, Q: 1, snrTarget: 100 });
+  assert.ok(ok.targetMet && ok.snr >= 100 && ok.N < 256, `N ${ok.N}`);
+  const more = designFor({ gsd: 0.5, H: 500000, p: 5e-6, Q: 1, snrTarget: ok.snr * 1.0001 });
+  assert.ok(more.N > ok.N || !more.targetMet, 'the smallest count');
+  // exactly at the threshold: the same count, met
+  const exact = designFor({ gsd: 0.5, H: 500000, p: 5e-6, Q: 1, snrTarget: ok.snr });
+  assert.equal(exact.N, ok.N); assert.ok(exact.targetMet);
+  // the report's case: 256 stages give SNR 90, the requirement of 200 is not met and says so
+  const no = designFor({ gsd: 0.25, H: 500000, p: 5e-6, Q: 2, snrTarget: 200 });
+  assert.equal(no.targetMet, false); assert.equal(no.N, 256); assert.equal(no.maxStages, 256);
+  assert.ok(Math.abs(no.snr - 90.2) < 0.1, `SNR ${no.snr}`);
+});
