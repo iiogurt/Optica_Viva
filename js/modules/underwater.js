@@ -4,7 +4,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot, range } from '../lib/plot.js';
 import { oetf, gamutClip } from '../lib/color.js';
 import { WATERS, absorption, patchColours, bandsLeft, flatPort, domeImage, backscatterStart } from '../lib/underwater.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['photo', 'video'] }));
@@ -32,7 +32,7 @@ export default function mount(root, meta) {
   const calc = liveCalc();
   const chart = stage({ aspect: 2.5, label: 'Colour chart (CIE test colours and grey): at the surface, by daylight at depth, with a strobe', draw: drawChart, minH: 200 });
   const spec = stage({ aspect: 2.4, label: '', draw: drawSpectrum, cls: 'plain', minH: 200 });
-  const geo = stage({ aspect: 2.4, label: '', draw: drawGeometry, cls: 'plain', minH: 200 });
+  const geo = stage({ aspect: 2.4, label: '', name: N_('Top view of the strobe beam and the camera\'s field of view'), draw: drawGeometry, cls: 'plain', minH: 200 });
   root.append(lab([chart.el, h('div.grid-2', {}, h('div.card', { style: { padding: '8px' } }, spec.el), h('div.card', { style: { padding: '8px' } }, geo.el))], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   let M = null;

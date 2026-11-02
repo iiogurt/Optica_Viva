@@ -4,7 +4,7 @@ import { header, lab, idea, rule, theory, references, liveCalc, missionStep } fr
 import { MODULES } from '../app.js';
 import { cameraOptions, resolveCamera, TELESCOPES } from '../lib/equipment.js';
 import { camera, telescope, stops } from '../lib/choose.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const FORMATS = ['mf', 'ff', 'apsc', 'mft', 'one', 'phone'];
@@ -50,7 +50,7 @@ export default function mount(root, meta) {
   let seen = { ...ctl.state };
   const calc = liveCalc('Verdict');
   const steps = [1, 2, 3, 4].map((n) => missionStep(n, '', null, ''));
-  const bars = stage({ aspect: 2.4, label: '', draw: drawBars, cls: 'plain', minH: 220 });
+  const bars = stage({ aspect: 2.4, label: '', name: N_('Each quality of options A and B, relative to the better one'), draw: drawBars, cls: 'plain', minH: 220 });
   root.append(lab([h('div.msteps', {}, ...steps.map((s) => s.el)), h('div.card', { style: { padding: '8px' } }, bars.el)], [h('div.card', {}, ctl.el), calc.el]));
 
   const setTitle = (k, title, lab) => {

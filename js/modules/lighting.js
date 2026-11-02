@@ -5,7 +5,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot, logRange } from '../lib/plot.js';
 import { latest } from '../lib/compute.js';
 import { makeLight, shadowGeometry, angularSize, catchlight, falloff, flashAperture, fresnel0 } from '../lib/lighting.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const PRESETS = { bulb: ['Bare flash or bulb', 5], small: ['Small softbox', 60], large: ['Large softbox', 120], window: ['Window or scrim', 200] };
 const R_HEAD = 0.1;
@@ -34,7 +34,7 @@ export default function mount(root, meta) {
   const ro = h('div');
   const calc = liveCalc();
   const scene = stage({ aspect: 10 / 7, label: 'Rendered: a head-sized matte or glossy sphere in front of a wall', draw: drawScene, minH: 260 });
-  const top = stage({ aspect: 2.4, label: '', draw: drawTop, cls: 'plain', minH: 200 });
+  const top = stage({ aspect: 2.4, label: '', name: N_('Top view of the light, the subject, the background and the camera'), draw: drawTop, cls: 'plain', minH: 200 });
   const fall = stage({ aspect: 2.4, label: '', draw: drawFall, cls: 'plain', minH: 200 });
   root.append(lab([scene.el, h('div.card', { style: { padding: '8px' } }, top.el), h('div.card', { style: { padding: '8px' } }, fall.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
