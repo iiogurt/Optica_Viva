@@ -51,8 +51,9 @@ export default function mount(root, meta) {
       tex: String.raw`D = \frac{\lambda f}{Q\,p} = ${texNum(r.D, 3)}\ \text{m}`,
     });
     steps[2].set({
-      answer: `${r.N} stages <small>(SNR ${r.snr.toFixed(0)})</small>`,
-      why: `The ground moves ${(r.ground / 1000).toFixed(2)} km/s, so each line gets ${(r.t * 1e6).toFixed(0)} µs. Exposing each line ${r.N} times as it passes (time-delay integration) collects ${fmt(r.e, 3)} electrons from a 20 % grey ground under a 45° Sun.`,
+      answer: r.targetMet ? `${r.N} stages <small>(SNR ${r.snr.toFixed(0)})</small>` : `${r.N} stages <small>(SNR ${r.snr.toFixed(0)} of the ${r.snrTarget} required: <strong>not reached</strong>)</small>`,
+      why: `The ground moves ${(r.ground / 1000).toFixed(2)} km/s, so each line gets ${(r.t * 1e6).toFixed(0)} µs. Exposing each line ${r.N} times as it passes (time-delay integration) collects ${fmt(r.e, 3)} electrons from a 20 % grey ground under a 45° Sun.`
+        + (r.targetMet ? '' : ` <strong>The requirement is not met:</strong> even the largest standard sensor, ${r.maxStages} stages, reaches only SNR ${r.snr.toFixed(0)} of the ${r.snrTarget} asked for. A larger mirror (a lower Q), a coarser GSD, a brighter scene or a lower required SNR would close the gap.`),
       tex: String.raw`t_\text{line} = \frac{\text{GSD}}{v_g} = ${texNum(r.t * 1e6, 3)}\ \mu\text{s}`,
     });
     steps[3].set({
@@ -60,7 +61,10 @@ export default function mount(root, meta) {
       why: `${fmt(r.pixelsAcross, 3)} pixels across the swath, ${fmt(r.lineRate, 3)} lines per second, 11 bits each: ${(r.dataRate * 60 / 8e9).toFixed(1)} GB per minute of imaging. Radio downlinks carry roughly 0.1–3 Gbit/s, so images are compressed and stored until the next ground-station pass.`,
       tex: String.raw`R = n_\text{px}\cdot\frac{v_g}{\text{GSD}}\cdot b`,
     });
-    calc.say(t('For <strong>{v1} pixels from {H} km</strong>: a {v3} mirror, {v4} focal length, {N} TDI stages for SNR {snr}, and {v7} Gbit/s of raw data over a {swath} km swath.', { v1: len(st.gsd), H: st.H, v3: len(r.D), v4: len(r.f), N: r.N, snr: r.snr.toFixed(0), v7: (r.dataRate / 1e9).toPrecision(3), swath: st.swath }));
+    const v = { v1: len(st.gsd), H: st.H, v3: len(r.D), v4: len(r.f), N: r.N, snr: r.snr.toFixed(0), need: r.snrTarget, v7: (r.dataRate / 1e9).toPrecision(3), swath: st.swath };
+    calc.say(r.targetMet
+      ? t('For <strong>{v1} pixels from {H} km</strong>: a {v3} mirror, {v4} focal length, {N} TDI stages for SNR {snr}, and {v7} Gbit/s of raw data over a {swath} km swath.', v)
+      : t('For <strong>{v1} pixels from {H} km</strong>: a {v3} mirror, {v4} focal length and {v7} Gbit/s of raw data over a {swath} km swath, but <strong>no standard TDI sensor reaches SNR {need}</strong>: {N} stages give {snr}.', v));
     calc.set(String.raw`\begin{aligned}
     f &= ${texNum(r.f, 3)}\ \text{m},\quad D = ${texNum(r.D, 3)}\ \text{m},\quad N = f/D = ${texNum(r.f / r.D, 3)}\\
     \text{lines} &= ${texNum(r.lineRate, 3)}\ \text{s}^{-1}
@@ -97,7 +101,7 @@ export default function mount(root, meta) {
 <p>The focal length follows from GSD \(= Hp/f\), the aperture from \(Q = \lambda f/(Dp)\) at 550 nm. \(Q = 2\) samples the optical cut-off at the detector's Nyquist frequency; most Earth-observation systems choose \(Q \approx 1\), trading some aliasing for more light and contrast. The MTF shown is the diffraction-limited circular aperture times the pixel-aperture and one-pixel smear MTFs at Nyquist, as in the Earth-observation laboratory.</p>
 </div><div>
 <h3>Light and data</h3>
-<p>Each line integrates for \(\text{GSD}/v_g\). The signal uses the laboratory's model of sunlit Lambertian ground (reflectance 0.2, Sun at 45°, two-way transmission 0.75) in a 300 nm panchromatic band, with throughput × quantum efficiency 0.4 and 2 e⁻ of read noise per stage; the number of TDI stages is the smallest standard count reaching the required SNR. The raw data rate is pixels across × line rate × 11 bits, before compression.</p>
+<p>Each line integrates for \(\text{GSD}/v_g\). The signal uses the laboratory's model of sunlit Lambertian ground (reflectance 0.2, Sun at 45°, two-way transmission 0.75) in a 300 nm panchromatic band, with throughput × quantum efficiency 0.4 and 2 e⁻ of read noise per stage; the number of TDI stages is the smallest standard count (1 to 256) reaching the required SNR. If none reaches it, the plan shows the 256-stage result as a best effort and says that the requirement is not met. The raw data rate is pixels across × line rate × 11 bits, before compression.</p>
 </div></div>`));
   root.append(references([
     'J. R. Schott, <i>Remote Sensing: The Image Chain Approach</i>, 2nd ed., Oxford University Press (2007).',
