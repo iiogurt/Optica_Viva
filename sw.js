@@ -3,13 +3,15 @@
 // app (precache.json) is cached on install and again whenever the version in package.json changes.
 // Google Fonts are served from the cache and refreshed in the background.
 // A worker is installed only when the whole app is cached: if any file fails, installation fails,
-// the browser keeps the previous worker (or none) and tries again on the next visit. A refresh
-// after a version change uses Cache.addAll, which stores all files or none, so a failed refresh
-// keeps the previous complete copy and its version; the page is told the outcome.
+// the browser keeps the previous worker (or none) and tries again on the next visit. On every page
+// load the active worker checks the version itself (one check at a time) and caches a new version
+// with Cache.addAll, which stores all files or none, so a failed update keeps the previous complete
+// copy and its version. Failures are reported to the open pages; offline, nothing is attempted.
 const CACHE = 'optica-viva', FONTS = 'optica-viva-fonts', TIMEOUT = 4000;
 
 async function precache() {
-  const { files } = await (await fetch('precache.json', { cache: 'no-cache' })).json();
+  const list = await fetch('precache.json', { cache: 'no-cache' }); // throws when offline
+  const { files } = await list.json();
   const { version } = await (await fetch('package.json', { cache: 'no-cache' })).json();
   const c = await caches.open(CACHE);
   const done = await c.match('precache-version');
@@ -18,19 +20,22 @@ async function precache() {
   await c.put('precache-version', new Response(version));
 }
 
-// a failed install is reported to every open page (it would otherwise go unnoticed), then fails
+// failures are reported to every open page (they would otherwise go unnoticed)
 const tell = async (msg) => { for (const c of await self.clients.matchAll({ includeUncontrolled: true })) c.postMessage(msg); };
+const why = (err) => String(err?.message || err);
 self.addEventListener('install', (e) => e.waitUntil(precache().then(() => self.skipWaiting(), async (err) => {
-  await tell({ precache: 'failed', phase: 'install', error: String(err?.message || err) });
+  await tell({ precache: 'failed', phase: 'install', error: why(err) });
   throw err;
 })));
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
-// the page asks for a refresh on every start; it does nothing unless the version changed
-self.addEventListener('message', (e) => {
-  if (e.data !== 'refresh') return;
-  const reply = (msg) => e.source?.postMessage(msg);
-  e.waitUntil(precache().then(() => reply({ precache: 'ok' }), (err) => reply({ precache: 'failed', error: String(err?.message || err) })));
-});
+// the version check on page loads: one at a time; a server that cannot be reached is not a failure
+let checking = null;
+function checkVersion() {
+  checking ??= fetch('package.json', { cache: 'no-cache', method: 'HEAD' })
+    .then(() => precache().catch((err) => tell({ precache: 'failed', phase: 'update', error: why(err) })), () => {})
+    .finally(() => { checking = null; });
+  return checking;
+}
 
 const timeout = (p, ms) => new Promise((res, rej) => { const t = setTimeout(() => rej(new Error('timeout')), ms); p.then((r) => { clearTimeout(t); res(r); }, (err) => { clearTimeout(t); rej(err); }); });
 
@@ -58,6 +63,9 @@ async function fonts(req, e) {
 self.addEventListener('fetch', (e) => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== 'GET') return;
-  if (url.origin === self.location.origin) e.respondWith(networkFirst(req));
+  if (url.origin === self.location.origin) {
+    e.respondWith(networkFirst(req));
+    if (req.mode === 'navigate') e.waitUntil(checkVersion());
+  }
   else if (/^fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) e.respondWith(fonts(req, e));
 });
