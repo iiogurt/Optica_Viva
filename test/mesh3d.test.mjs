@@ -453,3 +453,13 @@ test('black hole: capture at b_c = 3√3 M, weak-field deflection, the shadow of
   const s = blackholeScene({});
   assert.ok(s.lines.length >= 9 && s.meshes.length === 2);
 });
+
+test('Page–Thorne flux: the radial bracket is ∫ (t² − 6)/(t² − 3) dt from √6 to √r and vanishes quadratically at r = 6', async () => {
+  const { diskFlux } = await import('../js/lib/blackhole.js');
+  const bracket = (r) => diskFlux(r) * (r - 3) * r ** 2.5;
+  const simpson = (a, b, f, n = 2000) => { const hh = (b - a) / n; let s = f(a) + f(b); for (let i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * f(a + i * hh); return (s * hh) / 3; };
+  for (const r of [7, 10, 20, 60]) near(bracket(r), simpson(Math.sqrt(6), Math.sqrt(r), (t) => (t * t - 6) / (t * t - 3)), 1e-9, `r = ${r}`);
+  // near the edge the bracket grows as (x − √6)²: doubling the distance quadruples it
+  const x0 = Math.sqrt(6), b1 = bracket((x0 + 1e-3) ** 2), b2 = bracket((x0 + 2e-3) ** 2);
+  near(b2 / b1, 4, 0.02, 'quadratic onset');
+});

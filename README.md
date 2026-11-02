@@ -1093,6 +1093,7 @@ The numerical core was checked against published or analytically known values. E
 | FDTD double slit against the Huygens–Fresnel integral | RMS difference below 0.12, central fringe within 3 cells | 2-D Huygens–Fresnel |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
+| Page–Thorne disk flux, radial bracket at r = 7, 10, 20, 60 M | equals ∫ (t² − 6)/(t² − 3) dt from √6 to √r to 10⁻⁹; vanishes quadratically at the ISCO | Page & Thorne 1974, Schwarzschild limit (log coefficient √3/2) |
 | Bench: traced prism deviation, N-SF11 at 60° incidence (450 / 550 / 650 nm) | 72.261° / 67.639° / 65.564° | i + arcsin(n sin(A − r₁)) − A, same to 10⁻⁶° |
 | Bench: ball lens paraxial focus (N-BK7, R = 0.6) | 0.8802 | nR/(2(n − 1)) = 0.8805 |
 

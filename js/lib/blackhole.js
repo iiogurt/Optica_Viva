@@ -46,13 +46,15 @@ export function orbitTable(bMax = 40) {
   return { bs: Float64Array.from(bs), orbits: bs.map((b) => orbit(b)) };
 }
 
-// Page–Thorne flux of a thin disk around a Schwarzschild black hole (Luminet 1979, eq. 15), in
-// arbitrary units; zero inside the innermost stable circular orbit r = 6.
+// Page–Thorne flux of a thin disk around a Schwarzschild black hole (Page & Thorne 1974; Luminet
+// 1979), in arbitrary units; zero inside the innermost stable circular orbit r = 6. With x = √r the
+// bracket is ∫ from √6 to x of (t² − 6)/(t² − 3) dt = x − √6 + (√3/2) ln[(x + √3)(√6 − √3)/((x − √3)(√6 + √3))],
+// so it vanishes quadratically at the inner edge (no torque there).
 export function diskFlux(r) {
   if (r <= R_ISCO) return 0;
   const s3 = Math.sqrt(3), s6 = Math.sqrt(6), sx = Math.sqrt(r);
   const log = Math.log(((sx + s3) * (s6 - s3)) / ((sx - s3) * (s6 + s3)));
-  return (1 / ((r - 3) * r ** 2.5)) * (sx - s6 + (s3 / 3) * log);
+  return (1 / ((r - 3) * r ** 2.5)) * (sx - s6 + (s3 / 2) * log);
 }
 
 // Image of the disk (inner edge 6, outer edge rOut) seen at inclination incl (rad, angle between
