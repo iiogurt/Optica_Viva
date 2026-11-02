@@ -3,7 +3,7 @@ import { h, controls, stage, readouts, texNum } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
 import { latest } from '../lib/compute.js';
-import { defocus, disparityOf, imageDistance } from '../lib/autofocus.js';
+import { defocus, disparityOf, imageDistance, AF_STRIP } from '../lib/autofocus.js';
 import { t } from '../lib/i18n.js';
 
 const FRAME = 1 / 120; // s per autofocus frame (a 120 fps live view)
@@ -35,12 +35,12 @@ export default function mount(root, meta) {
   let R = null, P = null;
   function update() {
     const st = ctl.state, u = st.u * 1000, fc = st.focus * 1000;
-    const d = defocus(st.f, st.N, u, fc), disp = disparityOf(d.dv, st.N);
+    const d = defocus(st.f, st.N, u, fc), disp = disparityOf(st.f, st.N, d.vt, d.vs);
     P = { st, d, disp };
     calc.set(String.raw`\begin{aligned}
-    \Delta v &= v(u) - v(s) = ${texNum(d.dv * 1000, 3)}\ \mu\text{m}\\
-    b &= \frac{|\Delta v|}{N} = ${texNum(d.blur * 1000, 3)}\ \mu\text{m}\\
-    \delta &= \frac{4}{3\pi}\,\frac{\Delta v}{N} = ${texNum(disp * 1000, 3)}\ \mu\text{m} = ${texNum((disp * 1000) / st.pitch, 3)}\ \text{px}
+    \Delta v &= v(u) - v(s) = ${texNum(d.vt, 4)} - ${texNum(d.vs, 4)}\ \text{mm} = ${texNum(d.dv * 1000, 3)}\ \mu\text{m}\\
+    b &= \frac{f}{N}\,\frac{|\Delta v|}{v(u)} = ${texNum(d.blur * 1000, 3)}\ \mu\text{m}\\
+    \delta &= \frac{4}{3\pi}\,\frac{f}{N}\,\frac{\Delta v}{v(u)} = ${texNum(disp * 1000, 3)}\ \mu\text{m} = ${texNum((disp * 1000) / st.pitch, 3)}\ \text{px}
     \end{aligned}`);
     job('autofocus', { f: st.f, N: st.N, u, focus: fc, pitchUm: st.pitch, photons: st.photons, trials: 8 }).then((r) => {
       R = r;
@@ -48,12 +48,18 @@ export default function mount(root, meta) {
       ro.replaceChildren(readouts([
         ['Blur of the subject now', (d.blur * 1000).toFixed(0) + ' µm = ' + ((d.blur * 1000) / st.pitch).toFixed(1) + ' px'],
         ['Shift between the half-images', (disp * 1000).toFixed(1) + ' µm = ' + ((disp * 1000) / st.pitch).toFixed(1) + ' px'],
-        ['Phase detection: focus set to', (r.pdU / 1000).toFixed(3) + ' m ± ' + (r.pdUsd / 10).toFixed(1) + ' cm'],
-        ['Phase detection: frames, time', `${r.pdFrames}, ${(tPD * 1000).toFixed(0)} ms`],
-        ['Contrast detection: focus set to', (r.cdU / 1000).toFixed(3) + ' m'],
+        ['Phase detection: focus set to', r.pdOk ? (r.pdU / 1000).toFixed(3) + ' m ± ' + (r.pdUsd / 10).toFixed(1) + ' cm' : t('not measurable (beyond ±{n} px)', { n: AF_STRIP.maxShift })],
+        ['Phase detection: frames, time', r.pdOk ? `${r.pdFrames}, ${(tPD * 1000).toFixed(0)} ms` : '—'],
+        ['Contrast detection: focus set to', (Number.isFinite(r.cdU) ? (r.cdU / 1000).toFixed(3) + ' m' : '∞') + (r.cdOk ? '' : ` (${t('not in focus')})`)],
         ['Contrast detection: frames, time', `${r.frames}, ${(tCD * 1000).toFixed(0)} ms`],
       ]));
-      calc.say(t('The subject is blurred by {blur} pixels and the half-images are <strong>{disp} px apart</strong> ({dir}). Phase detection lands at {pd} m in <strong>{pdFrames} frames</strong>; contrast detection needs <strong>{frames}</strong> to reach {cd} m.', { blur: ((d.blur * 1000) / st.pitch).toFixed(1), disp: Math.abs((disp * 1000) / st.pitch).toFixed(1), dir: d.dv < 0 ? t('the lens is focused too close') : t('the lens is focused too far'), pd: (r.pdU / 1000).toFixed(2), pdFrames: r.pdFrames, frames: r.frames, cd: (r.cdU / 1000).toFixed(2) }));
+      const v = { blur: ((d.blur * 1000) / st.pitch).toFixed(1), disp: Math.abs((disp * 1000) / st.pitch).toFixed(1), dir: d.dv < 0 ? t('the lens is focused too close') : t('the lens is focused too far'), pd: (r.pdU / 1000).toFixed(2), pdFrames: r.pdFrames, frames: r.frames, cd: Number.isFinite(r.cdU) ? (r.cdU / 1000).toFixed(2) : '∞', n: AF_STRIP.maxShift };
+      // a defocus too large for the split pixels' search or for the simulated strip is said, not hidden
+      calc.say(r.pdOk && r.cdOk
+        ? t('The subject is blurred by {blur} pixels and the half-images are <strong>{disp} px apart</strong> ({dir}). Phase detection lands at {pd} m in <strong>{pdFrames} frames</strong>; contrast detection needs <strong>{frames}</strong> to reach {cd} m.', v)
+        : [t('The subject is blurred by {blur} pixels and the half-images are <strong>{disp} px apart</strong> ({dir}).', v),
+          r.pdOk ? t('Phase detection lands at {pd} m in <strong>{pdFrames} frames</strong>.', v) : t('That is beyond the ±{n} px that phase detection searches, so it <strong>cannot measure</strong> the defocus.', v),
+          r.cdOk ? t('Contrast detection needs <strong>{frames}</strong> frames to reach {cd} m.', v) : t('Contrast detection stops after <strong>{frames}</strong> frames at {cd} m, <strong>still out of focus</strong>: the blur is wider than the simulated strip can show.', v)].join(' '));
       halves.redraw(); climb.redraw();
     }).catch(console.error);
   }
@@ -81,19 +87,19 @@ export default function mount(root, meta) {
 
   update();
 
-  root.append(rule(String.raw`\[\delta = \frac{4}{3\pi}\,\frac{\Delta v}{N} \approx 0.42\,b\]
-<p>Each half of the lens forms an image whose centre sits off the axis by the centroid of a half disc, so the two half-images are shifted by about 0.42 times the blur diameter \(b\). A 50 mm lens at f/2 focused at 2 m, with the subject at 3 m, puts the image 0.43 mm in front of the sensor: a 217 µm blur and a 92 µm shift, 23 pixels of 4 µm, which the camera turns straight into the lens movement. Contrast detection gets no such hint and must step through focus.</p>`,
+  root.append(rule(String.raw`\[\delta = \frac{4}{3\pi}\,\frac{f}{N}\,\frac{\Delta v}{v(u)} \approx 0.42\,b\]
+<p>Each half of the lens forms an image whose centre sits off the axis by the centroid of a half disc, so the two half-images are shifted by about 0.42 times the blur diameter \(b\). A 50 mm lens at f/2 focused at 2 m, with the subject at 3 m, puts the image 0.44 mm in front of the sensor: a 214 µm blur and a 91 µm shift, 23 pixels of 4 µm, which the camera turns straight into the lens movement. Contrast detection gets no such hint and must step through focus.</p>`,
     String.raw`Real split-pixel sensors see only part of each half of the pupil, and their baseline shrinks with small apertures (beyond about f/8 many cameras fall back to contrast detection). Low light, low-contrast or repetitive subjects and lens aberrations make the measured shift less reliable, so cameras combine both methods.`));
 
   root.append(theory('How the two methods are simulated', String.raw`
 <div class="theory-cols"><div>
 <h3>Defocus</h3>
-<p>For a thin lens the image of a subject at \(u\) lies at \(v(u) = 1/(1/f - 1/u)\); with the sensor at \(v(s)\) the subject is blurred into a disc of diameter \(b = |v(u) - v(s)|/N\). A 1-D strip of the scene (random bars) is convolved with the projection of that disc, a semi-ellipse, by FFT, integrated over the pixels and given Poisson noise.</p>
+<p>For a thin lens the image of a subject at \(u\) lies at \(v(u) = 1/(1/f - 1/u)\). The cone of light from the aperture, of diameter \(A = f/N\), converges there, so with the sensor at \(v(s)\) similar triangles give a disc of diameter \(b = A\,|v(u) - v(s)|/v(u)\): the same geometry as the depth-of-field page. The shortcut \(|\Delta v|/N\) holds only at low magnification, where \(v(u) \approx f\); at 200 mm with the subject at 0.6 m and the lens focused at 10 m it overstates the blur by half. A 1-D strip of the scene (random bars) is convolved with the projection of that disc, a semi-ellipse, by FFT, integrated over the pixels and given Poisson noise.</p>
 <h3>Phase detection</h3>
-<p>Split pixels see the scene through the left or right half of the pupil: their kernels are the two halves of the semi-ellipse, shifted apart by \(\delta = (4/3\pi)\Delta v/N\). The camera cross-correlates the two pixel rows (with a parabolic sub-pixel peak), converts the shift into \(\Delta v\) and moves the lens; it repeats until the move is within the depth of focus, at most four times. Eight noisy repetitions give the precision.</p>
+<p>Split pixels see the scene through the left or right half of the pupil: their kernels are the two halves of the semi-ellipse, shifted apart by \(\delta = (4/3\pi)\,A\,\Delta v/v(u)\). The camera cross-correlates the two pixel rows (with a parabolic sub-pixel peak) and converts the shift into the lens movement. It knows where its sensor is, \(v(s)\), but not \(v(u) = v(s) + \Delta v\), so it solves \(\delta = kA\,\Delta v/(v(s) + \Delta v)\) for \(\Delta v = \delta\,v(s)/(kA - \delta)\), with \(k = 4/3\pi\). It repeats until the move is within the depth of focus \(\pm N_w c\), at the working f-number \(N_w = v/A\) and with \(c\) two pixels, at most four times. Eight noisy repetitions give the precision. The strip is 8.2 mm long and the search covers ±400 pixels: a larger shift, or a blur wider than a quarter of the strip, is reported as not measurable, as a real camera would have to fall back to searching.</p>
 </div><div>
 <h3>Contrast detection</h3>
-<p>The sharpness metric is the mean squared difference of neighbouring pixels, largest at focus. The search starts towards longer image distances with a step of a sixth of the initial error, keeps going while sharpness rises, and reverses with half the step when it falls, until the step is below a quarter of the depth of focus. Each step costs a frame; the page assumes a 120 fps live view. The search is shown without noise, since it averages over the whole focus area.</p>
+<p>The sharpness metric is the mean squared difference of neighbouring pixels, largest at focus. The search starts towards longer image distances with a step of a sixth of the initial error, keeps going while sharpness rises, and reverses with half the step when it falls, until the step is below a sixteenth of the depth of focus. When the blur is far wider than the strip, the sharpness hardly changes from step to step and the search can stop out of focus; the page then says so. Each step costs a frame; the page assumes a 120 fps live view. The search is shown without noise, since it averages over the whole focus area.</p>
 </div></div>`));
   root.append(references([
     'J. Nakamura (ed.), <i>Image Sensors and Signal Processing for Digital Still Cameras</i>, CRC Press (2006): autofocus methods.',
