@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.32.0] - 2026-11-02
+
 ### Documentation
 - ROADMAP: the November 2026 validation report and where each of its 26 findings was fixed.
 
@@ -850,7 +852,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.31.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.32.0...HEAD
+[1.32.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.31.0...v1.32.0
 [1.31.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.30.0...v1.31.0
 [1.30.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.29.0...v1.30.0
 [1.29.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.28.0...v1.29.0
