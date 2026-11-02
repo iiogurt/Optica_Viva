@@ -134,6 +134,7 @@ try {
     const ok = seen[0].v === '50 mm' && seen.every((x) => x.v && x.v === x.o) && new Set(seen.map((x) => x.v)).size === 4;
     console.log(`${ok && !errors.length ? '✓' : '✗'} slider values announced (${seen.map((x) => x.v).join(' → ')})`);
     if (!ok || errors.length) failed++;
+  }
   // on a phone-sized screen, wide equations scroll and are keyboard-reachable (#204)
   {
     await page.size(375, 812);
