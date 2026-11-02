@@ -72,3 +72,61 @@ test('clear semi-diameters: Zemax DIAM import, JSON round trip, and vignetting o
   const v = run(tight, 14).transmitted;
   assert.ok(v > 0.5 && v < 0.85, `tight rims vignette the 14° beam (${v})`);
 });
+
+// Untrusted prescriptions (#192): files and shared links go through one parser and validator.
+const enc = (o) => Buffer.from(JSON.stringify(o)).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const has = (errs, re, msg) => assert.ok(errs.some((e) => re.test(e)), `${msg}: ${errs.join('; ')}`);
+
+test('validation rejects non-finite, huge and physically impossible values from files and links', () => {
+  const evil = { epd: 1e300, field: 1e300, surfaces: [{ R: 50, t: 1e300, glass: { nd: -1, vd: 0 }, stop: true }, { R: -50, t: 1, glass: 'air', a: ['bad'] }] };
+  for (const [how, lens] of [['JSON', lensFromJSON(JSON.stringify(evil))], ['link', decodeLens(enc(evil))]]) {
+    const errs = validateLens(lens);
+    has(errs, /entrance-pupil/, `${how}: pupil`);
+    has(errs, /maximum field/, `${how}: field`);
+    has(errs, /surface 1: thickness/, `${how}: thickness`);
+    has(errs, /surface 1: a model glass needs a name/, `${how}: model-glass name`);
+    has(errs, /surface 1: model glass n_d/, `${how}: n_d`);
+    has(errs, /surface 1: model glass V_d/, `${how}: V_d`);
+    has(errs, /surface 2: aspheric/, `${how}: aspheric terms`);
+  }
+  const base = () => ({ epd: 10, field: 5, surfaces: [{ R: 50, t: 4, glass: 'N-BK7', stop: true }, { R: -50, t: 90, glass: 'air' }] });
+  const bad = (edit, re) => { const L = base(); edit(L); has(validateLens(L), re, String(re)); };
+  bad((L) => (L.surfaces[0].R = NaN), /radius/);
+  bad((L) => (L.surfaces[0].R = 0), /radius/);
+  bad((L) => (L.surfaces[1].t = Infinity), /thickness/);
+  bad((L) => (L.surfaces[0].glass = 42), /glass must be a name/);
+  bad((L) => (L.surfaces[0].glass = null), /glass must be a name/);
+  bad((L) => (L.surfaces[0].sd = -1), /semi-diameter/);
+  bad((L) => (L.surfaces[0].k = Infinity), /conic/);
+  bad((L) => (L.surfaces[0].a = [0, 0, 0, 0, 1e-9]), /aspheric/);
+  bad((L) => (L.surfaces[0].stop = 'yes'), /stop must be/);
+  bad((L) => (L.surfaces[0].evil = 1), /unsupported field/);
+  bad((L) => (L.surfaces[1] = null), /surface 2: not a surface/);
+  bad((L) => (L.epd = -1), /entrance-pupil/);
+  assert.deepEqual(validateLens(null), ['not a lens prescription']);
+  assert.ok(validateLens(lensFromJSON('{"surfaces":[{"R":"abc","t":"x"},{"R":1,"t":1}]}')).length >= 2, 'strings that are not numbers');
+});
+
+test('malformed structure and oversized prescriptions throw before any tracing', () => {
+  assert.throws(() => lensFromJSON('{"surfaces":[null,{"R":1,"t":1}]}'), /surface 1 is not an object/);
+  assert.throws(() => lensFromJSON('{"surfaces":{}}'), /at least two surfaces/);
+  assert.throws(() => lensFromJSON('[1,2]'), /at least two surfaces/);
+  const many = { surfaces: Array.from({ length: 65 }, () => ({ R: 'inf', t: 1, glass: 'air' })) };
+  assert.throws(() => lensFromJSON(JSON.stringify(many)), /more than 64 surfaces/);
+  assert.throws(() => decodeLens(enc(many)), /more than 64 surfaces/);
+  assert.throws(() => lensFromJSON(' '.repeat(300 * 1024)), /longer than/);
+  assert.throws(() => decodeLens('A'.repeat(400 * 1024)), /too long/);
+  assert.throws(() => parseZmx('SURF 0\n'.repeat(70) + ' '.repeat(300 * 1024)), /longer than/);
+  assert.throws(() => parseZmx('SURF 0\nDISZ 1\n'.repeat(70)), /more than 64 surfaces/);
+});
+
+test('legitimate prescriptions keep working: mirrors, aspheres, model glasses, every built-in lens', () => {
+  const asph = { epd: 20, field: 3, surfaces: [{ R: 40, k: -0.6, a: [1.2e-6, -3.4e-9, 2e-12, 0], t: 6, glass: { name: '583594', nd: 1.5831, vd: 59.4 }, stop: true }, { R: 'inf', t: 60, glass: 'air' }] };
+  assert.deepEqual(validateLens(lensFromJSON(JSON.stringify(asph))), []);
+  assert.deepEqual(validateLens(decodeLens(enc(asph))), []);
+  for (const L of Object.values(LENSES)) {
+    assert.deepEqual(validateLens(L), [], L.name);
+    assert.deepEqual(validateLens(decodeLens(encodeLens(L))), [], `${L.name} via link`);
+  }
+  assert.ok(Object.values(LENSES).some((L) => L.surfaces.some((s) => s.glass === 'mirror')), 'a mirror system is among them');
+});

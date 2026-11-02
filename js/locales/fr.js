@@ -2841,6 +2841,7 @@ export default {
   "Photon by photon: one layer of grains, 40 × 20 microns (grey: one photon caught; black: developable)": "Photon par photon : une couche de grains, 40 × 20 microns (gris : un photon capté ; noir : développable)",
   "Not applied:": "Non appliqué :",
   "Import failed:": "Échec de l’importation :",
+  "Shared lens not applied:": "Objectif partagé non appliqué :",
   "Optimisation failed:": "Échec de l’optimisation :",
   "3-D, true scale: what the camera sees, the plane of focus and the sharp zone": "3-D, à l’échelle : ce que voit l’appareil, le plan de netteté et la zone nette",
   "3-D: the coronagraph along the beam, with the computed field on each plane": "3-D : le coronographe le long du faisceau, avec le champ calculé sur chaque plan",
