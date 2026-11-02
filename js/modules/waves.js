@@ -1,4 +1,4 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
@@ -42,21 +42,39 @@ export default function mount(root, meta) {
   }, () => update());
   const ro = h('div'), calc = liveCalc();
   const status = h('p.note', { role: 'status' }, '');
-  const pause = h('button.btn', { type: 'button', onClick: () => { running = !running; pause.textContent = running ? t('Pause') : t('Run'); if (running) loop(); } }, t('Pause'));
+  // with reduced motion the wave starts still: one frame of the developed pattern, and Run animates
+  const pause = h('button.btn', { type: 'button', onClick: () => { running = !running; pause.textContent = running ? t('Pause') : t('Run'); if (running) loop(); } }, reducedMotion() ? t('Run') : t('Pause'));
   const restart = h('button.btn', { type: 'button', onClick: () => init() }, t('Restart'));
   const field = stage({ aspect: NX / NY, label: 'The wave, computed from Maxwell\'s equations (FDTD)', draw: drawField, minH: 240 });
   const prof = stage({ aspect: 2.4, label: 'Brightness along the screen (dashed line)', draw: drawProfile, minH: 180 });
   root.append(lab([field.el, h('div.rx-actions', { style: { alignItems: 'center' } }, pause, restart, status), prof.el], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
-  let running = true, busy = false, alive = true, gen = 0, masks = null, frame = null, scale = 0.2, img = imageCanvas(NX, NY);
+  let running = !reducedMotion(), busy = false, alive = true, gen = 0, masks = null, frame = null, scale = 0.2, img = imageCanvas(NX, NY);
   const params = () => { const st = ctl.state, L = st.lam; return { nx: NX, ny: NY, lam: L, x0: X0, scene: st.scene, source: st.source, p: { w: st.w * L, d: st.d * L, n: st.n, f: st.f * L, tilt: st.tilt } }; };
   async function init() {
     const my = ++gen;
     masks = await runOn(0, 'waveInit', params());
     if (my !== gen) return;
     frame = null; scale = 0.2;
-    if (!busy) loop();
+    if (running) { if (!busy) loop(); } else still();
   }
+  // a single computed frame after STILL steps (the pattern has formed across the grid), no animation
+  const STILL = 600;
+  async function still() {
+    if (busy) return;
+    busy = true;
+    const my = gen, st = ctl.state;
+    const r = await runOn(0, 'waveStep', { n: STILL, intensity: st.view === 'intensity' || SLITS.includes(st.scene) });
+    busy = false;
+    if (!alive || my !== gen || !r) return;
+    frame = r; paint(); field.redraw(); prof.redraw();
+    status.textContent = t('{p} periods simulated · {s} time steps', { p: ((r.t * S) / st.lam).toFixed(1), s: r.t });
+    if (running) loop();
+  }
+  // switching to reduced motion during the visit pauses the animation (Run still starts it)
+  const motionQuery = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+  const onMotion = (e) => { if (e.matches && running) { running = false; pause.textContent = t('Run'); } };
+  motionQuery?.addEventListener('change', onMotion);
   async function loop() {
     if (!alive || !running || busy) return;
     busy = true;
@@ -211,5 +229,5 @@ export default function mount(root, meta) {
     'M. Born &amp; E. Wolf, <i>Principles of Optics</i>, 7th ed., Cambridge University Press (1999), ch. 8 and 11.',
     'E. Hecht, <i>Optics</i>, 5th ed., Pearson (2017), ch. 9–10.',
   ]));
-  return () => { alive = false; gen++; [field, prof].forEach((s) => s.destroy()); };
+  return () => { alive = false; gen++; motionQuery?.removeEventListener('change', onMotion); [field, prof].forEach((s) => s.destroy()); };
 }
