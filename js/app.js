@@ -190,10 +190,17 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   });
   // one caching job at a time: a new worker that is installing caches the app itself, so the
   // refresh request waits until it has finished (or failed)
-  const settled = (w) => new Promise((ok) => { if (!w) return ok(); w.addEventListener('statechange', () => { if (w.state === 'activated' || w.state === 'redundant') ok(); }); });
+  // (a worker that has already finished counts at once; after 60 s the page asks anyway)
+  const done = (w) => !w || w.state === 'activated' || w.state === 'redundant';
+  const settled = (w) => new Promise((ok) => {
+    if (done(w)) return ok();
+    const timer = setTimeout(ok, 60000);
+    w.addEventListener('statechange', () => { if (done(w)) { clearTimeout(timer); ok(); } });
+  });
+  // a returning visitor also checks for a new sw.js now, rather than whenever the browser decides
   navigator.serviceWorker.register('sw.js')
-    .then((reg) => settled(reg.installing || reg.waiting).then(() => reg))
-    .then((reg) => { if (had && !reg.installing) reg.active?.postMessage('refresh'); }).catch(() => {});
+    .then((reg) => Promise.resolve(had && reg.update().catch(() => {})).then(() => settled(reg.installing || reg.waiting)).then(() => reg))
+    .then((reg) => { if (had && reg.active && !reg.installing) reg.active.postMessage('refresh'); }).catch(() => {});
 }
 // the skip link must not change the hash (that would re-route): focus <main> directly
 document.querySelector('.skip-link')?.addEventListener('click', (e) => { e.preventDefault(); main.focus(); });
