@@ -18,6 +18,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Fixed
 - Your camera: a camera granted after leaving the page, or whose playback failed, is now stopped at once instead of staying live; only one request runs at a time, and the page's cleanup cancels a request still waiting for permission (`cameraSession` in `js/lib/camera.js`, with tests for late permission, failed playback, repeated clicks, stop and restart; #190).
 
+### Fixed
+- Imaging a black hole: the Page–Thorne disk flux used √3/3 instead of √3/2 as the coefficient of its logarithmic term, which made the inner disk too faint; the radial bracket is now checked against a numerical integral of (t² − 6)/(t² − 3) and its quadratic onset at the ISCO (#189).
+
 ## [1.31.0] - 2026-10-30
 
 ### Added
