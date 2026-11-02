@@ -4,7 +4,7 @@ Optica Viva is released under the [MIT License](LICENSE). It includes or derives
 
 ## KaTeX
 
-`vendor/katex/` contains KaTeX 0.16.11, © Khan Academy and other contributors, under the MIT License. The full text is in [`vendor/katex/LICENSE`](vendor/katex/LICENSE).
+`vendor/katex/` contains KaTeX 0.19.1, © Khan Academy and other contributors, under the MIT License. The full text is in [`vendor/katex/LICENSE`](vendor/katex/LICENSE). The files are copied unchanged from the npm package `katex-0.19.1.tgz` (integrity `sha512-jG8uKntjSEcm2EpQOh0XturpPuuC9r3Sq5HLHdsFdWZT27E672SF19QEi+of0/YeOy15lDgRhKvr5614uRrEfA==`); their SHA-256 sums are in `vendor/katex/SHA256SUMS` and checked by `test/katex.test.mjs`.
 
 ## colour-science datasets
 

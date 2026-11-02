@@ -19,21 +19,24 @@ export function h(tag, props = {}, ...children) {
 }
 
 // ── KaTeX ────────────────────────────────────────────────────────────────────────────────
+// One set of options for every formula. KaTeX's trust stays off: no page needs \href, \url,
+// \includegraphics or the \html… commands, so they render as errors instead of links or attributes.
+export const TEX_OPTIONS = Object.freeze({ throwOnError: false, strict: false });
 export function tex(src, display = false) {
   const span = h(display ? 'div.tex-display' : 'span');
-  try { window.katex.render(src, span, { throwOnError: false, displayMode: display, strict: false, trust: true }); }
+  try { window.katex.render(src, span, { ...TEX_OPTIONS, displayMode: display }); }
   catch { span.textContent = src; }
   return span;
 }
 export function setTex(el, src, display = true) {
-  try { window.katex.render(src, el, { throwOnError: false, displayMode: display, strict: false }); }
+  try { window.katex.render(src, el, { ...TEX_OPTIONS, displayMode: display }); }
   catch { el.textContent = src; }
 }
 export function renderMath(el) {
   if (window.renderMathInElement) {
     window.renderMathInElement(el, {
       delimiters: [{ left: '\\[', right: '\\]', display: true }, { left: '\\(', right: '\\)', display: false }],
-      throwOnError: false, strict: false,
+      ...TEX_OPTIONS,
     });
   }
 }
