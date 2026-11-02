@@ -2841,6 +2841,7 @@ export default {
   "Photon by photon: one layer of grains, 40 × 20 microns (grey: one photon caught; black: developable)": "Fotón a fotón: una capa de granos, 40 × 20 micras (gris: un fotón captado; negro: revelable)",
   "Not applied:": "No aplicado:",
   "Import failed:": "Error al importar:",
+  "Shared lens not applied:": "Lente compartida no aplicada:",
   "Optimisation failed:": "Error en la optimización:",
   "3-D, true scale: what the camera sees, the plane of focus and the sharp zone": "3-D, a escala: lo que ve la cámara, el plano de enfoque y la zona nítida",
   "3-D: the coronagraph along the beam, with the computed field on each plane": "3-D: el coronógrafo a lo largo del haz, con el campo calculado en cada plano",

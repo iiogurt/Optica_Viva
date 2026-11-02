@@ -1,7 +1,7 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, readUrlParam, bindUrlParam, syncUrl } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag, seidel, fieldCurves, mediaIndices, hasMirrors } from '../lib/raytrace.js';
-import { parseZmx, lensToJSON, lensFromJSON, validateLens, encodeLens, decodeLens } from '../lib/lensio.js';
+import { parseZmx, lensToJSON, lensFromJSON, validateLens, encodeLens, decodeLens, LENS_LIMITS } from '../lib/lensio.js';
 import { GLASSES, abbe, index, glassData } from '../lib/glass.js';
 import { openGlassMap } from '../lib/glassmap.js';
 import { wavelengthCSS } from '../lib/color.js';
@@ -32,7 +32,12 @@ export default function mount(root, meta) {
   // the editable "custom" lens: restored from a shared URL (rx=…) or a copy of the Cooke triplet
   const clone = (L) => lensFromJSON(lensToJSON(L));
   if (!LENSES.custom) LENSES.custom = { ...clone(LENSES.cooke), name: 'Custom (prescription editor)' };
-  try { const rx = readUrlParam('rx'); if (rx) LENSES.custom = { ...decodeLens(rx), name: 'Custom (prescription editor)' }; } catch (e) { console.warn('ignoring invalid rx parameter', e); }
+  // a shared lens is checked like an imported file; a broken one is reported and the last good lens kept
+  let rxProblem = '';
+  try {
+    const rx = readUrlParam('rx');
+    if (rx) { const L = decodeLens(rx), errs = validateLens(L); if (errs.length) rxProblem = errs.join('; '); else LENSES.custom = { ...L, name: 'Custom (prescription editor)' }; }
+  } catch (e) { rxProblem = e.message; }
   const S = { lens: 'cooke' };
   const ctl = controls({
     lens: { type: 'select', label: 'Lens prescription', value: 'cooke', options: Object.entries(LENSES).map(([k, L]) => [k, L.name]) },
@@ -614,6 +619,7 @@ export default function mount(root, meta) {
   }
   fileIn.addEventListener('change', async () => {
     const f = fileIn.files[0]; if (!f) return;
+    if (f.size > 2 * LENS_LIMITS.text) { showProblem(t('Import failed:'), `${f.name}: larger than ${(2 * LENS_LIMITS.text) / 1024} KB`); fileIn.value = ''; return; }
     const buf = new Uint8Array(await f.arrayBuffer());
     // Zemax writes UTF-16LE with a BOM; plain files are UTF-8
     const text = buf[0] === 0xff && buf[1] === 0xfe ? new TextDecoder('utf-16le').decode(buf) : new TextDecoder().decode(buf);
@@ -719,6 +725,7 @@ export default function mount(root, meta) {
       h('div.grid-2', {}, h('div', {}, tolCtl.el, h('div', { style: { marginTop: '10px' } }, tolBtn), h('div', { style: { marginTop: '10px' } }, tolRo)), h('div', {}, tolHist.el, sensSt.el)))));
   bindUrlParam('rx', () => (ctl.state.lens === 'custom' ? encodeLens(LENSES.custom) : null));
   renderTable();
+  if (rxProblem) showProblem(t('Shared lens not applied:'), rxProblem);
 
   update();
 
@@ -770,6 +777,8 @@ export default function mount(root, meta) {
 <h3>Tolerancing: what manufacture and assembly do to a design</h3>
 <p>No lens is built as drawn. The Monte-Carlo analysis draws Gaussian errors for every radius (a fraction of \(R\)), thickness, index and, for assembly, every element's decenter and tilt; it then refocuses each trial (the image distance is the compensator a camera's focusing provides) and scores it with the optimiser's merit, the RMS ray error over field and wavelength. The 90th percentile tells a designer what nine lenses in ten will reach.</p>
 <p>A decentered or tilted element breaks the rotational symmetry, so these surfaces are traced in their own frames: the ray is carried into the frame of the moved surface \(\mathbf p' = R^{\mathsf T}(\mathbf p - \mathbf o)\), \(\hat d' = R^{\mathsf T}\hat d\) with \(R = R_x(a_x)R_y(a_y)\), intersected and refracted there, and carried back. A singlet or a cemented group moves as one, tilting about its first vertex. A symmetric lens then images the two sides of the field differently, so the merit samples fields \(0, \pm0.7, \pm1\). Decenter adds coma even on axis, and tilt adds a tilted image plane and astigmatism. The sensitivity chart moves each element alone by one \(\sigma\): in the Cooke triplet the strong negative middle element dominates, which is why it is the element a lens maker centres most carefully. The paraxial data stay those of the nominal lens, and the tracer is checked against the exact displacement of a tilted plate, \(T\sin\theta\,(1 - \cos\theta/\sqrt{n^2-\sin^2\theta})\), and the \(2\alpha\) deviation of a tilted mirror.</p>
+<h3>Imported and shared prescriptions</h3>
+<p>A file or a shared link is untrusted input, so every prescription, including each edit in the table, is checked before any ray is traced. Only the supported fields are read (radius, thickness, glass, conic, up to four aspheric terms \(a_4\ldots a_{10}\), semi-diameter, stop). Every number must be finite, and only a plane may have an infinite radius. The limits are generous for real designs: at most 64 surfaces, a pupil of at most 20 m, a field of at most 80°, spacings and semi-diameters of at most 100 m, conics within ±1000 and aspheric coefficients within ±1. A model glass needs \(1 < n_d \le 3\) and \(5 \le V_d \le 120\). Files may be up to 512 KB (Zemax writes two bytes per character) and links up to 256 K characters of prescription. A prescription that fails is reported as text, and the last good lens stays.</p>
 <h3>Domain notes</h3>
 <p><strong>Photography and cinema</strong> lenses are judged across the full field, which is why the Double-Gauss uses a near-symmetric layout to cancel coma, distortion and lateral colour. <strong>Space telescopes</strong> are reflective (no chromatic aberration). Their designs, such as Ritchey–Chrétien (Hubble) and the three-mirror anastigmat (JWST), use conic and aspheric surfaces to remove spherical aberration and coma together.</p>
 </div></div>`));
