@@ -106,18 +106,36 @@ try {
     console.log(`${problems.length ? '✗' : '✓'} lens import is safe${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
     if (problems.length) failed++;
   }
-  // comparison mode: two embedded copies of the page with its settings; Escape closes them
+  // comparison mode: two embedded copies of the page with its settings, in a modal dialog that keeps
+  // the keyboard inside it; Escape and Close return focus to the Compare button (#202)
   {
     const errors = await page.goto(site.url + '#/dof?N=4', 3000);
-    const r = await page.eval(`(async () => {
-      document.querySelector('.compare-btn').click();
-      const f = [...document.querySelectorAll('.compare-overlay iframe')];
-      const ok = f.length === 2 && f.every((x) => /embed=1/.test(x.src) && /N=4/.test(x.src));
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-      return ok && !document.querySelector('.compare-overlay');
-    })()`);
-    console.log(`${r && !errors.length ? '✓' : '✗'} comparison mode${errors.length ? '  ' + errors.join(' | ').slice(0, 300) : ''}`);
-    if (!r || errors.length) failed++;
+    const press = async (key, shift = false) => {
+      const code = { Tab: 9, Escape: 27, Enter: 13 }[key];
+      for (const type of ['keyDown', 'keyUp']) await page.cdp('Input.dispatchKeyEvent', { type, key, code: key, windowsVirtualKeyCode: code, modifiers: shift ? 8 : 0, ...(key === 'Enter' && type === 'keyDown' ? { text: '\r' } : {}) });
+      await sleep(120);
+    };
+    // where the focus is: inside the dialog, on the Compare button, or elsewhere in the page
+    const where = () => page.eval(`(() => { const a = document.activeElement; if (a?.closest('dialog.compare-overlay')) return 'dialog'; if (a?.classList.contains('compare-btn')) return 'opener'; return a === document.body || !a ? 'body' : 'page:' + a.tagName; })()`);
+    const problems = [...errors];
+    for (let k = 0; k < 30 && !(await page.eval(`!!document.querySelector('.compare-btn')`)); k++) await sleep(500);
+    await page.eval(`document.querySelector('.compare-btn').focus()`);
+    await press('Enter');
+    await sleep(500);
+    const frames = await page.eval(`[...document.querySelectorAll('.compare-overlay iframe')].filter((x) => /embed=1/.test(x.src) && /N=4/.test(x.src)).length`);
+    if (frames !== 2) problems.push(`${frames} copies`);
+    if ((await where()) !== 'dialog') problems.push('focus not in the dialog on opening');
+    for (const shift of [true, false]) for (let i = 0; i < 10; i++) { await press('Tab', shift); const w = await where(); if (w.startsWith('page')) { problems.push(`${shift ? 'Shift+' : ''}Tab left the dialog (${w})`); break; } }
+    await page.eval(`document.querySelector('dialog.compare-overlay button')?.focus()`);
+    await press('Escape');
+    if (await page.eval(`!!document.querySelector('.compare-overlay')`)) problems.push('Escape did not close');
+    if ((await where()) !== 'opener') problems.push('focus not returned after Escape');
+    await page.eval(`document.querySelector('.compare-btn').click()`);
+    await sleep(300);
+    await page.eval(`[...document.querySelectorAll('.compare-overlay button')].find((b) => b.textContent === 'Close')?.click()`);
+    if ((await where()) !== 'opener' || (await page.eval(`!!document.querySelector('.compare-overlay')`))) problems.push('Close did not close and return focus');
+    console.log(`${problems.length ? '✗' : '✓'} comparison mode${problems.length ? '  ' + problems.join(' | ').slice(0, 300) : ''}`);
+    if (problems.length) failed++;
   }
   // sliders announce physical values: restored from the URL, then after Arrow, End and Home (#201)
   {
