@@ -20,15 +20,22 @@ async function saveSettings(meta) {
 // Comparison mode: two embedded copies of this laboratory side by side, both starting from the
 // current settings and adjusted independently ("f/2 against f/8"). Closing removes both copies,
 // with their workers.
-function compare(meta) {
+// A native modal <dialog>: the browser keeps focus inside it and makes the page behind inert.
+// Escape (also inside either copy) or Close removes it, and focus returns to the Compare button.
+function compare(meta, opener) {
   const src = withEmbed(location.href, true);
-  const frame = (label) => h('iframe', { src, title: t('{title}, copy {k}', { title: meta.title, k: label }), loading: 'eager' });
+  const esc = (e) => { if (e.key === 'Escape') { e.preventDefault?.(); close(); } };
+  const frame = (label) => {
+    const f = h('iframe', { src, title: t('{title}, copy {k}', { title: meta.title, k: label }), loading: 'eager' });
+    f.addEventListener('load', () => { try { f.contentWindow.addEventListener('keydown', esc); } catch { /* not same-origin */ } });
+    return f;
+  };
   const A = frame('A'), B = frame('B');
   const copy = (from, to) => { try { to.src = withEmbed(from.contentWindow.location.href, true); } catch { to.src = src; } };
-  const close = () => { overlay.remove(); document.removeEventListener('keydown', esc); document.body.classList.remove('comparing'); };
-  const esc = (e) => { if (e.key === 'Escape') close(); };
+  let open = true;
+  const close = () => { if (open) { open = false; overlay.close(); } };
   const closeBtn = h('button.btn', { type: 'button', onClick: close }, t('Close'));
-  const overlay = h('div.compare-overlay', { role: 'dialog', 'aria-modal': 'true', 'aria-label': t('Compare: {title}', { title: meta.title }) },
+  const overlay = h('dialog.compare-overlay', { 'aria-label': t('Compare: {title}', { title: meta.title }) },
     h('div.compare-bar', {},
       h('strong', {}, t('Compare: {title}', { title: meta.title })),
       h('span.note', {}, t('Two copies of this laboratory, each with its own settings.')),
@@ -39,9 +46,16 @@ function compare(meta) {
     h('div.compare-panes', {},
       h('div.compare-pane', {}, h('span.compare-label', {}, 'A'), A),
       h('div.compare-pane', {}, h('span.compare-label', {}, 'B'), B)));
+  overlay.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
+  overlay.addEventListener('close', () => {
+    open = false;
+    overlay.remove(); document.removeEventListener('keydown', esc); document.body.classList.remove('comparing');
+    if (opener?.isConnected) opener.focus();
+  });
   document.body.append(overlay);
   document.body.classList.add('comparing');
   document.addEventListener('keydown', esc);
+  overlay.showModal();
   closeBtn.focus();
 }
 
@@ -54,7 +68,7 @@ export function header(meta) {
       h('button.tag.share', { type: 'button', title: t('Copy a link to this page with the current settings'), onClick: (e) => copyLink(e.currentTarget.querySelector('span')),
         html: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span>' + t('Copy link') + '</span>' })),
       h('button.tag.share', { type: 'button', title: t('Save the current settings of this page as a JSON file'), onClick: () => saveSettings(meta) }, t('Save settings')),
-      h('button.tag.share.compare-btn', { type: 'button', title: t('Open two copies of this laboratory side by side to compare two settings'), onClick: () => compare(meta) }, t('Compare')),
+      h('button.tag.share.compare-btn', { type: 'button', title: t('Open two copies of this laboratory side by side to compare two settings'), onClick: (e) => compare(meta, e.currentTarget) }, t('Compare')),
       h('button.tag.share.embed-code', { type: 'button', title: t('Copy HTML that embeds this laboratory, with its current settings, in a course page or blog'), onClick: (e) => copyLink(e.currentTarget, embedCode(location.href, meta.title), t('Embed code copied ✓')) }, t('Embed')),
   );
 }
