@@ -951,7 +951,7 @@ Optica_Viva/
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
 │   └── modules/               One file per page (63)
-├── vendor/katex/              KaTeX 0.16.11 (MIT), vendored for offline use
+├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
 ├── .github/workflows/
@@ -1236,7 +1236,7 @@ Each laboratory page lists its own additional references.
 
 ## 🙏 Acknowledgements and licence
 
-- [KaTeX](https://katex.org/) 0.16.11 (MIT licence) is vendored in `vendor/katex/` with its licence file.
+- [KaTeX](https://katex.org/) 0.19.1 (MIT licence) is vendored in `vendor/katex/` with its licence file and checksums.
 - CIE colorimetric tables (1931 observer, daylight, illuminants, test colour samples) were generated from the [colour-science](https://github.com/colour-science/colour) datasets (BSD-3-Clause).
 - Glass data from SCHOTT AG optical glass data sheets; the SCHOTT, OHARA and CDGM catalogue in `js/lib/glasscat.js` comes from the makers' Zemax catalogues via the [refractiveindex.info database](https://github.com/polyanskiy/refractiveindex.info-database) (CC0). Lens prescriptions follow classic textbook forms (Cooke triplet, Double-Gauss); the Biogon is Example 2 of US patent 2,721,499 (Bertele, 1955).
 - Colormap polynomial fits after M. Zucker; matplotlib colormaps by S. van der Walt and N. Smith.
