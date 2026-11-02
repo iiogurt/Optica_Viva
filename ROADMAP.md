@@ -22,6 +22,7 @@ This file records **what has been delivered** and **what is planned** for Optica
 - [Status at a glance](#status-at-a-glance)
 - [Completed milestones](#completed-milestones)
 - [Audit findings (October 2026)](#audit-findings-october-2026)
+- [Validation report (November 2026)](#validation-report-november-2026)
 - [Planned milestones](#planned-milestones)
   - [v1.1 Robustness, testing & deployment](#v11-robustness-testing--deployment)
   - [v1.2 Performance](#v12-performance)
@@ -327,6 +328,20 @@ An audit of v1.0.1 (code, performance, layout, accessibility and browser compati
 | A8 | No licence | README states all rights reserved | Blocks contributions and reuse | ✅ MIT (2026-10-13) |
 | A9 | Known model simplifications (see README) | ~~paraxial ghosts~~ (real rays since v1.5), ~~phenomenological bokeh~~ (traced since v1.5), ~~Gaussian blur stack~~ (disk kernels since v1.5), circular off-axis pupil | Accuracy ceiling for advanced users | v1.3–v1.4 |
 | A10 | Spherical surfaces only; prescriptions are hard-coded | `raytrace.js` | Can't model modern aspheric lenses or user lenses | v1.3 |
+
+---
+
+## Validation report (November 2026)
+
+A technical validation of v1.31.0 ([#214](https://github.com/iiogurt/Optica_Viva/issues/214)) reported 26 findings, each with a reproduction. All were fixed for v1.32, each with a regression test that fails on v1.31.0 and passes on the fix.
+
+| Area | Findings | Fixed |
+|---|---|---|
+| Security | HTML in imported lens errors (#188); unvalidated and unbounded prescriptions from files and links (#192); KaTeX advisories and `trust` (#210) | errors shown as text; one parser and validator with documented limits; KaTeX 0.19.1 with trust off and checksums |
+| Reliability | camera left running after cleanup (#190); worker jobs never settled on failures (#191); Pages artifact missing the offline and gallery files (#197); a service worker activated without a complete cache (#213); spaces lost in shared lens names (#196) | camera sessions; settle-once jobs with local fallback; the deployed site assembled and verified by `scripts/site.mjs`; installation only with a full cache, version checks in the worker, fault-injection test; compact JSON |
+| Physics | Page–Thorne flux coefficient (#189); Mie convergence for large drops (#208); transit validity, occultation, exposure averaging and correlated noise (#193–#195); finite-conjugate autofocus (#198); FDTD grid dispersion (#209) | each against an independent reference: numerical integrals, a 40-digit Mie calculation, analytic circle overlap, ray traces, the Yee dispersion relation |
+| Planning and explanations | Jupiter exposure floor (#211); unmet satellite SNR (#212); unsupported KaTeX matrices (#206) | unmet targets are reported with the shortfall; TeX environments tested, smoke test fails on TeX errors |
+| Accessibility and mobile | page-wide overflow on phones (#199); readout list semantics (#200); slider values (#201); comparison dialog focus (#202); link underlines (#203); scrolling equations (#204); chart names (#205); reduced motion in the waves lab (#207) | each checked on all routes in the browser smoke test |
 
 ---
 

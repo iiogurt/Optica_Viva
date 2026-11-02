@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Documentation
+- ROADMAP: the November 2026 validation report and where each of its 26 findings was fixed.
+
 ### Fixed
 - Accessibility: sliders run over internal positions 0–1000 (linear or logarithmic), and that position was all a screen reader announced (85 mm was "604"). Every slider now carries its physical value and unit as `aria-valuetext`, the same text as its visible output, on load, after keyboard or pointer changes and when a tour sets it. The smoke test checks every slider on every page and a URL-restored focal length after Arrow, End and Home (#201).
 - Accessibility: links in running text were told apart from the surrounding text by colour alone (contrast between them 1.15:1; axe `link-in-text-block` on nine pages). They are now underlined, more strongly on hover and keyboard focus; buttons, cards and navigation keep their own shape. The smoke test fails on any link in running text without an underline (#203).
