@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- New laboratory **Spectral camera** (`#/spectral`): a scene rendered wavelength by wavelength. 24 colour patches (the 14 CIE test samples and 10 more), a bar target, a slanted edge, a Siemens star and four light sources (sodium line, 650 nm laser, blue LED, white LED) under CIE D65, A, FL11 or HP1, in 16 bands of 25 nm from 380 to 780 nm. In every band the chosen lens is traced at that wavelength (wavefront on the exit-pupil sphere, FFT PSF), integrated over the sensor pixels and convolved with the band's image in the worker pool; lateral colour is the chief ray's landing point against 540 nm, and the sensor sits at the best 540 nm focus for the crop's field angle. The bands are summed by the CIE observer (adapted to the illuminant) and by a camera's spectral sensitivities with white balance and a 3 × 3 matrix fitted on the patches, shown side by side with the eye through a perfect lens, with blur and lateral shift per band, best focus per wavelength and the camera's CIEDE2000 error (`js/lib/spectral.js`; `lensPupil` in `js/lib/tasks.js` now takes a wavelength; tested for exact band sums, neutral white, a Luther–Ives camera without colour error, convolution and PSF resampling, and a singlet blurring violet more than green). Catalogue entry, phenomena link, translations and screenshot.
+
 ## [1.34.0] - 2026-11-10
 
 ### Added

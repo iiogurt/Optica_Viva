@@ -75,6 +75,7 @@ export const GROUPS = [
       [N_('Achromat condition'), 'chromatic', 'pvs', N_('Two glasses bring two wavelengths to one focus.'), r`\frac{\phi_1}{V_1}+\frac{\phi_2}{V_2}=0`],
       [N_('Secondary spectrum & apochromats'), 'chromatic', 'ps', N_('Residual focus spread of achromats; needs anomalous-dispersion glass to remove.'), r`\frac{\delta f}{f}=\frac{P_1-P_2}{V_1-V_2}`],
       [N_('Spherochromatism'), 'raytracer', 'p', N_('Spherical aberration that differs by wavelength; coloured halos around highlights.'), r`W_{040}(\lambda)`],
+      [N_('Spectral rendering through lens and sensor'), 'spectral', 'p', N_('A scene summed band by band through the lens PSF at each wavelength and the camera\'s spectral sensitivities.'), r`\text{RGB}=\sum_\lambda L(\lambda)\,(\mathrm{PSF}_\lambda*O)\,S(\lambda)`],
       [N_('Purple fringing'), 'chromatic', 'p', N_('Violet halos at high-contrast edges from LoCA at short wavelengths plus sensor blooming and microlens leakage.'), r`\Delta f(\lambda<450\,\text{nm})`],
       [N_('Atmospheric dispersion'), 'adc', 's', N_('Air refracts blue more than red; stars become spectra near the horizon. Corrected by ADC prisms.'), r`R(\lambda)\approx(n(\lambda)-1)\tan z`],
       [N_('Rainbows, prisms & halos'), 'atmospheric', 'p', N_('Dispersion in droplets and ice crystals; minimum deviation sets the 42° rainbow and 22° halo.'), r`D_\text{min}=2\arcsin\left(n\sin\tfrac A2\right)-A`],

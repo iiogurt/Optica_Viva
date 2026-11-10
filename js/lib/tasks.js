@@ -35,6 +35,7 @@ import { aperturePipeline } from './interferometry.js';
 import { luckySim } from './lucky.js';
 import { phaseScreen } from './turbulence.js';
 import { tiltMaps } from './shimmer.js';
+import { sceneMap, convolveBand, psfKernel, SW, SH } from './spectral.js';
 import { shadowLab } from './starshade.js';
 import { fieldPSFs } from './fieldpsf.js';
 import { makeLight, renderScene } from './lighting.js';
@@ -245,7 +246,7 @@ function lensPSF(p) {
 // distorted as the image point sees it. A least-squares quartic maps (a, b) back to (px, py), and
 // the amplitude carries √|∂(px, py)/∂(a, b)| (uniform irradiance over the entrance pupil).
 function lensPupil(p, n, Dpx) {
-  const { lens, theta, zImg, N, sd } = p, lam = 587.56;
+  const { lens, theta, zImg, N, sd } = p, lam = p.lam || 587.56;
   const par = paraxial(lens, lam);
   const ref = referenceSphere(lens, lam, theta, zImg, par);
   if (!ref) return null;
@@ -622,6 +623,25 @@ function camBokeh(p) {
   const out = bokehFrame(p.frame, p.w, p.h, camKernel, p.gain);
   return { result: out, transfer: [out.buffer] };
 }
+// One band of the spectral camera (js/lib/spectral.js): the traced PSF at the band's wavelength,
+// integrated over the sensor pixels, and its lateral colour, the chief ray's landing point at this
+// wavelength minus at the reference one. The scene's band image is convolved with both.
+let specScene = null;
+function spectralBand(p) {
+  specScene = specScene || sceneMap();
+  const f = lensPupil(p, 256, 128);
+  if (!f) return { result: null, transfer: [] };
+  const P = psf(f.amp, f.W, 256, p.lam / 1000), s = (p.lam / 1000) * Math.abs(p.N) / 2; // µm per PSF sample
+  const at = (l) => { const r = referenceSphere(p.lens, l, p.theta, p.zImg, paraxial(p.lens, l)); return r && r.center; };
+  const c0 = at(p.lamRef), c1 = at(p.lam);
+  // lateral colour in µm (sensor x right, rows down), kept within the kernel
+  const lim = 24 * p.pitch, sx = c0 && c1 ? Math.max(-lim, Math.min(lim, (c1[0] - c0[0]) * 1000)) : 0, sy = c0 && c1 ? Math.max(-lim, Math.min(lim, -(c1[1] - c0[1]) * 1000)) : 0;
+  const { K, ks, ee80 } = psfKernel(P.I, 256, s, p.pitch, 65, sx, sy);
+  const img = new Float32Array(SW * SH);
+  for (let q = 0; q < img.length; q++) img[q] = p.L[specScene.mat[q]];
+  const out = convolveBand(img, K, ks);
+  return { result: { out, ee80, shift: Math.hypot(sx, sy) * Math.sign(sx + sy || 1), transmitted: f.transmitted }, transfer: [out.buffer] };
+}
 function seeingReset(p) {
   seeing = seeing || seeingSession();
   const r = seeing.reset(p.p, p.seed);
@@ -656,4 +676,4 @@ function bhRows(p) { BH_TABLE ||= orbitTable(); const r = diskImage({ ...p, tabl
 
 function benchRays(p) { const r = benchPhotons(p); return { result: r, transfer: [r.X.buffer, r.Y.buffer, r.Z.buffer] }; }
 
-export const TASKS = { benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh };
+export const TASKS = { benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
