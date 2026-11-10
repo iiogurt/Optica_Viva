@@ -1,9 +1,10 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, fmt, reducedMotion } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, logRange } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { rng, ramp, slopeCDS, slopeLS, slopeJump, slopeVarianceLS, slopeVarianceCDS, ipc, ipcVarianceFactor, ctiColumn, persistenceRate } from '../lib/detectors.js';
-import { t } from '../lib/i18n.js';
+import { arrivals, countBefore, readsFromArrivals, photonRng } from '../lib/photons.js';
+import { t, fmtInt } from '../lib/i18n.js';
 
 const INF = lut('inferno');
 
@@ -85,6 +86,72 @@ export default function mount(root, meta) {
     });
   }
 
+  // ── Photon by photon: single photoelectrons build the ramp, the reads sample it ──
+  const PN = 30, PDT = 10, PT = PN * PDT, SPEED = 15; // 30 reads, 10 s apart; 15 s of exposure per second
+  const sec1 = h('section.block', {}, h('h2', {}, 'Photon by photon: the ramp as it grows'));
+  const pctl = controls({
+    f: { type: 'range', label: 'Photoelectrons per second', min: 0.005, max: 2, log: true, value: 0.05, unit: 'e⁻/s' },
+    sigma: { type: 'range', label: 'Read noise (per read)', min: 0, max: 10, step: 0.05, value: 0.25, unit: 'e⁻', hint: 'Below about 0.5 e⁻ every single electron shows as a step in the reads.' },
+  }, () => restartPh());
+  const pro = h('div');
+  const phView = stage({ aspect: 2.3, label: '', draw: drawPh, cls: 'plain', minH: 220 });
+  const playBtn = h('button.btn', { type: 'button', onClick: () => { if (pnow >= PT) { pnow = 0; } playing = !playing; label(); if (playing) go(); } }, '');
+  const resetBtn = h('button.btn', { type: 'button', onClick: () => { pseed++; restartPh(); } }, t('Restart'));
+  sec1.append(lab([h('div.card', { style: { padding: '6px' } }, phView.el), h('div.rx-actions', {}, playBtn, resetBtn)], [h('div.card', {}, pctl.el), h('div.card', {}, pro)]));
+  root.append(sec1);
+  let pseed = 5, PA = null, PS = null, pnow = 0, playing = !reducedMotion(), praf = 0, last = 0;
+  const label = () => { playBtn.textContent = playing ? t('Pause') : t('Run'); };
+  function restartPh() {
+    const r = photonRng(pseed);
+    PA = arrivals(pctl.state.f, PT, r); PS = readsFromArrivals(PA, PN, PDT, pctl.state.sigma, r);
+    // without animation the whole exposure is shown at once
+    pnow = playing ? 0 : PT; label(); showPh(); if (playing) go();
+  }
+  function go() { if (!praf) { last = 0; praf = requestAnimationFrame(tick); } }
+  function tick(ts) {
+    praf = 0;
+    if (!playing) return;
+    pnow = Math.min(PT, pnow + (last ? Math.min(0.25, (ts - last) / 1000) : 0) * SPEED); last = ts;
+    showPh();
+    if (pnow < PT) praf = requestAnimationFrame(tick); else { playing = false; label(); }
+  }
+  function showPh() {
+    const st = pctl.state, n = Math.min(PN, Math.floor(pnow / PDT + 1e-9)), k = countBefore(PA, pnow);
+    const fit = n >= 2 ? slopeLS(PS.subarray(0, n), PDT) : NaN, sd = n >= 2 ? Math.sqrt(slopeVarianceLS(n, PDT, st.sigma, st.f)) : NaN;
+    pro.replaceChildren(readouts([
+      ['Exposure time so far', t('{s} s of {T} s', { s: Math.floor(pnow), T: PT })],
+      ['Photoelectrons collected', fmtInt(k)],
+      ['Reads taken', `${n} / ${PN}`],
+      ['Flux from a straight-line fit to the reads', n >= 2 ? `${fmt(fit, 3)} ± ${fmt(sd, 2)} e⁻/s` : '—'],
+      ['True flux', fmt(st.f, 3) + ' e⁻/s'],
+    ]));
+    phView.redraw();
+  }
+  function drawPh(ctx, w, hh) {
+    if (!PA) return;
+    const st = pctl.state, n = Math.min(PN, Math.floor(pnow / PDT + 1e-9)), k = countBefore(PA, pnow);
+    const stair = [[0, 0]];
+    for (let i = 0; i < k; i++) stair.push([PA[i], i], [PA[i], i + 1]);
+    stair.push([pnow, k]);
+    const top = Math.max(4, PA.length, st.f * PT) + 3 * st.sigma + 2, reads = Array.from(PS.subarray(0, n), (v, i) => [(i + 1) * PDT, v]);
+    let fitLine = null;
+    if (n >= 2) {
+      const fit = slopeLS(PS.subarray(0, n), PDT), mt = (n + 1) * PDT / 2, ms = reads.reduce((a, b) => a + b[1], 0) / n;
+      fitLine = [[0, ms - fit * mt], [PT, ms + fit * (PT - mt)]];
+    }
+    plot(ctx, w, hh, {
+      title: 'Photoelectrons arriving one by one, read every 10 s', x: { min: 0, max: PT, label: 'time (s)' }, y: { min: Math.min(-1, -3 * st.sigma), max: top, label: 'accumulated charge (e⁻)' },
+      series: [
+        { data: [[0, 0], [PT, st.f * PT]], color: 'rgba(107,227,164,0.55)', width: 1.2, dash: [4, 3], label: 'true flux' },
+        { data: stair, color: '#ffb547', width: 1.6, label: 'charge, one step per photoelectron' },
+        { data: reads, color: '#ffffff', width: 0, points: 3, label: 'reads (with read noise)' },
+        ...(fitLine ? [{ data: fitLine, color: '#ff9cc0', width: 1.4, dash: [5, 3], label: 'least squares' }] : []),
+      ],
+      vlines: pnow < PT ? [{ x: pnow, color: 'rgba(255,255,255,0.3)' }] : [], legend: true, legendX: 70, legendY: 34,
+    });
+  }
+  restartPh();
+
   // ── IPC ──
   const sec2 = h('section.block', {}, h('h2', {}, 'Inter-pixel capacitance'));
   const ictl = controls({ alpha: { type: 'range', label: 'Coupling α to each neighbour', min: 0, max: 0.03, step: 0.0005, value: 0.015, fmt: (v) => (v * 100).toFixed(2) + ' %' } }, () => updI());
@@ -165,6 +232,8 @@ export default function mount(root, meta) {
 <p>Infrared arrays such as JWST's HgCdTe detectors are read without resetting, so each exposure is a ramp of \(N\) reads. Correlated double sampling uses only the first and last read: variance \(2\sigma_r^2/T^2 + f/T\). A least-squares fit uses all reads and beats CDS when read noise dominates. Because the accumulated charge is a running sum, the photon noise in successive reads is correlated. The exact variance of the fitted slope is</p>
 \[\sigma^2 = \frac{\sigma_r^2}{\sum_i(t_i-\bar t)^2} + f\,\Delta t\sum_k\Big(\sum_{i\ge k}w_i\Big)^2,\qquad w_i=\frac{t_i-\bar t}{\sum(t-\bar t)^2},\]
 <p>which the test suite checks against Monte-Carlo ramps. A cosmic ray adds a step. A fit through it is badly biased, but the step stands out in the differences between consecutive reads. Fitting the segments on either side and combining them recovers the flux. This is the principle of the JWST and Roman jump-detection pipelines.</p>
+<h3>Photon by photon</h3>
+<p>Photoelectrons arrive as a Poisson process: the waiting times between them are independent and exponentially distributed with mean \(1/f\), and the number collected by time \(t\) is Poisson with mean and variance \(ft\). The section above draws the arrival times this way and reads the running count every 10 s, adding Gaussian read noise. When \(\sigma_r\) is well below one electron, each read tells exactly how many electrons have arrived. That is photon counting, reached by Skipper CCDs (repeated non-destructive measurement of the same charge) and quanta-image sensors, and it removes read noise from the error budget entirely.</p>
 <h3>Inter-pixel capacitance</h3>
 <p>Charge in one pixel induces a small voltage in its neighbours: α ≈ 1–2 % each in HgCdTe arrays. The signal is conserved, but the noise is correlated between pixels, so a flat field's variance shrinks by \((1-4\alpha)^2+4\alpha^2\). The photon-transfer method then overestimates the conversion gain by several per cent, and point sources and cosmic rays look slightly blurred.</p>
 </div><div>
@@ -180,5 +249,5 @@ export default function mount(root, meta) {
     'R. M. Smith et al., “A theory for image persistence in HgCdTe photodiodes”, <em>Proc. SPIE</em> 7021 (2008).',
   ]));
 
-  return () => [rampView, noiseView, ipcView, ctiView, pplot].forEach((x) => x.destroy());
+  return () => { playing = false; cancelAnimationFrame(praf); [rampView, noiseView, phView, ipcView, ctiView, pplot].forEach((x) => x.destroy()); };
 }

@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- Detectors in space: **photon by photon**. Single photoelectrons arrive at random times (a Poisson process with exponential gaps) and build the charge ramp step by step, while 30 non-destructive reads, 10 s apart, sample it with read noise and a straight-line fit converges on the flux. Below about 0.5 e⁻ of read noise every electron shows as a step, as in photon-counting sensors. Under *reduce motion* the whole exposure is shown at once (`arrivals`, `countBefore`, `readsFromArrivals` in `js/lib/photons.js`, tested for Poisson counts, exponential gaps and an unbiased fitted slope). This completes the photon-by-photon mode on the noise, stacking, film and detector pages.
+
 ## [1.32.0] - 2026-11-02
 
 ### Documentation

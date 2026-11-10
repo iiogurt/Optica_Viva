@@ -61,3 +61,25 @@ export function centreSNR(img, expected, n, r = 4) {
   const sd = Math.sqrt(Math.max(0, d2 / c - (d / c) ** 2) * (c / (c - 1)));
   return sd > 0 ? s / c / sd : Infinity;
 }
+
+// Photoelectron by photoelectron, up the ramp: arrival times of a Poisson process of rate f (e⁻/s)
+// over [0, T], drawn from exponential gaps −ln(u)/f. At most `max` arrivals are kept.
+export function arrivals(f, T, rng, max = 1e5) {
+  const out = [];
+  if (!(f > 0)) return new Float64Array(0);
+  for (let t = -Math.log(rng.u()) / f; t <= T && out.length < max; t += -Math.log(rng.u()) / f) out.push(t);
+  return Float64Array.from(out);
+}
+// Number of arrivals at or before t in the sorted list (binary search).
+export function countBefore(times, t) {
+  let lo = 0, hi = times.length;
+  while (lo < hi) { const m = (lo + hi) >> 1; if (times[m] <= t) lo = m + 1; else hi = m; }
+  return lo;
+}
+// N non-destructive reads at t_i = i·dt (i = 1…N): the charge collected so far plus Gaussian read
+// noise σ_r, the same reads as the detectors page's ramp().
+export function readsFromArrivals(times, N, dt, sigma, rng) {
+  const S = new Float64Array(N);
+  for (let i = 0; i < N; i++) S[i] = countBefore(times, (i + 1) * dt) + sigma * rng.g();
+  return S;
+}

@@ -41,3 +41,26 @@ test('film grain by grain: the developable share matches the model at every expo
     assert.ok(Math.abs(counted - predicted) < 0.03, `H = ${H}: ${counted} vs ${predicted}`);
   }
 });
+
+test('photoelectrons up the ramp: Poisson counts, exponential gaps, reads that count every step', async () => {
+  const { arrivals, countBefore, readsFromArrivals } = await import('../js/lib/photons.js');
+  const { slopeLS } = await import('../js/lib/detectors.js');
+  const rng = photonRng(21), f = 0.5, T = 40, counts = [];
+  for (let k = 0; k < 4000; k++) counts.push(arrivals(f, T, rng).length);
+  // gaps on one long record (inside a short window they are biased short)
+  const long = arrivals(f, 1e5, rng), gap = (long[long.length - 1] - long[0]) / (long.length - 1);
+  const m = counts.reduce((s, v) => s + v, 0) / counts.length, v = counts.reduce((s, x) => s + (x - m) ** 2, 0) / (counts.length - 1);
+  assert.ok(Math.abs(m / (f * T) - 1) < 0.02, `mean count ${m} (expected ${f * T})`);
+  assert.ok(Math.abs(v / m - 1) < 0.08, `variance/mean ${v / m}`);
+  assert.ok(Math.abs(gap * f - 1) < 0.02, `mean gap ${gap} s (expected ${1 / f})`);
+  // without read noise every read is a whole number of electrons and never falls
+  const a = arrivals(0.3, 100, rng), S = readsFromArrivals(a, 20, 5, 0, rng);
+  for (let i = 0; i < 20; i++) assert.equal(S[i], countBefore(a, (i + 1) * 5));
+  assert.ok(S.every((x, i) => i === 0 || x >= S[i - 1]));
+  assert.equal(countBefore(a, 1e9), a.length);
+  assert.equal(countBefore(a, 0), 0);
+  // a straight-line fit to the reads recovers the flux on average
+  let s = 0;
+  for (let k = 0; k < 400; k++) s += slopeLS(readsFromArrivals(arrivals(2, 200, rng), 20, 10, 3, rng), 10);
+  assert.ok(Math.abs(s / 400 / 2 - 1) < 0.03, `mean fitted slope ${s / 400} (expected 2)`);
+});
