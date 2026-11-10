@@ -13,7 +13,8 @@ const walk = (dir, ok) => readdirSync(join(ROOT, dir)).sort().flatMap((f) => {
 export function precacheList() {
   const files = ['./', 'index.html', 'manifest.webmanifest', 'package.json',
     ...walk('css', (f) => f.endsWith('.css')), ...walk('js', (f) => f.endsWith('.js')), ...walk('img', () => true), ...walk('icons', (f) => f.endsWith('.png')),
-    'vendor/katex/katex.min.css', 'vendor/katex/katex.min.js', 'vendor/katex/contrib/auto-render.min.js', ...walk('vendor/katex/fonts', (f) => f.endsWith('.woff2'))];
+    'vendor/katex/katex.min.css', 'vendor/katex/katex.min.js', 'vendor/katex/contrib/auto-render.min.js', ...walk('vendor/katex/fonts', (f) => f.endsWith('.woff2')),
+    ...walk('vendor/fonts', (f) => f.endsWith('.woff2'))];
   return { files: files.map((f) => f.split('\\').join('/')) };
 }
 export const precacheText = () => JSON.stringify(precacheList(), null, 2) + '\n';

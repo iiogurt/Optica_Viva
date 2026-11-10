@@ -6,6 +6,10 @@ Optica Viva is released under the [MIT License](LICENSE). It includes or derives
 
 `vendor/katex/` contains KaTeX 0.19.1, © Khan Academy and other contributors, under the MIT License. The full text is in [`vendor/katex/LICENSE`](vendor/katex/LICENSE). The files are copied unchanged from the npm package `katex-0.19.1.tgz` (integrity `sha512-jG8uKntjSEcm2EpQOh0XturpPuuC9r3Sq5HLHdsFdWZT27E672SF19QEi+of0/YeOy15lDgRhKvr5614uRrEfA==`); their SHA-256 sums are in `vendor/katex/SHA256SUMS` and checked by `test/katex.test.mjs`.
 
+## Typefaces
+
+`vendor/fonts/` contains three variable typefaces, each under the SIL Open Font License 1.1 (full texts beside the files): **Fraunces** (© The Fraunces Project Authors, [`LICENSE-Fraunces`](vendor/fonts/LICENSE-Fraunces)), **Inter** (© The Inter Project Authors, [`LICENSE-Inter`](vendor/fonts/LICENSE-Inter)) and **JetBrains Mono** (© The JetBrains Mono Project Authors, [`LICENSE-JetBrainsMono`](vendor/fonts/LICENSE-JetBrainsMono)). The files are copied unchanged from the npm packages `@fontsource-variable/fraunces` 5.3.0 (integrity `sha512-9BYGySn4AHEJdgp9Z28tQ3X+laJMEOITXkQarZXeloWQZDq5oOvXJ3kDA8c7MGIfpogIaZfjrQBqmda8POOCKA==`), `@fontsource-variable/inter` 5.3.0 (`sha512-OupL48va4JNofb97w6NYeF9S7W/kHNKM0Er8Dem5nqi4jeOLrVJDoE8tZEpnMJmtkvNbB1EIPPwHcdkF6b1oUA==`) and `@fontsource-variable/jetbrains-mono` 5.3.0 (`sha512-F32xpS2NsGYoQi2ADSkKTgpJj7ozajsGgDJ8woTnqjmIB+dxDIqImjl4pXZVEExu8UFZ2ndhmX18EBS/hdz3Lw==`); their SHA-256 sums are in `vendor/fonts/SHA256SUMS` and checked by `test/fonts.test.mjs`.
+
 ## colour-science datasets
 
 The tables in `js/lib/colordata.js` were generated from the datasets of the [colour-science](https://github.com/colour-science/colour) Python package. They reproduce the CIE publications CIE 15:2018 and CIE 13.3-1995. The colour-science licence:
