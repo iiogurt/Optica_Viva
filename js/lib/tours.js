@@ -105,11 +105,12 @@ function play(page, tour) {
 export function tours(page, id, wanted) {
   const mine = TOURS.filter((tour) => tour.lab === id);
   if (!mine.length) return () => {};
-  const box = h('section.block.tour-offer', { 'aria-label': t('Guided tours') }, h('div.check-k', {}, t('Guided tour')),
+  const box = h('section.tour-offer', { 'aria-label': t('Guided tours') }, h('div.check-k', {}, t('Guided tour')),
     ...mine.map((tour) => h('div.tour-item', {}, h('div', {}, h('b', {}, t(tour.title)), h('span.note', {}, ' ' + t(tour.blurb))),
       h('button.tour-btn.primary', { type: 'button', onClick: () => play(page, tour) }, t('Start ({n} steps)', { n: tour.steps.length })))));
-  const anchor = page.querySelector('.check') || page.querySelector('.rung-idea') || page.querySelector('.mod-head');
-  anchor?.after(box);
+  // under the idea's text (the intuition check sits under the things to try), so both columns stay short
+  const main = page.querySelector('.rung-idea .idea-main');
+  if (main) main.append(box); else page.querySelector('.mod-head')?.after(box);
   const want = mine.find((tour) => tour.id === wanted);
   // let the controls and first results settle before the tour moves them
   const timer = want ? setTimeout(() => play(page, want), 300) : 0;

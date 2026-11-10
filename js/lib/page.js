@@ -59,17 +59,21 @@ function compare(meta, opener) {
   closeBtn.focus();
 }
 
+// The page head: group, the fields the page serves, title and summary on the left; the page tools in
+// one row on the right (they wrap below the title on narrow screens).
 export function header(meta) {
   return h('header.mod-head', {},
-    h('div.eyebrow', {}, meta.group),
-    h('h1', {}, meta.title),
-    meta.lede ? h('p.lede', {}, meta.lede) : null,
-    h('div.tags', {}, ...(meta.domains || []).map((d) => h('span.tag.' + d, {}, t(TAG[d] || d))),
+    h('div.head-main', {},
+      h('div.head-top', {}, h('div.eyebrow', {}, meta.group),
+        h('div.tags.domains', {}, ...(meta.domains || []).map((d) => h('span.tag.' + d, {}, t(TAG[d] || d))))),
+      h('h1', {}, meta.title),
+      meta.lede ? h('p.lede', {}, meta.lede) : null),
+    h('div.tags.tools', {},
       h('button.tag.share', { type: 'button', title: t('Copy a link to this page with the current settings'), onClick: (e) => copyLink(e.currentTarget.querySelector('span')),
-        html: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span>' + t('Copy link') + '</span>' })),
+        html: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg><span>' + t('Copy link') + '</span>' }),
       h('button.tag.share', { type: 'button', title: t('Save the current settings of this page as a JSON file'), onClick: () => saveSettings(meta) }, t('Save settings')),
       h('button.tag.share.compare-btn', { type: 'button', title: t('Open two copies of this laboratory side by side to compare two settings'), onClick: (e) => compare(meta, e.currentTarget) }, t('Compare')),
-      h('button.tag.share.embed-code', { type: 'button', title: t('Copy HTML that embeds this laboratory, with its current settings, in a course page or blog'), onClick: (e) => copyLink(e.currentTarget, embedCode(location.href, meta.title), t('Embed code copied ✓')) }, t('Embed')),
+      h('button.tag.share.embed-code', { type: 'button', title: t('Copy HTML that embeds this laboratory, with its current settings, in a course page or blog'), onClick: (e) => copyLink(e.currentTarget, embedCode(location.href, meta.title), t('Embed code copied ✓')) }, t('Embed'))),
   );
 }
 
@@ -98,10 +102,15 @@ export function lab(main, side, wide = false) {
 // A page reads from simple to exact: ① the idea in plain words (with things to try), the
 // simulation, ② a rule of thumb that says where it stops working, ③ the full model, ④ references.
 // Every rung is visible; ladder() adds the numbers and a strip to jump between them.
+// The idea is kept short so the simulation starts on the first screen: the text on the left, and on
+// the right the things to try, then the intuition check and the guided tours (added by the router).
+// On very wide screens the whole section becomes a column beside the simulation (see CSS).
 export function idea(html, tries = []) {
-  return h('section.block.rung-idea', { 'data-rung': 'idea' }, h('h2', {}, t('The idea')),
-    h('div.idea', {}, prose(html, 'idea-text'),
-      tries.length ? h('div.try', {}, h('div.calc-title', {}, t('Try it')), h('ol', {}, ...tries.map((t) => h('li', { html: t })))) : null));
+  return h('section.block.rung-idea', { 'data-rung': 'idea' },
+    h('div.idea', {},
+      h('div.idea-main', {}, h('h2', {}, t('The idea')), prose(html, 'idea-text')),
+      h('div.idea-side', {},
+        tries.length ? h('div.try', {}, h('div.calc-title', {}, t('Try it')), h('ol', {}, ...tries.map((t) => h('li', { html: t })))) : null)));
 }
 
 export function rule(html, limits) {
@@ -130,7 +139,7 @@ export function ladder(page) {
   let n = 0;
   const items = rungs.map((el) => {
     const k = el.dataset.rung, num = k === 'sim' ? null : String(++n);
-    const h2 = el.querySelector(':scope > h2');
+    const h2 = el.querySelector(':scope > h2, :scope > .idea > .idea-main > h2');
     if (num && h2) h2.prepend(h('span.rung-n', { 'aria-hidden': 'true' }, num));
     const b = h('button', { type: 'button', onClick: () => el.scrollIntoView({ behavior: 'smooth', block: 'start' }) },
       num ? h('span.rung-n', { 'aria-hidden': 'true' }, num) : h('span.rung-n.sim', { 'aria-hidden': 'true' }, '▶'), t(RUNGS[k]));
@@ -173,7 +182,7 @@ export function missionStep(n, title, lab, labTitle) {
   return { el, set: ({ answer: a, why: w, tex: t }) => { answer.innerHTML = a; why.innerHTML = w; if (t) setTex(eq, t, true); else eq.replaceChildren(); } };
 }
 
-// Misconception check: a question answered before the explanation is shown. Inserted after the
+// Misconception check: a question answered before the explanation is shown. Placed beside the
 // idea on laboratories listed in misconceptions.js.
 export function misconception(page, id, checks) {
   const c = checks[id];
@@ -185,5 +194,8 @@ export function misconception(page, id, checks) {
     if (i !== c.answer) e.currentTarget.classList.add('wrong');
     why.innerHTML = `<strong>${i === c.answer ? t('Right.') : t('Not quite.')}</strong> ` + c.why;
   } }, o)));
-  idea.after(h('section.block.check', { 'aria-label': t('Check your intuition') }, h('div.check-k', {}, t('Check your intuition')), h('p.check-q', {}, c.q), list, why));
+  // folded: the question shows, the options open on demand, so the simulation stays on the first screen
+  const box = h('details.check', {},
+    h('summary', {}, h('span.check-k', {}, t('Check your intuition')), h('span.check-q', {}, c.q)), list, why);
+  (idea.querySelector('.idea-side') || idea).append(box);
 }
