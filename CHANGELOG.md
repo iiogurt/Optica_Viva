@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.34.0] - 2026-11-10
+
 ### Added
 - Flare: **Fresnel rings at ghost edges**. Each ghost is a defocused image of its limiting aperture; its defocus W₀₂₀ is found from its own rays (least-squares focus shift and slope spread, per wavelength) and matches the paraxial ghost matrices within 2 %. Its edge then follows the knife-edge Fresnel pattern at u = 2√W₀₂₀ (1 − g), averaged exactly over each pixel from a table of its running integral, so small ghosts show coloured rings and ghosts thousands of waves out of focus keep a plain edge; none within 10 waves of focus. Light diffracted into the geometric shadow is kept (flux within 1 %). About 20 % slower on the Pi.
 
@@ -868,7 +870,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.33.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.34.0...HEAD
+[1.34.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.33.0...v1.34.0
 [1.33.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.32.0...v1.33.0
 [1.32.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.31.0...v1.32.0
 [1.31.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.30.0...v1.31.0
