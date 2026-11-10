@@ -491,7 +491,7 @@ export default function mount(root, meta) {
         { data: rows.map((r) => [r.h, r.T[1]]), color: '#ffb547', width: 1.6, dash: [6, 4] },
       ],
       hlines: [{ y: dl(10), color: 'rgba(106,215,255,0.35)', label: 'diffraction limit 10' }, { y: dl(30), color: 'rgba(255,181,71,0.35)', label: 'diffraction limit 30' }],
-      legend: true, legendX: 70, legendY: hh - 90,
+      legend: true,
     });
   }
 

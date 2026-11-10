@@ -142,7 +142,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Exposure time needed vs metered time', x: { min: 0.1, max: 300, log: true, label: 'metered time (s)' }, y: { min: 0.1, max: 3000, log: true, label: 'required time (s)' },
       series: [{ data: ts.map((t) => [t, t]), color: 'rgba(255,255,255,0.35)', width: 1, dash: [4, 3], label: 'reciprocity (digital)' }, ...[0.9, 0.8, 0.7].map((p, i) => ({ data: ts.map((t) => [t, reciprocityCorrection(t, p)]), color: ['#6be3a4', '#ffb547', '#ff9cc0'][i], width: Math.abs(p - st.p) < 0.051 ? 2.4 : 1.2, label: `p = ${p}` }))],
-      vlines: [{ x: st.t, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: 70, legendY: 34,
+      vlines: [{ x: st.t, color: 'rgba(255,255,255,0.4)' }], legend: true,
     });
   }
 

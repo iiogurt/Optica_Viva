@@ -298,7 +298,7 @@ c(d) &= \frac{f}{N}\cdot\frac{f\,|d-s|}{d\,(s-f)}
       ],
       hlines: [{ y: c * 1000, color: '#6be3a4', label: 'circle of confusion' }, ...(M.diff ? [{ y: airy * 1000, color: '#c18cff', label: 'Airy diameter 2.44λN_w' }] : [])],
       vlines: [{ x: s / 1000, color: '#ffb547', label: 'focus' }],
-      legend: true, legendX: w - 230,
+      legend: true,
     });
   }
 

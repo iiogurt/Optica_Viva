@@ -176,7 +176,7 @@ export default function mount(root, meta) {
         { data: xs.map((f) => [f, R.H(f)]), color: '#ffb547', width: 1.6, dash: [5, 3], label: 'pre-filter MTF (pixel × OLPF)' },
       ],
       vlines: [{ x: 0.5, color: '#ff6b6b', label: 'Nyquist' }, { x: 0.25, color: 'rgba(193,140,255,0.7)', label: 'R/B Nyquist' }],
-      legend: true, legendX: w - 240,
+      legend: true,
     });
     const fa = Math.abs(st.f - Math.round(st.f));
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X(st.f), Y(fa), 5, 0, 7); ctx.fill();

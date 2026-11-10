@@ -168,7 +168,7 @@ export default function mount(root, meta) {
         { data: H.map((r) => [r[0] * 1000, Math.max(10, r[2])]), color: '#ffb547', width: 2, label: 'residual' },
         { data: [[t0, Math.sqrt(B.total)], [t1, Math.sqrt(B.total)]], color: '#6be3a4', width: 1.2, dash: [5, 4], label: 'error budget' },
       ],
-      legend: true, legendX: w - 200, legendY: 34,
+      legend: true,
     });
   }
   function drawModal(ctx, w, hh) {
@@ -256,7 +256,7 @@ export default function mount(root, meta) {
     if (Pc) series.push({ data: Pc.curve, color: '#ffb547', width: 2.4, label: 'diffraction model (FFT)' });
     plot(ctx, w, hh, {
       title: Pc ? 'Pyramid response to a tilt' : 'Pyramid response to a tilt (computing…)', x: { min: 0, max: 4.5, label: 'tilt (λ/D)' }, y: { min: 0, max: 1.05, label: '⟨Sx⟩' },
-      series, vlines: P && P.st.mode === 'tilt' ? [{ x: P.st.amp, color: 'rgba(255,255,255,0.4)' }] : [], legend: true, legendX: w - 280, legendY: hh - 96,
+      series, vlines: P && P.st.mode === 'tilt' ? [{ x: P.st.amp, color: 'rgba(255,255,255,0.4)' }] : [], legend: true,
     });
   }
   updatePyr();

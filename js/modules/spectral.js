@@ -110,7 +110,7 @@ export default function mount(root, meta) {
         { data: stats.map((s, b) => [BAND_LAMBDA[b], s.ee80]), color: '#ffb547', width: 2, points: 3, label: '80 % energy radius' },
         { data: stats.map((s, b) => [BAND_LAMBDA[b], s.shift]), color: '#6ad7ff', width: 2, points: 3, label: 'lateral shift from 540 nm' },
       ],
-      vlines: BAND_LAMBDA.map((l) => ({ x: l, color: wavelengthCSS(l, 0.18) })), legend: true, legendX: 60, legendY: 34,
+      vlines: BAND_LAMBDA.map((l) => ({ x: l, color: wavelengthCSS(l, 0.18) })), legend: true,
     });
   }
   function update() { run(); }

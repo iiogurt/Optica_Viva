@@ -153,7 +153,7 @@ export default function mount(root, meta) {
     const lines = S.lines.filter((L) => Math.abs(L[0] - st.zc) <= st.zw / 2);
     plot(ctx, w, hh, {
       title: t('Zoom: {a}–{b} nm', { a: (st.zc - st.zw / 2).toFixed(2), b: (st.zc + st.zw / 2).toFixed(2) }), x: { min: lams[0], max: lams[n - 1], label: 'wavelength (nm)' }, y: { min: 0, max: 1.1, label: 'relative intensity' },
-      series, vlines: lines.slice(0, 12).map((L, i) => ({ x: L[0], color: 'rgba(106,215,255,0.35)', label: L[3] || L[0].toFixed(2), dy: (i % 3) * 12 })), legend: true, legendX: w - 210, legendY: hh - 80,
+      series, vlines: lines.slice(0, 12).map((L, i) => ({ x: L[0], color: 'rgba(106,215,255,0.35)', label: L[3] || L[0].toFixed(2), dy: (i % 3) * 12 })), legend: true,
     });
   }
 
@@ -165,13 +165,13 @@ export default function mount(root, meta) {
       plot(ctx, w, hh, {
         title: t('Blaze efficiency per order (scalar theory), blaze {l} nm in order 1', { l: st.lamB.toFixed(0) }), x: { min: 330, max: 1100, label: 'wavelength (nm)' }, y: { min: 0, max: 1.05, label: 'relative efficiency' },
         series: [1, 2, 3, 4].map((k) => ({ data: ls.map((l) => [l, blazeEfficiency(k, l, st.rho, M.alpha, M.thB)]), color: cols[k - 1], width: k === +st.m ? 2.4 : 1.2, label: `m = ${k}` })),
-        bands: [{ x: [L0, L1], color: 'rgba(255,255,255,0.04)' }], legend: true, legendX: w - 110, legendY: 34,
+        bands: [{ x: [L0, L1], color: 'rgba(255,255,255,0.04)' }], legend: true,
       });
     } else {
       plot(ctx, w, hh, {
         title: t('Resolving power of a {b} mm prism vs wavelength', { b: st.base.toFixed(0) }), x: { min: 380, max: 1000, label: 'wavelength (nm)' }, y: { min: 10, max: 1e5, log: true, label: 'R = b |dn/dλ|' },
         series: GLASS.map((g, i) => ({ data: ls.filter((l) => l >= 380).map((l) => [l, Math.max(10, prismR(g, l, st.base))]), color: ['#ffb547', '#ff9cc0', '#c18cff', '#6ad7ff', '#6be3a4', '#ffffff'][i], width: g === st.glass ? 2.4 : 1.1, label: g })),
-        legend: true, legendX: w - 130, legendY: 34,
+        legend: true,
       });
     }
   }
@@ -258,7 +258,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Resolution vs light: the slit-width trade-off', x: { min: 0.1, max: 3, label: 'slit width (″)' }, y: { min: 0, max: 1.05, label: 'R / R(0.1″) · throughput' },
       series: [{ data: sl.map((p, i) => [p, R[i] / Rmax]), color: '#6ad7ff', width: 2, label: 'resolving power' }, { data: sl.map((p, i) => [p, T[i]]), color: '#ffb547', width: 2, label: 'slit throughput' }, { data: sl.map((p, i) => [p, (R[i] / Rmax) * T[i] * 2]), color: '#6be3a4', width: 1.4, dash: [5, 3], label: 'R × throughput (×2)' }],
-      vlines: [{ x: st.slit, color: 'rgba(255,255,255,0.4)' }, { x: st.seeing, color: 'rgba(255,181,71,0.35)', label: 'seeing', dy: 14 }], legend: true, legendX: w - 200, legendY: hh - 100,
+      vlines: [{ x: st.slit, color: 'rgba(255,255,255,0.4)' }, { x: st.seeing, color: 'rgba(255,181,71,0.35)', label: 'seeing', dy: 14 }], legend: true,
     });
   }
   function drawEZoom(ctx, w, hh) {
@@ -267,7 +267,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: t('Sodium D at R = {R}', { R: E.R.toFixed(0) }), x: { min: lams[0], max: lams[lams.length - 1], label: 'wavelength (nm)' }, y: { min: 0, max: 1.05, label: 'relative intensity' },
       series: [{ data: lams.map((l, i) => [l, I[i] / mx]), color: 'rgba(255,255,255,0.4)', width: 1.1, label: 'intrinsic' }, { data: lams.map((l, i) => [l, o[i] / mx]), color: '#ffb547', width: 2, label: 'observed' }],
-      legend: true, legendX: w - 130, legendY: hh - 80,
+      legend: true,
     });
   }
   updateEch();

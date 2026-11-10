@@ -71,7 +71,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'What the left and right halves of the split pixels see', x: { min: a, max: b, label: 'pixel' }, y: { min: lo, max: hi, label: 'brightness' },
       series: [{ data: xs.map((i) => [i, R.left[i]]), color: '#ffb547', label: 'left half of the lens' }, { data: xs.map((i) => [i, R.right[i]]), color: '#6ad7ff', label: 'right half of the lens' }],
-      legend: true, legendX: w - 190, legendY: 34,
+      legend: true,
     });
   }
 

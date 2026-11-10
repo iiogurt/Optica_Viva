@@ -214,7 +214,7 @@ export default function mount(root, meta) {
         { data: S.curves.apo, color: '#c18cff', width: 2, label: t('apochromat {g}', { g: S.st.triple }) },
       ],
       vlines: [['g', LINES.g], ['F', LINES.F], ['d', LINES.d], ['C', LINES.C]].map(([n, l]) => ({ x: l, color: wavelengthCSS(l, 0.5), label: n })),
-      legend: true, legendX: w - 260, legendY: hh - 100,
+      legend: true,
     });
   }
 
@@ -259,7 +259,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Sellmeier dispersion n(λ)', x: { min: 380, max: 1000, label: 'wavelength (nm)' }, y: { min: 1.42, max: 1.86, label: 'refractive index' },
       series: sel.map((g, i) => ({ data: range(380, 1000, 80).map((l) => [l, index(g, l)]), color: cols[i], width: 1.6, label: g })),
-      bands: [{ x: [400, 700], color: 'rgba(255,255,255,0.03)' }], legend: true, legendX: w - 120,
+      bands: [{ x: [400, 700], color: 'rgba(255,255,255,0.03)' }], legend: true,
     });
   }
 
@@ -288,7 +288,7 @@ export default function mount(root, meta) {
     const { X, Y } = plot(ctx, w, hh, {
       title: 'Partial dispersion P_g,F vs V_d', x: { min: 100, max: 15, label: 'Abbe number V_d' }, y: { min: 0.51, max: 0.67, label: 'P_g,F' },
       series: [{ data: [[100, 0.6438 - 0.001682 * 100], [15, 0.6438 - 0.001682 * 15]], color: 'rgba(255,255,255,0.4)', dash: [5, 4], width: 1, label: 'normal line' }],
-      legend: true, legendX: w - 130, legendY: hh - 60,
+      legend: true,
     });
     catalogueDots(ctx, X, Y, (g) => g.pgf);
     ctx.font = '10px Inter, sans-serif';

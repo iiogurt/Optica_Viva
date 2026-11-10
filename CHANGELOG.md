@@ -6,7 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Hover readout on every chart.** Pointing at a chart draws a guide, a dot on each curve and a box with the values there; curves that do not run one way along x (field curves, loci, scattered points) give their nearest point. The page tools step aside while values are read.
+- **Enlarge any figure.** A ⤢ button beside PNG and CSV shows the figure at its own shape as large as the window allows; Escape, the button or a click beside it puts it back. Charts are redrawn at the new size, not scaled.
+- Diffraction & the PSF: the picture and its two charts are **linked**. A radius pointed at in the profile or the encircled-energy chart is drawn as a ring on the picture and marked in the other chart, and pointing at the picture marks that radius in both charts.
+
 ### Changed
+- **Chart legends sit above the plot area**, in rows under the title, never on the curves; each entry is marked the way its series is drawn (solid, dashed, dots). The 122 hand-placed legend positions are gone. Long titles end in an ellipsis instead of running under the buttons, and a chart under a figure caption starts below it.
+- On touch screens the figure tools appear when the figure is tapped instead of always covering its corner; the CSV button no longer shows on pictures.
 - **The simulation starts on the first screen.** A laboratory's head is one compact block: group and fields above the title, the page tools (copy link, save settings, compare, embed) in one row beside it. On screens 1600 px and wider the idea, the things to try, the intuition check and the guided tour form a column beside the simulation, which starts right under the head and stays in view with the controls. On narrower screens the idea stays above the simulation but is shorter: the intuition check sits under the things to try, folded to its question (the answers open on a click), and the guided tour sits under the idea's text. At 1440 px the picture now starts 517 px down instead of about 830. The tour no longer scrolls the picture under the sticky strip. The smoke test checks the layout at 1920 and 1440 px.
 - The typefaces (Fraunces, Inter, JetBrains Mono) are served from the site itself (`vendor/fonts/`, variable fonts from the `@fontsource-variable` packages, SIL Open Font License) instead of Google Fonts. The page no longer contacts any other host, the fonts are part of the offline cache from the first visit, and the two used first are preloaded. The italic in the home page's title is now the real Fraunces italic rather than a slanted roman. `test/fonts.test.mjs` checks the files' checksums and that the page loads nothing from elsewhere.
 

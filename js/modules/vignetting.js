@@ -115,7 +115,7 @@ export default function mount(root, meta) {
         { data: M.comp.map((c) => [c.hgt, ev(c.tot)]), color: '#ffb547', width: 2.6, label: 'total' },
       ],
       vlines: [{ x: M.S.w / 2, color: 'rgba(255,255,255,0.3)', label: 'edge' }, { x: M.S.h / 2, color: 'rgba(255,255,255,0.2)', label: 'top', dy: 14 }],
-      legend: true, legendX: 70, legendY: hh - 110,
+      legend: true,
     });
   }
   function drawPupils(ctx, w, hh) {

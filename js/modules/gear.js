@@ -194,7 +194,7 @@ export default function mount(root, meta) {
       plot(ctx, w, hh, {
         title: 'MTF from the slanted edge', x: { min: 0, max: 1, label: 'spatial frequency (cycles/pixel)' }, y: { min: 0, max: 1.1, label: 'MTF' },
         series: ['R', 'G', 'B', 'Y'].map((k) => ({ data: R.res[k].freqs.map((f, i) => [f, R.res[k].mtf[i]]).filter((p) => p[0] <= 1), color: c[k], width: k === 'Y' ? 2.4 : 1.2, label: k === 'Y' ? 'luminance' : { R: 'red', G: 'green', B: 'blue' }[k] })),
-        vlines: [{ x: 0.5, color: 'rgba(255,255,255,0.3)', label: 'Nyquist' }], legend: true, legendX: w - 130, legendY: 34,
+        vlines: [{ x: 0.5, color: 'rgba(255,255,255,0.3)', label: 'Nyquist' }], legend: true,
       });
     } else if (R.kind === 'vig') {
       plot(ctx, w, hh, {

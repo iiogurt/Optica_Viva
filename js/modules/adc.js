@@ -94,7 +94,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: t('Image position relative to {l} nm', { l: M.lc.toFixed(0) }), x: { min: M.st.l0, max: M.st.l1, label: 'wavelength (nm)' }, y: { min: lo - 0.05 * (hi - lo + 0.01), max: hi + 0.05 * (hi - lo + 0.01), label: 'offset towards zenith (″)' },
       series: [{ data: M.lams.map((l, i) => [l, M.air[i]]), color: '#ff9cc0', width: 2, label: 'atmosphere' }, ...(M.st.adc ? [{ data: M.lams.map((l, i) => [l, M.res[i]]), color: '#6be3a4', width: 2, label: 'with ADC (residual)' }] : [])],
-      hlines: [{ y: 0, color: 'rgba(255,255,255,0.2)' }], legend: true, legendX: w - 190, legendY: 34,
+      hlines: [{ y: 0, color: 'rgba(255,255,255,0.2)' }], legend: true,
     });
   }
   function drawZ(ctx, w, hh) {
@@ -103,7 +103,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: t('Dispersion {a}–{b} nm vs zenith angle', { a: M.st.l0, b: M.st.l1 }), x: { min: 0, max: 75, label: 'zenith angle (°)' }, y: { min: 0, max: Math.max(0.5, dispersion(M.st.l0, M.st.l1, 75 * D2R, s.P, s.T) * 1.05), label: 'dispersion (″)' },
       series: Object.entries(SITES).map(([key, si], i) => ({ data: zs.map((z) => [z, dispersion(M.st.l0, M.st.l1, z * D2R, si.P, si.T)]), color: ['#ff9cc0', '#ffb547', '#6ad7ff'][i], width: key === M.st.site ? 2.4 : 1.2, label: si.name.split(' (')[0] })),
-      hlines: [{ y: M.st.seeing, color: 'rgba(255,255,255,0.35)', label: 'seeing FWHM' }], vlines: [{ x: M.st.z, color: 'rgba(255,255,255,0.35)' }], legend: true, legendX: 70, legendY: 34,
+      hlines: [{ y: M.st.seeing, color: 'rgba(255,255,255,0.35)', label: 'seeing FWHM' }], vlines: [{ x: M.st.z, color: 'rgba(255,255,255,0.35)' }], legend: true,
     });
   }
 

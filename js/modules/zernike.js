@@ -179,7 +179,7 @@ export default function mount(root, meta) {
       title: 'Strehl ratio vs RMS wavefront error (current mode mix, scaled ×0…2)',
       x: { min: 0, max: Math.min(0.4, xmax), label: 'σ_W (waves RMS)' }, y: { min: 0, max: 1, label: 'Strehl ratio' },
       series: [{ data: mar, color: 'rgba(255,255,255,0.5)', dash: [5, 4], width: 1.2, label: 'Maréchal e^{−(2πσ)²}' }, { data: D.curve, color: '#ffb547', width: 2, label: 'exact (FFT)' }],
-      hlines: [{ y: 0.8, color: '#6be3a4', label: 'S = 0.8 (≈ λ/14)' }], legend: true, legendX: w - 190,
+      hlines: [{ y: 0.8, color: '#6be3a4', label: 'S = 0.8 (≈ λ/14)' }], legend: true,
     });
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X(Math.min(D.rms, 0.4)), Y(D.strehl), 4.5, 0, 7); ctx.fill();
   }

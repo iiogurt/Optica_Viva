@@ -109,7 +109,7 @@ export default function mount(root, meta) {
         { data: xs.map((v) => [v, sinc(v * p)]), color: '#9aa1b5', dash: [4, 4], label: 'smear (one pixel)' },
         { data: xs.map((v) => [v, mtfDiff(v / nuC) * sinc(v * p) ** 2]), color: '#ffb547', width: 2.4, label: 'system' },
       ],
-      vlines: [{ x: nyq, color: 'rgba(255,255,255,0.35)', label: 'Nyquist' }], legend: true, legendX: w - 170, legendY: 34,
+      vlines: [{ x: nyq, color: 'rgba(255,255,255,0.35)', label: 'Nyquist' }], legend: true,
     });
   }
 

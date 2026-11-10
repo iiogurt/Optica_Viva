@@ -68,7 +68,7 @@ export default function mount(root, meta) {
         { data: [[ts[0], S[0]], [ts[ts.length - 1], S[S.length - 1]]], color: '#6ad7ff', width: 1.4, dash: [2, 3], label: 'CDS' },
         { data: line(st.f, S[0] - st.f * ts[0]), color: 'rgba(107,227,164,0.7)', width: 1.4, label: 'true flux' },
       ],
-      legend: true, legendX: 70, legendY: 34,
+      legend: true,
     });
   }
   function drawNoise(ctx, w, hh) {
@@ -82,7 +82,7 @@ export default function mount(root, meta) {
         { data: Ns.map((n) => [n, Math.sqrt(slopeVarianceLS(n, T / (n - 1), st.sigma, st.f))]), color: '#ff9cc0', width: 2, label: 'least squares' },
         { data: Ns.map((n) => [n, Math.sqrt(st.f / T)]), color: 'rgba(255,255,255,0.35)', width: 1, dash: [4, 3], label: 'photon noise limit' },
       ],
-      vlines: [{ x: st.N, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: w - 190, legendY: 34,
+      vlines: [{ x: st.N, color: 'rgba(255,255,255,0.4)' }], legend: true,
     });
   }
 
@@ -147,7 +147,7 @@ export default function mount(root, meta) {
         { data: reads, color: '#ffffff', width: 0, points: 3, label: 'reads (with read noise)' },
         ...(fitLine ? [{ data: fitLine, color: '#ff9cc0', width: 1.4, dash: [5, 3], label: 'least squares' }] : []),
       ],
-      vlines: pnow < PT ? [{ x: pnow, color: 'rgba(255,255,255,0.3)' }] : [], legend: true, legendX: 70, legendY: 34,
+      vlines: pnow < PT ? [{ x: pnow, color: 'rgba(255,255,255,0.3)' }] : [], legend: true,
     });
   }
   restartPh();
@@ -216,7 +216,7 @@ export default function mount(root, meta) {
   const pplot = stage({ aspect: 2.6, label: '', draw: (ctx, w, hh) => {
     const ts = logRange(10, 1e4, 80);
     plot(ctx, w, hh, { title: 'Charge released after a bright exposure (power-law decay, illustrative)', x: { min: 10, max: 1e4, log: true, label: 'time after the bright exposure (s)' }, y: { min: 1e-3, max: 10, log: true, label: 'persistence (e⁻/s)' },
-      series: [1, 2, 5, 10].map((F, i) => ({ data: ts.map((t) => [t, Math.max(1e-3, persistenceRate(F, t))]), color: ['#6be3a4', '#6ad7ff', '#ffb547', '#ff6b6b'][i], width: 1.8, label: t('{F}× full well', { F }) })), legend: true, legendX: w - 160, legendY: 34 });
+      series: [1, 2, 5, 10].map((F, i) => ({ data: ts.map((t) => [t, Math.max(1e-3, persistenceRate(F, t))]), color: ['#6be3a4', '#6ad7ff', '#ffb547', '#ff6b6b'][i], width: 1.8, label: t('{F}× full well', { F }) })), legend: true });
   }, cls: 'plain', minH: 200 });
   sec4.append(h('div.card', { style: { padding: '6px' } }, pplot.el));
   root.append(sec4);

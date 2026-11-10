@@ -64,7 +64,7 @@ export default function mount(root, meta) {
         { data: ls.map((l) => [l, passband(l, o.centre, st.fwhm)]), color: '#9aa1b5', dash: [4, 4], label: 'parallel light' },
         { data: ls.map((l) => [l, coneTransmission(l, { ...o, nr: 12, nt: 16 })]), color: '#ff6b6b', label: t('f/{N} beam', { N: st.N.toPrecision(2) }) },
       ],
-      vlines: [{ x: line, color: '#ffb547', label: LINES[st.line][0] }], legend: true, legendX: 70, legendY: 36,
+      vlines: [{ x: line, color: '#ffb547', label: LINES[st.line][0] }], legend: true,
     });
   }
 
@@ -74,7 +74,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Line transmission against focal ratio (filters centred on the line)', x: { min: 1.4, max: 10, log: true, label: 'focal ratio N' }, y: { min: 0, max: 1.05, label: 'line transmission' },
       series: [[3, '#ff6b6b'], [5, '#ffb547'], [7, '#6be3a4'], [12, '#6ad7ff']].map(([fw, color]) => ({ data: Ns.map((N) => [N, coneTransmission(line, { centre: line, fwhm: fw, n: st.n, N, chief, nr: 12, nt: 16 })]), color, label: `${fw} nm` })),
-      vlines: [{ x: st.N, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: w - 110, legendY: hh - 110,
+      vlines: [{ x: st.N, color: 'rgba(255,255,255,0.4)' }], legend: true,
     });
   }
 

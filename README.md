@@ -77,7 +77,7 @@ flowchart LR
 
 It covers three domains (📷 photography, 🎬 cinematography and 🔭 astronomy and space), and every phenomenon is tagged with the ones it affects.
 
-Every setting is **shareable**. Controls are mirrored into the URL, so a link like [`#/psf?preset=hubble&band=white`](https://iiogurt.github.io/Optica_Viva/#/psf?preset=hubble&band=white) opens that exact configuration. Use **Copy link** in any page header. **Guided tours** (listed on the home page) move a laboratory's controls step by step and say what to look at; a link like `#/mtf?tour=stop-down` starts one. **Try it yourself** exercises (depth of field, MTF, PSF, flare) check your answer, give a hint and a worked solution, and set the laboratory up to show it. **Embed** copies `<iframe>` code that shows a laboratory alone (`#/dof?embed=1`) in a course page or blog. **Compare** opens two copies of a laboratory side by side, both starting from the current settings, so two choices (f/2 against f/8, plates against columns) can be set up and seen together. **Save settings** downloads the page state as JSON, and every figure has **PNG** and (for charts) **CSV** export buttons. On phones each lab's controls slide up from a bottom sheet next to the live result. Canvases are labelled for screen readers, keyboard focus is visible, and animations respect *reduce motion*.
+Every setting is **shareable**. Controls are mirrored into the URL, so a link like [`#/psf?preset=hubble&band=white`](https://iiogurt.github.io/Optica_Viva/#/psf?preset=hubble&band=white) opens that exact configuration. Use **Copy link** in any page header. **Guided tours** (listed on the home page) move a laboratory's controls step by step and say what to look at; a link like `#/mtf?tour=stop-down` starts one. **Try it yourself** exercises (depth of field, MTF, PSF, flare) check your answer, give a hint and a worked solution, and set the laboratory up to show it. **Embed** copies `<iframe>` code that shows a laboratory alone (`#/dof?embed=1`) in a course page or blog. **Compare** opens two copies of a laboratory side by side, both starting from the current settings, so two choices (f/2 against f/8, plates against columns) can be set up and seen together. **Save settings** downloads the page state as JSON, and every figure has **PNG** and (for charts) **CSV** export buttons and a button that **enlarges** it to the window. Pointing at any chart **reads off its values**; on the PSF page the picture and its charts are linked, so a radius pointed at in one is marked in the others. On phones each lab's controls slide up from a bottom sheet next to the live result. Canvases are labelled for screen readers, keyboard focus is visible, and animations respect *reduce motion*.
 
 ---
 
@@ -960,7 +960,7 @@ Optica_Viva/
 │   │   ├── sensors.js         Sensor and film formats
 │   │   ├── phenomena.js       Catalogue data (228 entries in 13 groups)
 │   │   ├── phenomena-details.js  Explanation and worked example for every catalogue entry
-│   │   ├── plot.js            Canvas charting (log axes, legends, bands)
+│   │   ├── plot.js            Canvas charting (log axes, legends above the plot, bands, hover readout)
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js

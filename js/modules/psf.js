@@ -1,4 +1,4 @@
-import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, fmt, texNum, rafThrottle } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { airy, besselJ1 as besselJ1x } from '../lib/pupil.js';
 import { latest } from '../lib/compute.js';
@@ -6,7 +6,7 @@ import { oetf, linspace } from '../lib/color.js';
 import { plot } from '../lib/plot.js';
 import { view3d } from '../lib/gl3d.js';
 import { psfMesh } from '../lib/surf3d.js';
-import { t } from '../lib/i18n.js';
+import { t, localNum } from '../lib/i18n.js';
 
 const PRESETS = {
   circle: { label: 'Circular (ideal lens)', spec: { type: 'circle' } },
@@ -180,7 +180,7 @@ export default function mount(root, meta) {
         ...(showAiry ? [{ data: an, color: 'rgba(255,255,255,0.45)', width: 1, dash: [4, 3], label: 'analytic Airy (annular)' }] : []),
         { data: data.profCurve.filter((p) => p[0] <= 12), color: '#ffb547', width: 1.8, label: 'FFT (azimuthal mean)' },
       ],
-      legend: true, legendX: w - 150,
+      legend: true,
       vlines: [{ x: 1.22, color: 'rgba(106,215,255,0.6)', label: '1.22' }],
     });
   }
@@ -192,10 +192,35 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Encircled energy', x: { min: 0, max: 12, label: 'radius (λ/D)' }, y: { min: 0, max: 1, label: 'fraction' },
       series: [{ data: ideal, color: 'rgba(255,255,255,0.45)', width: 1, dash: [4, 3], label: 'clear circle: 1 − J₀² − J₁²' }, { data: data.eeCurve.filter((p) => p[0] <= 12), color: '#6ad7ff', width: 2, label: 'this pupil' }],
-      legend: true, legendX: Math.max(60, w - 175), legendY: hh - 75,
+      legend: true,
       hlines: [{ y: 0.838, color: 'rgba(255,255,255,0.25)', label: '83.8 %' }],
     });
   }
+
+  // The picture and its two charts are linked: a radius pointed at in one is marked in the others
+  // (a ring on the picture, the readout on each chart).
+  const ring = (r) => {
+    const o = main.over();
+    if (r == null || !data || !(r > 0)) return;
+    const crop = Math.round(data.n / ctl.state.zoom), side = Math.min(main.w, main.h), px = (side / crop) * data.Q * r;
+    if (px > side / 2) return;
+    o.strokeStyle = 'rgba(255,255,255,0.8)'; o.lineWidth = 1.2; o.setLineDash([5, 4]);
+    o.beginPath(); o.arc(main.w / 2, main.h / 2, px, 0, 7); o.stroke(); o.setLineDash([]);
+    o.font = '11px "JetBrains Mono", monospace'; o.textAlign = 'center'; o.textBaseline = 'bottom'; o.fillStyle = '#fff';
+    o.shadowColor = '#000'; o.shadowBlur = 4;
+    o.fillText(`${localNum(fmt(r, 3))} λ/D`, main.w / 2, Math.max(14, main.h / 2 - px - 4));
+  };
+  prof.hover = (i) => { ring(i ? i.x : null); ee.mark(i ? i.x : null); };
+  ee.hover = (i) => { ring(i ? i.x : null); prof.mark(i ? i.x : null); };
+  const pointAt = rafThrottle((e) => {
+    if (!data) return;
+    const box = main.canvas.getBoundingClientRect(), crop = Math.round(data.n / ctl.state.zoom), side = Math.min(main.w, main.h);
+    const r = Math.hypot(e.clientX - box.left - main.w / 2, e.clientY - box.top - main.h / 2) / ((side / crop) * data.Q);
+    ring(r); prof.mark(r); ee.mark(r);
+  });
+  const pointOff = () => requestAnimationFrame(() => { ring(null); prof.mark(null); ee.mark(null); });
+  main.canvas.addEventListener('pointermove', pointAt);
+  main.canvas.addEventListener('pointerleave', pointOff);
 
   recompute();
 

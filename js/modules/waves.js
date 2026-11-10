@@ -135,7 +135,7 @@ export default function mount(root, meta) {
       const hm = Math.max(...hz.slice(30, NY - 30)) || 1;
       series.push({ data: Array.from(hz, (v, y) => [(y - NY / 2) / L, v / hm]).slice(30, NY - 30), color: 'rgba(255,255,255,0.55)', width: 1.2, dash: [4, 3], label: N_('Huygens–Fresnel') });
     }
-    plot(ctx, w, hh, { x: { min: -(NY / 2 - 30) / L, max: (NY / 2 - 30) / L, label: 'position on the screen (λ)' }, y: { min: 0, max: 1.1, label: 'brightness (relative)' }, series, legend: true, legendX: 60, legendY: 40, padT: 32 });
+    plot(ctx, w, hh, { x: { min: -(NY / 2 - 30) / L, max: (NY / 2 - 30) / L, label: 'position on the screen (λ)' }, y: { min: 0, max: 1.1, label: 'brightness (relative)' }, series, legend: true, padT: 32 });
   }
 
   let lastKey = '';

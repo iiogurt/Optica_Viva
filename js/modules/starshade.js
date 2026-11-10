@@ -132,7 +132,7 @@ export default function mount(root, meta) {
         ...R.p.lams.map((l, j) => ({ data: R.rhos.map((r, i) => [r, Math.max(1e-16, R.prof[j][i])]), color: css(l), width: 2, label: t('starshade, {l} nm', { l: Math.round(l * 1e9) }) })),
       ],
       bands: [{ x: [0, R.st.D / 2], color: 'rgba(106,215,255,0.08)' }], hlines: [{ y: 1e-10, color: 'rgba(255,181,71,0.5)' }],
-      legend: true, legendX: w - 230, legendY: 120,
+      legend: true,
     });
   }
   function drawSpec(ctx, w, hh) {

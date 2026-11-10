@@ -1,5 +1,6 @@
 // Small DOM toolkit: element builder, controls, responsive hi-DPI canvases, KaTeX helpers.
 import { t, localNum, decimalComma } from './i18n.js';
+import { readout, readoutLabel } from './plot.js';
 
 export function h(tag, props = {}, ...children) {
   const [name, ...classes] = tag.split('.');
@@ -247,13 +248,14 @@ export function stage({ aspect = 16 / 9, draw, minH = 160, maxH = Infinity, labe
   // canvases are images to assistive technology; the numeric results live in the readouts
   const canvas = h('canvas', { role: 'img', 'aria-label': label ? tr(label) : name ? tr(name) : t('Chart') });
   const wrap = h('figure.stage' + (cls ? '.' + cls : ''), {}, canvas, label ? h('figcaption', {}, tr(label)) : null);
-  wrap.append(exportTools(canvas, label));
+  if (label) canvas._inset = 16; // charts start below the caption (plot.js)
   const ctx = canvas.getContext('2d');
-  const st = { canvas, ctx, el: wrap, w: 0, h: 0, dpr: 1, draw };
+  const st = { canvas, ctx, el: wrap, w: 0, h: 0, dpr: 1, draw, hover: null };
   const resize = () => {
     const w = canvas.clientWidth || wrap.clientWidth;
     if (!w) return;
-    const hh = Math.max(minH, Math.min(maxH, Math.round(w / aspect)));
+    // enlarged, the figure keeps its shape and fills the window (its width is set in zoom())
+    const hh = big ? Math.round(w / aspect) : Math.max(minH, Math.min(maxH, Math.round(w / aspect)));
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     if (st.w === w && st.h === hh && st.dpr === dpr) return;
     st.w = w; st.h = hh; st.dpr = dpr;
@@ -268,10 +270,109 @@ export function stage({ aspect = 16 / 9, draw, minH = 160, maxH = Infinity, labe
     ctx.clearRect(0, 0, st.w, st.h);
     st.draw && st.draw(ctx, st.w, st.h, st);
     if (!label) nameFromPlots(canvas);
+    st.refreshTools && st.refreshTools();
+    if (shown) show(shown); // the readout follows new data
   };
+
+  // ── A second canvas above the picture for transient marks: the hover readout of a chart, or
+  // whatever a laboratory draws with over(). It is not part of the PNG export.
+  let top = null;
+  st.over = () => {
+    if (!top) { top = h('canvas.stage-over', { 'aria-hidden': 'true' }); canvas.after(top); }
+    if (top.width !== canvas.width || top.height !== canvas.height) { top.width = canvas.width; top.height = canvas.height; top.style.height = canvas.style.height; }
+    const o = top.getContext('2d');
+    o.setTransform(st.dpr, 0, 0, st.dpr, 0, 0);
+    o.clearRect(0, 0, st.w, st.h);
+    return o;
+  };
+  // Hover readout: a guide at the pointer, a dot on every series there and the values in a box.
+  // `shown` is { k, px, py } in the pixels of chart k; mark(x) shows the readout at data value x
+  // of the first chart (to link it to another figure) and mark(null) removes it; st.hover(info)
+  // is told what the pointer shows ({ k, x, y, rows } or null).
+  let shown = null;
+  const geoOf = (k) => { const p = canvas._plots?.[k]; return p?.geo ? { ...p.geo, series: p.series, ox: p.geo.m[2] / st.dpr, oy: p.geo.m[3] / st.dpr } : null; };
+  function show(at) {
+    shown = at;
+    const g = at && geoOf(at.k), r = g && readout(g, at.px, at.py);
+    if (!r) { shown = null; if (top) st.over(); return null; }
+    const o = st.over(), T = theme();
+    o.translate(g.ox, g.oy);
+    const guide = r.rows.some((q) => !q.at) || !r.rows.length;
+    if (guide) { o.strokeStyle = 'rgba(255,255,255,0.28)'; o.lineWidth = 1; o.beginPath(); o.moveTo(Math.round(r.px) + 0.5, g.pad.t); o.lineTo(Math.round(r.px) + 0.5, g.h - g.pad.b); o.stroke(); }
+    for (const q of r.rows) { o.beginPath(); o.arc(q.px, q.py, 4, 0, 7); o.fillStyle = g.series[q.i].color || T.fg; o.fill(); o.lineWidth = 1.5; o.strokeStyle = '#07080d'; o.stroke(); }
+    // the box: the x value, then one line per series
+    const xName = tr(g.x.label || 'x'), lines = [{ text: `${xName}: ${readoutLabel(guide ? r.x : r.rows[0].x, g.x)}`, head: true }];
+    for (const q of r.rows) {
+      const s = g.series[q.i], val = q.at && guide ? `${readoutLabel(q.x, g.x)}, ${readoutLabel(q.y, g.y)}` : readoutLabel(q.y, g.y);
+      lines.push({ text: s.named ? `${tr(s.label)}: ${val}` : val, color: s.color || T.fg });
+    }
+    if (!r.rows.length) lines.push({ text: `${tr(g.y.label || 'y')}: ${readoutLabel(r.y, g.y)}`, color: null });
+    o.font = '11.5px Inter, system-ui, sans-serif';
+    const bw = Math.min(g.w - 8, Math.max(...lines.map((l) => o.measureText(l.text).width + (l.head ? 0 : 14))) + 16), bh = lines.length * 16 + 10;
+    const bx = r.px + 14 + bw > g.w - 2 ? Math.max(2, r.px - 14 - bw) : r.px + 14, by = Math.max(2, Math.min(g.h - bh - 2, at.py - bh / 2));
+    o.fillStyle = 'rgba(12,14,22,0.94)'; o.strokeStyle = 'rgba(255,255,255,0.16)'; o.lineWidth = 1;
+    o.beginPath(); o.roundRect(bx + 0.5, by + 0.5, bw, bh, 7); o.fill(); o.stroke();
+    o.textBaseline = 'middle'; o.textAlign = 'left';
+    lines.forEach((l, i) => {
+      const ty = by + 13 + i * 16;
+      if (l.head) { o.fillStyle = T.dim; o.fillText(l.text, bx + 8, ty, bw - 16); return; }
+      if (l.color) { o.fillStyle = l.color; o.fillRect(bx + 8, ty - 1.5, 8, 3); }
+      o.fillStyle = T.fg; o.fillText(l.text, bx + 22, ty, bw - 30);
+    });
+    return r;
+  }
+  st.mark = (x) => {
+    const g = geoOf(0);
+    if (x == null || !g || !isFinite(x)) { show(null); return; }
+    const f = g.x.log ? Math.log(x / g.x.min) / Math.log(g.x.max / g.x.min) : (x - g.x.min) / (g.x.max - g.x.min);
+    show({ k: 0, px: g.pad.l + f * (g.w - g.pad.l - g.pad.r), py: (g.pad.t + g.h - g.pad.b) / 2 });
+  };
+  const point = rafThrottle((e) => {
+    const n = canvas._plots?.length || 0;
+    if (!n) return;
+    const box = canvas.getBoundingClientRect(), cx = e.clientX - box.left, cy = e.clientY - box.top;
+    let r = null, k = 0;
+    for (; k < n && !r; k++) { const g = geoOf(k); if (g) r = show({ k, px: cx - g.ox, py: cy - g.oy }); }
+    wrap.classList.toggle('reading', !!r); // the tools step aside while values are read
+    st.hover && st.hover(r ? { k: k - 1, ...r } : null);
+  });
+  canvas.addEventListener('pointermove', point);
+  canvas.addEventListener('pointerdown', point);
+  canvas.addEventListener('pointerleave', () => { requestAnimationFrame(() => { wrap.classList.remove('reading'); if (shown) show(null); st.hover && st.hover(null); }); });
+
+  // ── Enlarge: the figure, at its own shape, as large as the window allows; Escape or a click
+  // beside it puts it back. A placeholder keeps the page from jumping.
+  let big = null;
+  st.zoom = (on = !big) => {
+    if (!!on === !!big) return;
+    if (on) {
+      const hold = h('div.stage-hold', { style: { height: wrap.offsetHeight + 'px' } }), shade = h('div.stage-shade', { onClick: () => st.zoom(false) });
+      const key = (e) => { if (e.key === 'Escape') { e.preventDefault(); st.zoom(false); } };
+      const fit = () => { wrap.style.width = Math.floor(Math.min(innerWidth * 0.94, innerHeight * 0.9 * aspect)) + 'px'; };
+      big = { hold, shade, key, fit };
+      wrap.before(hold); document.body.append(shade); wrap.classList.add('zoomed'); fit();
+      document.addEventListener('keydown', key); window.addEventListener('resize', fit);
+    } else {
+      big.hold.remove(); big.shade.remove(); wrap.classList.remove('zoomed'); wrap.style.width = '';
+      document.removeEventListener('keydown', big.key); window.removeEventListener('resize', big.fit);
+      big = null;
+    }
+    resize();
+    st.onZoom && st.onZoom(!!big);
+  };
+  wrap.append(exportTools(canvas, label, st));
+  // without a hovering pointer (touch screens) the tools appear when the figure is tapped and go
+  // when anything else is
+  wrap.addEventListener('pointerdown', () => {
+    if (wrap.classList.contains('tapped')) return;
+    wrap.classList.add('tapped');
+    const away = (e) => { if (!wrap.contains(e.target)) { wrap.classList.remove('tapped'); document.removeEventListener('pointerdown', away, true); } };
+    document.addEventListener('pointerdown', away, true);
+  });
+
   const ro = new ResizeObserver(() => resize());
   ro.observe(wrap);
-  st.destroy = () => ro.disconnect();
+  st.destroy = () => { if (big) st.zoom(false); ro.disconnect(); };
   st.resize = resize;
   return st;
 }
@@ -307,8 +408,8 @@ export const theme = () => {
 };
 
 // ── Export ─────────────────────────────────────────────────────────────────────────────────
-// Every stage gets small buttons to save its picture as PNG and, when it holds a chart, the
-// plotted data as CSV. File names start with the page id.
+// Every stage gets small buttons to enlarge it, save its picture as PNG and, when it holds a
+// chart, the plotted data as CSV. File names start with the page id.
 const pageId = () => (location.hash.replace(/^#\/?/, '').split('?')[0] || 'home');
 const slug = (s) => (s || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
 export function download(blob, name) {
@@ -323,7 +424,7 @@ export function plotsToCSV(plots) {
   for (const p of plots) for (const s of p.series) for (const pt of s.data) if (pt && isFinite(pt[0]) && isFinite(pt[1])) rows.push([p.title, s.label, pt[0], pt[1]]);
   return rows.map((r) => r.map(q).join(',')).join('\n') + '\n';
 }
-function exportTools(canvas, label) {
+function exportTools(canvas, label, st) {
   const name = () => `${pageId()}-${slug(label || canvas._plots?.[0]?.title) || 'figure'}`;
   const png = h('button.st-btn', { type: 'button', title: t('Save this picture as PNG'), onClick: () => {
     // paint the page background behind transparent stages
@@ -332,9 +433,12 @@ function exportTools(canvas, label) {
     c.toBlob((b) => b && download(b, name() + '.png'), 'image/png');
   } }, 'PNG');
   const csv = h('button.st-btn', { type: 'button', title: t('Save the chart data as CSV'), onClick: () => download(new Blob([plotsToCSV(canvas._plots || [])], { type: 'text/csv' }), name() + '.csv') }, 'CSV');
-  const box = h('div.stage-tools', {}, png, csv);
+  const grow = h('button.st-btn', { type: 'button', title: t('Enlarge this figure'), 'aria-pressed': 'false', onClick: () => st.zoom() }, '⤢');
+  st.onZoom = (on) => { grow.setAttribute('aria-pressed', String(on)); grow.title = on ? t('Back to normal size') : t('Enlarge this figure'); grow.textContent = on ? '✕' : '⤢'; };
+  const box = h('div.stage-tools', {}, grow, png, csv);
   // show the CSV button only when the canvas holds a chart
   const refresh = () => { csv.hidden = !(canvas._plots && canvas._plots.length); };
-  canvas.addEventListener('pointerenter', refresh); box.addEventListener('focusin', refresh); box.addEventListener('pointerenter', refresh);
+  refresh();
+  st.refreshTools = refresh; // called after every redraw
   return box;
 }

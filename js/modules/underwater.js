@@ -88,7 +88,7 @@ export default function mount(root, meta) {
       series: [
         { data: ls.map((l) => [l, Math.exp(-absorption(l, ag) * (st.z + st.r))]), color: '#6ad7ff', label: 'daylight: depth + distance' },
         { data: ls.map((l) => [l, Math.exp(-absorption(l, ag) * 2 * st.r)]), color: '#ffb547', label: 'strobe: twice the distance' },
-      ], legend: true, legendX: 70, legendY: hh - 70,
+      ], legend: true,
     });
   }
 
