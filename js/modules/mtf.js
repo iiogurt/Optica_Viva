@@ -169,7 +169,7 @@ export default function mount(root, meta) {
         { data: xs.map((x) => [x, M.sys(x)]), color: '#ffb547', width: 2.6, label: 'system' },
       ],
       vlines: [{ x: M.nyq, color: '#ff6b6b', label: 'Nyquist' }, ...(isFinite(M.mtf50) ? [{ x: M.mtf50, color: '#ffb547', label: 'MTF50', dy: 14 }] : [])],
-      legend: true, legendX: w - 200,
+      legend: true,
     });
   }
 

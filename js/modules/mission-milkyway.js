@@ -117,7 +117,7 @@ export default function mount(root, meta) {
     });
     plot(ctx, w, hh, {
       title: t('Signal-to-noise of {mu} mag/″² detail vs number of frames', { mu: st.mu.toFixed(1) }), x: { min: 1, max: Ns[Ns.length - 1], label: 'frames' }, y: { min: 0, max: 10, label: 'SNR' },
-      series, hlines: [{ y: 5, color: 'rgba(255,255,255,0.35)', label: 'visible (SNR 5)' }], vlines: [{ x: P.frames, color: 'rgba(255,181,71,0.5)' }], legend: true, legendX: w - 130, legendY: hh - 90,
+      series, hlines: [{ y: 5, color: 'rgba(255,255,255,0.35)', label: 'visible (SNR 5)' }], vlines: [{ x: P.frames, color: 'rgba(255,181,71,0.5)' }], legend: true,
     });
   }
 

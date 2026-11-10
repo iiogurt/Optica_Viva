@@ -91,7 +91,7 @@ export default function mount(root, meta) {
     const P = plot(ctx, w, hh, {
       title: t('Spectral power distribution: {s}', { s: C.S.name }), x: { min: 380, max: 780, label: 'wavelength (nm)' }, y: { min: 0, max: 1.08, label: 'relative power' },
       series: [{ data: LAMBDA.map((l, i) => [l, rf[i]]), color: 'rgba(255,255,255,0.6)', width: 1.4, dash: [5, 3], label: t('reference ({T} K)', { T: C.r.cct.toFixed(0) }) }, { data: LAMBDA.map((l, i) => [l, spd[i]]), color: '#ffffff', width: 2, label: 'test source' }],
-      legend: true, legendX: w - 200, legendY: 34,
+      legend: true,
     });
     // rainbow fill under the test spectrum
     ctx.save();
@@ -233,7 +233,7 @@ export default function mount(root, meta) {
         ...['x̄', 'ȳ', 'z̄'].map((n, c) => ({ data: LAMBDA.map((l, i) => [l, CMF[c][i] / cm]), color: 'rgba(255,255,255,0.35)', width: 1, dash: [4, 3], label: c === 0 ? 'CIE x̄ ȳ z̄ (eye)' : undefined })),
         ...K.sens.map((s, c) => ({ data: LAMBDA.map((l, i) => [l, s[i] / mx]), color: ['#ff6b6b', '#6be3a4', '#6ad7ff'][c], width: 2.2, label: ['R', 'G', 'B'][c] })),
       ],
-      legend: true, legendX: w - 190, legendY: 34,
+      legend: true,
     });
   }
 
@@ -277,7 +277,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Reflectance spectra', x: { min: 380, max: 780, label: 'wavelength (nm)' }, y: { min: 0, max: 1, label: 'reflectance' },
       series: [{ data: LAMBDA.map((l, i) => [l, MM.r1[i]]), color: '#ffffff', width: 2, label: 'original' }, { data: LAMBDA.map((l, i) => [l, MM.r2[i]]), color: '#ffb547', width: 2, label: 'metamer' }],
-      legend: true, legendX: w - 160, legendY: 34,
+      legend: true,
     });
   }
 

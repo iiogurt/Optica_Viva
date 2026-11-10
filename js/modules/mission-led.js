@@ -84,7 +84,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Brightness down the frame (top to bottom)', x: { min: 0, max: 1, label: 'position in the frame' }, y: { min: 1 - span, max: 1 + span, label: 'relative brightness' },
       series: [{ data: rows.map((y) => [y, mainsRow(y)]), color: '#ffb547', label: t('mains {f} Hz', { f: fl }) }, { data: rows.map((y) => [y, pwmRow(y)]), color: '#6ad7ff', label: t('LED PWM {f} Hz', { f: Math.round(st.pwm) }) }],
-      legend: true, legendX: w - 170, legendY: 34,
+      legend: true,
     });
   }
 

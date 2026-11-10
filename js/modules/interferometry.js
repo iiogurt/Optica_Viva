@@ -54,7 +54,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Fringes of the star (both beams combined)', x: { min: F.xs[0] / MAS, max: F.xs[F.xs.length - 1] / MAS, label: 'angle on the sky (mas)' }, y: { min: 0, max: 2.1, label: 'intensity' },
       series: [{ data: F.xs.map((x, i) => [x / MAS, 1 + Math.cos((2 * Math.PI * F.st.B * x) / F.lam)]), color: 'rgba(255,255,255,0.3)', width: 1, dash: [4, 3], label: 'point source' }, { data: F.xs.map((x, i) => [x / MAS, F.I[i]]), color: '#ffb547', width: 2, label: t('{d} mas disk', { d: F.st.theta }) }],
-      legend: true, legendX: w - 170, legendY: 34,
+      legend: true,
     });
   }
   function drawVis(ctx, w, hh) {

@@ -471,7 +471,13 @@ button.term:hover, button.term:focus-visible { color: var(--accent-2); }
 /* Export buttons on every figure */
 .stage-tools { position: absolute; right: 8px; top: 8px; display: flex; gap: 4px; opacity: 0; transition: opacity .15s; z-index: 2; }
 .stage:hover .stage-tools, .stage:focus-within .stage-tools { opacity: 1; }
-@media (hover: none) { .stage-tools { opacity: 0.8; } }
+@media (hover: none) { .stage.tapped .stage-tools { opacity: 0.9; } .stage:not(.tapped) .stage-tools:not(:focus-within) { pointer-events: none; } }
+.stage.reading:not(.zoomed) .stage-tools:not(:focus-within) { opacity: 0; pointer-events: none; }
+/* transient marks above a stage (hover readout), and the enlarged stage */
+.stage canvas.stage-over { position: absolute; left: 0; top: 0; pointer-events: none; }
+.stage.zoomed { position: fixed; z-index: 61; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 94vw; background: #05060a; border-color: var(--line-2); box-shadow: 0 30px 90px rgba(0, 0, 0, 0.8); }
+.stage.zoomed .stage-tools { opacity: 1; }
+.stage-shade { position: fixed; inset: 0; z-index: 60; background: rgba(3, 4, 8, 0.82); backdrop-filter: blur(3px); cursor: zoom-out; }
 .st-btn { padding: 4px 8px; border-radius: 7px; border: 1px solid var(--line-2); background: rgba(16, 19, 29, 0.85); color: var(--fg-dim); font: 600 10.5px/1 var(--font-mono); cursor: pointer; }
 .st-btn:hover, .st-btn:focus-visible { color: var(--fg); border-color: var(--accent-2); }
 

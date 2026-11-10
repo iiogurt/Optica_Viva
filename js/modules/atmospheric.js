@@ -161,7 +161,7 @@ export default function mount(root, meta) {
       x: { min: 0, max: ANTI_MAX, label: 'angle from the antisolar point (°)' }, y: { min: ymax * 1e-3, max: ymax * 1.5, log: true, label: 'luminance (relative)' },
       series: [{ data: th.map((a, i) => [a, Math.max(ymax * 1e-3, Y[i])]), color: '#ffb547', width: 1.8, label: 'Mie theory, sunlight' }],
       vlines: [{ x: rainbowAngle(n, 1), color: 'rgba(255,255,255,0.45)', label: 'primary' }, { x: rainbowAngle(n, 2), color: 'rgba(255,255,255,0.3)', label: 'secondary' }],
-      legend: true, legendX: 70, legendY: 30, padT: 30,
+      legend: true, padT: 30,
     });
   }
 

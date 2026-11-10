@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 468 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 471 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -565,7 +565,7 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P1 · S** **Vendored typefaces**: Fraunces, Inter and JetBrains Mono are served from the site (`vendor/fonts/`), with a true italic for Fraunces. No request leaves the page any more.
 - [x] **P1 · M** **Stage-first laboratory layout**: the picture and its controls start on the first screen and the page tools take one row. *From 1600 px the idea, the things to try, the intuition check and the tour are a column beside the simulation; below that they stay above it in a shorter block (three columns would shrink the picture by a third).*
-- [ ] **P1 · M** **Chart redesign**: larger charts, legends outside the plot area, and a hover readout linked to the picture.
+- [x] **P1 · M** **Chart redesign**: legends outside the plot area, a hover readout on every chart, and any figure enlarged to the window on demand. *The readout is linked to the picture on the PSF page (`st.hover`, `st.mark`, `st.over` in `js/lib/ui.js`); other pages can follow.*
 - [ ] **P1 · L** **Image pipeline**: one shared path that renders at device pixels, shows a fast preview and refines when idle, with one tone curve, dithering, and wide-gamut output where the screen supports it.
 - [ ] **P2 · M** **Live home page**: a thumbnail of the real render on every card, a few featured laboratories shown large, and a hero that can be dragged.
 - [ ] **P2 · M** **Motion**: tween between parameter states and animate page changes, respecting reduced motion.

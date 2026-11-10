@@ -129,7 +129,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Change of the horizontal angle of view (50 mm, S35)', x: { min: 0.3, max: 30, log: true, label: 'focus distance (m)' }, y: { min: -14, max: 2, label: 'Δ angle of view (%)' },
       series: SCHEMES.map(([k, n, c]) => ({ data: us.map((u) => [u / 1000, 100 * breathing(k, F, u, S35)]), color: c, width: 2, label: n })),
-      vlines: [{ x: bctl.state.umin, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: w - 250, legendY: hh - 92,
+      vlines: [{ x: bctl.state.umin, color: 'rgba(255,255,255,0.4)' }], legend: true,
     });
   }
 
@@ -156,7 +156,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: t('T-stop of an f/{N} lens vs number of air–glass surfaces', { N: st.N.toPrecision(2) }), x: { min: 2, max: 40, label: 'air–glass surfaces' }, y: { min: st.N * 0.95, max: st.N * 2.2, label: 'T-stop' },
       series: Object.keys(COATINGS).map((c) => ({ data: ks.map((k) => [k, tStop(st.N, transmission(c, k))]), color: cols[c] || '#fff', width: c === st.coat ? 2.4 : 1.3, label: COATINGS[c].name })),
-      vlines: [{ x: st.k, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: 70, legendY: 34,
+      vlines: [{ x: st.k, color: 'rgba(255,255,255,0.4)' }], legend: true,
     });
   }
 

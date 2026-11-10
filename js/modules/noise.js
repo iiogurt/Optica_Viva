@@ -187,7 +187,7 @@ export default function mount(root, meta) {
         { data: xs.filter((e) => e <= m.clip).map((e) => [e, e / m.noise(e)]), color: '#ffb547', width: 2.4, label: 'total' },
       ],
       vlines: [{ x: m.clip, color: '#ff6b6b', label: 'clip' }],
-      legend: true, legendX: w - 150, legendY: hh - 120,
+      legend: true,
     });
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X(m.eMid), Y(m.snrMid), 5, 0, 7); ctx.fill();
     ctx.font = '10.5px Inter, sans-serif'; ctx.textAlign = 'left'; ctx.fillText(t('18 % grey'), X(m.eMid) + 8, Y(m.snrMid) - 6);
@@ -204,7 +204,7 @@ export default function mount(root, meta) {
       title: 'Dynamic range vs ISO', x: { min: 100, max: 25600, log: true, label: 'ISO' }, y: { min: 2, max: 16, label: 'DR (EV)' },
       series: ['mf', 'ff', 'apsc', 'mft', 'phone'].map((k, i) => ({ data: curve(SENSORS[k]), color: ['#ff9a5a', '#ffffff', '#6be3a4', '#6ad7ff', '#c18cff'][i], width: k === st.sensor ? 2.6 : 1.2, label: SENSORS[k].name })),
       vlines: [{ x: st.iso, color: '#ffb547' }],
-      legend: true, legendX: 70, legendY: hh - 120,
+      legend: true,
     });
   }
 

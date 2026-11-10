@@ -80,7 +80,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Probability of a lucky frame (σ² ≤ 1 rad² after tip-tilt)', x: { min: 3, max: 9, label: 'D / r₀' }, y: { min: 1e-4, max: 1, log: true, label: 'probability' },
       series: [{ data: ds.map((d) => [d, Math.min(1, friedProbability(d))]), color: '#6ad7ff', width: 1.8, dash: [5, 3], label: 'Fried (1978)' }, { data: R.curve.filter((c) => c[1] > 0), color: '#ffb547', width: 0, points: true, r: 4, label: 'simulated (400 frames each)' }],
-      vlines: [{ x: R.st.Dr0, color: 'rgba(255,255,255,0.35)' }], legend: true, legendX: w - 230, legendY: 34,
+      vlines: [{ x: R.st.Dr0, color: 'rgba(255,255,255,0.35)' }], legend: true,
     });
   }
 

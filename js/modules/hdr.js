@@ -87,7 +87,7 @@ export default function mount(root, meta) {
         { data: xs.map((x) => [x, Math.max(0.3, snr(x, times, cam))]), color: '#ffb547', width: 2.2, label: 'merged (inverse-variance)' },
       ],
       bands: [{ x: [0.09, 4], color: 'rgba(106,215,255,0.07)' }, { x: [60, 1500], color: 'rgba(255,181,71,0.07)' }],
-      legend: true, legendX: 70, legendY: 34,
+      legend: true,
     });
   }
 

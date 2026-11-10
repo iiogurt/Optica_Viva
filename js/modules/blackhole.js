@@ -92,7 +92,7 @@ export default function mount(root, meta) {
         { data: Array.from({ length: N }, (_, i) => [xs(i), blurred[row * N + i] / mb]), color: '#6ad7ff', width: 2, label: N_('at the telescope\'s resolution') },
       ],
       vlines: [{ x: -B_CRIT * perM, color: 'rgba(255,255,255,0.35)', label: '' }, { x: B_CRIT * perM, color: 'rgba(255,255,255,0.35)', label: N_('shadow edge') }],
-      legend: true, legendX: 60, legendY: 40, padT: 32,
+      legend: true, padT: 32,
     });
   }
 

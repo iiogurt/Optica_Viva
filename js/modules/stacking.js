@@ -123,7 +123,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: t('SNR after {T} vs sub-exposure length', { T: fmtT(st.T) }), x: { min: 1, max: 900, log: true, label: 'sub-exposure (s)' }, y: { min: 0, max: 1.1, label: 'SNR / SNR without read noise' },
       series: [1, 4, 7, 9].map((b, i) => { const Fs = surfaceRate(BORTLE[b], st.D, st.p, QE); return { data: ts.map((t) => { const N = Math.max(1, Math.round(st.T / t)); return [t, stackSNR(M.Fo, Fs, st.dark, st.sigma, t, N) / ((M.Fo * N * t) / Math.sqrt(N * (M.Fo + Fs + st.dark) * t))]; }), color: ['#6be3a4', '#6ad7ff', '#ffb547', '#ff6b6b'][i], width: b === st.bortle ? 2.4 : 1.3, label: `Bortle ${b}` }; }),
-      vlines: [{ x: st.t, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: w - 130, legendY: hh - 110,
+      vlines: [{ x: st.t, color: 'rgba(255,255,255,0.4)' }], legend: true,
     });
   }
   function drawTot(ctx, w, hh) {
@@ -132,7 +132,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'SNR per pixel vs total integration', x: { min: 300, max: 72000, log: true, label: 'total time (s)' }, y: { min: 0.05, max: 200, log: true, label: 'SNR' },
       series: [1, 4, 7, 9].map((b, i) => { const Fs = surfaceRate(BORTLE[b], st.D, st.p, QE); return { data: Ts.map((T) => [T, stackSNR(M.Fo, Fs, st.dark, st.sigma, st.t, Math.max(1, Math.round(T / st.t)))]), color: ['#6be3a4', '#6ad7ff', '#ffb547', '#ff6b6b'][i], width: b === st.bortle ? 2.4 : 1.3, label: `Bortle ${b}` }; }),
-      vlines: [{ x: st.T, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: 70, legendY: 34,
+      vlines: [{ x: st.T, color: 'rgba(255,255,255,0.4)' }], legend: true,
     });
   }
 

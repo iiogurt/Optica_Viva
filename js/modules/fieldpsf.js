@@ -159,7 +159,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'RMS wavefront error along the field (+x)', x: { min: 0, max: fmax, label: 'field angle (arcmin)' }, y: { min: 1, max: 1e4, log: true, label: 'RMS (nm)' },
       series, hlines: [{ y: (lam / 14) * 1e9, color: 'rgba(120,230,160,0.6)' }], vlines: [{ x: st.field, color: 'rgba(255,255,255,0.25)' }],
-      legend: true, legendX: w - 250, legendY: hh - 112,
+      legend: true,
     });
   }
 

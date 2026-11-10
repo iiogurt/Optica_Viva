@@ -310,7 +310,7 @@ export default function mount(root, meta) {
         { data: [[0, 1], [DF.Rgeo * um, 1], [DF.Rgeo * um, 0], [rmax, 0]], color: 'rgba(255,255,255,0.55)', width: 1.2, dash: [4, 3], label: 'geometric disk' },
         series(DF.pure, 'rgba(193,140,255,0.8)', 'pure defocus, 550 nm', 1.3), series(DF.prof, '#6ad7ff', 'this lens, 550 nm'), series(DF.poly, '#ffb547', 'this lens, 450–650 nm'),
       ],
-      legend: true, legendX: w - ox - 175,
+      legend: true,
     });
     ctx.restore();
   }
@@ -320,7 +320,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Intensity across the bokeh disk (horizontal cut, on axis)', x: { min: -1.15, max: 1.15, label: 'normalised radius' }, y: { min: 0, max: 1.05, label: 'relative intensity' },
       series: [{ data: KS.prof.b, color: '#ffb547', width: 2, label: 'background (behind focus)' }, { data: KS.prof.f, color: '#6ad7ff', width: 2, label: 'foreground (in front)' }],
-      legend: true, legendX: w - 230,
+      legend: true,
     });
   }
 

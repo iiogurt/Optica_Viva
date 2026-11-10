@@ -89,7 +89,7 @@ export default function mount(root, meta) {
       title: t('Probability of a sharp frame at {f} mm', { f: st.f.toFixed(0) }), x: { min: 1e-4, max: 10, log: true, label: 'exposure time (s)' }, y: { min: 0, max: 1.02, label: 'P(sharp)' },
       series: [{ data: R.raw, color: '#ff9cc0', width: 2, label: 'hand-held' }, ...(R.stab ? [{ data: R.stab, color: '#6be3a4', width: 2, label: 'stabilised' }] : [])],
       vlines: [{ x: 1 / st.f, color: 'rgba(255,255,255,0.35)', label: '1/f' }, { x: st.t, color: 'rgba(255,181,71,0.6)', label: 'this shot', dy: 14 }],
-      legend: true, legendX: w - 160, legendY: 34,
+      legend: true,
     });
   }
 

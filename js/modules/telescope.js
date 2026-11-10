@@ -51,7 +51,7 @@ export default function mount(root, meta) {
         { data: L.map((l) => [l, 0.7 * Math.pow(l / 0.5, -0.2)]), color: 'rgba(255,255,255,0.35)', dash: [6, 4], width: 1.4, label: 'ground seeing (r₀ = 15 cm @ 0.5 µm)' },
         ...SCOPES.map((s) => ({ data: L.filter((l) => l >= s.band[0] && l <= s.band[1]).map((l) => [l, (1.22 * l * 1e-6 / s.D) * 206265]), color: s.color, width: 2, label: `${s.name} (${s.D} m)` })),
       ],
-      legend: true, legendX: w - 250, legendY: hh - 175,
+      legend: true,
     });
     ctx.font = '10px Inter, sans-serif';
     for (const c of CAMERAS) {
@@ -68,7 +68,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Why infrared telescopes must be cold: Planck radiance', x: { min: 0.5, max: 300, log: true, label: 'wavelength (µm)' }, y: { min: 1e-10, max: 1e9, log: true, label: 'B_λ (W m⁻² sr⁻¹ µm⁻¹)' },
       series: Ts.map(([T, c, lab], i) => ({ data: L.map((l) => [l, planck(l, T) * 1e-6 * (i === 0 ? 1e-6 : 1)]), color: c, width: 2, label: lab })),
-      legend: true, legendX: w - 220, legendY: 40,
+      legend: true,
     });
   }
   function drawArea(ctx, w, hh) {
@@ -190,7 +190,7 @@ export default function mount(root, meta) {
       title: 'Azimuthally averaged starlight (normalised to the direct peak)', x: { min: 0, max: 30, label: 'separation (λ/D)' }, y: { min: 1e-11, max: 1.5, log: true, label: 'contrast' },
       series: [{ data: C.prof.map((p) => [p[0], p[1]]), color: 'rgba(255,255,255,0.6)', width: 1.6, label: 'no coronagraph' }, { data: C.prof.map((p) => [p[0], p[2]]), color: '#ffb547', width: 2.2, label: 'Lyot coronagraph' }],
       hlines: [{ y: C.st.con, color: '#6be3a4', label: 'planet contrast' }], vlines: [{ x: C.st.sep, color: '#6be3a4', label: 'planet' }, { x: C.st.mask, color: 'rgba(255,255,255,0.35)', label: 'IWA' }],
-      legend: true, legendX: w - 200,
+      legend: true,
     });
   }
   runCoro();

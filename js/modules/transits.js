@@ -148,7 +148,7 @@ export default function mount(root, meta) {
       title: 'Brightness of the star during the transit', x: { min: model[0][0], max: model[model.length - 1][0], label: 'hours from mid-transit' },
       y: { min: lo, max: hi, label: 'change in brightness (ppm)' }, padL: 66,
       series: [{ data: pts.map(([t, f]) => [t, clip((f - 1) * 1e6)]), color: 'rgba(154,161,181,0.5)', points: true, r: pts.length > 400 ? 1.2 : 2, label: 'measurements' }, { data: model.map(([t, f]) => [t, (f - 1) * 1e6]), color: '#ffb547', label: 'model' }],
-      legend: true, legendX: w - 150, legendY: hh - 80,
+      legend: true,
     });
   }
 

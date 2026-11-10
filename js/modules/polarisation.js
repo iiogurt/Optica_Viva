@@ -216,7 +216,7 @@ export default function mount(root, meta) {
         { data: curve(1.5168, 'Rp'), color: '#ff9cc0', width: 1, dash: [4, 3] },
       ],
       vlines: [{ x: brewster(1, N_W) / D2R, color: 'rgba(255,181,71,0.6)', label: 'θB water' }, { x: brewster(1, 1.5168) / D2R, color: 'rgba(255,181,71,0.3)', label: 'BK7', dy: 14 }],
-      legend: true, legendX: 60, legendY: 40,
+      legend: true,
     });
   }
 
@@ -502,7 +502,7 @@ export default function mount(root, meta) {
       title: 'Walk-off vs optic-axis angle', x: { min: 0, max: 90, step: 15, label: 'optic axis to plate normal θ (°)' }, y: { min: 1, max: 200, log: true, label: 'displacement per mm (µm)' },
       series: Object.entries(CRYSTALS).map(([k, c]) => ({ data: th.map((t) => [t, Math.max(1, 1000 * Math.abs(Math.tan(walkOff(c.no, c.ne, t * D2R))))]), color: col[k], width: k === B.st.xtal ? 2.4 : 1.2, label: c.name })),
       vlines: [{ x: B.st.th, color: 'rgba(255,255,255,0.4)' }],
-      legend: true, legendX: 70, legendY: hh - 92,
+      legend: true,
     });
   }
   function drawSpots(ctx, w, hh) {

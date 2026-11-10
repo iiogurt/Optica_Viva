@@ -86,7 +86,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Chromatic difference of refraction (relative to 555 nm)', x: { min: 420, max: 680, label: 'wavelength (nm)' }, y: { min: -1.5, max: 0.6, label: 'refraction (D)' },
       series: [{ data: ls.map((l) => [l, -chromaticDifference(l)]), color: '#ffb547', width: 2.2, label: 'Le Grand eye, water-like media (this model)' }, { data: ls.map((l) => [l, thibos(l) - thibos(555)]), color: '#6ad7ff', width: 1.6, dash: [5, 3], label: 'measured (Thibos et al. 1992 fit)' }],
-      vlines: [{ x: ctl.state.lam, color: 'rgba(255,255,255,0.35)' }], legend: true, legendX: w - 330, legendY: hh - 80,
+      vlines: [{ x: ctl.state.lam, color: 'rgba(255,255,255,0.35)' }], legend: true,
     });
   }
 
@@ -136,7 +136,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: t('Retinal MTF, {p} mm pupil, 555 nm', { p: E.st.p }), x: { min: 0, max: 90, label: 'cycles per degree' }, y: { min: 0, max: 1, label: 'MTF' },
       series: [{ data: freq.map((f) => [f, dl(f)]).filter((q) => q[0] <= 90), color: 'rgba(255,255,255,0.4)', width: 1.2, dash: [4, 3], label: 'diffraction limit' }, { data: freq.map((f, i) => [f, mtf[i]]).filter((q) => q[0] <= 90), color: '#ffb547', width: 2.2, label: 'eye' }],
-      vlines: [{ x: 60, color: 'rgba(107,227,164,0.6)', label: 'cone Nyquist' }], legend: true, legendX: w - 170, legendY: 34,
+      vlines: [{ x: 60, color: 'rgba(107,227,164,0.6)', label: 'cone Nyquist' }], legend: true,
     });
   }
   function drawSweep(ctx, w, hh) {
@@ -144,7 +144,7 @@ export default function mount(root, meta) {
     plot(ctx, w, hh, {
       title: 'Image quality vs pupil diameter', x: { min: 1, max: 8, label: 'pupil diameter (mm)' }, y: { min: 0, max: 1, label: 'value' },
       series: [{ data: E.sweep.map((q) => [q[0], q[1]]), color: '#6ad7ff', width: 1.6, label: 'Strehl ratio' }, { data: E.sweep.map((q) => [q[0], q[2]]), color: '#ffb547', width: 2.2, label: 'MTF at 30 c/deg' }, { data: E.sweep.map((q) => [q[0], q[3]]), color: '#6be3a4', width: 1.6, label: 'MTF at 60 c/deg' }],
-      vlines: [{ x: E.st.p, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: w - 180, legendY: 34,
+      vlines: [{ x: E.st.p, color: 'rgba(255,255,255,0.4)' }], legend: true,
     });
   }
 

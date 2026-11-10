@@ -186,7 +186,7 @@ export default function mount(root, meta) {
       ],
       vlines: [{ x: Math.min(64, Math.max(1.4, S.Nopt)), color: 'rgba(107,227,164,0.7)', label: 'optimum' }, { x: st.N, color: 'rgba(255,255,255,0.4)', label: 'set', dy: 14 }],
       bands: [{ y: [1, PX * 2000], color: 'rgba(255,255,255,0.04)' }],
-      legend: true, legendX: w - 200, legendY: hh - 100,
+      legend: true,
     });
   }
 
@@ -197,7 +197,7 @@ export default function mount(root, meta) {
     series.push({ data: ms.map((m) => [m, 2 * Math.log2(1 + m / S.L.mp)]), color: '#ffb547', width: 2.4, label: t('this lens (m_p = {mp})', { mp: S.L.mp }) });
     plot(ctx, w, hh, {
       title: 'Exposure loss vs magnification', x: { min: 0.05, max: 5, log: true, label: 'magnification m' }, y: { min: 0, max: 7, label: 'stops lost  (N_w = N·2^(ΔEV/2))' },
-      series, vlines: [{ x: S.st.m, color: 'rgba(255,255,255,0.4)' }], legend: true, legendX: 60, legendY: 34,
+      series, vlines: [{ x: S.st.m, color: 'rgba(255,255,255,0.4)' }], legend: true,
     });
   }
 
