@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.33.0] - 2026-11-10
+
 ### Added
 - Bokeh: **your camera, out of focus**. The live camera feed is convolved with the pupil-shaped defocus kernel (iris blades, roundness, spherical aberration, a mirror lens's central obstruction, behind or in front of the focus) in linear light, by FFT in a worker, one frame in flight at a time. Clipped highlights get their brightness back (up to × 40), so lamps bloom into discs. The video stays on the device (`js/lib/cambokeh.js`; the kernel builder moved to `pupilKernel` in `js/lib/bokeh.js`; tested for a flat field staying flat, a point spreading into a disk of the set size with its light conserved, a hexagonal iris, and the highlight curve). The smoke test's live-camera check covers the bokeh page.
 - Detectors in space: **photon by photon**. Single photoelectrons arrive at random times (a Poisson process with exponential gaps) and build the charge ramp step by step, while 30 non-destructive reads, 10 s apart, sample it with read noise and a straight-line fit converges on the flux. Below about 0.5 e⁻ of read noise every electron shows as a step, as in photon-counting sensors. Under *reduce motion* the whole exposure is shown at once (`arrivals`, `countBefore`, `readsFromArrivals` in `js/lib/photons.js`, tested for Poisson counts, exponential gaps and an unbiased fitted slope). This completes the photon-by-photon mode on the noise, stacking, film and detector pages.
@@ -857,7 +859,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.32.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.33.0...HEAD
+[1.33.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.32.0...v1.33.0
 [1.32.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.31.0...v1.32.0
 [1.31.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.30.0...v1.31.0
 [1.30.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.29.0...v1.30.0
