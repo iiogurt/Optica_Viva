@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- Flare: **Fresnel rings at ghost edges**. Each ghost is a defocused image of its limiting aperture; its defocus W₀₂₀ is found from its own rays (least-squares focus shift and slope spread, per wavelength) and matches the paraxial ghost matrices within 2 %. Its edge then follows the knife-edge Fresnel pattern at u = 2√W₀₂₀ (1 − g), averaged exactly over each pixel from a table of its running integral, so small ghosts show coloured rings and ghosts thousands of waves out of focus keep a plain edge; none within 10 waves of focus. Light diffracted into the geometric shadow is kept (flux within 1 %). About 20 % slower on the Pi.
+
+### Changed
+- Flare: ghost irradiance is averaged per vertex over the surrounding triangles (Hullin's vertex averaging) and interpolated across each triangle, removing the small steps between grid cells. Screenshot regenerated.
+
+### Documentation
+- ROADMAP, README and CLAUDE.md: the lab plugin API is set aside by the owner.
+
 ## [1.33.0] - 2026-11-10
 
 ### Added

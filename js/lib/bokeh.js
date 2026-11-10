@@ -28,7 +28,7 @@ export function bokehKernels(o) {
   for (const side of ['bg', 'fg']) for (const field of o.fields) {
     const t = [field[0] / par.efl, field[1] / par.efl];
     const src = side === 'bg' ? { theta: t } : { point: [-t[0] * (o.near + par.zEP), -t[1] * (o.near + par.zEP), -o.near] };
-    const r = renderPaths(sys, { ...src, pairs: [[-1, -1]], basis: o.basis, fit: true, W: o.K, grid: o.grid || 36 });
+    const r = renderPaths(sys, { ...src, pairs: [[-1, -1]], basis: o.basis, fit: true, W: o.K, grid: o.grid || 36, ringing: false }); // geometric: the page's FFT panel shows the diffraction
     kernels.push({ side, field, rgb: r.rgb, mmW: r.mmW, center: r.center, flux: r.stats.flux[0] || 0 });
   }
   return { zs, zInf: par.zImage, efl: par.efl, fnum: par.fnum, kernels };

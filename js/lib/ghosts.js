@@ -114,7 +114,7 @@ export function makeGhostTracer(sys, li) {
     return q;
   };
   // one flat loop over plain locals: closures over mutable numbers would box every update
-  const out = new Float64Array(4);
+  const out = new Float64Array(6); // x, y on the sensor, aperture gauge, reflectance, slopes dx/dz, dy/dz
   return function traceGhost(i, j, x0, y0, z0, ux, uy, uz, pts = null) {
     const { ks, n1, n2, rf } = sequence(i, j);
     let px = x0, py = y0, pz = z0, dx = ux, dy = uy, dz = uz, nx = 0, ny = 0, nz = -1, g = 0, R = 1;
@@ -162,7 +162,7 @@ export function makeGhostTracer(sys, li) {
     }
     if (dz <= 0) return null;
     const t = (sys.zImg - pz) / dz;
-    out[0] = px + t * dx; out[1] = py + t * dy; out[2] = g; out[3] = R;
+    out[0] = px + t * dx; out[1] = py + t * dy; out[2] = g; out[3] = R; out[4] = dx / dz; out[5] = dy / dz;
     if (pts) pts.push(out[0], out[1], sys.zImg);
     return out;
   };
@@ -200,7 +200,7 @@ export function renderPaths(sys, o) {
     }
     return t(i, j, x, y, zL, ux, uy, uz);
   };
-  const stats = { paths: 0, culled: 0, rays: 0, triangles: 0, flux: [] };
+  const stats = { paths: 0, culled: 0, rays: 0, triangles: 0, flux: [], defocus: [] };
   // 1. coarse pass per path: the part of the launch plane that reaches the sensor along it, the
   //    extent of its spot, and an estimate of its peak irradiance (faint paths are skipped)
   const cX = new Float64Array((C + 1) ** 2), cY = new Float64Array(cX.length), cR = new Float64Array(cX.length), cOk = new Uint8Array(cX.length);
@@ -234,16 +234,19 @@ export function renderPaths(sys, o) {
     stats.paths++;
     const x0 = e.x0 - e.dc, y0 = e.y0 - e.dc, gx = (e.x1 - e.x0 + 2 * e.dc) / G, gy = (e.y1 - e.y0 + 2 * e.dc) / G;
     const X = new Float64Array(NV * nl), Y = new Float64Array(X.length), Gg = new Float64Array(X.length), Rr = new Float64Array(X.length), ok = new Uint8Array(X.length);
+    const Tx = new Float64Array(X.length), Ty = new Float64Array(X.length);
     sys.lambdas.forEach((_, li) => {
       const t = tracers[li];
       for (let b = 0, q = li * NV; b <= G; b++) for (let a = 0; a <= G; a++, q++) {
         const r = shoot(t, i, j, x0 + a * gx, y0 + b * gy);
         stats.rays++;
         if (!r) continue;
-        ok[q] = 1; X[q] = r[0]; Y[q] = r[1]; Gg[q] = r[2]; Rr[q] = r[3] * wt;
+        ok[q] = 1; X[q] = r[0]; Y[q] = r[1]; Gg[q] = r[2]; Rr[q] = r[3] * wt; Tx[q] = r[4]; Ty[q] = r[5];
       }
     });
-    return { i, j, X, Y, Gg, Rr, ok, aSrc: (gx * gy) / 2 };
+    // defocus of the ghost at each wavelength, in waves, for the Fresnel ringing at its edge
+    const Wl = sys.lambdas.map((l, li) => { const w = o.ringing === false ? 0 : ghostDefocus(X, Y, Tx, Ty, Gg, ok, li * NV, NV, l); return w >= RING_MIN ? w : 0; });
+    return { i, j, X, Y, Gg, Rr, ok, Wl, aSrc: (gx * gy) / 2 };
   });
   // the sensor window
   let mmW = o.mmW || 36, mmH = o.mmH || 24, center = o.center || [0, 0];
@@ -257,25 +260,32 @@ export function renderPaths(sys, o) {
   const W = o.W || 360, H = Math.round((W * mmH) / mmW), mmpx = mmW / W, pxA = mmpx * mmpx, rgb = new Float32Array(W * H * 3);
   // 3. rasterise each path's triangles at every wavelength
   for (const f of fine) {
-    if (!f) { stats.flux.push(0); continue; }
+    if (!f) { stats.flux.push(0); stats.defocus.push(0); continue; }
+    stats.defocus.push(f.Wl[lmid]);
     let pathFlux = 0;
-    const { X, Y, Gg, Rr, ok, aSrc } = f;
+    const { X, Y, Gg, Rr, ok, Wl, aSrc } = f;
     for (let q = 0; q < X.length; q++) if (ok[q]) { X[q] = (X[q] - center[0]) / mmpx + W / 2; Y[q] = H / 2 - (Y[q] - center[1]) / mmpx; }
+    const Ev = new Float64Array(NV), Fs = new Float64Array(NV), As = new Float64Array(NV);
     for (let li = 0; li < nl; li++) {
-      const [cr, cg, cb] = basis[li], off = li * NV;
-      for (let b = 0; b < G; b++) for (let a = 0; a < G; a++) {
-        const q = off + b * (G + 1) + a;
-        for (let tri = 0; tri < 2; tri++) {
-          const p0 = q, p1 = tri ? q + G + 2 : q + 1, p2 = tri ? q + G + 1 : q + G + 2;
-          if (!ok[p0] || !ok[p1] || !ok[p2]) continue;
-          const g0 = Gg[p0], g1 = Gg[p1], g2 = Gg[p2];
-          if (g0 >= 1 && g1 >= 1 && g2 >= 1) continue;
-          stats.triangles++;
-          const flux = ((Rr[p0] + Rr[p1] + Rr[p2]) / 3) * aSrc;
-          const d = splat(rgb, W, H, X[p0], Y[p0], g0, X[p1], Y[p1], g1, X[p2], Y[p2], g2, flux, pxA, cr, cg, cb);
-          if (li === lmid) pathFlux += d;
-        }
+      // with ringing, light reaches into the geometric shadow down to u = −4
+      const [cr, cg, cb] = basis[li], off = li * NV, gMax = Wl[li] ? 1 + 4 / (2 * Math.sqrt(Wl[li])) : 1;
+      // irradiance per vertex: the flux of the triangles around it over their image area (Hullin's
+      // vertex averaging), interpolated across each triangle so the cells leave no steps
+      if (o.smooth !== false) {
+        Fs.fill(0); As.fill(0);
+        eachTriangle(G, off, ok, Gg, gMax, (p0, p1, p2) => {
+          const a = Math.abs((X[p1] - X[p0]) * (Y[p2] - Y[p0]) - (X[p2] - X[p0]) * (Y[p1] - Y[p0])) / 2, fl = ((Rr[p0] + Rr[p1] + Rr[p2]) / 3) * aSrc;
+          for (const p of [p0, p1, p2]) { Fs[p - off] += fl; As[p - off] += a; }
+        });
+        for (let v = 0; v < NV; v++) Ev[v] = As[v] > 0 ? Fs[v] / (As[v] * pxA) : 0;
       }
+      eachTriangle(G, off, ok, Gg, gMax, (p0, p1, p2) => {
+        stats.triangles++;
+        const flux = ((Rr[p0] + Rr[p1] + Rr[p2]) / 3) * aSrc;
+        const ev = o.smooth !== false ? [Ev[p0 - off], Ev[p1 - off], Ev[p2 - off]] : null;
+        const d = splat(rgb, W, H, X[p0], Y[p0], Gg[p0], X[p1], Y[p1], Gg[p1], X[p2], Y[p2], Gg[p2], flux, pxA, cr, cg, cb, ev, Wl[li]);
+        if (li === lmid) pathFlux += d;
+      });
     }
     stats.flux.push(pathFlux);
   }
@@ -283,10 +293,80 @@ export function renderPaths(sys, o) {
 }
 export const renderGhosts = renderPaths;
 
+// The two triangles of every grid cell whose corners all landed and that are not entirely beyond
+// gauge gMax (1: the aperture's geometric edge).
+function eachTriangle(G, off, ok, Gg, gMax, fn) {
+  for (let b = 0; b < G; b++) for (let a = 0; a < G; a++) {
+    const q = off + b * (G + 1) + a;
+    for (let tri = 0; tri < 2; tri++) {
+      const p0 = q, p1 = tri ? q + G + 2 : q + 1, p2 = tri ? q + G + 1 : q + G + 2;
+      if (!ok[p0] || !ok[p1] || !ok[p2]) continue;
+      if (Gg[p0] >= gMax && Gg[p1] >= gMax && Gg[p2] >= gMax) continue;
+      fn(p0, p1, p2);
+    }
+  }
+}
+
+// Below 10 waves of defocus a ghost is too close to focus for the knife-edge picture: no rings.
+export const RING_MIN = 10;
+
+// Defocus W₀₂₀ of a ghost (waves at lam nm), treating it as a defocused image of its limiting
+// aperture: the rays inside the aperture would meet Δz beyond the sensor (least squares on
+// x + Δz·dx/dz), their slopes spread as s·g with the gauge g, and W₀₂₀ = Δz·s²/2.
+export function ghostDefocus(X, Y, Tx, Ty, Gg, ok, off, n, lam) {
+  let c = 0, mx = 0, my = 0, mtx = 0, mty = 0;
+  for (let q = off; q < off + n; q++) if (ok[q] && Gg[q] < 1) { c++; mx += X[q]; my += Y[q]; mtx += Tx[q]; mty += Ty[q]; }
+  if (c < 8) return 0;
+  mx /= c; my /= c; mtx /= c; mty /= c;
+  let xt = 0, tt = 0, sg = 0, gg = 0;
+  for (let q = off; q < off + n; q++) if (ok[q] && Gg[q] < 1) {
+    const ax = X[q] - mx, ay = Y[q] - my, bx = Tx[q] - mtx, by = Ty[q] - mty;
+    xt += ax * bx + ay * by; tt += bx * bx + by * by; sg += Math.hypot(bx, by) * Gg[q]; gg += Gg[q] * Gg[q];
+  }
+  if (!(tt > 0) || !(gg > 0)) return 0;
+  const dz = -xt / tt, sl = sg / gg;
+  return Math.abs(dz) * sl * sl / 2 / (lam * 1e-6);
+}
+
+// Fresnel integrals C(u), S(u) (Abramowitz & Stegun 7.3.32–33 auxiliary functions, |ε| < 2·10⁻³)
+// and the knife-edge intensity ½[(C + ½)² + (S + ½)²], 1 deep in the light, ¼ on the edge.
+export function fresnelCS(u) {
+  const x = Math.abs(u), f = (1 + 0.926 * x) / (2 + 1.792 * x + 3.104 * x * x), g = 1 / (2 + 4.142 * x + 3.492 * x * x + 6.67 * x * x * x);
+  const ph = (Math.PI * x * x) / 2, sn = Math.sin(ph), cs = Math.cos(ph), C = 0.5 + f * sn - g * cs, S = 0.5 - f * cs - g * sn;
+  return u < 0 ? [-C, -S] : [C, S];
+}
+export function knifeEdge(u) { const [C, S] = fresnelCS(u); return 0.5 * ((C + 0.5) ** 2 + (S + 0.5) ** 2); }
+
+// The knife-edge pattern averaged over a pixel spanning du in u, from a table of its running
+// integral Φ(u) = ∫₋₄ᵘ I (trapezoids, step 0.002): (Φ(u + du/2) − Φ(u − du/2)) / du. The light
+// beyond u = −4 is dropped (under 2 % of the diffracted light); past u = 24 the rings are
+// counted as their mean, 1.
+const KE0 = -4, KE1 = 24, KEH = 0.002, KEN = Math.round((KE1 - KE0) / KEH);
+let KEPHI = null;
+function phi(u) {
+  if (!KEPHI) {
+    KEPHI = new Float64Array(KEN + 1);
+    let prev = knifeEdge(KE0);
+    for (let i = 1; i <= KEN; i++) { const v = knifeEdge(KE0 + i * KEH); KEPHI[i] = KEPHI[i - 1] + 0.5 * KEH * (prev + v); prev = v; }
+  }
+  if (u <= KE0) return 0;
+  if (u >= KE1) return KEPHI[KEN] + (u - KE1);
+  const x = (u - KE0) / KEH, i = Math.floor(x), f = x - i;
+  return KEPHI[i] + f * (KEPHI[i + 1] - KEPHI[i]);
+}
+export function knifeEdgePixel(u, du) {
+  if (du < 1e-3) return knifeEdge(u);
+  return (phi(u + du / 2) - phi(u - du / 2)) / du;
+}
+
+
 // Deposit a triangle carrying `flux` (mm² · E_source): irradiance flux/area on every pixel whose
-// centre it covers, weighted by the anti-aliased aperture mask (interpolated gauge < 1).
-// Sub-pixel triangles go to their centroid pixel. Returns the flux actually deposited.
-function splat(rgb, W, H, x0, y0, g0, x1, y1, g1, x2, y2, g2, flux, pxA, cr, cg, cb) {
+// centre it covers (or, with `ev`, the vertex irradiances interpolated across it), weighted by the
+// aperture mask. Without ringing the mask is the anti-aliased edge of the interpolated gauge;
+// with the ghost's defocus Wd (waves) it is the knife-edge Fresnel pattern at u = 2√Wd (1 − g),
+// averaged exactly over the pixel, which becomes the plain edge once the rings are finer than a
+// pixel. Sub-pixel triangles go to their centroid pixel. Returns the flux actually deposited.
+function splat(rgb, W, H, x0, y0, g0, x1, y1, g1, x2, y2, g2, flux, pxA, cr, cg, cb, ev = null, Wd = 0) {
   const A2 = (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0), area = Math.abs(A2) / 2; // px²
   if (area < 1) {
     // fraction inside the aperture, from where g = 1 falls within the triangle's gauge range
@@ -302,7 +382,8 @@ function splat(rgb, W, H, x0, y0, g0, x1, y1, g1, x2, y2, g2, flux, pxA, cr, cg,
   const inv = 1 / A2;
   const gxp = ((g1 - g0) * (y2 - y0) - (g2 - g0) * (y1 - y0)) * inv, gyp = ((g2 - g0) * (x1 - x0) - (g1 - g0) * (x2 - x0)) * inv;
   const aa = 1 / Math.max(1e-9, Math.hypot(gxp, gyp));
-  const E = flux / (area * pxA);
+  const E = flux / (area * pxA), k = 2 * Math.sqrt(Wd), du = k / aa; // u per pixel
+  const ring = Wd > 0 && du < 8; // coarser than that, the pixel average is the plain edge
   const xa = Math.max(0, Math.floor(Math.min(x0, x1, x2))), xb = Math.min(W - 1, Math.ceil(Math.max(x0, x1, x2)));
   const ya = Math.max(0, Math.floor(Math.min(y0, y1, y2))), yb = Math.min(H - 1, Math.ceil(Math.max(y0, y1, y2)));
   let dep = 0;
@@ -315,12 +396,16 @@ function splat(rgb, W, H, x0, y0, g0, x1, y1, g1, x2, y2, g2, flux, pxA, cr, cg,
       const w0 = ((x1 - px) * (y2 - py) - (x2 - px) * (y1 - py)) * inv, w1 = ((x2 - px) * (y0 - py) - (x0 - px) * (y2 - py)) * inv, w2 = 1 - w0 - w1;
       if (w0 < 0 || w1 < 0 || w2 < 0) continue;
       const gp = w0 * g0 + w1 * g1 + w2 * g2;
-      const m = Math.min(1, Math.max(0, 0.5 + (1 - gp) * aa));
+      let m;
+      if (ring) {
+        const u = k * (1 - gp);
+        m = u - du / 2 >= KE1 ? 1 : u + du / 2 <= KE0 ? 0 : knifeEdgePixel(u, du);
+      } else m = Math.min(1, Math.max(0, 0.5 + (1 - gp) * aa));
       if (!m) continue;
-      const v = E * m, q = (y * W + x) * 3;
+      const e = ev ? w0 * ev[0] + w1 * ev[1] + w2 * ev[2] : E, v = e * m, q = (y * W + x) * 3;
       rgb[q] += v * cr; rgb[q + 1] += v * cg; rgb[q + 2] += v * cb;
-      dep += m;
+      dep += e * m;
     }
   }
-  return dep * E * pxA;
+  return dep * pxA;
 }
