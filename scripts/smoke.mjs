@@ -210,6 +210,22 @@ try {
     console.log(`${wide.length ? '✗' : '✓'} no page-wide overflow at 375 and 320 px${wide.length ? '  ' + wide.join(' | ') : ''}`);
     if (wide.length) failed++;
   }
+  // the simulation starts on the first screen: beside the idea on wide screens, under a short idea otherwise
+  {
+    const bad = [];
+    const at = `(() => { const r = (q) => document.querySelector(q)?.getBoundingClientRect(); const l = r('.lab'), i = r('.rung-idea'); return l && i ? { top: Math.round(l.top + scrollY), beside: i.right <= l.left && Math.abs(i.top - l.top) < 40 } : null; })()`;
+    for (const id of ['psf', 'dof', 'flare', 'blackhole']) {
+      for (const [w, h, max, beside] of [[1920, 1080, 260, true], [1440, 900, 600, false]]) {
+        await page.size(w, h);
+        await page.goto(site.url + '#/' + id, 2500);
+        const r = await page.eval(at);
+        if (!r || r.top > max || r.beside !== beside) bad.push(`${id} at ${w}: ${JSON.stringify(r)}`);
+      }
+    }
+    await page.size(1440, 1200);
+    console.log(`${bad.length ? '✗' : '✓'} the simulation starts on the first screen at 1920 and 1440 px${bad.length ? '  ' + bad.join(' | ') : ''}`);
+    if (bad.length) failed++;
+  }
   // guided tours: each one starts from its link and plays to the end; every select it sets must hold the value
   const { TOURS } = await import('../js/lib/tours.js');
   for (const t of TOURS) {

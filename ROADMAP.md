@@ -564,7 +564,7 @@ Candidates, in order of how much the third dimension adds:
 *Goal: show the simulations as well as they are computed. From a visual review of the home page, four laboratories, the gallery and a phone view in November 2026; order agreed with the owner (2026-11-10): the first three items first.*
 
 - [x] **P1 · S** **Vendored typefaces**: Fraunces, Inter and JetBrains Mono are served from the site (`vendor/fonts/`), with a true italic for Fraunces. No request leaves the page any more.
-- [ ] **P1 · M** **Stage-first laboratory layout**: the picture and its controls fill the first screen, the plain-words idea sits beside them, and the page tools take one row.
+- [x] **P1 · M** **Stage-first laboratory layout**: the picture and its controls start on the first screen and the page tools take one row. *From 1600 px the idea, the things to try, the intuition check and the tour are a column beside the simulation; below that they stay above it in a shorter block (three columns would shrink the picture by a third).*
 - [ ] **P1 · M** **Chart redesign**: larger charts, legends outside the plot area, and a hover readout linked to the picture.
 - [ ] **P1 · L** **Image pipeline**: one shared path that renders at device pixels, shows a fast preview and refines when idle, with one tone curve, dithering, and wide-gamut output where the screen supports it.
 - [ ] **P2 · M** **Live home page**: a thumbnail of the real render on every card, a few featured laboratories shown large, and a hero that can be dragged.
