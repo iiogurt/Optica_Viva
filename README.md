@@ -378,7 +378,7 @@ A lake scene **rendered per pixel in Stokes vectors**. Skylight from a single-sc
 **Flare, ghosts & coatings** · `#/flare`<br>
 <img src="docs/screenshots/flare.webp" alt="Sun flare with heptagonal ghosts and diffraction starburst">
 
-**Real-ray ghost tracing** (Hullin et al.'s full method) of every two-reflection path through the real Double-Gauss and Cooke lenses, at 8 wavelengths: aberrated, vignetted ghosts with caustics, with angle-dependent coating reflectance and total internal reflection. Runs in the worker, with an instant paraxial preview while you drag. Coatings are solved by the transfer-matrix method (uncoated, MgF₂, QHQ and graded-index moth-eye). Drag the sun. A **3-D view** draws the exact paths of the three brightest ghosts for the sun's position, bouncing back at one surface and forward again at another, with their spots on the sensor and their brightness relative to the sun.
+**Real-ray ghost tracing** (Hullin et al.'s full method) of every two-reflection path through the real Double-Gauss and Cooke lenses, at 8 wavelengths: aberrated, vignetted ghosts with caustics, with angle-dependent coating reflectance and total internal reflection. Irradiance is interpolated from the vertices (no per-cell steps), and each ghost's edge carries **Fresnel rings** from its own defocus W₀₂₀, in colour because it differs per wavelength. Runs in the worker, with an instant paraxial preview while you drag. Coatings are solved by the transfer-matrix method (uncoated, MgF₂, QHQ and graded-index moth-eye). Drag the sun. A **3-D view** draws the exact paths of the three brightest ghosts for the sun's position, bouncing back at one surface and forward again at another, with their spots on the sensor and their brightness relative to the sun.
 
 </td>
 <td width="50%" valign="top">
@@ -1079,6 +1079,8 @@ The numerical core was checked against published or analytically known values. E
 | Optimal colours (colour solid) | every band + its complement = white; all 14 test colours inside under D65, A and HP1 | Schrödinger 1920, MacAdam 1935 |
 | G-tilt variance per axis, Kolmogorov (3 apertures) | within 1 % | 0.1706 (λ/D)² (D/r₀)^5/3 (Tyler 1994) |
 | G-tilt maps (12 screens) against their own frequency grid | within 6 % | Σ λ²f<sub>x</sub>² Φ(f) [2J₁(πDf)/(πDf)]² Δf² |
+| Ghost defocus W₀₂₀ from real rays (3 paths, Double-Gauss) | within 2 % | paraxial ghost matrices, A·C·y²/2 |
+| Knife-edge Fresnel pattern | C(1), S(1) within 2·10⁻³; ¼ on the edge; first fringe 1.370 at u = 1.217 | Abramowitz & Stegun 7.3; Born & Wolf, ch. 8 |
 | Zernike fitting error after 21 modes, D/r₀ = 10 (24 phase screens) | within 15 % of Noll | Δ₂₁ = 0.0208 (D/r₀)^5/3 rad² (Noll 1976) |
 | Shack–Hartmann reconstruction of Z₄, Z₇, Z₁₁, Z₂₂ | coefficients within 4 %, cross-talk < 6 % | input mode |
 | Closed AO loop (10 × 10 lenslets, 35 modes, bright star) | residual within 0.8–1.6 × the Noll fitting error | σ<sub>fit</sub> = √Δ₃₆ (D/r₀)^5/6 |
@@ -1117,7 +1119,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Lab | Approximation | Consequence |
 |---|---|---|
 | Ray tracer (PSF) | Scalar Debye integral over the exit-pupil reference sphere, pupil sampled in direction cosines from the image point | Fresnel losses and the obliquity factor neglected; the pupil map is a least-squares quartic |
-| Flare | Real-ray ghosts at 8 wavelengths on a 33 × 33 ray grid; diffraction at the iris only in the source's starburst | Ghost edges are geometric (no Fresnel ringing); ghosts below 10⁻⁶ of the source irradiance are skipped |
+| Flare | Real-ray ghosts at 8 wavelengths on a 33 × 33 ray grid; diffraction at the iris only in the source's starburst | Fresnel ringing at ghost edges treats each edge locally as a straight knife edge in a purely defocused wave (none within 10 waves of focus); ghosts below 10⁻⁶ of the source irradiance are skipped |
 | Bokeh | Geometric optics for the scene kernels; FFT diffraction of the traced pupil for single small disks | Scene disks have no Fresnel ringing; drawn on a 3 × 3 grid of field positions; dispersion of the OPD neglected in the diffraction panel |
 | Depth of field, tilt-shift | Thin-lens model; exact disk kernels, blended between 11 radii in tilt-shift | Blur radius interpolated between stack levels in tilt-shift; disks above r = 8 px blurred at reduced resolution (edge softer by ≤ r/4 px) |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |
@@ -1182,7 +1184,7 @@ Completed and planned milestones are tracked in **[ROADMAP.md](ROADMAP.md)**, to
 | ✅ **v1.18** | 431-glass SCHOTT, OHARA and CDGM catalogue with a glass-map picker, decenter and tilt tolerancing, interface in German, French and Spanish |
 | ✅ **v1.19** | Controls, readouts and captions in German, French and Spanish; parallel ray casters and a streamed seeing animation (no more freezes on a Raspberry Pi 4) |
 | ✅ **v1.20** | 3-D views (WebGL 2): skew rays through real lenses, wavefront and PSF reliefs, electric field and Poincaré sphere, Scheimpflug planes |
-| **v2.0** | Translated explanations, lab plugin API |
+| **v2.0** | Translated explanations |
 
 ---
 

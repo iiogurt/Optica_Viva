@@ -65,7 +65,7 @@ flowchart LR
     end
     subgraph Next["Planned"]
         direction TB
-        N12["more 3-D views"] --> N7["v2.0 translated text · plugin API"] --> N10["MTF validation<br/>(needs data)"]
+        N12["more 3-D views"] --> N7["v2.0 translated text"] --> N10["MTF validation<br/>(needs data)"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -412,7 +412,7 @@ A technical validation of v1.31.0 ([#214](https://github.com/iiogurt/Optica_Viva
 - [x] **P2 · M** Exact disk kernel in tilt-shift and DoF (shares the v1.1 blur code). *Anti-aliased pillbox from per-row prefix sums, downsampled above r = 8 px; Vogel taps remain only for very large near cards in DoF.*
 - [ ] **P3 · L** **Spectral scene renderer**: render a whole scene per wavelength through the PSF, the colour-matching functions and the sensor's spectral response.
 - [x] **P3 · M** Polychromatic ghosts with dispersion inside the paraxial and real-ray models. *Both models trace each of the 8 wavelengths with its own indices and coating reflectance.*
-- [ ] **P3 · M** Smooth ghost irradiance: interpolate per-vertex irradiance across the triangles (Hullin's vertex averaging) to remove the < 1 % per-cell steps, and add Fresnel ringing at ghost edges.
+- [x] **P3 · M** Smooth ghost irradiance: interpolate per-vertex irradiance across the triangles (Hullin's vertex averaging) to remove the < 1 % per-cell steps, and add Fresnel ringing at ghost edges. *Each ghost's defocus W₀₂₀ comes from its rays and matches the paraxial matrices within 2 %; the edge is a pixel-averaged knife-edge pattern (v1.34).*
 
 ### v1.6 New laboratories: photography & cinema
 
@@ -567,7 +567,7 @@ Candidates, in order of how much the third dimension adds:
 - [x] **P3 · M** **Installable PWA** with service-worker caching (fonts included) (#111).
 - [ ] **P3 · L** **Internationalisation**, starting with the UI strings, then the theory text. *The interface is done: English, German, French and Spanish for navigation, laboratory titles and descriptions, page chrome, tours, exercises, the home page, and every control label, option, hint, readout name, figure caption and live-calculation title (`js/lib/i18n.js`, `js/locales/`, `test/i18n.test.mjs`). Since then the laboratories' own buttons, their status, result and error notes, the gear page's instructions and the prescription editor's help. Chart titles, axis labels, marker labels and legends written as plain strings are translated by `plot()` itself (333 strings), and so are the chart titles and legends that carry values (as `t('… {x} …')`) and the names in the shared tables (sensor formats, coatings, crystals, projections), which also translates the menus that list them. The 3-D views' labels and the text drawn on canvases are translated too. So are all 63 live-calculation sentences and the readouts built from values. The catalogue's frame, group titles and all 229 entry names and descriptions are translated. Open: the explanations (the laboratories' and the catalogue's longer texts), which need the owner's go-ahead.*
 - [x] **P3 · M** **Embed mode** (`?embed=1`) for courses and blogs (#110).
-- [ ] **P3 · L** Lab plugin API and documentation site generated from module metadata.
+- [ ] ~~**P3 · L** Lab plugin API and documentation site generated from module metadata.~~ *Set aside by the owner (2026-11-10).*
 
 ---
 
@@ -578,7 +578,6 @@ Ideas worth keeping but not yet scheduled:
 - *(from v1.2)* **WebGPU compute path** for FFTs, phase screens and per-pixel ray casting, with a mandatory CPU fallback; waits until the Raspberry Pi 4 or the CI runners expose a WebGPU adapter to test it on.
 - *(from v1.3)* Traced relative illumination across the field (real-ray pupil area and cos⁴ projection) in the ray tracer.
 - *(from v1.5)* **Spectral scene renderer**: render a whole scene per wavelength through the PSF, the colour-matching functions and the sensor's spectral response.
-- *(from v1.5)* Smooth ghost irradiance (Hullin's vertex averaging) and Fresnel ringing at ghost edges.
 
 - *(from v1.6 colour science)* TLCI-2012 (EBU camera model) and ANSI/IES TM-30 fidelity and gamut indices (99 colour evaluation samples).
 - *(from v1.7 spectroscopy)* Integral-field unit simulation: image slicer reformatting a galaxy field into a long slit and reconstructing the data cube.
