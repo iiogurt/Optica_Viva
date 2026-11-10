@@ -585,7 +585,7 @@ A **diffraction model of the Shack–Hartmann sensor**: one FFT spot per lenslet
 **Detector physics in space** · `#/detectors`<br>
 <img src="docs/screenshots/detectors.webp" alt="Up-the-ramp reads with a cosmic-ray jump and the CDS, least-squares and jump-aware fits; slope noise vs number of reads" width="70%">
 
-**Up-the-ramp sampling** of infrared arrays: CDS vs least-squares slopes with the exact correlated-noise variance, and **cosmic-ray jump detection**. Also **inter-pixel capacitance** (charge conserved, variance hidden, gain biased), **charge-transfer inefficiency** trails in a radiation-damaged CCD, and **persistence**.
+**Up-the-ramp sampling** of infrared arrays: CDS vs least-squares slopes with the exact correlated-noise variance, and **cosmic-ray jump detection**. Also **inter-pixel capacitance** (charge conserved, variance hidden, gain biased), **charge-transfer inefficiency** trails in a radiation-damaged CCD, and **persistence**. **Photon by photon**: single photoelectrons arrive at random times and build the ramp step by step while the reads sample it; below about 0.5 e⁻ of read noise every electron shows as a step (photon counting).
 
 </td>
 </tr>
@@ -938,7 +938,7 @@ Optica_Viva/
 │   │   ├── ifilter.js         Interference filters in converging beams: angle shift, cone average, pre-shift
 │   │   ├── interferometry.js  Visibility of extended sources, array u-v coverage, dirty beam/image, Högbom CLEAN
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
-│   │   ├── photons.js         Photon by photon: Poisson arrivals on a test scene, sub-exposures with read noise, measured SNR
+│   │   ├── photons.js         Photon by photon: Poisson arrivals on a test scene, sub-exposures with read noise, measured SNR, photoelectron arrival times and the reads of a ramp
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── survey.js          Survey mission: DORI pixel densities, drone GSD, shutter and overlap
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
