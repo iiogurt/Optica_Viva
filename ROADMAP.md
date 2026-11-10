@@ -74,10 +74,10 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 59 pages, including 9 missions and the reference pages | see Planned milestones |
-| Catalogue entries | 228, each with details and a worked example | link every new lab |
+| Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
+| Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 382 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 465 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -410,7 +410,7 @@ A technical validation of v1.31.0 ([#214](https://github.com/iiogurt/Optica_Viva
 - [x] **P2 · L** **Bokeh from the traced lens**: defocus kernels built from real rays of the chosen prescription, including LoCA rims (magenta and green) and field-dependent cat's eyes. *Default bokeh model; 18 kernels in the worker; validated for size, flux, SA and colour order.*
 - [x] **P2 · M** **Diffraction-aware bokeh**: Fresnel edge ripples for small disks via the defocused-PSF FFT path. *Traced pupil + defocus, 5 wavelengths, compared with pure defocus; validated against sinc²(W₀₂₀/λ).*
 - [x] **P2 · M** Exact disk kernel in tilt-shift and DoF (shares the v1.1 blur code). *Anti-aliased pillbox from per-row prefix sums, downsampled above r = 8 px; Vogel taps remain only for very large near cards in DoF.*
-- [ ] **P3 · L** **Spectral scene renderer**: render a whole scene per wavelength through the PSF, the colour-matching functions and the sensor's spectral response.
+- [x] **P3 · L** **Spectral scene renderer**: render a whole scene per wavelength through the PSF, the colour-matching functions and the sensor's spectral response. *The spectral camera (`#/spectral`, `js/lib/spectral.js`): 16 bands, the traced lens PSF and lateral colour per band, the CIE observer against a camera with white balance and a fitted matrix (v1.35).*
 - [x] **P3 · M** Polychromatic ghosts with dispersion inside the paraxial and real-ray models. *Both models trace each of the 8 wavelengths with its own indices and coating reflectance.*
 - [x] **P3 · M** Smooth ghost irradiance: interpolate per-vertex irradiance across the triangles (Hullin's vertex averaging) to remove the < 1 % per-cell steps, and add Fresnel ringing at ghost edges. *Each ghost's defocus W₀₂₀ comes from its rays and matches the paraxial matrices within 2 %; the edge is a pixel-averaged knife-edge pattern (v1.34).*
 
@@ -577,7 +577,6 @@ Ideas worth keeping but not yet scheduled:
 
 - *(from v1.2)* **WebGPU compute path** for FFTs, phase screens and per-pixel ray casting, with a mandatory CPU fallback; waits until the Raspberry Pi 4 or the CI runners expose a WebGPU adapter to test it on.
 - *(from v1.3)* Traced relative illumination across the field (real-ray pupil area and cos⁴ projection) in the ray tracer.
-- *(from v1.5)* **Spectral scene renderer**: render a whole scene per wavelength through the PSF, the colour-matching functions and the sensor's spectral response.
 
 - *(from v1.6 colour science)* TLCI-2012 (EBU camera model) and ANSI/IES TM-30 fidelity and gamut indices (99 colour evaluation samples).
 - *(from v1.7 spectroscopy)* Integral-field unit simulation: image slicer reformatting a galaxy field into a long slit and reconstructing the data cube.

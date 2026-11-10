@@ -421,6 +421,16 @@ Colorimetry from **CIE tables** (1931 observer, D-series, A, FL, HP and the CIE 
 <tr>
 <td valign="top" colspan="2">
 
+**Spectral camera** · `#/spectral`<br>
+<img src="docs/screenshots/spectral.webp" alt="Colour patches, a Siemens star and point lights through a Cooke triplet, as the eye and as a camera would see them, with blur and lateral shift per wavelength band">
+
+A scene **rendered wavelength by wavelength**: 24 colour patches, a Siemens star, edges and four light sources (sodium, laser, LEDs) under D65, A, FL11 or HP1 light, in 16 bands of 25 nm. In each band the real lens is traced (wavefront through the prescription, FFT PSF), integrated over the pixels and convolved, with its **lateral colour** as the chief ray's shift, at the best 540 nm focus for the chosen field position. The bands are summed by the **CIE observer** and by a **camera's spectral sensitivities** with white balance and a fitted matrix, so **colour fringes** (secondary spectrum, spherochromatism, lateral colour) and **camera colour errors** (CIEDE2000, Luther–Ives) come out of one calculation.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Anamorphic & cinema lenses** · `#/cinema`<br>
 <img src="docs/screenshots/cinema.webp" alt="Anamorphic night scene with oval bokeh and a blue horizontal streak flare" width="70%">
 
@@ -889,6 +899,7 @@ Optica_Viva/
 │   │   ├── camera.js          Your own camera as a light source: permission, frame grabber, stop on leaving
 │   │   ├── camsample.js       A camera feed on a coarse sensor: pixel aperture, 4-spot OLPF, Bayer mosaic and demosaicing
 │   │   ├── colorsci.js        CCT/Duv, CIE 13.3 CRI, Bradford adaptation, CIELAB, CIEDE2000
+│   │   ├── spectral.js        Spectral camera: scene materials, 25 nm bands, PSF resampling, FFT convolution, eye and camera colour
 │   │   ├── choose.js          Comparison mission: camera equivalence, telescope limits
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
 │   │   ├── gallery.js         Real photographs with explanations, credits and laboratory links
@@ -952,7 +963,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (63)
+│   └── modules/               One file per page (64)
 ├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
 ├── test/                      Physics and blur test suites (node --test)
@@ -1081,6 +1092,8 @@ The numerical core was checked against published or analytically known values. E
 | G-tilt maps (12 screens) against their own frequency grid | within 6 % | Σ λ²f<sub>x</sub>² Φ(f) [2J₁(πDf)/(πDf)]² Δf² |
 | Ghost defocus W₀₂₀ from real rays (3 paths, Double-Gauss) | within 2 % | paraxial ghost matrices, A·C·y²/2 |
 | Knife-edge Fresnel pattern | C(1), S(1) within 2·10⁻³; ¼ on the edge; first fringe 1.370 at u = 1.217 | Abramowitz & Stegun 7.3; Born & Wolf, ch. 8 |
+| Spectral camera with Luther–Ives sensitivities (24 patches, D65, A, FL11, HP1) | CIEDE2000 max < 0.3 against the observer | colorimetric by construction (Luther 1927) |
+| PSF resampled onto pixels: 80 % energy radius of a Gaussian | within 3 % | σ√(2 ln 5) |
 | Zernike fitting error after 21 modes, D/r₀ = 10 (24 phase screens) | within 15 % of Noll | Δ₂₁ = 0.0208 (D/r₀)^5/3 rad² (Noll 1976) |
 | Shack–Hartmann reconstruction of Z₄, Z₇, Z₁₁, Z₂₂ | coefficients within 4 %, cross-talk < 6 % | input mode |
 | Closed AO loop (10 × 10 lenslets, 35 modes, bright star) | residual within 0.8–1.6 × the Noll fitting error | σ<sub>fit</sub> = √Δ₃₆ (D/r₀)^5/6 |
