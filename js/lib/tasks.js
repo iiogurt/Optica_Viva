@@ -9,6 +9,7 @@ import { optimise, solve } from './optimise.js';
 import { monteCarlo, sensitivity } from './tolerance.js';
 import { ghostSystem, renderGhosts } from './ghosts.js';
 import { bokehKernels } from './bokeh.js';
+import { kernelSpectrum, bokehFrame } from './cambokeh.js';
 import { bokehScene } from './bokeh3d.js';
 import { flareScene } from './flare3d.js';
 import { renderLake } from './polar.js';
@@ -612,6 +613,15 @@ function shimmerMaps(p) {
   const r = tiltMaps(p);
   return { result: r, transfer: [r.tx.buffer, r.ty.buffer] };
 }
+// Bokeh on the camera feed (js/lib/cambokeh.js): the kernel's spectrum is kept per worker until
+// the lens changes, so each frame costs four 256² FFTs.
+let camKernel = null, camKey = '';
+function camBokeh(p) {
+  const key = JSON.stringify([p.P, p.side, p.R]);
+  if (key !== camKey) { camKernel = kernelSpectrum(p.P, p.side, p.R); camKey = key; }
+  const out = bokehFrame(p.frame, p.w, p.h, camKernel, p.gain);
+  return { result: out, transfer: [out.buffer] };
+}
 function seeingReset(p) {
   seeing = seeing || seeingSession();
   const r = seeing.reset(p.p, p.seed);
@@ -646,4 +656,4 @@ function bhRows(p) { BH_TABLE ||= orbitTable(); const r = diskImage({ ...p, tabl
 
 function benchRays(p) { const r = benchPhotons(p); return { result: r, transfer: [r.X.buffer, r.Y.buffer, r.Z.buffer] }; }
 
-export const TASKS = { benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps };
+export const TASKS = { benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh };

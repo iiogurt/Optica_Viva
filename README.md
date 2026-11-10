@@ -333,7 +333,7 @@ Sellmeier dispersion, the Abbe diagram and the partial-dispersion normal line, w
 **Bokeh** · `#/bokeh`<br>
 <img src="docs/screenshots/bokeh.webp" alt="Night scene with bokeh traced through a Double-Gauss lens, with green and magenta colour fringes" width="70%">
 
-**Traced from the real lens**: defocus kernels come from exact rays through the chosen prescription at 8 wavelengths, at their physical size. The lens's own spherical aberration gives soft-edged backgrounds and bright-rimmed foregrounds, and its secondary spectrum gives the classic **magenta foreground and green background** fringes. The clear apertures cut **cat's eyes** off axis. For small disks, an FFT panel shows the **Fresnel rings** of the defocused pupil (on-axis intensity sinc²(W₀₂₀/λ)). A phenomenological mode keeps sliders for over-correction (**soap-bubble** disks), mirror-lens obstruction, apodisation and onion-ring ripple. A **3-D view** traces real rays round the iris from a background point on axis and one in the corner: they cross in front of the sensor and land as a disc shaped like the iris, or as a cat's eye where the barrel cuts the corner beam (footprints shown enlarged beside the sensor).
+**Traced from the real lens**: defocus kernels come from exact rays through the chosen prescription at 8 wavelengths, at their physical size. The lens's own spherical aberration gives soft-edged backgrounds and bright-rimmed foregrounds, and its secondary spectrum gives the classic **magenta foreground and green background** fringes. The clear apertures cut **cat's eyes** off axis. For small disks, an FFT panel shows the **Fresnel rings** of the defocused pupil (on-axis intensity sinc²(W₀₂₀/λ)). A phenomenological mode keeps sliders for over-correction (**soap-bubble** disks), mirror-lens obstruction, apodisation and onion-ring ripple. A **3-D view** traces real rays round the iris from a background point on axis and one in the corner: they cross in front of the sensor and land as a disc shaped like the iris, or as a cat's eye where the barrel cuts the corner beam (footprints shown enlarged beside the sensor). **Your camera, out of focus**: the live camera feed is convolved in linear light with the pupil kernel (blades, roundness, spherical aberration, mirror-lens obstruction, either side of focus) by FFT in a worker, with clipped highlights given back their brightness so lights bloom into discs.
 
 </td>
 </tr>
@@ -930,7 +930,8 @@ Optica_Viva/
 │   │   ├── optimise.js        Damped-least-squares (Levenberg–Marquardt) lens optimiser
 │   │   ├── tolerance.js       Monte-Carlo tolerancing (incl. element decenter/tilt) with refocus compensation, sensitivity
 │   │   ├── ghosts.js          Lens-flare ghosts: paraxial matrices and real-ray rasteriser
-│   │   ├── bokeh.js           Bokeh kernels traced through a prescription
+│   │   ├── bokeh.js           Bokeh kernels traced through a prescription, and the pupil-splatted kernel
+│   │   ├── cambokeh.js        Bokeh on the camera feed: FFT convolution in linear light, highlights given back
 │   │   ├── lucky.js           Short-exposure frames, tip-tilt-removed variance, frame selection and shift-and-add
 │   │   ├── macro.js           Close-up optics (pupil magnification, exact defocus, optimum aperture), ruler renderer
 │   │   ├── panorama.js        Cardinal points, parallax between frames, two-frame panorama ray caster

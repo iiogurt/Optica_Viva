@@ -1,8 +1,11 @@
-import { h, controls, stage, readouts, debounce, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, debounce, texNum, imageCanvas, fmt } from '../lib/ui.js';
+import { cameraFeed } from '../lib/camera.js';
+import { RMAX } from '../lib/cambokeh.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
 import { LENSES, autoSemiDiameters, stopIndex, hasMirrors } from '../lib/raytrace.js';
 import { linspace } from '../lib/color.js';
+import { pupilKernel } from '../lib/bokeh.js';
 import { latest } from '../lib/compute.js';
 import { view3d } from '../lib/gl3d.js';
 import { t, N_ } from '../lib/i18n.js';
@@ -39,62 +42,7 @@ function kernelStats(k) {
   return { L, cx, cy, Rpx: R, Dmm: (2 * R * k.mmW) / n, centre: m[0] / c[0], rim: m[1] / c[1] };
 }
 
-// Build a defocus kernel by forward-splatting a dense pupil grid.
-// side = +1 behind the focal plane (background), −1 in front (foreground).
-// field = [fx, fy] normalised image position (corner ≈ 1.2).
-function kernel(P, side, field) {
-  const img = new Float32Array(K * K);
-  const G = 150;
-  const sector = (2 * Math.PI) / Math.max(3, P.blades);
-  const cp = Math.cos(Math.PI / Math.max(3, P.blades));
-  const iris = Math.pow(2, -P.stop / 2); // iris circumradius relative to the full pupil
-  const fr = Math.hypot(field[0], field[1]);
-  const ux = fr ? field[0] / fr : 1, uy = fr ? field[1] / fr : 0;
-  const vshift = P.vig * fr * 1.1; // offset of the vignetting (barrel) circle, pupil units
-  // radial transverse-aberration polynomial: r(ρ) = ρ + s ρ³ (+ ripple). Sign convention: P.sa < 0 is
-  // under-corrected (marginal focus nearer the lens). Behind focus the cone has already crossed, so the
-  // marginal rays spread further (s > 0, soft edge); in front of focus they bunch up (s < 0, bright rim).
-  const s = -P.sa * side;
-  const orient = side > 0 ? -1 : 1; // background disks are inverted images of the pupil
-  const scale = 1 / (1 + Math.max(0, s) + P.ripple * 0.05) * 0.46; // keep kernel inside the canvas
-  let total = 0;
-  for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) {
-    const x = ((i + 0.5) / G) * 2 - 1, y = ((j + 0.5) / G) * 2 - 1;
-    const rho = Math.hypot(x, y);
-    if (rho > 1) continue;
-    // aperture: polygon iris (with blade curvature) ∩ circular full aperture
-    if (P.blades >= 3) {
-      let ph = Math.atan2(y, x) - P.rot;
-      ph = ((ph % sector) + sector) % sector - sector / 2;
-      const rp = (cp / Math.cos(ph)) * (1 - P.round) + P.round;
-      if (rho > Math.min(1, iris * rp)) continue;
-    } else if (rho > Math.min(1, iris)) continue;
-    if (rho < P.obs * Math.min(1, iris)) continue;
-    // mechanical vignetting: the barrel window seen off-axis (cat's eye)
-    if (Math.hypot(x - ux * vshift, y - uy * vshift) > 1.0) continue;
-    let w = 1;
-    if (P.apod) w = Math.exp(-((rho / Math.min(1, iris)) ** 2) * 2.2);
-    const rn = rho / Math.min(1, iris);
-    let r = rn + s * rn * rn * rn + P.ripple * 0.012 * Math.sin(2 * Math.PI * 9 * rn * rn);
-    const ang = Math.atan2(y, x);
-    const X = K / 2 + orient * Math.cos(ang) * r * scale * K;
-    const Y = K / 2 - orient * Math.sin(ang) * r * scale * K;
-    const xi = Math.floor(X), yi = Math.floor(Y), fx = X - xi, fy = Y - yi;
-    if (xi < 0 || yi < 0 || xi >= K - 1 || yi >= K - 1) continue;
-    img[yi * K + xi] += w * (1 - fx) * (1 - fy); img[yi * K + xi + 1] += w * fx * (1 - fy);
-    img[(yi + 1) * K + xi] += w * (1 - fx) * fy; img[(yi + 1) * K + xi + 1] += w * fx * fy;
-    total += w;
-  }
-  // light 3×3 smoothing (finite sampling), normalise peak
-  const out = new Float32Array(K * K);
-  let mx = 0;
-  for (let y = 1; y < K - 1; y++) for (let x = 1; x < K - 1; x++) {
-    let v = 0;
-    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) v += img[(y + dy) * K + x + dx] * (dx || dy ? (dx && dy ? 0.06 : 0.12) : 0.28);
-    out[y * K + x] = v; if (v > mx) mx = v;
-  }
-  return { data: out, mx, total };
-}
+const kernel = (P, side, field) => pupilKernel(P, side, field, K);
 
 function kernelCanvas(k, rgb, gain = 1) {
   const c = document.createElement('canvas'); c.width = c.height = K;
@@ -378,6 +326,50 @@ export default function mount(root, meta) {
 
   recompute();
 
+  // ── Your camera, out of focus: the frame convolved with the pupil kernel, in a worker ──
+  const CW = 192, CH = 144;
+  const camSec = h('section.block', {}, h('h2', {}, 'Your camera, out of focus'));
+  const cctl = controls({
+    d: { type: 'range', label: 'Blur disk diameter', min: 4, max: 2 * RMAX, step: 1, value: 30, unit: 'px' },
+    blades: { type: 'range', label: 'Iris blades (0 = circular)', min: 0, max: 15, step: 1, value: 6, fmt: (v) => (v < 3 ? 'circular' : v) },
+    round: { type: 'range', label: 'Blade roundness', min: 0, max: 1, step: 0.01, value: 0.2, fmt: (v) => (v * 100).toFixed(0) + ' %' },
+    sa: { type: 'range', label: 'Spherical aberration (under ← → over)', min: -0.45, max: 0.45, step: 0.005, value: -0.2 },
+    obs: { type: 'range', label: 'Central obstruction (mirror lens)', min: 0, max: 0.6, step: 0.01, value: 0 },
+    side: { type: 'seg', label: 'Out of focus', value: 'bg', options: [['bg', 'Behind the focus'], ['fg', 'In front of the focus']] },
+    gain: { type: 'range', label: 'Highlights given back (× at clipping)', min: 1, max: 40, log: true, value: 10, fmt: (v) => '× ' + v.toFixed(v < 10 ? 1 : 0), hint: 'A camera clips bright lights at white; real lamps and reflections are often ten to a thousand times brighter.' },
+  }, () => {});
+  const camIn = stage({ aspect: CW / CH, label: 'Your camera as it is', draw: (c, w, hh) => camBlit(c, w, hh, inImg), minH: 160 });
+  const camOut = stage({ aspect: CW / CH, label: 'The same frame through the out-of-focus lens', draw: (c, w, hh) => camBlit(c, w, hh, outImg), minH: 160 });
+  const cro = h('div');
+  const cam = cameraFeed({ w: CW, h: CH, onFrame: (d) => camFrame(d), onStop: () => { camIn.redraw(); camOut.redraw(); } });
+  camSec.append(lab([h('div.grid-2', {}, camIn.el, camOut.el), h('div.rx-actions', { style: { alignItems: 'center' } }, cam.button, cam.note)], [h('div.card', {}, cctl.el), h('div.card', {}, cro)]));
+  root.append(camSec);
+  const inImg = imageCanvas(CW, CH), outImg = imageCanvas(CW, CH), camJob = latest('camBokeh');
+  let camBusy = false, camMs = 0;
+  // one frame in flight at a time: a slow machine shows fewer frames instead of falling behind
+  function camFrame(data) {
+    inImg.data.set(data); inImg.put(); camIn.redraw();
+    if (camBusy) return;
+    camBusy = true;
+    const st = cctl.state, t0 = performance.now();
+    const P = { blades: st.blades < 3 ? 0 : st.blades, round: st.round, stop: 1, vig: 0, sa: st.sa, ripple: 0, obs: st.obs, apod: false, rot: Math.PI / 2 };
+    camJob('camBokeh', { frame: data.slice(), w: CW, h: CH, P, side: st.side === 'bg' ? 1 : -1, R: st.d / 2, gain: st.gain }).then((out) => {
+      camBusy = false;
+      if (!cam.active()) return;
+      outImg.data.set(out); outImg.put(); camOut.redraw();
+      camMs = 0.8 * camMs + 0.2 * (performance.now() - t0);
+      cro.replaceChildren(readouts([
+        ['Disk diameter', t('{d} px = {p} % of the frame width', { d: st.d, p: fmt(100 * st.d / CW, 2) })],
+        ['Time per frame', fmt(camMs, 2) + ' ms'],
+      ]));
+    }, () => { camBusy = false; });
+  }
+  function camBlit(ctx, w, hh, ic) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
+    if (!cam.active()) return;
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(ic.c, 0, 0, w, hh);
+  }
+
   root.append(rule(String.raw`\[c = \frac{f^2}{N\,(s-f)}\]
 <p>With the lens focused at distance \(s\), a point at infinity becomes a disc of diameter \(c\) on the sensor. An 85 mm lens at f/1.8 focused at 2 m gives \(85^2/(1.8 \times 1915) = 2.1\) mm, 70 times the 0.03 mm that still counts as sharp. The disc grows with the square of the focal length and shrinks with the f-number and the focus distance.</p>`,
     String.raw`It gives the thin-lens disc for a point at infinity; nearer background points make smaller discs. The outline and the brightness inside the disc come from the iris, vignetting and aberrations, which only a ray trace or a pupil model like the ones above can predict.`));
@@ -414,6 +406,8 @@ export default function mount(root, meta) {
 <p>Geometry is the limit of large defocus. The <em>Small disks</em> panel computes the Fraunhofer PSF of the traced, defocused pupil by FFT. It uses the lens's own aberrations and vignetting, with the sensor moved by \(\Delta z = W_{020}/(1-\cos U')\). For pure defocus the pupil phase \(2\pi W_{020}\rho^2/\lambda\) divides the disk into Fresnel zones. Each extra wave of defocus adds one ring, and the centre alternates between bright and dark:</p>
 \[\frac{I(0)}{I_0} = \operatorname{sinc}^2\!\left(\frac{W_{020}}{\lambda}\right),\]
 <p>which is exactly zero at every whole number of waves. The edge rings are the Fresnel diffraction of the iris rim, and they survive when the disk is only a few dozen Airy diameters across, as for distant lights slightly out of focus, specular highlights, or stopped-down lenses. Averaging over 450–650 nm washes the rings into the soft coloured fringes of real small disks. Spherical aberration (try the Double-Gauss wide open) breaks the zone symmetry, and the profile departs from the pure-defocus curve. The FFT uses the same OPD in µm for every wavelength, so dispersion of the aberrations is neglected in this panel; the traced kernels above include it.</p>
+<h3>Your camera, out of focus</h3>
+<p>The camera section throws the whole frame out of focus with one lens. Every scene point spreads into the same pupil-shaped kernel as in the phenomenological model, so the image is the frame convolved with that kernel. The convolution runs in linear light (the sRGB curve undone first), by FFT in a worker. A camera clips bright lights at white, but street lamps and reflections are often tens to thousands of times brighter, and that excess is what makes bright points bloom into crisp discs. So pixels within 20 % of clipping are given back a gain that rises smoothly to the chosen factor, which keeps their hue. A frame has no depth, so every point is equally out of focus, and the kernel is the same over the whole field: there is no cat's eye at the edges.</p>
 <h3>What both models omit</h3>
 <p>Polishing ripples on the real lens surfaces and an apodisation filter are available only in the phenomenological model.</p>
 </div></div>`));
@@ -423,5 +417,5 @@ export default function mount(root, meta) {
     'M. Hullin et al., "Polynomial optics: a construction kit for efficient ray-tracing of lens systems", Comput. Graph. Forum 31 (2012).',
     'S. Bhagavathula &amp; K. Thompson, "Bokeh: a review of the physics and aesthetics", Optics &amp; Photonics News (2020).',
   ]));
-  return () => { alive = false; [scene, close, prof, dview, v3].forEach((s) => s.destroy()); };
+  return () => { alive = false; cam.stop(); [scene, close, prof, dview, v3, camIn, camOut].forEach((s) => s.destroy()); };
 }
