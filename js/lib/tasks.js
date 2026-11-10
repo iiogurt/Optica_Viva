@@ -33,6 +33,7 @@ import { filmLab } from './film.js';
 import { aperturePipeline } from './interferometry.js';
 import { luckySim } from './lucky.js';
 import { phaseScreen } from './turbulence.js';
+import { tiltMaps } from './shimmer.js';
 import { shadowLab } from './starshade.js';
 import { fieldPSFs } from './fieldpsf.js';
 import { makeLight, renderScene } from './lighting.js';
@@ -606,6 +607,11 @@ function perspectiveTask(p) { const r = perspectiveRows(p.p, p.y0, p.y1); return
 // Seeing laboratory: one simulation session per worker. seeingReset starts it (sid tags the
 // session), seeingStep advances it and returns a display frame, or null for a stale sid.
 let seeing = null, seeingSid = -1;
+// G-tilt maps for seeing on the camera feed (js/lib/shimmer.js)
+function shimmerMaps(p) {
+  const r = tiltMaps(p);
+  return { result: r, transfer: [r.tx.buffer, r.ty.buffer] };
+}
 function seeingReset(p) {
   seeing = seeing || seeingSession();
   const r = seeing.reset(p.p, p.seed);
@@ -640,4 +646,4 @@ function bhRows(p) { BH_TABLE ||= orbitTable(); const r = diskImage({ ...p, tabl
 
 function benchRays(p) { const r = benchPhotons(p); return { result: r, transfer: [r.X.buffer, r.Y.buffer, r.Z.buffer] }; }
 
-export const TASKS = { benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep };
+export const TASKS = { benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps };

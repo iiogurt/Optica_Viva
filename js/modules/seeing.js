@@ -1,7 +1,9 @@
-import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, texNum, reducedMotion, fmt } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { NS, DP, CROP } from '../lib/seeing.js';
-import { runOn, poolSize } from '../lib/compute.js';
+import { runOn, poolSize, latest } from '../lib/compute.js';
+import { cameraFeed } from '../lib/camera.js';
+import { tiltVarianceGrid, shortExposureFWHM, displacementGrid, warpRGBA } from '../lib/shimmer.js';
 import { view3d } from '../lib/gl3d.js';
 import { seeingScene } from '../lib/seeing3d.js';
 import { t } from '../lib/i18n.js';
@@ -152,6 +154,61 @@ export default function mount(root, meta) {
   reset();
   raf = requestAnimationFrame(loop);
 
+  // ── Your camera through turbulence: the view through a long lens across shimmering air ──
+  const CW = 320, CH = 240, GW = 81, GH = 61, SN = 512, SL0 = 2; // warp nodes every 4 px; 512² tilt maps; outer scale 2 m
+  const camSec = h('section.block', {}, h('h2', {}, 'Your camera through turbulence'));
+  const cctl = controls({
+    fov: { type: 'range', label: 'Field of view across the frame', min: 0.05, max: 2, log: true, value: 0.3, unit: '°' },
+    D: { type: 'range', label: 'Lens aperture diameter', min: 2, max: 30, log: true, value: 10, unit: 'cm' },
+    r0: { type: 'range', label: 'Fried parameter r₀ along the path, at 500 nm', min: 0.2, max: 10, log: true, value: 0.5, unit: 'cm', hint: 'Over a sunlit road a few hundred metres long r₀ drops to a few millimetres.' },
+    z: { type: 'range', label: 'Distance to the turbulent layer', min: 10, max: 1000, log: true, value: 300, unit: 'm' },
+    v: { type: 'range', label: 'Wind across the line of sight', min: 0.2, max: 10, log: true, value: 2, unit: 'm/s' },
+  }, () => newMaps());
+  const camIn = stage({ aspect: CW / CH, label: 'Your camera as it is', draw: (c, w, hh) => camBlit(c, w, hh, inImg, false), minH: 160 });
+  const camOut = stage({ aspect: CW / CH, label: 'The same view through a long lens across turbulent air', draw: (c, w, hh) => camBlit(c, w, hh, outImg, true), minH: 160 });
+  const cam = cameraFeed({ w: CW, h: CH, onFrame: (d, now) => camFrame(d, now), onStop: () => { camIn.redraw(); camOut.redraw(); } });
+  const cro = h('div');
+  camSec.append(lab([h('div.grid-2', {}, camIn.el, camOut.el), h('div.rx-actions', { style: { alignItems: 'center' } }, cam.button, cam.note)], [h('div.card', {}, cctl.el), h('div.card', {}, cro)]));
+  root.append(camSec);
+  const inImg = imageCanvas(CW, CH), outImg = imageCanvas(CW, CH), mapsJob = latest('shimmer');
+  let maps = null, CP = null, blurPx = 0;
+  function newMaps() {
+    const st = cctl.state, D = st.D / 100, r0 = st.r0 / 100, scale = (st.fov * Math.PI / 180) / CW;
+    // the screen spans at least the frame's footprint on the layer and samples the aperture 4 times
+    const dx = Math.max(D / 4, (CW * scale * st.z) / (0.9 * SN)), P = { N: SN, dx, r0, L0: SL0, D };
+    const fw = shortExposureFWHM(D, r0), sig = Math.sqrt(tiltVarianceGrid(P)), as = (x) => fmt(x * 206265, 2) + '″', px = (x) => fmt(x / scale, 2);
+    CP = { ...P, scale, z: st.z, v: st.v };
+    blurPx = fw.short / 2.3548 / scale; // Gaussian σ with the short-exposure FWHM, in camera pixels
+    cro.replaceChildren(readouts([
+      ['Equivalent focal length (full frame)', fmt(36 / (2 * Math.tan(st.fov * Math.PI / 360)), 3) + ' mm'],
+      ['Pixel scale', as(scale) + ' / px'],
+      ['Image motion, rms per axis', t('{a} = {p} px', { a: as(sig), p: px(sig) })],
+      ['Short-exposure blur (FWHM)', t('{a} = {p} px', { a: as(fw.short), p: px(fw.short) })],
+      ['Long-exposure blur 0.98 λ/r₀', t('{a} = {p} px', { a: as(fw.long), p: px(fw.long) })],
+      ['Patches that move together, D/z', px(D / st.z) + ' px'],
+    ]));
+    mapsJob('shimmerMaps', { ...P, seed: 3 }).then((m) => { maps = { ...m, N: SN, dx }; }).catch(console.error);
+  }
+  function camFrame(data, now) {
+    inImg.data.set(data); inImg.put();
+    if (maps && CP) {
+      const d = displacementGrid(maps, { w: CW, h: CH, gw: GW, gh: GH, scale: CP.scale, z: CP.z, shift: CP.v * now / 1000 });
+      warpRGBA(data, CW, CH, d, GW, GH, outImg.data); outImg.put();
+    }
+    camIn.redraw(); camOut.redraw();
+  }
+  // Both views are cropped by the same margin (3σ of the blur, at most 16 camera pixels), so the
+  // blur never pulls in the black outside the frame.
+  function camBlit(ctx, w, hh, ic, blurred) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
+    if (!cam.active()) return;
+    const k = w / CW, m = Math.min(16, Math.ceil(3 * blurPx)) * k, b = blurPx * k;
+    if (blurred && b > 0.3) ctx.filter = `blur(${b.toFixed(2)}px)`;
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(ic.c, -m, -m * (hh / w) * (CW / CH), w + 2 * m, hh + 2 * m * (hh / w) * (CW / CH));
+    ctx.filter = 'none';
+  }
+  newMaps();
+
   root.append(rule(String.raw`\[\text{seeing} \approx \frac{\lambda}{r_0}\qquad\text{vs.}\qquad \text{diffraction} \approx 1.22\,\frac{\lambda}{D}\]
 <p>The Fried parameter \(r_0\) is the width of a patch of air that bends light nearly uniformly: 10–20 cm in visible light at a good site. A telescope larger than \(r_0\) resolves no better than one of diameter \(r_0\). Example: with \(r_0 = 12\) cm at 0.5 µm, seeing is \(0.98 \times 0.5\,\mu\text{m}/0.12\,\text{m} \approx 0.84″\), while a 4 m telescope could reach 0.03″, about 27 times sharper.</p>
 <p>\(r_0\) grows with wavelength as \(\lambda^{6/5}\), so seeing improves slowly towards the infrared (\(\propto\lambda^{-1/5}\)) while the diffraction limit worsens. The gap that adaptive optics must close is smallest there.</p>`,
@@ -168,6 +225,8 @@ export default function mount(root, meta) {
 <p>A screen is synthesised by filtering complex white Gaussian noise with \(\sqrt{\Phi_\phi}\,\Delta\kappa\) and inverse-FFTing. The FFT grid cannot represent scales larger than itself, so three levels of subharmonics (Lane et al. 1992) restore the missing low-order power, especially tip-tilt. Taylor's frozen-flow hypothesis translates the screen at the wind speed, giving a coherence time \(\tau_0 = 0.314\,r_0/v\).</p>
 </div><div>
 <p>The 3-D view draws the band of the screen that the pupil sweeps as a relief, its height the phase in waves at the observing wavelength. Above the pupil it draws the wavefront the telescope keeps after correction, piston removed, at the same scale. With no correction the residual has the screen's own hills, apart from the mean. Tip–tilt takes out the overall slope. Full AO leaves only what the deformable mirror's actuators are too coarse or too slow to follow.</p>
+<h3>Seeing on your camera</h3>
+<p>The camera section treats the feed as the view through a long lens of aperture \(D\) across one turbulent layer at distance \(z\), a single-layer stand-in for turbulence spread along a horizontal path. A point in the view at angle \(\theta\) looks through the patch of the layer at \(\theta z\) and is displaced by the wavefront tilt averaged over the aperture (G-tilt). In the frequency domain that average is a product with \(2J_1(\pi D f)/(\pi D f)\), so the two tilt maps come straight from the phase spectrum by FFT. Their variance per axis is \(0.170\,(\lambda/D)^2(D/r_0)^{5/3}\) for Kolmogorov turbulence (Tyler), independent of wavelength, and less with a finite outer scale (2 m here, a path near the ground). Points closer than about \(D/z\) move together. The wind carries the maps across the view (frozen flow). The blur left in each short exposure follows Fried's tip-tilt-removed MTF, \(\exp\{-3.44(\lambda f/r_0)^{5/3}[1-(\lambda f/D)^{1/3}]\}\) times the diffraction MTF. It is applied as a Gaussian of the same full width at half maximum, at 550 nm. Scintillation is ignored.</p>
 <h3>Short and long exposures</h3>
 <p>Exposures shorter than \(\tau_0\) freeze the atmosphere. The PSF breaks into about \((D/r_0)^2\) <em>speckles</em>, each of diffraction-limited size \(\lambda/D\). Speckle interferometry (Labeyrie, 1970) exploits these. Long exposures average the speckles into the smooth seeing halo, whose long-exposure OTF is \(\exp[-3.44(\lambda\nu/r_0)^{5/3}]\).</p>
 <h3>Adaptive optics error budget</h3>
@@ -183,7 +242,8 @@ export default function mount(root, meta) {
     'J. D. Schmidt, <i>Numerical Simulation of Optical Wave Propagation</i>, SPIE Press (2010), ch. 9.',
     'F. Roddier (ed.), <i>Adaptive Optics in Astronomy</i>, Cambridge (1999).',
     'J. W. Hardy, <i>Adaptive Optics for Astronomical Telescopes</i>, Oxford (1998).',
+    'G. A. Tyler, "Bandwidth considerations for tracking through turbulence", JOSA A 11, 358 (1994).',
     'A. Labeyrie, "Attainment of diffraction limited resolution in large telescopes by Fourier analysing speckle patterns", A&amp;A 6, 85 (1970).',
   ]));
-  return () => { cancelAnimationFrame(raf); [scrSt, sp, lp, dl, v3].forEach((s) => s.destroy()); };
+  return () => { cancelAnimationFrame(raf); cam.stop(); [scrSt, sp, lp, dl, v3, camIn, camOut].forEach((s) => s.destroy()); };
 }

@@ -342,3 +342,8 @@ test('flat ΛCDM: comoving distances add up, (1 + z_s) D_ls = χ_s − χ_l', as
   const { comoving } = await import('../js/lib/lensing3d.js');
   for (const [zl, zs] of [[0.3, 2], [1.2, 5], [0.05, 0.4]]) near((1 + zs) * angularDiameterDistance(zl, zs) / 1000, comoving(zs) - comoving(zl), 1e-5, `z = ${zl}, ${zs}`);
 });
+
+test("G-tilt image motion per axis: Tyler's 0.1706 (λ/D)² (D/r₀)^{5/3}", async () => {
+  const { tiltVariance, LAM0 } = await import('../js/lib/shimmer.js');
+  near(tiltVariance(0.2, 0.05) / ((LAM0 / 0.2) ** 2 * (0.2 / 0.05) ** (5 / 3)), 0.1706, 0.0017, 'coefficient');
+});
