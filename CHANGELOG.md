@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.36.0] - 2026-11-10
+
 ### Added
 - **Hover readout on every chart.** Pointing at a chart draws a guide, a dot on each curve and a box with the values there; curves that do not run one way along x (field curves, loci, scattered points) give their nearest point. The page tools step aside while values are read.
 - **Enlarge any figure.** A ⤢ button beside PNG and CSV shows the figure at its own shape as large as the window allows; Escape, the button or a click beside it puts it back. Charts are redrawn at the new size, not scaled.
@@ -886,7 +888,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.35.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.36.0...HEAD
+[1.36.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.35.0...v1.36.0
 [1.35.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.34.0...v1.35.0
 [1.34.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.33.0...v1.34.0
 [1.33.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.32.0...v1.33.0
