@@ -4,6 +4,7 @@
     "index.html",
     "manifest.webmanifest",
     "package.json",
+    "css/fonts.css",
     "css/style.css",
     "js/app.js",
     "js/lib/adc.js",
@@ -212,6 +213,15 @@
     "vendor/katex/fonts/KaTeX_Size2-Regular.woff2",
     "vendor/katex/fonts/KaTeX_Size3-Regular.woff2",
     "vendor/katex/fonts/KaTeX_Size4-Regular.woff2",
-    "vendor/katex/fonts/KaTeX_Typewriter-Regular.woff2"
+    "vendor/katex/fonts/KaTeX_Typewriter-Regular.woff2",
+    "vendor/fonts/fraunces-latin-ext-opsz-normal.woff2",
+    "vendor/fonts/fraunces-latin-opsz-italic.woff2",
+    "vendor/fonts/fraunces-latin-opsz-normal.woff2",
+    "vendor/fonts/inter-greek-wght-normal.woff2",
+    "vendor/fonts/inter-latin-ext-wght-normal.woff2",
+    "vendor/fonts/inter-latin-wght-normal.woff2",
+    "vendor/fonts/jetbrains-mono-greek-wght-normal.woff2",
+    "vendor/fonts/jetbrains-mono-latin-ext-wght-normal.woff2",
+    "vendor/fonts/jetbrains-mono-latin-wght-normal.woff2"
   ]
 }

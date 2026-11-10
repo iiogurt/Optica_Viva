@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- The typefaces (Fraunces, Inter, JetBrains Mono) are served from the site itself (`vendor/fonts/`, variable fonts from the `@fontsource-variable` packages, SIL Open Font License) instead of Google Fonts. The page no longer contacts any other host, the fonts are part of the offline cache from the first visit, and the two used first are preloaded. The italic in the home page's title is now the real Fraunces italic rather than a slanted roman. `test/fonts.test.mjs` checks the files' checksums and that the page loads nothing from elsewhere.
+
 ## [1.35.0] - 2026-11-10
 
 ### Added

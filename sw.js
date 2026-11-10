@@ -1,13 +1,13 @@
 // Service worker: Optica Viva works offline and installs as an app. Same-origin files are fetched
 // network-first (so the site is always current when online) and fall back to the cache; the whole
 // app (precache.json) is cached on install and again whenever the version in package.json changes.
-// Google Fonts are served from the cache and refreshed in the background.
+// The typefaces are same-origin files (vendor/fonts/) and cached with the rest.
 // A worker is installed only when the whole app is cached: if any file fails, installation fails,
 // the browser keeps the previous worker (or none) and tries again on the next visit. On every page
 // load the active worker checks the version itself (one check at a time) and caches a new version
 // with Cache.addAll, which stores all files or none, so a failed update keeps the previous complete
 // copy and its version. Failures are reported to the open pages; offline, nothing is attempted.
-const CACHE = 'optica-viva', FONTS = 'optica-viva-fonts', TIMEOUT = 4000;
+const CACHE = 'optica-viva', TIMEOUT = 4000;
 
 async function precache() {
   const list = await fetch('precache.json', { cache: 'no-cache' }); // throws when offline
@@ -27,7 +27,8 @@ self.addEventListener('install', (e) => e.waitUntil(precache().then(() => self.s
   await tell({ precache: 'failed', phase: 'install', error: why(err) });
   throw err;
 })));
-self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+// 'optica-viva-fonts' held Google Fonts responses before the typefaces were vendored
+self.addEventListener('activate', (e) => e.waitUntil(Promise.all([self.clients.claim(), caches.delete('optica-viva-fonts')])));
 // the version check on page loads: one at a time; a server that cannot be reached is not a failure
 let checking = null;
 function checkVersion() {
@@ -52,14 +53,6 @@ async function networkFirst(req) {
   }
 }
 
-async function fonts(req, e) {
-  const c = await caches.open(FONTS);
-  const hit = await c.match(req);
-  const fresh = fetch(req).then((res) => { if (res.ok || res.type === 'opaque') c.put(req, res.clone()); return res; });
-  if (hit) { e.waitUntil(fresh.catch(() => {})); return hit; }
-  return fresh;
-}
-
 self.addEventListener('fetch', (e) => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== 'GET') return;
@@ -67,5 +60,4 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(networkFirst(req));
     if (req.mode === 'navigate') e.waitUntil(checkVersion());
   }
-  else if (/^fonts\.(googleapis|gstatic)\.com$/.test(url.hostname)) e.respondWith(fonts(req, e));
 });

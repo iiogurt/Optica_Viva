@@ -38,6 +38,7 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.14 Your own gear and real images](#v114-your-own-gear-and-real-images)
   - [v1.20 3-D views](#v120-3-d-views)
   - [v1.27 Sky and waves: visual showpieces](#v127-sky-and-waves-visual-showpieces)
+  - [v1.36 Presentation](#v136-presentation)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -65,7 +66,7 @@ flowchart LR
     end
     subgraph Next["Planned"]
         direction TB
-        N12["more 3-D views"] --> N7["v2.0 translated text"] --> N10["MTF validation<br/>(needs data)"]
+        N12["v1.36 presentation"] --> N7["v2.0 translated text"] --> N10["MTF validation<br/>(needs data)"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -77,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 465 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 468 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -557,6 +558,20 @@ Candidates, in order of how much the third dimension adds:
 - [x] **P2 · M** **Live webcam mode**: a page's physics (seeing, bokeh, aliasing, rolling shutter) applied to the camera feed, on the device only. *Done for the rolling shutter (`#/motion`) and for aliasing, moiré and Bayer false colour (`#/sampling`), and for seeing (`#/seeing`, G-tilt maps and short-exposure blur from `js/lib/shimmer.js`), on a shared frame grabber (`js/lib/camera.js`), and for bokeh (`#/bokeh`, the frame convolved with the pupil kernel by `js/lib/cambokeh.js`).*
 - [x] **P3 · S** 3-D view in the halo laboratory: a hexagonal crystal with the exact ray paths of the 22° and 46° halos and the circumzenithal arc, in red and blue light.
 - [x] **P3 · S** Decimal commas in German, French and Spanish: translated sentences and notes, readouts, sliders, chart ticks, 3-D labels and equations. *Numbers some canvases draw directly still use points.*
+
+### v1.36 Presentation
+
+*Goal: show the simulations as well as they are computed. From a visual review of the home page, four laboratories, the gallery and a phone view in November 2026; order agreed with the owner (2026-11-10): the first three items first.*
+
+- [x] **P1 · S** **Vendored typefaces**: Fraunces, Inter and JetBrains Mono are served from the site (`vendor/fonts/`), with a true italic for Fraunces. No request leaves the page any more.
+- [ ] **P1 · M** **Stage-first laboratory layout**: the picture and its controls fill the first screen, the plain-words idea sits beside them, and the page tools take one row.
+- [ ] **P1 · M** **Chart redesign**: larger charts, legends outside the plot area, and a hover readout linked to the picture.
+- [ ] **P1 · L** **Image pipeline**: one shared path that renders at device pixels, shows a fast preview and refines when idle, with one tone curve, dithering, and wide-gamut output where the screen supports it.
+- [ ] **P2 · M** **Live home page**: a thumbnail of the real render on every card, a few featured laboratories shown large, and a hero that can be dragged.
+- [ ] **P2 · M** **Motion**: tween between parameter states and animate page changes, respecting reduced motion.
+- [ ] **P2 · L** **3-D materials**: glass with reflections and edge highlights, soft shadows, label collision avoidance, tighter framing.
+- [ ] **P3 · M** **Phone layout**: the picture pinned above the controls sheet.
+- [ ] **P3 · M** **A real flare scene**: a procedurally rendered high-dynamic-range scene instead of the flat landscape.
 
 ### v2.0 Learning platform
 
