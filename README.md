@@ -519,7 +519,7 @@ Night mode from a burst of short frames, detail beyond the pixel grid from hand 
 **Atmospheric seeing & AO** · `#/seeing`<br>
 <img src="docs/screenshots/seeing.webp" alt="Phase screen, AO residual, speckle and long-exposure PSFs">
 
-von Kármán phase screens built by FFT with **Lane subharmonics**, under Taylor frozen flow. Short-exposure speckle and long-exposure PSFs are shown with no correction, tip-tilt only, or a **deformable mirror** with servo lag, together with the full error budget. A **3-D view** shows the band of the phase screen the wind carries across the telescope as a relief, the pupil on it, and above it the wavefront left after correction at the same height scale.
+von Kármán phase screens built by FFT with **Lane subharmonics**, under Taylor frozen flow. Short-exposure speckle and long-exposure PSFs are shown with no correction, tip-tilt only, or a **deformable mirror** with servo lag, together with the full error budget. A **3-D view** shows the band of the phase screen the wind carries across the telescope as a relief, the pupil on it, and above it the wavefront left after correction at the same height scale. **Your camera through turbulence**: the live camera feed is treated as the view through a long lens across shimmering air. Every point moves with the wavefront tilt averaged over the aperture (G-tilt maps from a von Kármán spectrum, carried by the wind) and is blurred by Fried's short-exposure MTF.
 
 </td>
 <td width="50%" valign="top">
@@ -871,6 +871,7 @@ Optica_Viva/
 │   │   ├── perspective.js     Portrait scene of the perspective laboratory
 │   │   ├── rollingcam.js      Rolling shutter on a live camera feed: rows from buffered frames at their own time
 │   │   ├── seeing.js          Frozen-flow turbulence + AO session for the seeing laboratory (runs in a worker)
+│   │   ├── shimmer.js         Seeing on the camera feed: G-tilt maps by FFT, short-exposure blur, frame warp
 │   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
 │   │   ├── shake.js           Hand-held shake model, type-2 stabiliser servo with gyro random walk, Monte-Carlo sharpness
 │   │   ├── stacking.js        CCD equation for stacks, sky brightness from Bortle class, sky-limited sub length
@@ -1075,6 +1076,8 @@ The numerical core was checked against published or analytically known values. E
 | sRGB primaries → XYZ matrix (D65, Y = 100) | 41.24 35.76 18.05 / 21.26 71.52 7.22 / 1.93 11.92 95.05 | IEC 61966-2-1: identical |
 | Rec. 2020 primaries on the spectral locus | within 0.003 in (x, y) of 630, 532, 467 nm | ITU-R BT.2020: monochromatic primaries |
 | Optimal colours (colour solid) | every band + its complement = white; all 14 test colours inside under D65, A and HP1 | Schrödinger 1920, MacAdam 1935 |
+| G-tilt variance per axis, Kolmogorov (3 apertures) | within 1 % | 0.1706 (λ/D)² (D/r₀)^5/3 (Tyler 1994) |
+| G-tilt maps (12 screens) against their own frequency grid | within 6 % | Σ λ²f<sub>x</sub>² Φ(f) [2J₁(πDf)/(πDf)]² Δf² |
 | Zernike fitting error after 21 modes, D/r₀ = 10 (24 phase screens) | within 15 % of Noll | Δ₂₁ = 0.0208 (D/r₀)^5/3 rad² (Noll 1976) |
 | Shack–Hartmann reconstruction of Z₄, Z₇, Z₁₁, Z₂₂ | coefficients within 4 %, cross-talk < 6 % | input mode |
 | Closed AO loop (10 × 10 lenslets, 35 modes, bright star) | residual within 0.8–1.6 × the Noll fitting error | σ<sub>fit</sub> = √Δ₃₆ (D/r₀)^5/6 |

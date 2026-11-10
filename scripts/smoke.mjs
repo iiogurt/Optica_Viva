@@ -78,8 +78,8 @@ try {
     console.log(`${r && !errors.length ? '✓' : '✗'} embed mode${errors.length ? '  ' + errors.join(' | ').slice(0, 300) : ''}`);
     if (!r || errors.length) failed++;
   }
-  // live camera on the rolling-shutter and sampling pages: starts, feeds the views, stops
-  for (const camPage of ['motion', 'sampling']) {
+  // live camera on the rolling-shutter, sampling and seeing pages: starts, feeds the views, stops
+  for (const camPage of ['motion', 'sampling', 'seeing']) {
     const errors = await page.goto(site.url + '#/' + camPage, 3000);
     const r = await page.eval(`(async () => {
       const b = [...document.querySelectorAll('button')].find((x) => x.textContent === 'Use my camera');
