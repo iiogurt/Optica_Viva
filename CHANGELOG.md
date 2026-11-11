@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.45.0] - 2026-11-11
+
 ### Added
 - **New laboratory: Mirages** (`#/mirage`). Light traced exactly through air whose temperature changes with height: the inferior mirage over a hot road (the car seen upright and upside down above a band of reflected sky), looming over a cold sea (a ship's hull lifted back above the horizon), the Fata Morgana of a warm layer higher up, and standard air for comparison. The picture is built from the transfer curve (where each height of the car or ship appears), with the side view of the rays and the temperature profile. Validated against the gradient at which light follows the Earth (0.129 K/m at 15 °C) and the textbook height hidden below the horizon (within 0.15 m at 20 km). The catalogue's "Heat shimmer & mirages" now opens it.
 
@@ -960,7 +962,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.44.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.45.0...HEAD
+[1.45.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.44.0...v1.45.0
 [1.44.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.43.0...v1.44.0
 [1.43.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.42.0...v1.43.0
 [1.42.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.41.0...v1.42.0
