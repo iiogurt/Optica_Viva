@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Infrared & ultraviolet photography** (`#/irphoto`). A landscape seen through a normal camera, 590, 720 and 850 nm infrared filters, full spectrum or an ultraviolet-pass filter, computed from the spectra of sunlight, sky, leaves, water, a flower, silicon and the Bayer dyes: foliage shines white (the Wood effect), sky and water go dark, the 850 nm picture is black and white, and the flower shows its ultraviolet bullseye. White balance on foliage or a cloud, the classic red–blue swap, and the infrared focus shift of a 50 mm achromat, with the blur from focusing at the visible mark. The spectra are representative curves, as the page says.
+
 ## [1.49.0] - 2026-11-11
 
 ### Added
