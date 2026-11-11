@@ -56,10 +56,13 @@ export default function mount(root, meta) {
   // Renders run in the compute workers (js/lib/lensing.js): the image plane in parallel row bands,
   // the source panel and magnification on another worker, and the critical curves and caustics only
   // when the lens changes. A newer request makes older results stale.
-  let imgCanvas = null, srcCanvas = null, ticket = 0, curvesFor = '';
+  // A quick 320-pixel picture answers each change; once the controls settle both panels are traced
+  // again at the canvas's device pixels (2×2 rays per pixel) and drawn one to one.
+  let imgCanvas = null, srcCanvas = null, ticket = 0, curvesFor = '', fullTimer = 0, shownN = 0;
   const toCanvas = (rgba, N) => { const c = imageCanvas(N, N); c.data.set(rgba); c.put(); return c.c; };
-  async function render() {
-    const my = ++ticket, st = ctl.state, P = L.P, N = 320, key = JSON.stringify(P);
+  const fullSize = () => Math.min(900, Math.round(Math.min(img.w, img.h) * img.dpr));
+  async function trace(my, N) {
+    const st = ctl.state, P = L.P, key = JSON.stringify(P);
     const bands = parallel('lensRows', rowBands(N).map(([y0, y1]) => ({ p: { P, src: srcPos, R: st.R, light: st.light, N, ss: 2 }, y0, y1 })));
     const side = runOn(poolSize() - 1, 'lensSide', { P, src: srcPos, R: st.R, N, curves: curvesFor !== key });
     const [parts, extra] = await Promise.all([bands, side]);
@@ -67,13 +70,22 @@ export default function mount(root, meta) {
     const rgba = new Uint8ClampedArray(N * N * 4);
     let off = 0;
     for (const q of parts) { rgba.set(q, off); off += q.length; }
-    imgCanvas = toCanvas(rgba, N); srcCanvas = toCanvas(extra.img, N);
+    imgCanvas = toCanvas(rgba, N); srcCanvas = toCanvas(extra.img, N); shownN = N;
     if (extra.crit) { L.crit = extra.crit; L.caus = extra.caus; curvesFor = key; }
     L.mu = extra.mu; L.images = extra.images;
     show3d();
     img.redraw(); src.redraw();
     const dd = ro.querySelectorAll('dd'); if (dd.length) dd[dd.length - 1].textContent = isFinite(L.mu) ? L.mu.toFixed(1) + '×' : '—';
   }
+  async function render(fullOnly = false) {
+    const my = ++ticket;
+    clearTimeout(fullTimer);
+    if (!fullOnly) await trace(my, 320);
+    const full = fullSize();
+    if (my === ticket && full > 320 * 1.2) fullTimer = setTimeout(() => trace(my, full).catch(console.error), fullOnly ? 0 : 250);
+  }
+  // enlarged or resized: trace again when the canvas holds clearly more (or fewer) pixels
+  img.resized = () => { if (shownN > 320 && Math.abs(fullSize() - shownN) > 0.15 * shownN) render(true).catch(console.error); };
 
   function update() {
     const st = ctl.state, P = params();
@@ -171,5 +183,5 @@ export default function mount(root, meta) {
     'R. Narayan &amp; M. Bartelmann, "Lectures on gravitational lensing", arXiv:astro-ph/9606001 (1996).',
     'T. Treu, "Strong lensing by galaxies", ARA&amp;A 48, 87 (2010).',
   ]));
-  return () => [img, src, v3].forEach((s) => s.destroy());
+  return () => { ticket++; clearTimeout(fullTimer); [img, src, v3].forEach((s) => s.destroy()); };
 }

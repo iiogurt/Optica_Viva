@@ -1,7 +1,8 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, texNum } from '../lib/ui.js';
+import { paint, bilinear, encode, keyOf } from '../lib/pixels.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
-import { xyzToLinearRGB, oetf } from '../lib/color.js';
+import { xyzToLinearRGB } from '../lib/color.js';
 import { parallel, poolSize } from '../lib/compute.js';
 import { nIce, nWater, minDeviation, rainbowAngle, parhelion, circumzenithal, skyDir, HALO_FOV, DROP_LAMS, coronaAngles, antiAngles, CORONA_STEP, ANTI_STEP, CORONA_MAX, ANTI_MAX, sunSmear, profileXYZ } from '../lib/atmo.js';
 import { view3d } from '../lib/gl3d.js';
@@ -41,14 +42,14 @@ export default function mount(root, meta) {
   const calc = liveCalc();
   const note = h('p.note', {}, '');
   const sky = stage({ aspect: 1, label: 'Halos: the sky around the Sun (zenith up, ±66°)', draw: drawHalo, minH: 260 });
-  const cor = stage({ aspect: 1, label: 'Around the Sun: the corona of the drops', draw: (c, w, hh) => drawDrop(c, w, hh, 'corona'), minH: 220 });
-  const anti = stage({ aspect: 1, label: 'Around your shadow: glory, fogbow and rainbows (±60°)', draw: (c, w, hh) => drawDrop(c, w, hh, 'anti'), minH: 220 });
+  const cor = stage({ aspect: 1, label: 'Around the Sun: the corona of the drops', draw: (c, w, hh, st) => drawDrop(c, w, hh, 'corona', st), minH: 220 });
+  const anti = stage({ aspect: 1, label: 'Around your shadow: glory, fogbow and rainbows (±60°)', draw: (c, w, hh, st) => drawDrop(c, w, hh, 'anti', st), minH: 220 });
   const prof = stage({ aspect: 2.1, label: 'Scattered light around the antisolar point', draw: drawProfile, minH: 200 });
   const v3 = view3d({ label: '3-D: an ice crystal and the exact ray paths of the 22° and 46° halos and the circumzenithal arc', aspect: 1.7, minH: 260, yaw: -0.7, pitch: 0.35 });
   root.append(lab([sky.el, note, v3.el, h('div.grid-2', {}, cor.el, anti.el), prof.el], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   // ── halos: progressive Monte-Carlo passes on all workers ──
-  let acc = null, haloTicket = 0, haloCanvas = null, haloRays = 0;
+  let acc = null, haloTicket = 0, haloLin = null, haloVer = 0, haloRays = 0;
   async function runHalo() {
     const my = ++haloTicket, st = ctl.state, nw = poolSize();
     acc = { X: new Float64Array(N * N), Y: new Float64Array(N * N), Z: new Float64Array(N * N) }; haloRays = 0;
@@ -64,33 +65,35 @@ export default function mount(root, meta) {
   }
   // sky (a simple blue-sky gradient, brighter towards the horizon and the Sun), ground, the halo light
   function paintHalo() {
-    const st = ctl.state, h0 = st.elev * D2R, s = [Math.cos(h0), 0, Math.sin(h0)], img = imageCanvas(N, N);
+    const st = ctl.state, h0 = st.elev * D2R, s = [Math.cos(h0), 0, Math.sin(h0)];
     const ys = [];
     for (let k = 0; k < N * N; k++) { const ix = k % N, iy = (k / N) | 0, x = ((ix + 0.5) / N * 2 - 1) * HALO_FOV, y = (1 - (iy + 0.5) / N * 2) * HALO_FOV; if (Math.hypot(x, y) > 3 && acc.Y[k] > 0) ys.push(acc.Y[k]); }
     ys.sort((p, q) => p - q);
     const ref = ys.length ? ys[Math.floor(ys.length * 0.995)] : 1, gain = (0.9 * 2 ** st.exposure) / ref;
-    for (let iy = 0; iy < N; iy++) for (let ix = 0; ix < N; ix++) {
-      const k = iy * N + ix, x = ((ix + 0.5) / N * 2 - 1) * HALO_FOV, y = (1 - (iy + 0.5) / N * 2) * HALO_FOV, r = Math.hypot(x, y);
-      const v = skyDir(x, y, s), o = k * 4;
-      let rgb;
-      if (v[2] < 0) rgb = [0.035, 0.04, 0.035];
-      else {
-        const zen = Math.acos(v[2]), glow = 0.25 / (1 + (r / 6) ** 2);
-        rgb = [0.05 + 0.06 * zen + glow, 0.09 + 0.08 * zen + glow, 0.22 + 0.1 * zen + glow];
-        const hr = xyzToLinearRGB([acc.X[k] * gain, acc.Y[k] * gain, acc.Z[k] * gain]);
-        rgb = rgb.map((c, i) => c + Math.max(0, hr[i]) * 0.55);
-      }
-      if (r < 0.6) rgb = [3, 3, 3];
-      for (let i = 0; i < 3; i++) img.data[o + i] = 255 * oetf(Math.min(1, rgb[i]));
-      img.data[o + 3] = 255;
+    // the halo light (linear RGB) per sample, resampled at the screen's pixels when drawn; the sky,
+    // the ground and the Sun are computed exactly at each pixel there
+    const L = [new Float32Array(N * N), new Float32Array(N * N), new Float32Array(N * N)];
+    for (let k = 0; k < N * N; k++) {
+      const hr = xyzToLinearRGB([acc.X[k] * gain, acc.Y[k] * gain, acc.Z[k] * gain]);
+      for (let i = 0; i < 3; i++) L[i][k] = Math.max(0, hr[i]) * 0.55;
     }
-    img.put(); haloCanvas = img.c;
+    L.sun = s;
+    haloLin = L; haloVer++;
   }
   function drawHalo(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
-    if (!haloCanvas) return;
-    const side = Math.min(w, hh), x0 = (w - side) / 2, y0 = (hh - side) / 2;
-    ctx.imageSmoothingEnabled = true; ctx.drawImage(haloCanvas, x0, y0, side, side);
+    if (!haloLin) return;
+    const side = Math.min(w, hh), x0 = (w - side) / 2, y0 = (hh - side) / 2, L = haloLin;
+    // the horizon and the Sun's rim are anti-aliased over one pixel (pd: pixel size in degrees)
+    const pd = (2 * HALO_FOV) / (side * sky.dpr), ground = [0.035, 0.04, 0.035];
+    paint(sky, { x: x0, y: y0, w: side, h: side }, (u, v, o) => {
+      const x = (u * 2 - 1) * HALO_FOV, y = (1 - v * 2) * HALO_FOV, r = Math.hypot(x, y), d = skyDir(x, y, L.sun);
+      const up = Math.min(1, Math.max(0, (Math.asin(Math.max(-1, Math.min(1, d[2]))) / D2R) / pd + 0.5));
+      const sun = Math.min(1, Math.max(0, (0.6 - r) / pd + 0.5));
+      const zen = Math.acos(Math.max(-1, Math.min(1, d[2]))), glow = 0.25 / (1 + (r / 6) ** 2), gx = u * N - 0.5, gy = v * N - 0.5;
+      const skyc = [0.05 + 0.06 * zen + glow + bilinear(L[0], N, N, gx, gy), 0.09 + 0.08 * zen + glow + bilinear(L[1], N, N, gx, gy), 0.22 + 0.1 * zen + glow + bilinear(L[2], N, N, gx, gy)];
+      for (let c = 0; c < 3; c++) o[c] = encode(Math.max(sun * 3, ground[c] + (skyc[c] - ground[c]) * up));
+    }, haloVer);
     const P = (deg) => (deg / HALO_FOV) * (side / 2);
     ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
     for (const r of [22, 46]) { ctx.beginPath(); ctx.arc(w / 2, hh / 2, P(r), 0, 2 * Math.PI); ctx.stroke(); }
@@ -120,27 +123,43 @@ export default function mount(root, meta) {
     D.peak = th[pk];
     cor.redraw(); anti.redraw(); prof.redraw(); words();
   }
-  // a radially symmetric image from an XYZ profile; brightness set by the 99th percentile beyond `skip` degrees
+  // a radially symmetric picture from an XYZ profile, evaluated at each screen pixel; brightness set
+  // by the 99th percentile beyond `skip` degrees
   function radial(P, max, step, skip) {
-    const n = 220, img = imageCanvas(n, n), ys = [];
+    const ys = [];
     for (let i = 0; i < P.Y.length && i * step <= max; i++) if (i * step > skip) ys.push(P.Y[i]);
     ys.sort((a, b) => a - b);
-    const g = 0.85 / (ys[Math.floor(ys.length * 0.99)] || 1);
-    for (let iy = 0; iy < n; iy++) for (let ix = 0; ix < n; ix++) {
-      const r = Math.hypot((ix + 0.5) / n * 2 - 1, (iy + 0.5) / n * 2 - 1) * max, o = (iy * n + ix) * 4;
-      const f = r / step, i = Math.min(P.Y.length - 2, Math.floor(f)), u = f - i;
-      const xyz = [0, 1, 2].map((c) => { const a = [P.X, P.Y, P.Z][c]; return (a[i] * (1 - u) + a[i + 1] * u) * g; });
-      const rgb = r > max ? [0, 0, 0] : xyzToLinearRGB(xyz).map((v, c) => v + [0.03, 0.035, 0.05][c]);
-      for (let c = 0; c < 3; c++) img.data[o + c] = 255 * oetf(Math.min(1, Math.max(0, rgb[c])));
-      img.data[o + 3] = 255;
-    }
-    img.put(); return img.c;
+    return { P, max, step, g: 0.85 / (ys[Math.floor(ys.length * 0.99)] || 1) };
   }
-  function drawDrop(ctx, w, hh, which) {
+  const BG = [0.03, 0.035, 0.05];
+  // each pixel shows the profile averaged over the width of the pixel, so ripples finer than a pixel
+  // blend instead of beating into moiré. trap(T, a, f) is the integral of the piecewise-linear
+  // profile a from 0 to f (in samples), from its trapezoid running sums T; the profile is even in r.
+  function trap(T, a, f) {
+    if (f < 0) return -trap(T, a, -f);
+    const n = a.length;
+    if (f >= n - 1) return T[n - 1] + (f - (n - 1)) * a[n - 1];
+    const i = Math.floor(f), u = f - i;
+    return T[i] + a[i] * u + 0.5 * (a[i + 1] - a[i]) * u * u;
+  }
+  function shadeRadial(R, px) {
+    const { P, max, step, g } = R, A = [P.X, P.Y, P.Z], xyz = [0, 0, 0];
+    if (!R.sum) R.sum = A.map((a) => { const T = new Float64Array(a.length); for (let i = 1; i < a.length; i++) T[i] = T[i - 1] + 0.5 * (a[i - 1] + a[i]); return T; });
+    const half = Math.max(px / step, 1e-3) / 2; // half a pixel, in samples
+    return (u, v, o) => {
+      const r = Math.hypot(u * 2 - 1, v * 2 - 1) * max;
+      if (r > max) return;
+      const f = r / step;
+      for (let c = 0; c < 3; c++) xyz[c] = ((trap(R.sum[c], A[c], f + half) - trap(R.sum[c], A[c], f - half)) / (2 * half)) * g;
+      const rgb = xyzToLinearRGB(xyz);
+      for (let c = 0; c < 3; c++) o[c] = encode(rgb[c] + BG[c]);
+    };
+  }
+  function drawDrop(ctx, w, hh, which, st) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!D) return;
-    const side = Math.min(w, hh), c = which === 'corona' ? D.corImg : D.antiImg;
-    ctx.imageSmoothingEnabled = true; ctx.drawImage(c, (w - side) / 2, (hh - side) / 2, side, side);
+    const side = Math.min(w, hh), R = which === 'corona' ? D.corImg : D.antiImg;
+    paint(st, { x: (w - side) / 2, y: (hh - side) / 2, w: side, h: side }, shadeRadial(R, (2 * R.max) / (side * st.dpr)), keyOf(R));
     if (which === 'corona') {
       ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(w / 2, hh / 2, Math.max(2, (0.27 / D.corMax) * side / 2), 0, 7); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
