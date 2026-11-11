@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.47.0] - 2026-11-11
+
 ### Added
 - **New laboratory: Halation & diffusion filters** (`#/halation`). Light that reaches the film base is reflected at its back, totally beyond the critical angle, and returns as a ring of radius 2t tan θc (0.19 mm for a 125 µm base of index 1.65), caught mostly by the red layer: the red glow of film without its anti-halation backing. A diffusion filter's haze for comparison. A night street in linear light convolved with both by FFT, as the whole frame or a 4× crop, with the radial profile of the returning light and the Fresnel reflection at the base.
 
@@ -970,7 +972,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.46.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.47.0...HEAD
+[1.47.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.46.0...v1.47.0
 [1.46.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.45.0...v1.46.0
 [1.45.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.44.0...v1.45.0
 [1.44.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.43.0...v1.44.0
