@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.44.0] - 2026-11-11
+
 ### Added
 - **Design an Earth-observation satellite: the picture your design takes.** An 80 × 56 m crossroads shown at 10 cm and as your satellite records it: blurred by the planned mirror, integrated over the pixel and one pixel of motion, sampled at the chosen ground sample distance, with the noise of the planned TDI signal (the Earth-observation laboratory's models). Lane markings and the zebra crossing survive at 50 cm and vanish at 2 m.
 - **Photograph the Milky Way: the photograph your plan gives.** A crop of the frame at 100 %, side by side as one sub-exposure and as the stack of the planned number of frames, computed from the plan's own rates: the sky glow of the chosen Bortle class, the faint detail you asked for (with dark lanes), stars from a realistic count, blurred by the lens and trailed by the planned amount, photon and read noise at the chosen ISO. With one stretch for both, a single frame is noise and the stack shows the structure.
@@ -955,7 +957,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.43.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.44.0...HEAD
+[1.44.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.43.0...v1.44.0
 [1.43.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.42.0...v1.43.0
 [1.42.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.41.0...v1.42.0
 [1.41.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.40.0...v1.41.0
