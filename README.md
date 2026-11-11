@@ -952,7 +952,7 @@ Optica_Viva/
 │   │   ├── ifilter.js         Interference filters in converging beams: angle shift, cone average, pre-shift
 │   │   ├── interferometry.js  Visibility of extended sources, array u-v coverage, dirty beam/image, Högbom CLEAN
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
-│   │   ├── pixels.js          Image pipeline: pictures drawn at device pixels (Catmull–Rom sampling, soft-toe tone curve, dithering, preview then refine)
+│   │   ├── pixels.js          Image pipeline: pictures drawn at device pixels (Catmull–Rom sampling, soft-toe tone curve, colour tables, sharp mask edges, dithering, preview then refine)
 │   │   ├── photons.js         Photon by photon: Poisson arrivals on a test scene, sub-exposures with read noise, measured SNR, photoelectron arrival times and the reads of a ramp
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── survey.js          Survey mission: DORI pixel densities, drone GSD, shutter and overlap

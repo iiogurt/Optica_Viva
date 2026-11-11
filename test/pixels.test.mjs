@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { catmull, bilinear, toe, encode, ign, renderInto } from '../js/lib/pixels.js';
+import { catmull, bilinear, toe, encode, ign, renderInto, edge, keyOf } from '../js/lib/pixels.js';
 import { oetf } from '../js/lib/color.js';
 
 const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
@@ -50,4 +50,14 @@ test('black hole: 2×2 rays per pixel equal the average of the image traced at t
     const m = (fine[2 * j * 2 * N + 2 * i] + fine[2 * j * 2 * N + 2 * i + 1] + fine[(2 * j + 1) * 2 * N + 2 * i] + fine[(2 * j + 1) * 2 * N + 2 * i + 1]) / 4;
     near(ss[j * N + i], m, 1e-6 * (1 + m), `pixel ${i},${j}`);
   }
+});
+
+test('mask edge: sharp outside, partial coverage inside kept; keys stable per object', () => {
+  assert.equal(edge(0.5, 4), 0.5); assert.equal(edge(0.8, 4), 0.8, 'a segment gap keeps its value');
+  assert.equal(edge(0.3, 4), 0, 'outside the edge: black within a device pixel');
+  near(edge(0.45, 4), 0.3, 1e-12, 'the ramp spans ¼ of a field pixel at 4 device pixels per field pixel');
+  assert.equal(edge(0.3, 1), 0.3, 'no sharpening when the picture is not enlarged');
+  assert.equal(edge(1.2, 4), 1); assert.equal(edge(-0.1, 1), 0);
+  const a = {}, b = {};
+  assert.equal(keyOf(a), keyOf(a)); assert.notEqual(keyOf(a), keyOf(b)); assert.equal(keyOf(null), 0);
 });
