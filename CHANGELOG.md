@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.39.0] - 2026-11-11
+
 ### Changed
 - **3-D views: glass looks like glass.** Lens elements and other glass reflect a soft studio, weighted by Fresnel's law for n = 1.5: faces seen edge-on carry bright rims, faces seen head-on stay clear and show their tint. Other surfaces get a faint reflection at grazing angles.
 - **3-D labels no longer overlap.** A label whose place is taken moves a line or two up or down with a thin leader to its point, and is left out only when there is no room.
@@ -919,7 +921,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.38.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.39.0...HEAD
+[1.39.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.38.0...v1.39.0
 [1.38.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.37.0...v1.38.0
 [1.37.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.36.0...v1.37.0
 [1.36.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.35.0...v1.36.0
