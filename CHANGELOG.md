@@ -6,10 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
-## [1.43.0] - 2026-11-11
-
 ### Added
 - **Photograph the Milky Way: the photograph your plan gives.** A crop of the frame at 100 %, side by side as one sub-exposure and as the stack of the planned number of frames, computed from the plan's own rates: the sky glow of the chosen Bortle class, the faint detail you asked for (with dark lanes), stars from a realistic count, blurred by the lens and trailed by the planned amount, photon and read noise at the chosen ISO. With one stretch for both, a single frame is noise and the stack shows the structure.
+
+## [1.43.0] - 2026-11-11
 
 ### Added
 - **Portrait session: the photograph your plan gives.** Beside the plan, a portrait computed from it: the face seen from the planned distance with the planned focal length (closer means a larger nose), lit by a round light of the planned size and distance (the exact irradiance of a spherical source, so a small light gives a hard edge across the face and a large one a soft one), each part of the face blurred by its own depth of field, and the string lights on the wall behind turned into discs of exactly the planned size. Rendered in the compute worker: a quick picture at once, then one with 2 × 2 rays per pixel once the controls settle.
