@@ -352,6 +352,9 @@ canvas:focus-visible { outline-offset: -2px; }
     background: var(--panel-2); color: var(--fg); font: 600 13px var(--font-sans); cursor: pointer;
   }
   .ctl-sheet.open .chev { transform: rotate(180deg); }
+  /* the sheet fits below the lab's first picture, which stays pinned to the top while it is open */
+  .lab-side .ctl-sheet.open { max-height: max(36vh, calc(100vh - var(--pin-h, 42vh) - 8px)); }
+  .lab-main figure.stage.pinned { position: fixed; top: 0; z-index: 14; margin: 0; box-shadow: 0 10px 28px rgba(0, 0, 0, .6); }
   main { padding-bottom: 64px; }
 }
 

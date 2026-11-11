@@ -79,17 +79,32 @@ export function header(meta) {
 
 // Standard lab: main column (stages) + sticky side column (controls, readouts, live calc).
 // On phones the card holding the controls becomes a bottom sheet (see .ctl-sheet in CSS), shown only
-// while its own lab is on screen, so sliders and results are visible together.
+// while its own lab is on screen. Opening it pins the lab's first picture to the top of the screen
+// and fits the sheet below it, so the sliders and the picture they change are seen together.
 export function lab(main, side, wide = false) {
   const mainEl = h('div.lab-main', {}, ...main);
   const card = side.find((n) => n.querySelector && n.querySelector('.controls'));
   if (card) {
     card.classList.add('ctl-sheet');
     const handle = h('button.sheet-handle', { type: 'button', 'aria-expanded': 'false' }, h('span', {}, t('⚙ Controls')), h('span.chev', { 'aria-hidden': 'true' }, '▲'));
-    handle.addEventListener('click', () => {
-      const open = card.classList.toggle('open');
-      handle.setAttribute('aria-expanded', String(open));
-    });
+    // the first picture is fixed to the top of the screen while the sheet is open; a placeholder
+    // of its height keeps the page from jumping (placed again when the screen turns)
+    const place = () => {
+      const open = card.classList.contains('open');
+      mainEl.querySelectorAll('.pin-hold').forEach((x) => x.remove());
+      const pin = mainEl.querySelector('figure.stage');
+      if (pin) { pin.classList.remove('pinned'); pin.style.removeProperty('left'); pin.style.removeProperty('width'); }
+      card.style.removeProperty('--pin-h');
+      if (!open || !pin || typeof matchMedia !== 'function' || !matchMedia('(max-width: 860px)').matches) return;
+      const r = pin.getBoundingClientRect();
+      pin.before(h('div.pin-hold', { style: { height: r.height + 'px' } }));
+      Object.assign(pin.style, { left: r.left + 'px', width: r.width + 'px' });
+      pin.classList.add('pinned');
+      card.style.setProperty('--pin-h', Math.min(r.height, innerHeight * 0.6) + 'px');
+    };
+    handle.addEventListener('click', () => { handle.setAttribute('aria-expanded', String(card.classList.toggle('open'))); place(); });
+    const onResize = () => { if (!card.isConnected) removeEventListener('resize', onResize); else if (card.classList.contains('open')) place(); };
+    if (typeof addEventListener === 'function') addEventListener('resize', onResize);
     card.prepend(handle);
     if (typeof IntersectionObserver === 'function') {
       new IntersectionObserver(([e]) => card.classList.toggle('in-view', e.isIntersecting), { rootMargin: '-35% 0px -35% 0px' }).observe(mainEl);
