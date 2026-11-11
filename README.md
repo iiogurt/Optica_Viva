@@ -367,6 +367,16 @@ A lake scene **rendered per pixel in Stokes vectors**. Skylight from a single-sc
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Mirages** · `#/mirage`<br>
+<img src="docs/screenshots/mirage.webp" alt="A car on a hot road seen twice, once upside down above a band of reflected sky; the rays from the eye curving back up off the road; where each height appears; the temperature of the air" width="70%">
+
+Light traced **exactly through air whose temperature changes with height**: the inferior mirage over a hot road (the car seen twice, the sky reflected as a "puddle"), looming over a cold sea that lifts a ship's hull back above the horizon, and the **Fata Morgana** of a warm layer that stretches a ship into stacked towers. The index of air follows the gas law with hydrostatic pressure, the Earth's curvature enters through the flat-Earth transformation, and the transfer curve shows where every height of the car or ship appears.
+
+</td>
+</tr>
 </table>
 
 ### Light, sensor & time
@@ -764,6 +774,7 @@ flowchart LR
 | Birefringence | Stress-optic law with the Hertz/Frocht disk stress field, white-light interference colours from 61 wavelengths; extraordinary-ray walk-off in uniaxial crystals | polarisation |
 | Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
 | Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
+| Mirages | n − 1 = K P/T (2.77·10⁻⁴ at 15 °C, 1013.25 hPa), hydrostatic pressure; surface layer ΔT·e^(−z/h) plus an optional warm layer; exact stratified ray equation z'' = (1 + z'²)(1/n) dn/dz by RK4 with steps shrinking in thin layers; flat-Earth transformation n(1 + z/R_E); window found by scanning ±12 mrad | mirage |
 | Drop scattering | Lorenz–Mie series (Bohren & Huffman's BHMIE; logarithmic derivative by downward recurrence from its exact top value, Lentz's continued fraction), real water index, 16 wavelengths × 3 radii, solar-disc smear, 5800 K sunlight | atmospheric |
 | Optics bench | Forward photon tracing, one wavelength per photon (400–700 nm), through convex glass shapes (half-spaces, spheres, a cylinder); Sellmeier index, unpolarised Fresnel by Russian roulette, TIR; CIE 1931 colour on the screen | bench |
 | Black hole | Schwarzschild photon orbits u'' = 3u² − u by RK4 (Δφ = 0.004) for 1100 impact parameters; disk crossings at φ₀ + nπ (Luminet 1979); Page–Thorne flux; I ∝ g⁴F with Keplerian orbits; Gaussian EHT beam; traced again at the canvas's device pixels with 2×2 rays per pixel, crossing radii interpolated between tabulated orbits | blackhole |
@@ -870,6 +881,7 @@ Optica_Viva/
 │   │   ├── fdtd.js            Maxwell's equations on a Yee grid: scenes, absorbing layer, time stepping, Huygens–Fresnel comparison
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
+│   │   ├── mirage.js          Mirages: index of air, temperature profiles, exact rays in stratified air, transfer curves
 │   │   ├── atmo.js            Atmospheric optics: ice-crystal halo ray tracing, Lorenz–Mie scattering, rainbow geometry
 │   │   ├── autofocus.js       Phase and contrast autofocus on a defocused scene strip
 │   │   ├── bench.js           Spectral optics bench: convex glass shapes, forward photon tracer, screen frame
@@ -968,7 +980,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (64)
+│   └── modules/               One file per page (65)
 ├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── vendor/fonts/              Fraunces, Inter, JetBrains Mono (OFL 1.1), variable woff2, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
@@ -1121,6 +1133,7 @@ The numerical core was checked against published or analytically known values. E
 | FDTD double slit against the Huygens–Fresnel integral | RMS difference below 0.12, central fringe within 3 cells | 2-D Huygens–Fresnel |
 | Portrait photograph: irradiance of a spherical light of angular radius a at the geometric terminator; background blur disc | sin a / 4; disc = planned c_bg | (cos θ + sin a)²/(4 sin a) at cos θ = 0; diameter 2r/px·mm = c_bg |
 | Milky Way photograph: noise of one frame against the planned stack | √(signal + σ²)·√(1 + 1/N) | within 12 % of the measured difference between the two pictures |
+| Mirages: gradient at which a level ray curves like the Earth; ship hidden at 20 km from 3 m in standard air | 0.129 K/m at 15 °C; 11.4 m | κ = 1/R_E exactly; ray tracer within 0.15 m of (L − √(2R′z₀))²/(2R′), R′ = R_E/(1 − k) |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
 | Autofocus defocus blur, 50 mm f/2 at 2 m, subject 3 m; 200 mm f/2, 0.6 m ↔ 10 m | 213.675 µm; 31.973 mm and 47.000 mm, half-pupil shift 0.424 A Δv/v | Thin-lens similar triangles, b = A\|Δv\|/v(u), and a ray trace through both pupil halves |
@@ -1149,6 +1162,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
+| Mirages | Horizontally uniform, steady air; one wavelength; dry air; smooth model profiles | No shimmer, no green flash, no tilted or moving layers |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
 | Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |
 | Starshade | Scalar Fresnel diffraction; petals as an azimuthally averaged transmission (no J<sub>N</sub> petal terms); perfect shape; point star | No edge scattering of sunlight, shape or position errors |

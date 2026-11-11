@@ -387,3 +387,32 @@ test('Milky Way mission photograph: the stack is √frames less noisy than one f
   const again = milkywayShot(P, { W: 200, H: 130 });
   assert.equal(again.one[777], r.one[777], 'seeded: the same picture every time');
 });
+
+test('mirages: index of air, ray curvature, the gradient at which light follows the Earth, and the images', async () => {
+  const M = await import('../js/lib/mirage.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
+  near(M.refractivity(288.15, 1013.25), 2.77e-4, 1e-12, 'n − 1 at 15 °C, 1013.25 hPa');
+  near(M.dndT(288.15, 1013.25), -2.77e-4 / 288.15, 1e-15, 'dn/dT = −(n − 1)/T');
+  near(M.rayCurvature(M.criticalGradient()).k, 1, 1e-9, 'at the critical gradient a level ray curves like the Earth');
+  near(M.criticalGradient(), 0.129, 0.002, 'critical dT/dz at 15 °C (K/m)');
+  const k = M.rayCurvature(-0.0065).k;
+  assert.ok(k > 0.15 && k < 0.18, `standard atmosphere: coefficient of refraction ${k} (0.13–0.17 quoted for dry air)`);
+  // a uniform index gradient g: the exact ray z = z0 + p0 x + g x²/2 for small slopes
+  const g = 2e-5, U = { grad: () => g, ne: () => 1, scale: 50 }, r = M.ray(U, 1, 0.001, 300, { dx: 5 });
+  near(r.z, 1 + 0.001 * 300 + (g * 300 * 300) / 2, 2e-4, 'ray in a uniform gradient');
+  // images of the middle of the object: two on the hot road (one inverted), one in standard air, and
+  // at least one over a cold sea
+  const count = (atm, z0, L, H) => {
+    const s = M.mirageScene({ atm, z0, L, H, n: 301 }), zm = H / 2;
+    let n = 0; for (let i = 1; i < s.z.length; i++) { const a = s.z[i - 1], b = s.z[i]; if (isFinite(a) && isFinite(b) && (a - zm) * (b - zm) <= 0 && a !== b) n++; }
+    return n;
+  };
+  assert.equal(count({ Ta: 30, dT: 15, h: 0.05 }, 1.6, 800, 1.5), 2, 'hot road: upright and inverted');
+  // standard air: the part of the ship hidden below the horizon matches (L − √(2R′z₀))²/(2R′) with the
+  // effective radius R′ = R_E/(1 − k)
+  const Rp = M.RE / (1 - k), hidden = (20000 - Math.sqrt(2 * Rp * 3)) ** 2 / (2 * Rp);
+  const std = M.mirageScene({ atm: { Ta: 15, dT: 0, h: 1 }, z0: 3, L: 20000, H: 24, n: 601 });
+  near(Math.min(...std.z.filter(Number.isFinite)), hidden, 0.15, 'standard air: lowest visible height at 20 km (m)');
+  assert.equal(count({ Ta: 15, dT: 0, h: 1 }, 3, 20000, 24), 1, 'standard air: the ship\'s middle (12 m) just clears the horizon');
+  assert.ok(count({ Ta: 10, dT: -6, h: 15 }, 3, 20000, 24) >= 1, 'cold sea: looming brings it back');
+});
