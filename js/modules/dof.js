@@ -1,4 +1,4 @@
-import { h, controls, stage, readouts, fmt, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, fmt, texNum, rafThrottle } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { SENSORS, diag, pitchUm } from '../lib/sensors.js';
 import { plot, logRange } from '../lib/plot.js';
@@ -7,7 +7,7 @@ import { blurredCanvas, diskBlurredCanvas } from '../lib/blur.js';
 import { runOn, parallel, rowBands } from '../lib/compute.js';
 import { view3d } from '../lib/gl3d.js';
 import { dofScene, sceneDepth, CARDS, cardAngle } from '../lib/dof3d.js';
-import { t, N_ } from '../lib/i18n.js';
+import { t, N_, localNum } from '../lib/i18n.js';
 
 const LAMBDA = 0.00055; // mm
 
@@ -228,7 +228,7 @@ c(d) &= \frac{f}{N}\cdot\frac{f\,|d-s|}{d\,(s-f)}
     }
     g.globalCompositeOperation = 'source-over';
     for (const d of drawCards) d(g);
-    IMG = { cv, f, N, sen };
+    IMG = { cv, f, N, sen, IW, IH, hz, hc, pxmm, s };
     photo.redraw();
   }
 
@@ -247,6 +247,37 @@ c(d) &= \frac{f}{N}\cdot\frac{f\,|d-s|}{d\,(s-f)}
     ctx.fillStyle = '#fff'; ctx.font = '11px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
     ctx.fillText(`${f.toFixed(0)} mm  f/${N.toPrecision(2)}  ${sen.w}×${sen.h} mm`, ox + W - 12, oy + H - 12);
   }
+
+  // The photograph, the distance scale and the blur chart are linked. Every row of the ground below the
+  // horizon lies at one distance, Z = f·h / y (h the camera height, y the row's height below the
+  // horizon on the sensor): pointing at the ground marks that distance on the scale and the chart,
+  // and pointing at the chart draws its distance as a line across the photograph.
+  const photoRect = () => { const ar = IMG.sen.w / IMG.sen.h; let W = photo.w, H = Math.round(photo.w / ar); if (H > photo.h) { H = photo.h; W = Math.round(photo.h * ar); } return { ox: Math.round((photo.w - W) / 2), oy: Math.round((photo.h - H) / 2), W, H }; };
+  const rowOf = (Zmm) => { const R = photoRect(); return R.oy + (IMG.hz + ((IMG.f * IMG.hc) / Zmm) * IMG.pxmm) * (R.H / IMG.IH); };
+  const diaX = (mm) => { const x0 = 40, x1 = dia.w - 30, lo = 0.1, hi = 1000, m = mm / 1000; return m >= hi ? x1 : x0 + (Math.log(Math.max(lo, m) / lo) / Math.log(hi / lo)) * (x1 - x0); };
+  function markDistance(Zmm, fromPhoto) {
+    const op = photo.over(), od = dia.over();
+    if (Zmm == null || !IMG || !M) { if (fromPhoto) bp.mark(null); return; }
+    const R = photoRect(), y = rowOf(Zmm), c = blur(M.f, M.N, M.s, Zmm) * 1000, sharp = c <= M.c * 1000;
+    if (y > R.oy && y < R.oy + R.H) {
+      op.strokeStyle = sharp ? 'rgba(107,227,164,0.9)' : 'rgba(255,255,255,0.8)'; op.lineWidth = 1; op.setLineDash([5, 4]);
+      op.beginPath(); op.moveTo(R.ox, y); op.lineTo(R.ox + R.W, y); op.stroke(); op.setLineDash([]);
+      op.font = '11px "JetBrains Mono", monospace'; op.textAlign = 'left'; op.fillStyle = '#fff'; op.shadowColor = '#000'; op.shadowBlur = 4;
+      op.fillText(t('{d} m · blur {c} µm{ok}', { d: localNum(fmt(Zmm / 1000, 3)), c: localNum(fmt(c, 3)), ok: sharp ? ' ✓' : '' }), R.ox + 10, y - 6);
+    }
+    const x = diaX(Zmm);
+    od.strokeStyle = 'rgba(255,255,255,0.85)'; od.lineWidth = 1.2; od.beginPath(); od.moveTo(x, 8); od.lineTo(x, dia.h - 8); od.stroke();
+    if (fromPhoto) bp.mark(Zmm / 1000);
+  }
+  bp.hover = (i) => markDistance(i ? i.x * 1000 : null, false);
+  const atPhoto = rafThrottle((e) => {
+    if (!IMG) return;
+    const R = photoRect(), box = photo.canvas.getBoundingClientRect(), yi = ((e.clientY - box.top - R.oy) / R.H) * IMG.IH;
+    const ymm = (yi - IMG.hz) / IMG.pxmm;
+    markDistance(ymm > 1e-3 && e.clientX - box.left > R.ox && e.clientX - box.left < R.ox + R.W ? (IMG.f * IMG.hc) / ymm : null, true);
+  });
+  photo.canvas.addEventListener('pointermove', atPhoto);
+  photo.canvas.addEventListener('pointerleave', () => requestAnimationFrame(() => markDistance(null, true)));
 
   function drawDiagram(ctx, w, hh) {
     if (!M) return;
