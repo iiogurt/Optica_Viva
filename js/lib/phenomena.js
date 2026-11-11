@@ -243,7 +243,7 @@ export const GROUPS = [
       [N_('Atmospheric refraction'), 'adc', 's', N_('Objects appear higher near the horizon.'), r`R\approx(n-1)\tan z`],
       [N_('Extinction & airmass'), null, 'ps', N_('Atmospheric absorption and scattering dim sources with zenith angle.'), r`m=m_0+kX,\ X\approx\sec z`],
       [N_('Aerial perspective & haze'), 'dof', 'pv', N_('Rayleigh and Mie scattering add airlight and reduce contrast with distance.'), r`C(d)=C_0e^{-\beta d},\ \beta_R\propto\lambda^{-4}`],
-      [N_('Heat shimmer & mirages'), null, 'pv', N_('Ground-level index gradients bend rays and distort distant scenes.'), r`\frac{d}{ds}\left(n\frac{d\mathbf r}{ds}\right)=\nabla n`],
+      [N_('Heat shimmer & mirages'), 'mirage', 'pv', N_('Ground-level index gradients bend rays and distort distant scenes.'), r`\frac{d}{ds}\left(n\frac{d\mathbf r}{ds}\right)=\nabla n`],
       [N_('Image stacking (√N)'), 'stacking', 'ps', N_('Averaging sub-exposures beats noise as √N once each is sky-limited.'), r`\mathrm{SNR}=\frac{F_oNt}{\sqrt{N[(F_o+F_s+F_d)t+\sigma_r^2]}}`],
       [N_('Sky background & light pollution'), 'stacking', 'ps', N_('Scattered artificial light and airglow set the faintest detectable surface brightness.'), r`\mathrm{SNR}=\frac{S}{\sqrt{S+B\,\Omega+\sigma_r^2}}`],
       [N_('Rayleigh scattering & the blue sky'), null, 'pvs', N_('Molecules scatter as λ⁻⁴: the sky is blue, sunsets red, and the scattered light polarised.'), r`\sigma_R=\frac{8\pi^3(n^2-1)^2}{3N^2\lambda^4}`],

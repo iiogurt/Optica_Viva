@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 485 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 488 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -573,6 +573,10 @@ Candidates, in order of how much the third dimension adds:
 - [x] **P3 · M** **Phone layout**: the picture pinned above the controls sheet. *Opening the sheet fixes the lab's first picture to the top of the screen (a placeholder keeps the page still) and fits the sheet below it; it stays while the page scrolls and is placed again when the screen turns. Checked by the smoke test on three pages.*
 - [x] **P3 · M** **A real flare scene**: a procedurally rendered high-dynamic-range scene instead of the flat landscape. *`js/lib/flarescene.js`: a dusk sky with the forward-scattering glow round the sun (it follows the dragged sun), thin clouds lit from below, three ridges fading into the haze, and a lake that mirrors them with ripples and a glitter path; linear radiance through one filmic tone curve, drawn at device pixels. The ghosts and the sunstar are added on top unchanged. The ghosts are still added in display values; adding them in linear light before the tone curve would need their calibration redone.*
 
+### v1.45 Mirages
+
+- [x] **P2 · L** **Mirages laboratory** (`#/mirage`): exact rays in stratified air over a hot road, a cold sea and a Fata Morgana inversion, with the Earth's curvature; the picture from the transfer curve, the side view of the rays and the temperature profile. *From the backlog's "further phenomena"; shimmer (moving warm parcels) and the green flash (dispersion) are left for later.*
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -609,7 +613,7 @@ Ideas worth keeping but not yet scheduled:
 - *(from the October 2026 exploration)* Further phenomena:
   - Photography and cinema: in-camera lens corrections and their resolution cost; infrared and UV photography (Wood effect, IR focus shift); diffusion filters (Pro-Mist) and film halation; stereo 3D (interaxial, convergence, depth budget); HDR display transfer functions (PQ, HLG) and cinema screen luminance.
   - Astronomy and space: satellite trails and their rejection in stacks; radial-velocity precision; planetary-imaging sampling; free-space laser communication link budgets; star trackers; phase angle and sun glint; LIGO as an optical instrument (shot noise vs radiation pressure).
-  - Atmosphere and nature: Brocken spectres; caustics and apparent depth in water; mirages; extinction and airmass; zodiacal light and airglow.
+  - Atmosphere and nature: Brocken spectres; caustics and apparent depth in water; extinction and airmass; zodiacal light and airglow.
 
 ---
 
