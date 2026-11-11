@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Pool caustics & apparent depth** (`#/caustics`). The bright net on a pool floor, traced ray by ray through a wavy surface (Snell's law in vector form at the local normal, in three colours), with moving waves on request; a side view of sunlight converging under the crests; the depth where a crest focuses, n/((n − 1)Ak²); and how deep the floor looks, d/n straight down and astigmatic at a slant. The tracer's first fold agrees with that depth within 1 %, and the floor receives exactly the light of flat water on average. The catalogue's "Caustics" now opens it.
+
 ## [1.45.0] - 2026-11-11
 
 ### Added
