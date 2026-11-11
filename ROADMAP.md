@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 488 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 491 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -577,6 +577,10 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P2 · L** **Mirages laboratory** (`#/mirage`): exact rays in stratified air over a hot road, a cold sea and a Fata Morgana inversion, with the Earth's curvature; the picture from the transfer curve, the side view of the rays and the temperature profile. *From the backlog's "further phenomena"; shimmer (moving warm parcels) and the green flash (dispersion) are left for later.*
 
+### v1.46 Pool caustics
+
+- [x] **P2 · M** **Pool caustics & apparent depth** (`#/caustics`): the bright net on a pool floor traced ray by ray through a moving wavy surface, the depth where it is sharpest, and astigmatic apparent depth. *From the backlog's "further phenomena"; diffraction at the caustics (catastrophe optics) and the Sun's size are left out.*
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -613,7 +617,7 @@ Ideas worth keeping but not yet scheduled:
 - *(from the October 2026 exploration)* Further phenomena:
   - Photography and cinema: in-camera lens corrections and their resolution cost; infrared and UV photography (Wood effect, IR focus shift); diffusion filters (Pro-Mist) and film halation; stereo 3D (interaxial, convergence, depth budget); HDR display transfer functions (PQ, HLG) and cinema screen luminance.
   - Astronomy and space: satellite trails and their rejection in stacks; radial-velocity precision; planetary-imaging sampling; free-space laser communication link budgets; star trackers; phase angle and sun glint; LIGO as an optical instrument (shot noise vs radiation pressure).
-  - Atmosphere and nature: Brocken spectres; caustics and apparent depth in water; extinction and airmass; zodiacal light and airglow.
+  - Atmosphere and nature: Brocken spectres; extinction and airmass; zodiacal light and airglow.
 
 ---
 

@@ -416,3 +416,28 @@ test('mirages: index of air, ray curvature, the gradient at which light follows 
   assert.equal(count({ Ta: 15, dT: 0, h: 1 }, 3, 20000, 24), 1, 'standard air: the ship\'s middle (12 m) just clears the horizon');
   assert.ok(count({ Ta: 10, dT: -6, h: 15 }, 3, 20000, 24) >= 1, 'cold sea: looming brings it back');
 });
+
+test('pool caustics: Snell in vector form, the depth where a wave first focuses, conserved light, apparent depth', async () => {
+  const C = await import('../js/lib/caustics.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
+  // Snell: sin i = n sin r for a ray at 30° onto a flat surface
+  const n = 1.333, i = Math.PI / 6, tv = C.refract([Math.sin(i), 0, -Math.cos(i)], [0, 0, 1], n);
+  near(Math.hypot(tv[0], tv[1], tv[2]), 1, 1e-12, 'unit length');
+  near(Math.sin(i), n * tv[0], 1e-12, 'sin i = n sin r');
+  // one wave: the landing map first folds at D* = n/((n − 1) A k²)
+  const A = 0.004, k = (2 * Math.PI) / 0.3, Ds = C.focusDepth(A, k, n);
+  const minSlope = (D) => { let m = Infinity; for (let j = 0; j < 2000; j++) { const x = (j / 2000) * 0.3, e = 1e-6; m = Math.min(m, (C.landing1D(A, k, n, D, x + e) - C.landing1D(A, k, n, D, x - e)) / (2 * e)); } return m; };
+  let lo = 0.1, hi = 10;
+  for (let it = 0; it < 40; it++) { const mid = (lo + hi) / 2; if (minSlope(mid) > 0) lo = mid; else hi = mid; }
+  near(lo / Ds, 1, 0.01, 'first fold of the traced rays vs D*');
+  // the light on the floor averages that of flat water (nothing lost or created)
+  const img = C.floorLight(C.makeWaves({ A: 0.006, lam: 0.25 }), { N: 64, D: 1.2, rpp: 2 })[0];
+  near(img.reduce((s, v) => s + v, 0) / img.length, 1, 1e-6, 'mean floor irradiance');
+  assert.ok(Math.max(...img) > 3, 'caustic lines several times brighter than the mean');
+  // apparent depth: d/n straight down; the tangential image where neighbouring rays' extensions meet
+  near(C.apparentDepth(1, 0, n).tangential, 1 / n, 1e-12, 'd/n');
+  const d = 1, ta = 0.6, a = C.apparentDepth(d, ta, n), e = 1e-6;
+  const line = (tw) => ({ x: d * Math.tan(tw), t: Math.tan(Math.asin(n * Math.sin(tw))) });
+  const p = line(a.tw - e), q = line(a.tw + e);
+  near(Math.abs((q.x - p.x) / (p.t - q.t)), a.tangential, 1e-6, 'tangential apparent depth');
+});
