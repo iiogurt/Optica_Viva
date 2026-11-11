@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.41.0] - 2026-11-11
+
 ### Added
 - **Depth of field: the photograph, the distance scale and the blur chart are linked.** Every row of ground in the photograph lies at one distance; pointing at it draws the row across the picture with its distance and blur (green with ✓ inside the circle of confusion), marks it on the scale and reads the blur chart there. Pointing at the chart draws its distance across the photograph.
 - **Gravitational lensing: point at the image to see where its light came from.** The lens equation β = θ − α(θ) maps the pointed spot back to the source plane (a cross with its position); every spot of the image plane that comes from the same point of the galaxy is dotted, and the images, solved from the lens equation, are ringed and counted ("seen 4 times" inside the diamond caustic).
@@ -936,7 +938,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.40.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.41.0...HEAD
+[1.41.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.40.0...v1.41.0
 [1.40.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.39.0...v1.40.0
 [1.39.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.38.0...v1.39.0
 [1.38.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.37.0...v1.38.0
