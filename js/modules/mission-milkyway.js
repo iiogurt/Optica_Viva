@@ -1,12 +1,13 @@
 // Mission: photograph the Milky Way with a camera on a fixed tripod.
 import { h, controls, stage, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { paint, encode, keyOf } from '../lib/pixels.js';
 import { header, lab, idea, rule, theory, references, liveCalc, missionStep } from '../lib/page.js';
 import { plot, range } from '../lib/plot.js';
 import { MODULES } from '../app.js';
 import { cameraOptions, resolveCamera } from '../lib/equipment.js';
 import { BORTLE, surfaceRate } from '../lib/stacking.js';
-import { plan, SIDEREAL } from '../lib/milkyway.js';
-import { t } from '../lib/i18n.js';
+import { plan, SIDEREAL, milkywayShot } from '../lib/milkyway.js';
+import { t, localNum } from '../lib/i18n.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const fmtT = (t) => (t >= 60 ? (t / 60).toFixed(t >= 600 ? 0 : 1) + ' min' : (t >= 10 || Number.isInteger(t) ? t.toFixed(0) : t.toPrecision(2)) + ' s');
@@ -36,9 +37,10 @@ export default function mount(root, meta) {
     missionStep(4, 'Frames to stack', 'stacking', titleOf('stacking')),
   ];
   steps[0].el.querySelector('.mstep-lab').remove();
+  const shots = stage({ aspect: 2.5, label: 'Your photograph, computed from the plan: a crop at 100 %, one frame and the stack', draw: drawShots, minH: 200 });
   const pix = stage({ aspect: 2.2, label: 'One star at 100 % (each square is a pixel)', draw: drawPixels, minH: 200 });
   const snrPlot = stage({ aspect: 2.2, label: '', draw: drawSNR, cls: 'plain', minH: 220 });
-  root.append(lab([h('div.msteps', {}, ...steps.map((s) => s.el)), pix.el, h('div.card', { style: { padding: '8px' } }, snrPlot.el)], [h('div.card', {}, ctl.el), calc.el]));
+  root.append(lab([h('div.msteps', {}, ...steps.map((s) => s.el)), shots.el, pix.el, h('div.card', { style: { padding: '8px' } }, snrPlot.el)], [h('div.card', {}, ctl.el), calc.el]));
 
   let P = null;
   function update() {
@@ -72,7 +74,8 @@ export default function mount(root, meta) {
     F_d &= ${texNum(r.Fd, 3)}\ e^-/\text{s}\ \text{(detail)}\\
     \mathrm{SNR}_N &= \sqrt{N}\,\mathrm{SNR}_1 = ${texNum(Math.sqrt(r.frames) * r.s1, 3)}
     \end{aligned}`);
-    pix.redraw(); snrPlot.redraw();
+    SHOT = milkywayShot(P, { N: st.N });
+    pix.redraw(); snrPlot.redraw(); shots.redraw();
   }
 
   // a star integrated over the pixel grid while it drifts across the sensor
@@ -104,6 +107,25 @@ export default function mount(root, meta) {
       for (let i = 0; i <= n; i++) { ctx.beginPath(); ctx.moveTo(ox + i * cell, oy); ctx.lineTo(ox + i * cell, oy + side); ctx.moveTo(ox, oy + i * cell); ctx.lineTo(ox + side, oy + i * cell); ctx.stroke(); }
       ctx.fillStyle = k ? '#ff9a7a' : '#6be3a4'; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'left';
       ctx.fillText(t('{label} · trail {px} px', { label, px: ((L * 1000) / P.pitch).toFixed(1) }), ox, 40);
+    });
+  }
+
+  // The photograph the plan gives (js/lib/milkyway.js): the same crop as one frame and as the stack,
+  // with one display stretch for both (black at the sky's level, white just above the brightest detail),
+  // each sensor pixel drawn as a square.
+  let SHOT = null;
+  function drawShots(ctx, w, hh, st) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
+    if (!SHOT) return;
+    const { W, H, sky, det, noise1 } = SHOT, gap = 14, top = 50; // below the caption
+    const pw = Math.min((w - 3 * gap) / 2, ((hh - top - 10) * W) / H), ph = (pw * H) / W;
+    const lo = sky - 0.25 * det, hi = sky + 2.4 * det, k = 3 / (hi - lo); // the sky subtracted, as in processing
+    const tone = (v) => { const x = Math.max(0, v - lo) * k; return encode(Math.asinh(x) / Math.asinh(3)); };
+    [[SHOT.one, t('One {t} frame at ISO {iso}', { t: fmtT(P.t), iso: P.iso })], [SHOT.stack, t('Stack of {n} frames ({min} min)', { n: P.frames, min: localNum(fmt(P.total / 60, 2)) })]].forEach(([a, label], i) => {
+      const x0 = gap + i * (pw + gap);
+      paint(st, { x: x0, y: top, w: pw, h: ph }, (u, v, o) => { const g = tone(a[Math.min(H - 1, (v * H) | 0) * W + Math.min(W - 1, (u * W) | 0)]); o[0] = g; o[1] = g; o[2] = Math.min(1, g * 1.04); }, keyOf(SHOT), i);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(label, x0, top - 8);
     });
   }
 
@@ -146,5 +168,5 @@ and the average of \(N\) aligned frames \(\sqrt N\) times more. The plan asks fo
     'S. B. Howell, <i>Handbook of CCD Astronomy</i>, 2nd ed., Cambridge (2006), ch. 4: the CCD equation.',
     'R. N. Clark, clarkvision.com: digital camera sensor analysis (read noise against ISO).',
   ]));
-  return () => [pix, snrPlot].forEach((s) => s.destroy());
+  return () => [shots, pix, snrPlot].forEach((s) => s.destroy());
 }

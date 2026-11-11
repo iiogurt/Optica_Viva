@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 484 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 485 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -591,7 +591,7 @@ Candidates, in order of how much the third dimension adds:
 Ideas worth keeping but not yet scheduled:
 
 - *(from v1.2)* **WebGPU compute path** for FFTs, phase screens and per-pixel ray casting, with a mandatory CPU fallback; waits until the Raspberry Pi 4 or the CI runners expose a WebGPU adapter to test it on.
-- *(from v1.42)* **A picture of the result on the other missions** (the portrait session has one): the Milky Way frame with trails and noise, Jupiter through the seeing, the eclipse exposure set, the satellite's ground image at its GSD.
+- *(from v1.42)* **A picture of the result on the other missions** (the portrait session and the Milky Way have one): Jupiter through the seeing, the eclipse exposure set, the satellite's ground image at its GSD.
 - *(from v1.36)* **Soft shadows and tighter framing in the 3-D views**: the scenes have no ground to cast onto, and shadow maps are heavy on the Raspberry Pi; framing would fit the camera to the meshes rather than to every ray.
 - *(from v1.36)* **Wide-gamut output** (Display P3 canvases) for spectral colours: needs the colours kept outside sRGB through the computation (the PSF clips negative components today) and a P3 screen to check it on; gains nothing on sRGB screens.
 - *(from v1.3)* Traced relative illumination across the field (real-ray pupil area and cos⁴ projection) in the ray tracer.
