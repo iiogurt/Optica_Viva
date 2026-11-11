@@ -26,7 +26,7 @@ export default function mount(root, meta) {
   const ramps = stage({ aspect: 2.4, label: 'The same dark ramp coded five ways (brightened on your screen so the steps show)', draw: drawRamps, minH: 240 });
   const curves = stage({ aspect: 1.5, label: '', draw: drawCurves, cls: 'plain', minH: 220 });
   const steps = stage({ aspect: 1.5, label: '', draw: drawSteps, cls: 'plain', minH: 220 });
-  const levels = stage({ aspect: 3.4, label: '', draw: drawLevels, cls: 'plain', minH: 190 });
+  const levels = stage({ aspect: 3.4, label: '', name: N_('Light levels of screens and of the world'), draw: drawLevels, cls: 'plain', minH: 190 });
   root.append(lab([ramps.el, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, curves.el), h('div.card', { style: { padding: '6px' } }, steps.el)), h('div.card', { style: { padding: '6px' } }, levels.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   let key = 0;
