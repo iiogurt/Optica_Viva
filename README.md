@@ -511,6 +511,16 @@ Film as a **Boolean model** of randomly placed silver-halide grains with a log-n
 <tr>
 <td valign="top" colspan="2">
 
+**In-camera lens corrections** · `#/corrections`<br>
+<img src="docs/screenshots/corrections.webp" alt="A test chart recorded with barrel distortion and dark corners beside the camera's corrected version; the top-left star zoomed before and after; the cost in sampling and signal-to-noise from the centre to the corner" width="70%">
+
+What a camera's **software corrections** cost: a test chart recorded through a lens with Brown radial distortion, cos⁴ and mechanical vignetting and lateral colour (photon and read noise), then straightened, brightened and realigned by bilinear resampling. Barrel correction stretches the corners (dr_d/dr_u radially, r_d/r_u tangentially) and crops the field; brightening keeps the corner's signal-to-noise ratio at √V of the centre's.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Virtual production** · `#/vp`<br>
 <img src="docs/screenshots/vp.webp" alt="Camera view of an LED wall behind an actor and the grid contrast against camera distance" width="70%">
 
@@ -804,6 +814,7 @@ flowchart LR
 | Birefringence | Stress-optic law with the Hertz/Frocht disk stress field, white-light interference colours from 61 wavelengths; extraordinary-ray walk-off in uniaxial crystals | polarisation |
 | Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
 | Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
+| Lens corrections | Brown radial distortion r_d = r_u(1 + k₁r_u² + k₂r_u⁴) with an exact inverse (Newton, tabulated); vignetting cos⁴ of the field angle times a mechanical fall-off; lateral colour as ±scale of red and blue; 240 × 160 sensor, 2 × 2 samples, photon + read noise; correction by bilinear resampling into the largest rectangle the sensor covers | corrections |
 | Halation | Lambertian light in the base, Fresnel reflection at its back (total beyond θc), return radius 2t tan θ; kernel K(r) averaged over each grid cell; red-layer weighting 1 : 0.28 : 0.05; diffusion filter as (1 − s)δ + s·exponential halo; FFT convolution on 512² | halation |
 | Pool caustics | Sum of travelling waves (deep-water ω = √(gk)) with wave vectors that divide the 1.2 m patch; vector Snell refraction at the local normal with the index of water at 640, 545 and 460 nm; 16 rays per floor pixel splatted bilinearly (mean = flat water); absorption of pure water down and back up | caustics |
 | Sky colours | Single scattering in a spherical atmosphere (R_E = 6371 km, top 100 km): Rayleigh σ = 8π³(n² − 1)²/(3N²λ⁴)·F_K with Peck & Reeder n(λ), F_K = 1.048, scale height 8.43 km (the column of P₀/(mg)); aerosol β ∝ λ^(−α), scale height 1.2 km, Henyey–Greenstein g = 0.76; ozone Chappuis band (Gaussian approximation, 300 DU, tent profile 10–40 km); 8 wavelengths, 5778 K Sun, CIE 1931 | sky |
@@ -943,6 +954,7 @@ Optica_Viva/
 │   │   ├── tours.js           Guided tours: narrated steps that set a laboratory's controls
 │   │   ├── exercises.js       Exercises with checked answers, hints and worked solutions
 │   │   ├── computational.js   Burst merging, super-resolution and synthetic portrait blur
+│   │   ├── corrections.js     In-camera lens corrections: Brown distortion and its inverse, vignetting, lateral colour, resampling
 │   │   ├── compute.js         Worker API: run(task), latest-only channels, a pool for parallel row bands, main-thread fallback
 │   │   ├── cinema.js          Anamorphic aspect, streak colour, focus breathing models, T-stops
 │   │   ├── colordata.js       CIE tables at 5 nm: 1931 observer, daylight basis, illuminants, CRI test colours
@@ -1016,7 +1028,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (68)
+│   └── modules/               One file per page (69)
 ├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── vendor/fonts/              Fraunces, Inter, JetBrains Mono (OFL 1.1), variable woff2, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
@@ -1172,6 +1184,7 @@ The numerical core was checked against published or analytically known values. E
 | Pool caustics: depth where a wave h = A sin kx first focuses overhead sunlight; tangential apparent depth at 34° in air | n/((n − 1)Ak²) = 2.28 m for 4 mm, 30 cm waves; d cos³θa/(n cos³θw) | traced rays fold within 1 %; envelope of neighbouring rays within 10⁻⁶ |
 | Halation: ring radius for a 125 µm base of index 1.65; share of Lambertian light beyond θc | 190.5 µm; cos²θc = 63.3 % | 2t tan(arcsin 1/n); returned share 67.4 % (Fresnel adds the part below θc) |
 | Sky: vertical Rayleigh optical depth at 550 nm; air mass at 60–80° | 0.0973 (Bucholtz 1995); Kasten & Young (1989) | 0.0968; within 1.5 % (3 % at 85°, where refraction lengthens the real path) |
+| Lens corrections: sampling of the corrected picture; a grid line after straightening | dr_d/dr_u and r_d/r_u | match numerical derivatives (10⁻⁸); the line stays in one pixel column from top to bottom |
 | Mirages: gradient at which a level ray curves like the Earth; ship hidden at 20 km from 3 m in standard air | 0.129 K/m at 15 °C; 11.4 m | κ = 1/R_E exactly; ray tracer within 0.15 m of (L − √(2R′z₀))²/(2R′), R′ = R_E/(1 − k) |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
@@ -1204,6 +1217,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Pool caustics | Geometric optics (no diffraction at the caustics), a point-like Sun, gentle waves, a flat floor; no light reflected back from the floor | Lines stay sharp at any depth; no bubbles or breaking waves |
 | Halation | One bounce in a clear base, Lambertian scattering in the emulsion, fixed per-layer weights; the filter's halo is a single exponential | No softening on the way back, no film-specific spectral data |
 | Sky colours | Single scattering only (the sky near the horizon and in twilight comes out too dark), one aerosol type, an approximate ozone band, no refraction | No clouds, no multiple scattering, no polarisation here (see Polarisation) |
+| Lens corrections | Radial distortion only (no decentring), bilinear resampling, no sharpening after correction, shot and read noise only | Cameras' own profiles and sharpening differ |
 | Mirages | Horizontally uniform, steady air; one wavelength; dry air; smooth model profiles | No shimmer, no green flash, no tilted or moving layers |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
 | Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |

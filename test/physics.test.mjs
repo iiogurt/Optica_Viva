@@ -486,3 +486,22 @@ test('sky: Rayleigh optical depth, λ⁻⁴, air mass, a blue sky, a red low Sun
   const s = [-Math.cos(-0.052), 0, Math.sin(-0.052)], lum = (el) => S.toXYZ(S.skyRadiance([Math.cos(el), 0, Math.sin(el)], s, { aod: 0.05 }))[1];
   assert.ok(lum(0.01) < lum(0.17), 'the Earth\'s shadow on the horizon opposite the Sun');
 });
+
+test('lens corrections: Brown inverse, sampling cost, crop, and straight lines after correction', async () => {
+  const C = await import('../js/lib/corrections.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
+  near(C.undistort(C.distort(0.83, -0.12, 0.02), -0.12, 0.02), 0.83, 1e-12, 'inverse distortion');
+  const k1 = -0.1, r = 0.9, e = 1e-6, sm = C.sampling(r, k1);
+  near(sm.radial, (C.distort(r + e, k1) - C.distort(r - e, k1)) / (2 * e), 1e-8, 'radial: dr_d/dr_u');
+  near(sm.tangential, C.distort(r, k1) / r, 1e-12, 'tangential: r_d/r_u');
+  near(C.cropScale(0), 1, 1e-9, 'a perfect lens: no crop'); near(C.keptShare(0), 1, 1e-6, 'and the whole field kept');
+  const kept = C.keptShare(k1); assert.ok(kept > 0.8 && kept < 0.97, `barrel k1 = −0.1 keeps ${kept} of the field`);
+  // after correction a vertical grid line (x = 0.3 ideal) is straight: the darkest column near it is the
+  // same in the top, middle and bottom thirds
+  const p = { W: 240, H: 160, k1: -0.15, k2: 0, ca: 0, field: 0.73, mech: 0, photons: 1e6, read: 0 };
+  const fixed = C.correct(C.record(p), { ...p, fixDist: true, fixVig: true, fixCA: true })[1], s = C.cropScale(p.k1);
+  const HX = 1.5 / Math.hypot(1.5, 1), x0 = Math.round(((0.3 / s) / (2 * HX) + 0.5) * 240 - 0.5);
+  const darkest = (j) => { let best = x0, v = Infinity; for (let i = x0 - 4; i <= x0 + 4; i++) if (fixed[j * 240 + i] < v) { v = fixed[j * 240 + i]; best = i; } return best; };
+  const cols = [12, 30, 130, 148].map(darkest);
+  assert.ok(Math.max(...cols) - Math.min(...cols) <= 1, `the line stays in one column: ${cols}`);
+});
