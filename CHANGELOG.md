@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Gravitational lensing: point at the image to see where its light came from.** The lens equation β = θ − α(θ) maps the pointed spot back to the source plane (a cross with its position); every spot of the image plane that comes from the same point of the galaxy is dotted, and the images, solved from the lens equation, are ringed and counted ("seen 4 times" inside the diamond caustic).
+
 ## [1.40.0] - 2026-11-11
 
 ### Added
