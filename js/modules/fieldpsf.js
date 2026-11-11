@@ -1,4 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, texNum } from '../lib/ui.js';
+import { paintMap, toe, keyOf } from '../lib/pixels.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
@@ -98,17 +99,9 @@ export default function mount(root, meta) {
   function drawMosaic(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!R) return;
-    const g = 5, C = R.pts[0].C, ic = imageCanvas(C * g, C * g);
-    R.pts.forEach((p, k) => {
-      const gi = k % g, gj = Math.floor(k / g);
-      for (let y = 0; y < C; y++) for (let x = 0; x < C; x++) {
-        const v = p.I[y * C + x], L = Math.max(0, Math.min(1, (Math.log10(Math.max(v, 1e-6)) + 4) / 4)), c = Math.round(255 * L) * 3, o = ((gj * C + y) * C * g + gi * C + x) * 4;
-        ic.data[o] = INF[c]; ic.data[o + 1] = INF[c + 1]; ic.data[o + 2] = INF[c + 2]; ic.data[o + 3] = 255;
-      }
-    });
-    ic.put();
-    const sz = Math.min(w, hh) - 4, x0 = (w - sz) / 2, y0 = (hh - sz) / 2, cs = sz / g;
-    ctx.imageSmoothingEnabled = true; ctx.drawImage(ic.c, x0, y0, sz, sz);
+    const g = 5, C = R.pts[0].C, sz = Math.min(w, hh) - 4, x0 = (w - sz) / 2, y0 = (hh - sz) / 2, cs = sz / g;
+    R.pts.forEach((p, k) => paintMap(mosaic, { x: x0 + (k % g) * cs, y: y0 + Math.floor(k / g) * cs, w: cs, h: cs },
+      { a: p.I, w: C, h: C, lut: INF, pre: (v) => Math.log10(Math.max(v, 1e-6)), value: (v) => toe(1 + v / 4) }, keyOf(R), k));
     ctx.strokeStyle = 'rgba(255,255,255,0.12)';
     for (let k = 1; k < g; k++) { ctx.beginPath(); ctx.moveTo(x0 + k * cs, y0); ctx.lineTo(x0 + k * cs, y0 + sz); ctx.moveTo(x0, y0 + k * cs); ctx.lineTo(x0 + sz, y0 + k * cs); ctx.stroke(); }
     ctx.font = '10px "JetBrains Mono", monospace'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
@@ -117,14 +110,9 @@ export default function mount(root, meta) {
   function drawMap(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!S) return;
-    const { G, rms } = S.map, lam = ctl.state.lam * 1e-9, top = Math.max(lam / 28, ...rms), ic = imageCanvas(G, G);
-    for (let k = 0; k < G * G; k++) {
-      const v = Math.min(1, rms[k] / top), c = Math.round(255 * v) * 3;
-      ic.data[k * 4] = VIR[c]; ic.data[k * 4 + 1] = VIR[c + 1]; ic.data[k * 4 + 2] = VIR[c + 2]; ic.data[k * 4 + 3] = 255;
-    }
-    ic.put();
+    const { G, rms } = S.map, lam = ctl.state.lam * 1e-9, top = Math.max(lam / 28, ...rms);
     const sz = Math.min(w, hh) - 4, x0 = (w - sz) / 2, y0 = (hh - sz) / 2, hmax = S.hmax;
-    ctx.imageSmoothingEnabled = true; ctx.drawImage(ic.c, x0, y0, sz, sz);
+    paintMap(map, { x: x0, y: y0, w: sz, h: sz }, { a: rms, w: G, h: G, lut: VIR, value: (v) => v / top }, `${keyOf(S)}|${top}`);
     ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, 0, w, 26); // keeps the stage label readable
     // diffraction-limited contour: mark cells below λ/14
     ctx.fillStyle = 'rgba(255,255,255,0.9)';

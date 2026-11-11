@@ -1,4 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, texNum, fmt } from '../lib/ui.js';
+import { h, controls, stage, readouts, texNum, fmt } from '../lib/ui.js';
+import { paint, keyOf } from '../lib/pixels.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot, range } from '../lib/plot.js';
@@ -107,15 +108,15 @@ export default function mount(root, meta) {
   function drawMap(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!R) return;
-    const k = R.p.lams.indexOf(R.st.lam * 1e-9), I = R.prof[k], rs = R.rhos, rm = rs[rs.length - 1], n = 160, ic = imageCanvas(n, n);
-    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-      const rr = Math.hypot(x + 0.5 - n / 2, y + 0.5 - n / 2) / (n / 2) * rm, f = Math.min(rs.length - 1.001, (rr / rm) * (rs.length - 1)), i = Math.floor(f), t = f - i;
-      const v = rr > rm ? 1 : I[i] * (1 - t) + I[i + 1] * t, L = Math.max(0, Math.min(1, (Math.log10(Math.max(v, 1e-16)) + 14) / 14)), c = Math.round(255 * L) * 3, o = (y * n + x) * 4;
-      ic.data[o] = INF[c]; ic.data[o + 1] = INF[c + 1]; ic.data[o + 2] = INF[c + 2]; ic.data[o + 3] = 255;
-    }
-    ic.put();
+    // the shadow is round: each screen pixel reads the computed profile at its own distance
+    const k = R.p.lams.indexOf(R.st.lam * 1e-9), I = R.prof[k], rs = R.rhos, rm = rs[rs.length - 1], last = rs.length - 1;
     const sz = Math.min(w, hh) - 4, x0 = (w - sz) / 2, y0 = (hh - sz) / 2;
-    ctx.imageSmoothingEnabled = true; ctx.drawImage(ic.c, x0, y0, sz, sz);
+    paint(map, { x: x0, y: y0, w: sz, h: sz }, (u, v, o) => {
+      const rr = Math.hypot(u * 2 - 1, v * 2 - 1), f = Math.min(last - 1e-3, rr * last), i = Math.floor(f), a = f - i;
+      const val = rr > 1 ? 1 : I[i] * (1 - a) + I[i + 1] * a, L = Math.max(0, Math.min(1, (Math.log10(Math.max(val, 1e-16)) + 14) / 14));
+      const tt = L * 255, j = Math.min(254, tt | 0), q = tt - j, p = j * 3;
+      for (let c = 0; c < 3; c++) o[c] = (INF[p + c] + (INF[p + 3 + c] - INF[p + c]) * q) / 255;
+    }, `${keyOf(R)}|${k}`);
     ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, 0, w, 26); // keeps the stage label readable on the bright rim
     ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.arc(w / 2, hh / 2, (R.st.D / 2 / rm) * (sz / 2), 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
     const txt = `${R.st.lam} nm, ±${rm.toFixed(0)} m; 10⁻¹⁴ … 1`;

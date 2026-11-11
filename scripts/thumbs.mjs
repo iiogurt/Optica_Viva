@@ -20,6 +20,8 @@ const PICK = {
 // lab → which picture (0 = the first) when a later one shows the laboratory better
 const NTH = { detectors: 4, zernike: 3, gear: 1 };
 const ALL = 'figure.stage canvas:not(.stage-over)';
+// lab → extra milliseconds to wait, for pictures that build up over several passes
+const SETTLE = { atmospheric: 9000 };
 // the cards on the home page: laboratories in READY with a blurb (js/app.js needs a browser, so it
 // is read as text)
 const APP = readFileSync(resolve(ROOT, 'js/app.js'), 'utf8');
@@ -44,7 +46,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         el.scrollIntoView({ block: 'center' });
         return true; })()`);
       if (!box) { console.log(`${id}: no picture (${sel})`); continue; }
-      await new Promise((r) => setTimeout(r, 2500));
+      await new Promise((r) => setTimeout(r, 2500 + (SETTLE[id] || 0)));
       const r = await page.eval(`(() => { const b = document.querySelectorAll(${JSON.stringify(sel)})[${nth}].getBoundingClientRect(); return { x: b.left + scrollX, y: b.top + scrollY, w: b.width, h: b.height }; })()`);
       // the largest 16:10 window, centred
       let w = r.w, hgt = (r.w * TH) / TW;
