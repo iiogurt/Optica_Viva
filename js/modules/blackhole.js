@@ -1,4 +1,4 @@
-import { h, controls, stage, readouts, fmt, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, fmt, texNum, rafThrottle } from '../lib/ui.js';
 import { paint, catmull } from '../lib/pixels.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
@@ -7,7 +7,7 @@ import { parallel, rowBands } from '../lib/compute.js';
 import { B_CRIT, R_ISCO, muasPerM, TARGETS } from '../lib/blackhole.js';
 import { view3d } from '../lib/gl3d.js';
 import { blackholeScene } from '../lib/blackhole3d.js';
-import { t, N_ } from '../lib/i18n.js';
+import { t, N_, localNum } from '../lib/i18n.js';
 
 const N = 220, FOV = 22; // pixels, half-width of the field in M
 const HEAT = lut('inferno');
@@ -124,6 +124,32 @@ export default function mount(root, meta) {
     });
   }
 
+  // The two pictures and the brightness cut are linked: a position pointed at in one is marked in the
+  // others (a vertical line on both pictures, the readout on the chart), in µas on the sky.
+  const line = (x) => {
+    for (const st of [model, eht]) {
+      const o = st.over();
+      if (x == null || !img) continue;
+      const T = TARGETS[ctl.state.target], perM = muasPerM(T.M, T.D), side = Math.min(st.w, st.h), X = st.w / 2 + (x / (FOV * perM)) * (side / 2);
+      if (Math.abs(X - st.w / 2) > side / 2) continue;
+      o.strokeStyle = 'rgba(255,255,255,0.75)'; o.lineWidth = 1; o.setLineDash([4, 4]);
+      o.beginPath(); o.moveTo(X, (st.h - side) / 2); o.lineTo(X, (st.h + side) / 2); o.stroke(); o.setLineDash([]);
+      o.font = '11px "JetBrains Mono", monospace'; o.textAlign = 'center'; o.fillStyle = '#fff'; o.shadowColor = '#000'; o.shadowBlur = 4;
+      o.fillText(`${localNum(fmt(x, 3))} µas`, Math.min(st.w - 40, Math.max(40, X)), (st.h + side) / 2 - 40); // clear of the sticky strip above
+    }
+  };
+  cut.hover = (i) => line(i ? i.x : null);
+  for (const st of [model, eht]) {
+    const at = rafThrottle((e) => {
+      if (!img) return;
+      const T = TARGETS[ctl.state.target], perM = muasPerM(T.M, T.D), box = st.canvas.getBoundingClientRect(), side = Math.min(st.w, st.h);
+      const x = ((e.clientX - box.left - st.w / 2) / (side / 2)) * FOV * perM;
+      if (Math.abs(x) > FOV * perM) { line(null); cut.mark(null); return; }
+      line(x); cut.mark(x);
+    });
+    st.canvas.addEventListener('pointermove', at);
+    st.canvas.addEventListener('pointerleave', () => requestAnimationFrame(() => { line(null); cut.mark(null); }));
+  }
   let lastROut = null, lastGeo = null;
   function update() {
     const st = ctl.state, T = TARGETS[st.target], perM = muasPerM(T.M, T.D), dSh = 2 * B_CRIT * perM;
