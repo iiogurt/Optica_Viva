@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: In-camera lens corrections** (`#/corrections`). A test chart recorded through a lens with barrel or pincushion distortion, vignetting and lateral colour, beside the camera's corrected picture, the top-left star zoomed before and after, and the cost from the centre to the corner: sensor pixels per output pixel (radially dr_d/dr_u, tangentially r_d/r_u), the share of the field kept after cropping, and the signal-to-noise ratio of brightened corners (√V of the centre's). Each correction can be switched off to see what it hides.
+
 ## [1.48.0] - 2026-11-11
 
 ### Added
