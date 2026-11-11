@@ -105,7 +105,16 @@ export function resetUrlState() { urlKeys = new Map(); allKeys = new Map(); sett
 // Every control's current value, defaults included (for saved settings).
 export const allSettings = () => Object.fromEntries([...allKeys].map(([k, get]) => [k, get()]));
 // Set a control as if the reader had moved it (guided tours). Returns its row, or null if the page has no such control.
-export function setControl(key, v) { const c = setters.get(key); if (!c) return null; c.set(v); return c.row; }
+// animate: a slider glides to its new value (about ½ s, the page recomputing on the way) unless
+// the reader prefers reduced motion; other controls change at once.
+export function setControl(key, v, { animate = false } = {}) {
+  const c = setters.get(key);
+  if (!c) return null;
+  if (animate && c.tween && !reducedMotion()) c.tween(v); else c.set(v);
+  return c.row;
+}
+// ease-in-out (cubic) over [0, 1]
+export const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2);
 const hashParams = () => new URLSearchParams(location.hash.split('?')[1] || '');
 function writeUrl() {
   const p = new URLSearchParams();
@@ -149,7 +158,7 @@ export function controls(spec, onChange) {
   const conditional = [];
   const applyWhen = () => conditional.forEach(([row, when]) => { row.hidden = !when(state); });
   const fire = rafThrottle(() => { applyWhen(); writeUrlSoon(); onChange && onChange(state); });
-  const api = { el, state, set: {} };
+  const api = { el, state, set: {} }, tweens = new Map();
   const params = hashParams();
   for (const [key, s] of Object.entries(spec)) {
     if (s.type === 'heading') { el.append(h('div.ctl-heading', {}, tr(s.label))); continue; }
@@ -173,8 +182,22 @@ export function controls(spec, onChange) {
       // the input runs over positions 0–1000 (linear or logarithmic); assistive technology hears the
       // physical value with its unit instead, on load, on every change and when a tour sets it
       const show = () => { out.textContent = localNum(s.fmt ? s.fmt(state[key]) : fmt(state[key])) + (s.unit ? ' ' + s.unit : ''); input.setAttribute('aria-valuetext', out.textContent); };
-      input.addEventListener('input', () => { state[key] = fromPos(+input.value / 1000); show(); fire(); });
-      api.set[key] = (v) => { state[key] = v; input.value = Math.round(toPos(v) * 1000); show(); writeUrlSoon(); };
+      let glide = 0; // a running tween (setControl … animate), stopped by the reader's own input
+      input.addEventListener('input', () => { cancelAnimationFrame(glide); state[key] = fromPos(+input.value / 1000); show(); fire(); });
+      api.set[key] = (v) => { cancelAnimationFrame(glide); state[key] = v; input.value = Math.round(toPos(v) * 1000); show(); writeUrlSoon(); };
+      // in slider position, so a logarithmic control glides evenly; the last frame sets v exactly
+      tweens.set(key, (v, ms = 550) => {
+        cancelAnimationFrame(glide);
+        const p0 = toPos(state[key]), p1 = toPos(v), t0 = performance.now();
+        if (!(Math.abs(p1 - p0) > 1e-4)) { api.set[key](v); fire(); return; }
+        const step = (now) => {
+          const x = Math.min(1, (now - t0) / ms);
+          state[key] = x < 1 ? fromPos(p0 + (p1 - p0) * ease(x)) : v;
+          input.value = Math.round(toPos(state[key]) * 1000); show(); fire();
+          if (x < 1) glide = requestAnimationFrame(step); else writeUrlSoon();
+        };
+        glide = requestAnimationFrame(step);
+      });
       show();
       row = h('label.ctl.ctl-range', {}, h('span.ctl-label', {}, tr(s.label), out), input);
     } else if (s.type === 'select') {
@@ -202,7 +225,7 @@ export function controls(spec, onChange) {
       row = h('div.ctl', {}, s.label ? h('span.ctl-label', {}, tr(s.label)) : null, h('div.seg', {}, ...btns));
     }
     if (s.hint) row.title = tr(s.hint);
-    if (api.set[key]) setters.set(uk, { row, set: (v) => { api.set[key](v); fire(); } });
+    if (api.set[key]) setters.set(uk, { row, set: (v) => { api.set[key](v); fire(); }, tween: tweens.get(key) });
     if (s.when) conditional.push([row, s.when]);
     el.append(row);
   }

@@ -328,6 +328,10 @@ button.chip:hover { border-color: var(--c, var(--accent)); }
 :focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; border-radius: 6px; }
 input[type=range]:focus-visible { outline-offset: 4px; }
 canvas:focus-visible { outline-offset: -2px; }
+/* a new page rises into place (no transform once it has: fixed children such as an enlarged figure
+   need the viewport as their frame) */
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } }
+.page { animation: page-in .38s cubic-bezier(.2, .7, .2, 1); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 /* Controls bottom sheet (phones). On larger screens the handle is hidden and the card is static. */

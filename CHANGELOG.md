@@ -12,6 +12,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **The hero prism can be dragged**: sideways turns it. A short hint says so.
 
 ### Changed
+- **Guided tours move the sliders smoothly**: Next glides each slider to its new value in about half a second while the page recomputes, instead of jumping; touching the slider stops it. The first step still sets the scene at once. Off when the system asks for reduced motion.
+- **Pages fade and rise into place** when opened (0.4 s; off with reduced motion).
 - **Hero spectrum**: 90 thin rays whose colours together make white, with a faint glow, instead of 48 broad saturated bands. The beam still follows the mouse, and the picture redraws when you drag or point even with reduced motion.
 - The home page's statistic now reads "0 precomputed results: every laboratory computes its pictures live", since the card pictures are stored snapshots.
 
