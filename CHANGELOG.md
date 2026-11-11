@@ -7,6 +7,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Changed
+- **3-D views: glass looks like glass.** Lens elements and other glass reflect a soft studio, weighted by Fresnel's law for n = 1.5: faces seen edge-on carry bright rims, faces seen head-on stay clear and show their tint. Other surfaces get a faint reflection at grazing angles.
+- **3-D labels no longer overlap.** A label whose place is taken moves a line or two up or down with a thin leader to its point, and is left out only when there is no room.
 - **Phones: the picture stays in view while you move the sliders.** Opening the controls sheet pins the laboratory's first picture to the top of the screen and fits the sheet below it, however far the page scrolls; closing the sheet puts the picture back. The smoke test checks it on the PSF, black-hole and depth-of-field pages.
 - **Flare, ghosts & coatings: a real scene.** The flat dusk drawing is replaced by a landscape rendered in linear light (`js/lib/flarescene.js`): a sky whose glow follows the sun as you drag it, thin clouds lit from below, three mountain ridges fading into the haze, and a lake that mirrors them with ripples and a glitter path under the sun, mapped to the screen by one filmic tone curve at device pixels. The ghosts and the sunstar are computed and added as before.
 

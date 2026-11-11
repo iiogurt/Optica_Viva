@@ -463,3 +463,17 @@ test('Page–Thorne flux: the radial bracket is ∫ (t² − 6)/(t² − 3) dt f
   const x0 = Math.sqrt(6), b1 = bracket((x0 + 1e-3) ** 2), b2 = bracket((x0 + 2e-3) ** 2);
   near(b2 / b1, 4, 0.02, 'quadratic onset');
 });
+
+test('3-D labels: placed at their point when free, moved a line up or down when not, dropped without room', async () => {
+  const { placeLabel } = await import('../js/lib/gl3d.js');
+  const placed = [], lh = 14, W = 400, H = 200;
+  const a = placeLabel(placed, [200, 100], 60, lh, W, H); placed.push(a);
+  assert.deepEqual([a.x, a.y], [200, 100], 'a free spot is used as it is');
+  const b = placeLabel(placed, [210, 102], 60, lh, W, H); placed.push(b);
+  assert.ok(b.y1 <= a.y0 || b.y0 >= a.y1, 'the second label does not overlap the first');
+  near(Math.abs(b.y - 102), 1.1 * lh, 1e-9, 'moved by one line');
+  const c = placeLabel(placed, [395, 100], 60, lh, W, H);
+  assert.ok(c.x1 <= W && c.x0 >= 0, 'kept inside the picture');
+  const full = Array.from({ length: 5 }, (_, k) => ({ x0: 0, x1: W, y0: 100 + (k - 2) * 1.1 * lh - lh / 2, y1: 100 + (k - 2) * 1.1 * lh + lh / 2 }));
+  assert.equal(placeLabel(full, [200, 100], 60, lh, W, H), null, 'no room: left out');
+});
