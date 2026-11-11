@@ -31,6 +31,18 @@ function mul(a, b) {
   return o;
 }
 
+// A free place for a label of width w and height lh at the projected point q: the point itself, or
+// one or two lines above or below it, inside the W × H picture and clear of the boxes already placed.
+export function placeLabel(placed, q, w, lh, W, H) {
+  for (const dy of [0, -1.1, 1.1, -2.2, 2.2]) {
+    const x = Math.min(W - w / 2, Math.max(w / 2, q[0])), y = q[1] + dy * lh;
+    if (y < lh / 2 || y > H - lh / 2) continue;
+    const box = { x, y, x0: x - w / 2, x1: x + w / 2, y0: y - lh / 2, y1: y + lh / 2 };
+    if (!placed.some((b) => box.x0 < b.x1 && box.x1 > b.x0 && box.y0 < b.y1 && box.y1 > b.y0)) return box;
+  }
+  return null;
+}
+
 // ── shaders ───────────────────────────────────────────────────────────────────────────────
 const MESH_VS = `#version 300 es
 in vec3 p; in vec3 n; in vec3 c;
@@ -42,6 +54,14 @@ precision highp float;
 in vec3 vN; in vec3 vP; in vec3 vC;
 uniform float opacity; uniform vec3 eye; uniform int glass;
 out vec4 o;
+// a soft studio seen in reflections: a dark floor, a cool wall, one broad softbox above and in front
+// and a narrow cool strip light behind on the left (gives the rims of glass a highlight)
+vec3 env(vec3 R) {
+  vec3 c = mix(vec3(0.025, 0.03, 0.045), vec3(0.16, 0.2, 0.3), smoothstep(-0.25, 0.65, R.y));
+  c += vec3(1.0, 0.97, 0.92) * 1.5 * smoothstep(0.78, 0.96, dot(R, normalize(vec3(0.3, 0.85, -0.45))));
+  c += vec3(0.6, 0.75, 1.0) * 0.7 * smoothstep(0.9, 0.985, dot(R, normalize(vec3(-0.75, 0.15, 0.65))));
+  return c;
+}
 void main() {
   vec3 color = vC; // per-vertex colour, or the mesh colour as a constant attribute
   vec3 N = normalize(vN), V = normalize(eye - vP);
@@ -50,12 +70,17 @@ void main() {
   float d = max(dot(N, L1), 0.0) + 0.35 * max(dot(N, L2), 0.0);
   float hemi = 0.55 + 0.45 * N.y;
   float spec = pow(max(dot(N, normalize(L1 + V)), 0.0), 60.0);
-  float fr = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+  float nv = max(dot(N, V), 0.0);
+  vec3 R = reflect(-V, N);
   if (glass == 1) {
-    vec3 c = color * (0.25 + 0.45 * d) + vec3(0.9, 0.95, 1.0) * (0.85 * spec + 0.45 * fr);
-    o = vec4(c, clamp(opacity + 0.75 * fr + 0.6 * spec, 0.0, 0.95));
+    // Schlick's Fresnel for n = 1.5 (4 % head-on, rising to total at grazing incidence): the faces
+    // seen edge-on mirror the studio, those seen face-on are nearly clear and show their tint
+    float F = 0.04 + 0.96 * pow(1.0 - nv, 5.0);
+    vec3 c = color * (0.2 + 0.35 * d) * (1.0 - F) + env(R) * F + vec3(1.0) * 0.9 * spec;
+    o = vec4(c, clamp(opacity * (1.0 - F) + F * 0.9 + 0.6 * spec, 0.0, 0.96));
   } else {
-    vec3 c = color * (0.18 * hemi + 0.82 * d) + vec3(1.0) * 0.25 * spec + color * 0.12 * fr;
+    float F = 0.04 + 0.96 * pow(1.0 - nv, 5.0);
+    vec3 c = color * (0.18 * hemi + 0.82 * d) + vec3(1.0) * 0.25 * spec + env(R) * 0.18 * F;
     o = vec4(c, opacity);
   }
 }`;
@@ -231,12 +256,27 @@ export function view3d({ label = '', aspect = 2, minH = 260, maxH = 620, yaw = -
     const m = M.mvp, x = m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12], y = m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13], w = m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15];
     return w > 0 ? [((x / w) * 0.5 + 0.5) * W, (0.5 - (y / w) * 0.5) * H] : null;
   }
+  // Labels are placed in order, each at its point if that space is free, otherwise moved up or down
+  // by a line or two with a thin leader back to its point; one that finds no room is left out.
   function drawLabels(ctx = overlay.getContext('2d')) {
     if (ctx.canvas === overlay) ctx.clearRect(0, 0, W, H);
     const dpr = W / Math.max(1, canvas.clientWidth);
     ctx.save(); ctx.font = `${11 * dpr}px Inter, system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 4 * dpr;
-    for (const l of labels) { const q = project(l.p); if (!q) continue; ctx.fillStyle = l.color || 'rgba(255,255,255,0.85)'; ctx.fillText(t(l.text, l.vars), q[0], q[1]); }
+    const placed = [], lh = 14 * dpr, pad = 3 * dpr;
+    for (const l of labels) {
+      const q = project(l.p); if (!q) continue;
+      const text = t(l.text, l.vars), w = ctx.measureText(text).width + 2 * pad;
+      const spot = placeLabel(placed, q, w, lh, W, H);
+      if (!spot) continue;
+      placed.push(spot);
+      if (spot.y !== q[1]) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = dpr;
+        ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(spot.x, spot.y + (spot.y < q[1] ? lh / 2 : -lh / 2)); ctx.stroke();
+      }
+      ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 4 * dpr;
+      ctx.fillStyle = l.color || 'rgba(255,255,255,0.85)'; ctx.fillText(text, spot.x, spot.y);
+      ctx.shadowBlur = 0;
+    }
     ctx.restore();
   }
   const redraw = () => { dirty = true; if (!raf) raf = requestAnimationFrame(render); };
