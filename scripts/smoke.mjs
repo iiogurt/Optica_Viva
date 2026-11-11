@@ -226,6 +226,30 @@ try {
     console.log(`${bad.length ? '✗' : '✓'} the simulation starts on the first screen at 1920 and 1440 px${bad.length ? '  ' + bad.join(' | ') : ''}`);
     if (bad.length) failed++;
   }
+  // phones: opening the controls sheet pins the lab's first picture to the top of the screen, above
+  // the sheet, and it stays there when the page scrolls; closing it puts the picture back
+  {
+    const bad = [];
+    await page.size(390, 844);
+    for (const id of ['psf', 'blackhole', 'dof']) {
+      await page.goto(site.url + '#/' + id, 3000);
+      const r = await page.eval(`(async () => {
+        const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+        document.querySelector('.lab').scrollIntoView(); await wait(400);
+        document.querySelector('.sheet-handle').click(); await wait(500);
+        scrollBy(0, 700); await wait(400);
+        const p = document.querySelector('.lab-main figure.stage').getBoundingClientRect(), s = document.querySelector('.ctl-sheet').getBoundingClientRect();
+        const pinned = Math.abs(p.top) < 2 && p.bottom <= s.top + 2 && p.height > 120;
+        document.querySelector('.sheet-handle').click(); await wait(300);
+        const back = !document.querySelector('.pinned, .pin-hold');
+        return pinned && back ? '' : JSON.stringify({ pin: [Math.round(p.top), Math.round(p.bottom)], sheet: Math.round(s.top), back });
+      })()`);
+      if (r) bad.push(`${id} ${r}`);
+    }
+    await page.size(1440, 1200);
+    console.log(`${bad.length ? '✗' : '✓'} phones: the picture stays above the open controls sheet${bad.length ? '  ' + bad.join(' | ') : ''}`);
+    if (bad.length) failed++;
+  }
   // guided tours: each one starts from its link and plays to the end; every select it sets must hold the value
   const { TOURS } = await import('../js/lib/tours.js');
   for (const t of TOURS) {

@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- **Phones: the picture stays in view while you move the sliders.** Opening the controls sheet pins the laboratory's first picture to the top of the screen and fits the sheet below it, however far the page scrolls; closing the sheet puts the picture back. The smoke test checks it on the PSF, black-hole and depth-of-field pages.
+
 ## [1.38.0] - 2026-11-11
 
 ### Added
