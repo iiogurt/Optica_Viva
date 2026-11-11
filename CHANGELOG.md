@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.51.0] - 2026-11-11
+
 ### Added
 - **New laboratory: Satellite trails & stacking** (`#/trails`). Frames of a faint galaxy with satellite trails dropped in at random (each trail depositing flux × dwell time per pixel), combined three ways side by side: the mean keeps a ghost of every trail (it sinks below the noise only after (trail/σ)² frames), the median removes them at √(π/2) = 1.25 times the noise, and κσ-clipping around the median removes them almost for free. With the measured noise and residual of each, and a chart of what a trail leaves against the number of frames.
 
@@ -990,7 +992,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.50.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.51.0...HEAD
+[1.51.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.50.0...v1.51.0
 [1.50.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.49.0...v1.50.0
 [1.49.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.48.0...v1.49.0
 [1.48.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.47.0...v1.48.0
