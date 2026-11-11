@@ -524,3 +524,22 @@ test('infrared and ultraviolet photography: the Wood effect, black water, the UV
   const d850 = a.shift(850) - a.shift(550);
   assert.ok(d850 > 0.05 && d850 < 0.4, `850 nm focuses ${d850} mm behind 550 nm`);
 });
+
+test('satellite trails: median costs √(π/2) in noise, clipping almost nothing, both remove a one-frame outlier', async () => {
+  const T = await import('../js/lib/trails.js');
+  const { makeRng } = await import('../js/lib/random.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
+  const g = makeRng(11).g, N = 51, n = 6000, frames = Array.from({ length: N }, () => Float32Array.from({ length: n }, () => g()));
+  const sd = (a) => { let s = 0, s2 = 0; for (const v of a) { s += v; s2 += v * v; } return Math.sqrt(s2 / a.length - (s / a.length) ** 2); };
+  const mean = sd(T.combine(frames, 'mean')), med = sd(T.combine(frames, 'median')), clip = sd(T.combine(frames, 'clip', 3));
+  near(mean * Math.sqrt(N), 1, 0.03, 'mean: σ/√N');
+  near(med / mean, Math.sqrt(Math.PI / 2), 0.07, 'median / mean noise → √(π/2)');
+  assert.ok(clip / mean < 1.06, `3σ-clipped mean nearly as quiet as the mean: ${clip / mean}`);
+  // an outlier of 40σ in one frame of 20
+  const F = Array.from({ length: 20 }, (_, f) => Float32Array.from({ length: 500 }, () => g() + (f === 7 ? 40 : 0)));
+  near(T.combine(F, 'mean').reduce((s, v) => s + v, 0) / 500, 2, 0.15, 'the mean keeps 1/N of it');
+  assert.ok(Math.abs(T.combine(F, 'median').reduce((s, v) => s + v, 0) / 500) < 0.15, 'the median removes it');
+  assert.ok(Math.abs(T.combine(F, 'clip', 3).reduce((s, v) => s + v, 0) / 500) < 0.1, 'the clip removes it');
+  // a trail's depth: flux × dwell time p/ω
+  near(T.trailDepth(6, 8, 0.4, 3, 0.8), T.flux(6, 8, 0.4) * ((3 * Math.PI / 648000) / (0.8 * Math.PI / 180)), 1e-9, 'F p/ω');
+});

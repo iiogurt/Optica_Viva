@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Satellite trails & stacking** (`#/trails`). Frames of a faint galaxy with satellite trails dropped in at random (each trail depositing flux × dwell time per pixel), combined three ways side by side: the mean keeps a ghost of every trail (it sinks below the noise only after (trail/σ)² frames), the median removes them at √(π/2) = 1.25 times the noise, and κσ-clipping around the median removes them almost for free. With the measured noise and residual of each, and a chart of what a trail leaves against the number of frames.
+
 ## [1.50.0] - 2026-11-11
 
 ### Added

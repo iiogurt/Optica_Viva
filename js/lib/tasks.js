@@ -46,6 +46,7 @@ import { makeWaves, floorLight } from './caustics.js';
 import { halationRender } from './halation.js';
 import { skyPanorama } from './sky.js';
 import { record, correct } from './corrections.js';
+import { makeFrames, combine } from './trails.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -694,4 +695,20 @@ function skyTask(p) { const r = skyPanorama(p); return { result: r, transfer: [r
 
 function correctionsTask(p) { const raw = record(p), fixed = correct(raw, p), r = { raw: raw.map((a) => a.map((v) => v / p.photons)), fixed }; return { result: r, transfer: [...r.raw, ...r.fixed].map((a) => a.buffer) }; }
 
-export const TASKS = { corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
+// one frame and the three combinations; the noise of each in a patch of empty sky and the light left
+// along the trails (each relative to the clean signal)
+function trailsTask(p) {
+  const r = makeFrames(p), outs = { one: r.frames[0], mean: combine(r.frames, 'mean'), median: combine(r.frames, 'median'), clip: combine(r.frames, 'clip', p.kappa) };
+  const W = p.W, H = p.H, on = new Uint8Array(W * H);
+  for (const [, x0, y0, a] of r.trails) for (let k = 0; k < W * H; k++) { const x = (k % W) + 0.5, y = Math.floor(k / W) + 0.5; if (Math.abs((x - x0) * Math.sin(a) - (y - y0) * Math.cos(a)) < 1) on[k] = 1; }
+  const stats = {};
+  for (const [m, a] of Object.entries(outs)) {
+    let s = 0, s2 = 0, n = 0, t = 0, nt = 0;
+    for (let k = 0; k < W * H; k++) { const d = a[k] - r.clean[k] - r.sky; if (on[k]) { t += d; nt++; } else if (r.clean[k] < 0.05 * r.sky) { s += d; s2 += d * d; n++; } }
+    stats[m] = { noise: Math.sqrt(Math.max(0, s2 / n - (s / n) ** 2)), trail: nt ? t / nt : 0 };
+  }
+  const result = { ...outs, sky: r.sky, depth: r.depth, trails: r.trails.length, stats };
+  return { result, transfer: [outs.mean.buffer, outs.median.buffer, outs.clip.buffer] };
+}
+
+export const TASKS = { trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
