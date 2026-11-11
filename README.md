@@ -471,6 +471,16 @@ A scene **rendered wavelength by wavelength**: 24 colour patches, a Siemens star
 <tr>
 <td valign="top" colspan="2">
 
+**Stereoscopic 3-D** · `#/stereo`<br>
+<img src="docs/screenshots/stereo.webp" alt="A red–cyan anaglyph of spheres on a checkered ground; where the audience sees each sphere against its real distance; the screen parallax against distance with the divergence limit" width="70%">
+
+**Two cameras, a screen and two eyes**: screen parallax P = (S/s)·f·b·(1/C − 1/Z), the perceived distance V·e/(e − P), divergence beyond 65 mm, and the roundness (depth scale over width scale) that tells natural from cardboard. A ray-traced scene from two cameras as a red–cyan anaglyph or side by side, for a cinema, television or phone screen; the orthostereo rig reproduces every distance.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Filters & HDR** · `#/hdr`<br>
 <img src="docs/screenshots/hdr.webp" alt="Sunset as shot, merged HDR, exposure fusion and SNR curves" width="70%">
 
@@ -835,6 +845,7 @@ flowchart LR
 | Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
 | Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
 | Infrared & UV | Camera signal ∫E ρ T Q c̄ dλ at 10 nm from 300 to 1100 nm: 5778 K Sun with an ozone cut, λ⁻⁴ sky, representative reflectance curves (leaf red edge at 715 nm), silicon QE, Bayer dyes transparent beyond ~800 nm, ideal filter edges; white balance and red–blue swap; monochrome where a channel is blind; focus of a thin achromat from Sellmeier glass data | irphoto |
+| Stereo 3-D | Parallel cameras with horizontal image translation, P = (S/s)·f·b·(1/C − 1/Z); viewer Z_p = Ve/(e − P), e = 65 mm; width scale M f Z_p/(Z V), depth scale dZ_p/dZ; two ray-traced 320 × 180 views (spheres, ground, wall), red–cyan anaglyph | stereo |
 | Satellite trails | Frames of the stacking laboratory's galaxy and stars with sky, photon (Gaussian) and read noise; Poisson number of trails per frame, random position and direction, Gaussian profile, depth F·p/ω; per-pixel mean, median and κσ-clip around the median with σ = 1.4826 MAD | trails |
 | Lens corrections | Brown radial distortion r_d = r_u(1 + k₁r_u² + k₂r_u⁴) with an exact inverse (Newton, tabulated); vignetting cos⁴ of the field angle times a mechanical fall-off; lateral colour as ±scale of red and blue; 240 × 160 sensor, 2 × 2 samples, photon + read noise; correction by bilinear resampling into the largest rectangle the sensor covers | corrections |
 | Halation | Lambertian light in the base, Fresnel reflection at its back (total beyond θc), return radius 2t tan θ; kernel K(r) averaged over each grid cell; red-layer weighting 1 : 0.28 : 0.05; diffusion filter as (1 − s)δ + s·exponential halo; FFT convolution on 512² | halation |
@@ -969,6 +980,7 @@ Optica_Viva/
 │   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
 │   │   ├── shake.js           Hand-held shake model, type-2 stabiliser servo with gyro random walk, Monte-Carlo sharpness
 │   │   ├── trails.js          Satellite trails: depth F·p/ω, frames with trails, mean / median / κσ-clip combination
+│   │   ├── stereo.js          Stereoscopic 3-D: parallax, perceived distance, roundness, two-camera rendering
 │   │   ├── stacking.js        CCD equation for stacks, sky brightness from Bortle class, sky-limited sub length
 │   │   ├── starshade.js       Fresnel shadow of an apodised occulter (Filon quadrature, Bessel J₀), suppression spectrum
 │   │   ├── spectro.js         Gratings, blaze, prisms, resolving power, line lists, instrument profile
@@ -1052,7 +1064,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (71)
+│   └── modules/               One file per page (72)
 ├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── vendor/fonts/              Fraunces, Inter, JetBrains Mono (OFL 1.1), variable woff2, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
@@ -1211,6 +1223,7 @@ The numerical core was checked against published or analytically known values. E
 | Lens corrections: sampling of the corrected picture; a grid line after straightening | dr_d/dr_u and r_d/r_u | match numerical derivatives (10⁻⁸); the line stays in one pixel column from top to bottom |
 | Infrared: foliage against sky; achromat focus | far brighter than the sky at 720 nm, far darker in the visible; F and C at one focus | ratio > 2 at 720 nm and < 0.2 in the visible; F–C difference < 10⁻⁹ mm; 850 nm 0.05–0.4 mm behind |
 | Satellite trails: noise of the median and of a 3σ clip against the mean (51 Gaussian frames) | √(π/2) = 1.25; ≈ 1 | within 7 %; < 1.06; a one-frame outlier of 40σ: mean keeps 1/N, median and clip remove it |
+| Stereo 3-D: orthostereo rig (b = e, f/s = V/S, C = V) | Z_p = Z, roundness 1, true size | exact at 1.5–40 m (10⁻⁹, roundness 10⁻⁴) |
 | Mirages: gradient at which a level ray curves like the Earth; ship hidden at 20 km from 3 m in standard air | 0.129 K/m at 15 °C; 11.4 m | κ = 1/R_E exactly; ray tracer within 0.15 m of (L − √(2R′z₀))²/(2R′), R′ = R_E/(1 − k) |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
@@ -1246,6 +1259,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Lens corrections | Radial distortion only (no decentring), bilinear resampling, no sharpening after correction, shot and read noise only | Cameras' own profiles and sharpening differ |
 | Infrared & UV | Representative spectra, not measurements; ideal filter edges; one thin achromat for the focus | Real cameras' infrared colours depend on their dyes and processing |
 | Satellite trails | Gaussian noise, frames already aligned, trails straight and uniform | No flares or tumbling satellites, no frame registration |
+| Stereo 3-D | Central seat, eyes 65 mm apart, parallel cameras; comfort limits are rules of thumb | No off-axis seats, no keystone of toed-in rigs |
 | Mirages | Horizontally uniform, steady air; one wavelength; dry air; smooth model profiles | No shimmer, no green flash, no tilted or moving layers |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
 | Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |

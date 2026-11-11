@@ -543,3 +543,20 @@ test('satellite trails: median costs √(π/2) in noise, clipping almost nothing
   // a trail's depth: flux × dwell time p/ω
   near(T.trailDepth(6, 8, 0.4, 3, 0.8), T.flux(6, 8, 0.4) * ((3 * Math.PI / 648000) / (0.8 * Math.PI / 180)), 1e-9, 'F p/ω');
 });
+
+test('stereoscopic 3-D: orthostereo reproduces the scene; parallax, divergence and roundness', async () => {
+  const S = await import('../js/lib/stereo.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
+  const view = { S: 10, V: 12 }, o = S.orthoRig(view);
+  for (const Z of [1.5, 4, 12, 40]) { const r = S.shape(o, view, Z); near(r.Zp, Z, 1e-9 * Z, `orthostereo distance at ${Z} m`); near(r.round, 1, 1e-4, 'roundness'); near(r.kw, 1, 1e-9, 'true size'); }
+  const rig = { b: 0.04, f: 32, s: 24.89, C: 4 };
+  near(S.screenParallax(rig, view, 4), 0, 1e-15, 'the convergence plane sits on the screen');
+  assert.ok(S.screenParallax(rig, view, 2) < 0 && S.screenParallax(rig, view, 8) > 0, 'in front: negative; behind: positive');
+  assert.equal(S.perceived(0.065, 12), Infinity, 'P = e: infinity'); near(S.perceived(0, 12), 12, 1e-12, 'P = 0: on the screen');
+  // the same shot on a screen k times wider has k times the parallax
+  near(S.screenParallax(rig, { S: 1.2, V: 2.5 }, 30) / S.screenParallax(rig, view, 30), 0.12, 1e-12, 'parallax scales with the screen');
+  // the two rendered pictures agree on a point in the convergence plane: column of the zero-offset plane
+  const W = 64, H = 36, L = S.render({ ...rig, C: 25 }, -1, W, H), R = S.render({ ...rig, C: 25 }, 1, W, H);
+  let diff = 0; for (let k = 0; k < W * H; k++) diff = Math.max(diff, Math.abs(L[0][k] - R[0][k]));
+  assert.ok(diff > 0, 'two different viewpoints');
+});

@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Stereoscopic 3-D** (`#/stereo`). Two cameras' interaxial, focal length and convergence, and a cinema, television or phone screen: the screen parallax of every distance, where the audience sees it (V·e/(e − P)), divergence beyond 65 mm, the depth budget and the roundness that tells natural from cardboard cut-outs. A ray-traced scene from the two cameras as a red–cyan anaglyph, side by side or one eye; a button sets the orthostereo rig, which reproduces every distance exactly.
+
 ## [1.51.0] - 2026-11-11
 
 ### Added
