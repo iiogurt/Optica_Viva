@@ -560,3 +560,23 @@ test('stereoscopic 3-D: orthostereo reproduces the scene; parallax, divergence a
   let diff = 0; for (let k = 0; k < W * H; k++) diff = Math.max(diff, Math.abs(L[0][k] - R[0][k]));
   assert.ok(diff > 0, 'two different viewpoints');
 });
+
+test('HDR displays: PQ (ST 2084) and HLG (BT.2100) fixed points, round trips and code steps', async () => {
+  const D = await import('../js/lib/hdrdisplay.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
+  near(D.pqEOTF(0), 0, 1e-12, 'PQ 0 → 0 nits'); near(D.pqEOTF(1), 10000, 1e-6, 'PQ 1 → 10 000 nits');
+  // published reference: 100 nits ≈ code 0.508 (10-bit 520), 1000 nits ≈ 0.752 (769)
+  near(D.pqInverse(100), 0.5081, 1e-4, '100 nits'); assert.equal(Math.round(D.pqInverse(100) * 1023), 520, '100 nits, 10-bit code');
+  near(D.pqInverse(1000), 0.7518, 1e-4, '1000 nits'); assert.equal(Math.round(D.pqInverse(1000) * 1023), 769, '1000 nits, 10-bit code');
+  for (const L of [0.001, 0.1, 1, 48, 100, 1000, 4000]) near(D.pqEOTF(D.pqInverse(L)), L, 1e-9 * Math.max(1, L), `PQ round trip at ${L}`);
+  // HLG: continuous at E = 1/12 (signal 0.5), E = 1 → 1, inverse matches; system gamma 1.2 at 1000 nits
+  near(D.hlgOETF(1 / 12), 0.5, 1e-12, 'HLG knee'); near(D.hlgOETF(1 / 12 + 1e-12), 0.5, 1e-9, 'HLG continuous');
+  near(D.hlgOETF(1), 1, 1e-7, 'HLG 1 → 1'); for (const E of [0.01, 0.2, 0.7]) near(D.hlgInverseOETF(D.hlgOETF(E)), E, 1e-12, `HLG inverse at ${E}`);
+  near(D.hlgGamma(1000), 1.2, 1e-12, 'γ at 1000 nits'); near(D.hlgGamma(2000), 1.2 + 0.42 * Math.log10(2), 1e-12, 'γ at 2000 nits');
+  near(D.hlgEOTF(1, 1000), 1000, 1e-4, 'HLG peak'); near(D.hlgEOTF(D.hlgInverse(50)), 50, 1e-9, 'HLG display round trip');
+  // steps: gamma 2.4, 8 bit at 1 nit ≈ 6.6 %; PQ 12 bit stays below ~1 % from 0.01 to 10 000 nits; 10-bit PQ finer than 8-bit SDR in the dark
+  near(D.stepAt(D.CODINGS.sdr8, 1), 0.066, 0.002, 'SDR 8 bit at 1 nit');
+  for (const L of [0.01, 0.1, 1, 10, 100, 1000, 5000]) assert.ok(D.stepAt(D.CODINGS.pq12, L) < 0.025, `PQ 12 bit at ${L} nits`);
+  for (const L of [0.1, 1, 10]) assert.ok(D.stepAt(D.CODINGS.pq10, L) < D.stepAt(D.CODINGS.sdr8, L), `PQ 10 finer than SDR 8 at ${L}`);
+  near(D.quantise(D.CODINGS.pq12, 100), 100, 0.3, 'PQ 12 quantises 100 nits within a step');
+});
