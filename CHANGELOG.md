@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.52.0] - 2026-11-11
+
 ### Added
 - **New laboratory: Stereoscopic 3-D** (`#/stereo`). Two cameras' interaxial, focal length and convergence, and a cinema, television or phone screen: the screen parallax of every distance, where the audience sees it (V·e/(e − P)), divergence beyond 65 mm, the depth budget and the roundness that tells natural from cardboard cut-outs. A ray-traced scene from the two cameras as a red–cyan anaglyph, side by side or one eye; a button sets the orthostereo rig, which reproduces every distance exactly.
 
@@ -995,7 +997,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.51.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.52.0...HEAD
+[1.52.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.51.0...v1.52.0
 [1.51.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.50.0...v1.51.0
 [1.50.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.49.0...v1.50.0
 [1.49.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.48.0...v1.49.0
