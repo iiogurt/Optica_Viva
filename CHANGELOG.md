@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.40.0] - 2026-11-11
+
 ### Added
 - **Imaging a black hole: the pictures and the brightness cut are linked.** Pointing at either picture marks that position on the cut (with its values), and pointing at the cut draws the same line on both pictures, labelled in µas.
 
@@ -930,7 +932,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.39.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.40.0...HEAD
+[1.40.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.39.0...v1.40.0
 [1.39.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.38.0...v1.39.0
 [1.38.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.37.0...v1.38.0
 [1.37.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.36.0...v1.37.0
