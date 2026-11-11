@@ -1,4 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, fmt, texNum } from '../lib/ui.js';
+import { paint, catmull } from '../lib/pixels.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
@@ -35,23 +36,43 @@ export default function mount(root, meta) {
   root.append(lab([h('div.grid-2', {}, model.el, eht.el), cut.el, v3.el], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
   v3.setScene(blackholeScene({ rOut: ctl.state.rOut }));
 
-  let img = null, blurred = null, ticket = 0, canvases = {};
-  async function render() {
+  // A quick 220-pixel picture answers each change; once the controls settle the disk is traced
+  // again at the canvas's device pixels with 2×2 rays per pixel.
+  let img = null, blurred = null, n = N, ticket = 0, ver = 0, fullTimer = 0;
+  async function render(fullOnly = false) {
     const my = ++ticket, st = ctl.state;
-    const parts = await parallel('bhRows', rowBands(N).map(([y0, y1]) => ({ N, fov: FOV, incl: (st.incl * Math.PI) / 180, rOut: st.rOut, maxOrder: +st.order, y0, y1 })));
-    if (my !== ticket) return;
-    img = new Float32Array(N * N);
-    let off = 0;
-    for (const p of parts) { img.set(p, off); off += p.length; }
-    finish();
+    const trace = async (size, ss) => {
+      const parts = await parallel('bhRows', rowBands(size).map(([y0, y1]) => ({ N: size, fov: FOV, incl: (st.incl * Math.PI) / 180, rOut: st.rOut, maxOrder: +st.order, y0, y1, ss })));
+      if (my !== ticket) return;
+      img = new Float32Array(size * size); n = size;
+      let off = 0;
+      for (const p of parts) { img.set(p, off); off += p.length; }
+      finish();
+    };
+    clearTimeout(fullTimer);
+    if (!fullOnly) await trace(N, 1);
+    const full = fullSize();
+    if (my === ticket && full > N * 1.2) fullTimer = setTimeout(() => trace(full, 2).catch(console.error), fullOnly ? 0 : 250);
   }
-  // the telescope's view: the model blurred by a Gaussian beam of the chosen FWHM (in µas → pixels)
+  const fullSize = () => Math.min(900, Math.round(Math.min(model.w, model.h) * model.dpr));
+  // enlarged or resized: trace again when the canvas holds clearly more (or fewer) pixels
+  model.resized = () => { if (img && n > N && Math.abs(fullSize() - n) > 0.15 * n) render(true).catch(console.error); };
+  // the telescope's view: the model blurred by a Gaussian beam of the chosen FWHM (in µas → pixels).
+  // A wide beam is applied to a box-averaged copy (it removes the fine detail anyway); the picture
+  // is resampled smoothly when drawn.
   function finish() {
-    const st = ctl.state, T = TARGETS[st.target], perM = muasPerM(T.M, T.D), pxPerMuas = N / (2 * FOV * perM);
-    const sigma = (st.beam / 2.3548) * pxPerMuas;
-    blurred = gaussBlur(img, N, sigma);
-    canvases.model = toCanvas(img); canvases.eht = toCanvas(blurred);
+    const st = ctl.state, T = TARGETS[st.target], perM = muasPerM(T.M, T.D), pxPerMuas = n / (2 * FOV * perM);
+    const sigma = (st.beam / 2.3548) * pxPerMuas, f = Math.max(1, Math.floor(sigma / 6));
+    const small = f > 1 ? boxDown(img, n, f) : img, m = Math.floor(n / f);
+    blurred = { a: gaussBlur(small, m, sigma / f), n: m };
+    ver++;
     model.redraw(); eht.redraw(); cut.redraw();
+  }
+  function boxDown(a, size, f) {
+    const m = Math.floor(size / f), out = new Float32Array(m * m);
+    for (let y = 0; y < m * f; y++) for (let x = 0; x < m * f; x++) out[Math.floor(y / f) * m + Math.floor(x / f)] += a[y * size + x];
+    for (let k = 0; k < out.length; k++) out[k] /= f * f;
+    return out;
   }
   function gaussBlur(a, n, s) {
     if (s < 0.3) return a.slice();
@@ -61,16 +82,20 @@ export default function mount(root, meta) {
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { let v = 0; for (let i = -r; i <= r; i++) { const yy = y + i; if (yy >= 0 && yy < n) v += tmp[yy * n + x] * k[i + r]; } out[y * n + x] = v / ks; }
     return out;
   }
-  function toCanvas(a) {
-    const c = imageCanvas(N, N), m = Math.max(...a) || 1;
-    for (let k = 0; k < N * N; k++) { const i = Math.min(255, Math.round(255 * Math.pow(a[k] / m, 0.55))) * 3; c.data[k * 4] = HEAT[i]; c.data[k * 4 + 1] = HEAT[i + 1]; c.data[k * 4 + 2] = HEAT[i + 2]; c.data[k * 4 + 3] = 255; }
-    c.put(); return c.c;
-  }
+  const maxOf = new WeakMap();
+  const peak = (a) => { let m = maxOf.get(a); if (m == null) { m = 0; for (let k = 0; k < a.length; k++) if (a[k] > m) m = a[k]; maxOf.set(a, m || 1); } return m || 1; };
+  // brightness^0.55 through the inferno table, interpolated between its 256 entries
   function blit(ctx, w, hh, which) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
-    if (!canvases[which]) return;
+    if (!img) return;
     const side = Math.min(w, hh), x0 = (w - side) / 2, y0 = (hh - side) / 2;
-    ctx.imageSmoothingEnabled = true; ctx.drawImage(canvases[which], x0, y0, side, side);
+    const src = which === 'model' ? { a: img, n } : blurred, m = peak(src.a), sn = src.n;
+    paint(which === 'model' ? model : eht, { x: x0, y: y0, w: side, h: side }, (u, v, o) => {
+      const val = Math.max(0, catmull(src.a, sn, sn, u * sn - 0.5, v * sn - 0.5)) / m;
+      if (val <= 0) return;
+      const t = Math.min(255, 255 * Math.pow(val, 0.55)), i = Math.min(254, t | 0), f = t - i, a = i * 3, b = a + 3;
+      o[0] = (HEAT[a] + (HEAT[b] - HEAT[a]) * f) / 255; o[1] = (HEAT[a + 1] + (HEAT[b + 1] - HEAT[a + 1]) * f) / 255; o[2] = (HEAT[a + 2] + (HEAT[b + 2] - HEAT[a + 2]) * f) / 255;
+    }, `${ver}`);
     const st = ctl.state, T = TARGETS[st.target], perM = muasPerM(T.M, T.D), P = (m) => (m / FOV) * (side / 2);
     // the shadow's edge, b = 3√3 M, and a scale bar of 20 µas
     ctx.strokeStyle = 'rgba(106,215,255,0.45)'; ctx.setLineDash([3, 4]);
@@ -78,25 +103,28 @@ export default function mount(root, meta) {
     const bar = P(20 / perM);
     ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fillRect(x0 + 12, y0 + side - 16, bar, 2);
     ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left'; ctx.fillText('20 µas', x0 + 16 + bar, y0 + side - 12);
-    if (which === 'eht') { ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.beginPath(); ctx.arc(x0 + side - 24, y0 + side - 24, P(st.beam / perM) / 2, 0, 2 * Math.PI); ctx.stroke(); }
+    if (which === 'eht') { const rb = P(st.beam / perM) / 2; ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.beginPath(); ctx.arc(x0 + side - rb - 12, y0 + side - rb - 12, rb, 0, 2 * Math.PI); ctx.stroke(); }
   }
   function drawCut(ctx, w, hh) {
     if (!img) return;
-    const st = ctl.state, T = TARGETS[st.target], perM = muasPerM(T.M, T.D), row = N / 2;
-    const mi = Math.max(...img.slice(row * N, row * N + N)) || 1, mb = Math.max(...blurred.slice(row * N, row * N + N)) || 1;
-    const xs = (i) => ((i + 0.5) / N * 2 - 1) * FOV * perM;
+    const st = ctl.state, T = TARGETS[st.target], perM = muasPerM(T.M, T.D);
+    // the middle of the picture: its central row, or the mean of the two central rows
+    const line = (a, size) => { const r0 = Math.floor((size - 1) / 2) * size, r1 = Math.ceil((size - 1) / 2) * size; return Array.from({ length: size }, (_, i) => (a[r0 + i] + a[r1 + i]) / 2); };
+    const li = line(img, n), lb = line(blurred.a, blurred.n);
+    const mi = Math.max(...li) || 1, mb = Math.max(...lb) || 1;
+    const xs = (i, size) => ((i + 0.5) / size * 2 - 1) * FOV * perM;
     plot(ctx, w, hh, {
       x: { min: -FOV * perM, max: FOV * perM, label: 'angle on the sky (µas)' }, y: { min: 0, max: 1.1, label: 'brightness (relative)' },
       series: [
-        { data: Array.from({ length: N }, (_, i) => [xs(i), img[row * N + i] / mi]), color: 'rgba(255,181,71,0.75)', width: 1.2, label: N_('computed') },
-        { data: Array.from({ length: N }, (_, i) => [xs(i), blurred[row * N + i] / mb]), color: '#6ad7ff', width: 2, label: N_('at the telescope\'s resolution') },
+        { data: li.map((v, i) => [xs(i, n), v / mi]), color: 'rgba(255,181,71,0.75)', width: 1.2, label: N_('computed') },
+        { data: lb.map((v, i) => [xs(i, lb.length), v / mb]), color: '#6ad7ff', width: 2, label: N_('at the telescope\'s resolution') },
       ],
       vlines: [{ x: -B_CRIT * perM, color: 'rgba(255,255,255,0.35)', label: '' }, { x: B_CRIT * perM, color: 'rgba(255,255,255,0.35)', label: N_('shadow edge') }],
       legend: true, padT: 32,
     });
   }
 
-  let lastROut = null;
+  let lastROut = null, lastGeo = null;
   function update() {
     const st = ctl.state, T = TARGETS[st.target], perM = muasPerM(T.M, T.D), dSh = 2 * B_CRIT * perM;
     ro.replaceChildren(readouts([
@@ -113,7 +141,9 @@ export default function mount(root, meta) {
     I_\text{obs} &= g^4 F(r),\quad g = \frac{\sqrt{1-3M/r}}{1-\Omega\lambda}
     \end{aligned}`);
     if (st.rOut !== lastROut) { lastROut = st.rOut; v3.setScene(blackholeScene({ rOut: st.rOut }), true); }
-    render().catch(console.error);
+    // the beam and the target only change the blurred view and the scales: no new tracing
+    const geo = `${st.incl}|${st.rOut}|${st.order}`;
+    if (geo !== lastGeo || !img) { lastGeo = geo; render().catch(console.error); } else finish();
   }
   update();
 
@@ -143,5 +173,5 @@ export default function mount(root, meta) {
     'Event Horizon Telescope Collaboration, "First Sagittarius A* Event Horizon Telescope results. I.", ApJL 930, L12 (2022).',
     'S. Chandrasekhar, <i>The Mathematical Theory of Black Holes</i>, Oxford University Press (1983).',
   ]));
-  return () => { ticket++; [model, eht, cut, v3].forEach((s) => s.destroy()); };
+  return () => { ticket++; clearTimeout(fullTimer); [model, eht, cut, v3].forEach((s) => s.destroy()); };
 }

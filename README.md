@@ -766,7 +766,7 @@ flowchart LR
 | Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
 | Drop scattering | Lorenz–Mie series (Bohren & Huffman's BHMIE; logarithmic derivative by downward recurrence from its exact top value, Lentz's continued fraction), real water index, 16 wavelengths × 3 radii, solar-disc smear, 5800 K sunlight | atmospheric |
 | Optics bench | Forward photon tracing, one wavelength per photon (400–700 nm), through convex glass shapes (half-spaces, spheres, a cylinder); Sellmeier index, unpolarised Fresnel by Russian roulette, TIR; CIE 1931 colour on the screen | bench |
-| Black hole | Schwarzschild photon orbits u'' = 3u² − u by RK4 (Δφ = 0.004) for 1100 impact parameters; disk crossings at φ₀ + nπ (Luminet 1979); Page–Thorne flux; I ∝ g⁴F with Keplerian orbits; Gaussian EHT beam | blackhole |
+| Black hole | Schwarzschild photon orbits u'' = 3u² − u by RK4 (Δφ = 0.004) for 1100 impact parameters; disk crossings at φ₀ + nπ (Luminet 1979); Page–Thorne flux; I ∝ g⁴F with Keplerian orbits; Gaussian EHT beam; traced again at the canvas's device pixels with 2×2 rays per pixel, crossing radii interpolated between tabulated orbits | blackhole |
 | Waves | 2-D FDTD (Yee 1966), TM<sub>z</sub>, S = 0.5, 280 × 190 cells, matched cubic-graded absorbing layer, perfect conductors and dielectrics per cell; time-averaged ⟨E<sub>z</sub>²⟩; 2-D Huygens–Fresnel integral for comparison | waves |
 | Bokeh | Exact rays of the direct path from point sources (∞ and near) to the defocused sensor, same flux-conserving rasteriser | bokeh |
 | Lens flare | Exact ray tracing of all k(k−1)/2 two-reflection paths per wavelength, rasterised as flux-conserving triangles with a per-pixel aperture gauge; paraxial ghost matrices as the preview | flare |
@@ -952,6 +952,7 @@ Optica_Viva/
 │   │   ├── ifilter.js         Interference filters in converging beams: angle shift, cone average, pre-shift
 │   │   ├── interferometry.js  Visibility of extended sources, array u-v coverage, dirty beam/image, Högbom CLEAN
 │   │   ├── lensio.js          Zemax .zmx subset / JSON import-export, model glasses, URL encoding
+│   │   ├── pixels.js          Image pipeline: pictures drawn at device pixels (Catmull–Rom sampling, soft-toe tone curve, dithering, preview then refine)
 │   │   ├── photons.js         Photon by photon: Poisson arrivals on a test scene, sub-exposures with read noise, measured SNR, photoelectron arrival times and the reads of a ramp
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── survey.js          Survey mission: DORI pixel densities, drone GSD, shutter and overlap

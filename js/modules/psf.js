@@ -1,8 +1,9 @@
-import { h, controls, stage, readouts, imageCanvas, fmt, texNum, rafThrottle } from '../lib/ui.js';
+import { h, controls, stage, readouts, fmt, texNum, rafThrottle } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { airy, besselJ1 as besselJ1x } from '../lib/pupil.js';
 import { latest } from '../lib/compute.js';
-import { oetf, linspace } from '../lib/color.js';
+import { linspace } from '../lib/color.js';
+import { paint, catmull, bilinear, toe, encode } from '../lib/pixels.js';
 import { plot } from '../lib/plot.js';
 import { view3d } from '../lib/gl3d.js';
 import { psfMesh } from '../lib/surf3d.js';
@@ -114,31 +115,42 @@ export default function mount(root, meta) {
     shown3d = true;
   }
 
+  // The picture is drawn at the canvas's device pixels: each pixel samples the log brightness
+  // (Catmull–Rom) and the colour (bilinear) of the computed field, then one tone curve maps the
+  // chosen range of decades to brightness, keeping the hue.
+  let field = null, fieldOf = null, ver = 0;
+  function prepare() {
+    if (fieldOf === data) return field;
+    const { n } = data, N2 = n * n;
+    let mx = 0; for (let k = 0; k < N2; k++) mx = Math.max(mx, data.Lm[k]);
+    const logL = new Float32Array(N2), cr = new Float32Array(N2), cg = new Float32Array(N2), cb = new Float32Array(N2);
+    for (let k = 0; k < N2; k++) {
+      logL[k] = Math.log10(data.Lm[k] / mx + 1e-14);
+      const r = Math.max(0, data.R[k]), g = Math.max(0, data.G[k]), b = Math.max(0, data.B[k]);
+      const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      if (lum > 0) { cr[k] = r / lum; cg[k] = g / lum; cb[k] = b / lum; } else cr[k] = cg[k] = cb[k] = 1;
+    }
+    fieldOf = data; ver++;
+    return (field = { logL, cr, cg, cb });
+  }
+
   function drawPSF(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!data) return;
     const { n, Q } = data;
-    const st = ctl.state;
+    const st = ctl.state, F = prepare();
     const crop = Math.round(n / st.zoom), off = Math.round((n - crop) / 2);
-    const ic = imageCanvas(crop, crop);
-    let mx = 0; for (let k = 0; k < n * n; k++) mx = Math.max(mx, data.Lm[k]);
     const dec = st.decades;
-    for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-      const k = (y + off) * n + x + off, o = (y * crop + x) * 4;
-      const L = data.Lm[k] / mx;
-      const t = Math.max(0, 1 + Math.log10(L + 1e-14) / dec);
-      // hue-preserving tone map: scale linear RGB so luminance follows the log stretch
-      const lum = 0.2126 * data.R[k] + 0.7152 * data.G[k] + 0.0722 * data.B[k] + 1e-30;
-      const s = t / lum;
-      let r = data.R[k] * s, g = data.G[k] * s, b = data.B[k] * s;
+    const side = Math.min(w, hh);
+    paint(main, { x: (w - side) / 2, y: (hh - side) / 2, w: side, h: side }, (u, v, o) => {
+      const x = off + u * crop - 0.5, y = off + v * crop - 0.5;
+      const s = toe(1 + catmull(F.logL, n, n, x, y) / dec);
+      if (s <= 0) return;
+      let r = bilinear(F.cr, n, n, x, y) * s, g = bilinear(F.cg, n, n, x, y) * s, b = bilinear(F.cb, n, n, x, y) * s;
       const m = Math.max(r, g, b);
       if (m > 1) { r /= m; g /= m; b /= m; }
-      ic.data[o] = oetf(Math.max(0, r)) * 255; ic.data[o + 1] = oetf(Math.max(0, g)) * 255; ic.data[o + 2] = oetf(Math.max(0, b)) * 255; ic.data[o + 3] = 255;
-    }
-    ic.put();
-    const side = Math.min(w, hh);
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);
+      o[0] = encode(r); o[1] = encode(g); o[2] = encode(b);
+    }, `${ver}|${crop}|${dec}`);
     // scale bar in λ/D
     const pxPerLD = (side / crop) * Q;
     const nice = [1, 2, 5, 10, 20].find((v) => v * pxPerLD > side * 0.12) || 20;
@@ -155,17 +167,12 @@ export default function mount(root, meta) {
   function drawPupil(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!data) return;
-    const { n, Dpx } = data;
-    const crop = Dpx + 8, off = (n - crop) / 2;
-    const ic = imageCanvas(crop, crop);
-    for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-      const v = data.amp[(y + off) * n + x + off], o = (y * crop + x) * 4;
-      ic.data[o] = 255 * v; ic.data[o + 1] = 205 * v; ic.data[o + 2] = 130 * v; ic.data[o + 3] = 255;
-    }
-    ic.put();
-    ctx.imageSmoothingEnabled = false;
-    const side = Math.min(w, hh) - 16;
-    ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);
+    const { n, Dpx, amp } = data; prepare();
+    const crop = Dpx + 8, off = (n - crop) / 2, side = Math.min(w, hh) - 16;
+    paint(pup, { x: (w - side) / 2, y: (hh - side) / 2, w: side, h: side }, (u, v, o) => {
+      const a = bilinear(amp, n, n, off + u * crop - 0.5, off + v * crop - 0.5);
+      o[0] = encode(a); o[1] = encode(a * 0.6); o[2] = encode(a * 0.23);
+    }, ver);
   }
 
   function drawProfile(ctx, w, hh) {

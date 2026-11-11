@@ -58,35 +58,46 @@ export function diskFlux(r) {
 }
 
 // Image of the disk (inner edge 6, outer edge rOut) seen at inclination incl (rad, angle between
-// the line of sight and the disk's axis), on an N×N grid spanning ±fov (in M), rows y0…y1.
-// Each pixel's ray meets the disk plane at φ = φ0 + nπ; the first crossing inside the disk emits
-// I = g⁴ F(r), with g = 1/(u^t (1 − Ω λ)) for gas on circular Keplerian orbits (Ω = r^(−3/2),
-// u^t = (1 − 3/r)^(−1/2)) and λ the photon's angular momentum about the disk axis.
-export function diskImage({ N, fov, incl, rOut = 20, table, y0 = 0, y1 = N, maxOrder = 3 }) {
+// the line of sight and the disk's axis), on an N×N grid spanning ±fov (in M), rows y0…y1, each
+// pixel the mean of ss×ss rays. Each ray meets the disk plane at φ = φ0 + nπ; the first crossing
+// inside the disk emits I = g⁴ F(r), with g = 1/(u^t (1 − Ω λ)) for gas on circular Keplerian
+// orbits (Ω = r^(−3/2), u^t = (1 − 3/r)^(−1/2)) and λ the photon's angular momentum about the disk
+// axis. Between two tabulated impact parameters the crossing radius is interpolated linearly
+// (when both neighbours cross; otherwise the nearer one decides).
+export function diskImage({ N, fov, incl, rOut = 20, table, y0 = 0, y1 = N, maxOrder = 3, ss = 1 }) {
   const out = new Float32Array((y1 - y0) * N), ci = Math.cos(incl), si = Math.sin(incl);
   const { bs, orbits } = table;
-  for (let j = y0; j < y1; j++) for (let i = 0; i < N; i++) {
-    const x = ((i + 0.5) / N * 2 - 1) * fov, y = (1 - (j + 0.5) / N * 2) * fov, b = Math.hypot(x, y);
-    if (b < 1e-6) continue;
-    // nearest tabulated impact parameter (the table is sorted)
+  const ray = (x, y) => {
+    const b = Math.hypot(x, y);
+    if (b < 1e-6) return 0;
+    // neighbouring tabulated impact parameters (the table is sorted)
     let lo = 0, hi = bs.length - 1;
     while (hi - lo > 1) { const m = (lo + hi) >> 1; if (bs[m] < b) lo = m; else hi = m; }
-    const o = orbits[b - bs[lo] < bs[hi] - b ? lo : hi];
+    const w = Math.min(1, Math.max(0, (b - bs[lo]) / (bs[hi] - bs[lo]))), oL = orbits[lo], oH = orbits[hi], near = w < 0.5 ? oL : oH;
     // the disk plane (normal tilted towards +y) meets the photon's plane where
     // cos φ · cos i + sin φ · (y/b) sin i = 0
     let phi0 = Math.atan2(-ci, (y / b) * si);
     if (phi0 <= 0) phi0 += Math.PI;
-    let I = 0;
     for (let n = 0; n < maxOrder; n++) {
-      const r = rAt(o, phi0 + n * Math.PI);
-      if (r === 0 || r === Infinity) break;
+      const phi = phi0 + n * Math.PI, rL = rAt(oL, phi), rH = rAt(oH, phi);
+      const ok = (r) => r !== 0 && r !== Infinity;
+      const r = ok(rL) && ok(rH) ? rL + (rH - rL) * w : rAt(near, phi);
+      if (r === 0 || r === Infinity) return 0;
       if (r > R_ISCO && r < rOut) {
         const lam = x * si, ut = 1 / Math.sqrt(1 - 3 / r), om = r ** -1.5, g = 1 / (ut * (1 - om * lam));
-        I = g ** 4 * diskFlux(r);
-        break;
+        return g ** 4 * diskFlux(r);
       }
     }
-    out[(j - y0) * N + i] = I;
+    return 0;
+  };
+  const px = (2 * fov) / N;
+  for (let j = y0; j < y1; j++) for (let i = 0; i < N; i++) {
+    let I = 0;
+    for (let sy = 0; sy < ss; sy++) for (let sx = 0; sx < ss; sx++) {
+      const x = -fov + (i + (sx + 0.5) / ss) * px, y = fov - (j + (sy + 0.5) / ss) * px;
+      I += ray(x, y);
+    }
+    out[(j - y0) * N + i] = I / (ss * ss);
   }
   return out;
 }

@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Image pipeline** (`js/lib/pixels.js`): pictures computed on a grid are drawn at the screen's device pixels instead of being stretched by the browser. Each pixel samples the field (Catmull–Rom), passes through one tone curve whose soft toe fades a display floor out instead of cutting it, and is dithered before rounding to 8 bits. Large pictures show a half-resolution preview at once and refine, in slices that keep the page responsive, once the controls settle.
+
+### Changed
+- **Point-spread function**: the star image and the pupil use the pipeline. The diffraction spikes and the edge of the display range no longer show stair steps, and the pupil's edges are smooth.
+- **Black hole**: after the quick 220-pixel picture the disk is traced again at the canvas's resolution with 2×2 rays per pixel (up to 900 pixels across, again when the figure is enlarged), and the crossing radius is interpolated between the tabulated orbits, so the disk's edges and the photon rings are smooth. Changing the beam or the target no longer traces the disk again. The beam circle sits inside the picture.
+
 ## [1.36.0] - 2026-11-10
 
 ### Added
