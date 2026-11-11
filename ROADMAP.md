@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 478 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 479 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -568,7 +568,7 @@ Candidates, in order of how much the third dimension adds:
 - [x] **P1 · M** **Chart redesign**: legends outside the plot area, a hover readout on every chart, and any figure enlarged to the window on demand. *The readout is linked to the picture on the PSF page (`st.hover`, `st.mark`, `st.over` in `js/lib/ui.js`); other pages can follow.*
 - [x] **P1 · L** **Image pipeline**: one shared path that renders at device pixels, shows a fast preview and refines when idle, with one tone curve and dithering. *`js/lib/pixels.js` (Catmull–Rom sampling, a tone curve with a soft toe, an sRGB table, dithering, a half-resolution preview refined in slices) draws the PSF, pupil and black-hole pictures; the black hole is traced again at the canvas's resolution with 2×2 rays per pixel. `paintMap` (a field through a colour table, with masks whose outer edge is sharpened) draws the Zernike, ray-tracer, coronagraph, lucky-imaging and interferometry pictures. Other laboratories can move to it when they are next changed; animations such as seeing keep the browser's scaling, which is fast enough per frame. Wide-gamut output moved to the backlog.*
 - [x] **P2 · M** **Live home page**: a picture of the real render on every card, a few featured laboratories shown large, and a hero that can be dragged. *Card pictures are snapshots captured from the running laboratories (`npm run thumbs`, 400 × 250 WebP, about 6 KB each, loaded as the page scrolls); on phones the picture sits beside the text. The black hole, the PSF and the halos are featured. The hero's spectrum is 90 thin rays whose colours add up to white, and dragging sideways turns the prism.*
-- [ ] **P2 · M** **Motion**: tween between parameter states and animate page changes, respecting reduced motion.
+- [x] **P2 · M** **Motion**: tween between parameter states and animate page changes, respecting reduced motion. *In a guided tour, Next glides each slider to its new value (about ½ s, in slider position so logarithmic controls move evenly; `setControl(key, v, { animate: true })`), with the page recomputing on the way; the reader's own input stops it. A new page fades and rises into place. Both are off with reduced motion. Cross-fading a picture between two computed states remains possible later.*
 - [ ] **P2 · L** **3-D materials**: glass with reflections and edge highlights, soft shadows, label collision avoidance, tighter framing.
 - [ ] **P3 · M** **Phone layout**: the picture pinned above the controls sheet.
 - [ ] **P3 · M** **A real flare scene**: a procedurally rendered high-dynamic-range scene instead of the flat landscape.

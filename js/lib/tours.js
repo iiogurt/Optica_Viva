@@ -80,11 +80,12 @@ function play(page, tour) {
       h('button.tour-x', { type: 'button', title: t('End the tour'), 'aria-label': t('End the tour'), onClick: () => end() }, '✕')),
     h('h3', {}, t(tour.title)), h('div', { 'aria-live': 'polite' }, text), h('div.tour-nav', {}, back, next));
   const end = () => { stop(); bindUrlParam('tour', () => null); };
-  function go(i) {
+  // the first step sets the scene at once; later steps glide the sliders to their new values
+  function go(i, animate = true) {
     k = Math.max(0, Math.min(n - 1, i));
     page.querySelectorAll('.tour-flash').forEach((r) => r.classList.remove('tour-flash'));
     for (const [key, v] of Object.entries(stepSettings(tour, k))) {
-      const row = setControl(key, v);
+      const row = setControl(key, v, { animate });
       if (!row) { console.error(`tour ${tour.id}: no control "${key}" on #/${tour.lab}`); continue; }
       if (key in tour.steps[k].set) { void row.offsetWidth; row.classList.add('tour-flash'); }
     }
@@ -96,7 +97,7 @@ function play(page, tour) {
   player = { el };
   page.append(el);
   bindUrlParam('tour', () => (player ? tour.id : null));
-  go(0);
+  go(0, false);
   (page.querySelector('figure.stage') || page.querySelector('.controls'))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
