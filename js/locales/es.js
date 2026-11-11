@@ -1,6 +1,8 @@
 // Spanish interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "Featured laboratories": "Laboratorios destacados",
+  "Drag the prism to turn it": "Arrastra el prisma para girarlo",
   "Open the full laboratory in Optica Viva ↗": "Abrir el laboratorio completo en Optica Viva ↗",
   "The interface is translated; the explanations on this page are still in English.": "La interfaz está traducida; las explicaciones de esta página siguen en inglés.",
   "This laboratory is under construction and will arrive in an upcoming release. See CHANGELOG.md for progress.": "Este laboratorio está en construcción y llegará en una próxima versión. Consulta CHANGELOG.md para ver el avance.",
@@ -87,7 +89,7 @@ export default {
   "laboratories live (the rest are in progress)": "laboratorios disponibles (el resto está en preparación)",
   "catalogued phenomena with governing equations": "fenómenos catalogados con sus ecuaciones",
   "real glasses (Sellmeier), {n} lens and telescope prescriptions": "vidrios reales (Sellmeier), {n} prescripciones de objetivos y telescopios",
-  "precomputed images: everything is simulated live": "imágenes precalculadas: todo se simula en directo",
+  "precomputed results: every laboratory computes its pictures live": "resultados precalculados: cada laboratorio calcula sus imágenes en directo",
   "Start here": "Empieza aquí",
   "New to optics? Follow this path from everyday photography to the research frontier. Each page starts with the idea in plain words and builds up to the full physics, so stop wherever you like; the order is only a suggestion.": "¿Nuevo en la óptica? Sigue este camino desde la fotografía de todos los días hasta la frontera de la investigación. Cada página empieza con la idea en palabras sencillas y sube hasta la física completa; detente donde quieras, el orden es solo una sugerencia.",
   "(opened before)": "(ya abierta)",

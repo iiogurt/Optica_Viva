@@ -35,7 +35,7 @@ flowchart LR
 2. Register it in `MODULES` and `READY` in [`js/app.js`](js/app.js).
 3. Link it from the matching entries in [`js/lib/phenomena.js`](js/lib/phenomena.js).
 4. Put reusable physics in `js/lib/` (pure functions) and test it in `test/`.
-5. Add a crop entry in [`scripts/screenshots.mjs`](scripts/screenshots.mjs) and a gallery tile in the README.
+5. Add a crop entry in [`scripts/screenshots.mjs`](scripts/screenshots.mjs) and a gallery tile in the README, and capture the home page's card picture: `npm run thumbs -- <id>`.
 6. Run `node scripts/precache.mjs --write` so the new files are part of the offline app (`npm run check` reminds you). Files in `css/`, `js/`, `img/`, `icons/` and `vendor/` are deployed automatically; a new top-level runtime file must be added to `SITE` in `scripts/site.mjs`.
 
 Controls created with `controls()` are automatically shareable through the URL, and on phones they slide into a bottom sheet; there is nothing extra to do.

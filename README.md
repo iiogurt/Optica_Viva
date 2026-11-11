@@ -853,6 +853,7 @@ Optica_Viva/
 ├── css/style.css              Design system: dark theme, lab layout, controls
 ├── css/fonts.css              @font-face rules for the vendored typefaces
 ├── img/gallery/               Photographs for Phenomena in the wild (public domain and CC BY 4.0)
+├── img/thumbs/                Home-page card pictures, captured from the running laboratories (npm run thumbs)
 ├── js/
 │   ├── app.js                 Laboratory registry, hash router, navigation, interface language
 │   ├── locales/               Interface translations (de, fr, es), keyed by the English text
@@ -957,6 +958,7 @@ Optica_Viva/
 │   │   ├── pupil.js           Apertures (Hubble/JWST/Keck/ELT), Zernike, PSF, Bessel
 │   │   ├── survey.js          Survey mission: DORI pixel densities, drone GSD, shutter and overlap
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
+│   │   ├── thumbs.js          Home-page card pictures: which laboratories have one, which are featured
 │   │   ├── satellite.js       Satellite mission: focal length, mirror, TDI stages, data rate
 │   │   ├── sensors.js         Sensor and film formats
 │   │   ├── phenomena.js       Catalogue data (228 entries in 13 groups)
@@ -984,6 +986,7 @@ Optica_Viva/
 │   ├── release.sh             prepare: release PR (date changelog, bump) · publish: tag + GitHub release
 │   ├── worktree.sh            new / finish: one git worktree per branch, cleanup after merge
 │   ├── screenshots.mjs        Regenerates docs/screenshots (CDP, WebP)
+│   ├── thumbs.mjs             Captures img/thumbs, the home page's card pictures (CDP, WebP)
 │   └── lib/browser.mjs        Dependency-free Chrome DevTools Protocol driver
 ├── CHANGELOG.md               Keep a Changelog
 ├── ROADMAP.md                 Completed and planned milestones

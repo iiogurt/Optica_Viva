@@ -4,7 +4,8 @@ import { COUNT } from '../lib/phenomena.js';
 import { index, GLASS_NAMES } from '../lib/glass.js';
 import { LENSES } from '../lib/raytrace.js';
 import { t, N_ } from '../lib/i18n.js';
-import { wavelengthRGB } from '../lib/color.js';
+import { wavelengthRGB, oetf } from '../lib/color.js';
+import { FEATURED, thumbOf } from '../lib/thumbs.js';
 import { PATH } from '../lib/path.js';
 import { TOURS } from '../lib/tours.js';
 
@@ -16,9 +17,13 @@ const READ_2 = N_('Models are chosen to be the most exact that can run interacti
 function heroCanvas() {
   const canvas = h('canvas');
   const ctx = canvas.getContext('2d');
-  let raf, W = 0, H = 0, dpr = 1, mouseY = null;
-  const lambdas = Array.from({ length: 48 }, (_, i) => 400 + (300 * i) / 47);
-  const cols = lambdas.map((l) => wavelengthRGB(l).map((v) => Math.round(v * 255)));
+  let raf, W = 0, H = 0, dpr = 1, mouseY = null, turn = 0, drag = null;
+  // many thin rays whose linear colours are normalised so that together they make white: where
+  // they overlap, just outside the prism, the light is white again, and it fans out into a spectrum
+  const lambdas = Array.from({ length: 90 }, (_, i) => 400 + (300 * i) / 89);
+  const lin = lambdas.map((l) => wavelengthRGB(l, false));
+  const sum = [0, 1, 2].map((c) => lin.reduce((a, v) => a + v[c], 0));
+  const cols = lin.map((v) => { const u = v.map((x, c) => (x / sum[c]) * 26), m = Math.max(...u, 1); return u.map((x) => Math.round(oetf(x / m) * 255)); });
   const stars = Array.from({ length: 220 }, () => [Math.random(), Math.random(), Math.random() ** 3]);
 
   const resize = () => {
@@ -27,7 +32,17 @@ function heroCanvas() {
     canvas.width = W * dpr; canvas.height = H * dpr;
   };
   const ro = new ResizeObserver(resize); ro.observe(canvas);
-  canvas.addEventListener('pointermove', (e) => { const r = canvas.getBoundingClientRect(); mouseY = (e.clientY - r.top) / r.height; });
+  // the beam follows the pointer's height; dragging sideways turns the prism
+  const still = () => { if (reducedMotion()) { cancelAnimationFrame(raf); raf = requestAnimationFrame(frame); } };
+  canvas.addEventListener('pointermove', (e) => {
+    const r = canvas.getBoundingClientRect();
+    if (drag) turn = Math.max(-0.45, Math.min(0.45, drag.turn + ((e.clientX - drag.x) / r.width) * 1.6));
+    else if (e.pointerType === 'mouse') mouseY = (e.clientY - r.top) / r.height;
+    still();
+  });
+  canvas.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, turn }; canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging'); });
+  const drop = () => { drag = null; canvas.classList.remove('dragging'); };
+  canvas.addEventListener('pointerup', drop); canvas.addEventListener('pointercancel', drop);
 
   function intersect(o, d, poly) {
     let best = null;
@@ -64,7 +79,7 @@ function heroCanvas() {
     const S = Math.min(W, H) * 0.42;
     const cx = W * 0.56, cy = H * 0.36;
     // orientation chosen so a horizontal beam meets the prism near minimum deviation
-    const rot = -Math.PI / 2 + 0.574 + 0.07 * Math.sin(t / 3400);
+    const rot = -Math.PI / 2 + 0.574 + turn + (drag ? 0 : 0.07 * Math.sin(t / 3400));
     const prism = [0, 1, 2].map((k) => [cx + S * 0.62 * Math.cos(rot + (k * 2 * Math.PI) / 3), cy + S * 0.62 * Math.sin(rot + (k * 2 * Math.PI) / 3)]);
     const midY = (prism[0][1] + prism[2][1]) / 2, span = Math.abs(prism[0][1] - prism[2][1]);
     const by = midY + span * (mouseY != null ? (mouseY - 0.5) * 0.6 : 0.12 * Math.sin(t / 2100));
@@ -95,15 +110,16 @@ function heroCanvas() {
         if (inside) return;
         const [r, g, bb] = cols[i];
         // inside the glass: faint
-        ctx.strokeStyle = `rgba(${r},${g},${bb},0.10)`; ctx.lineWidth = 2;
+        ctx.strokeStyle = `rgba(${r},${g},${bb},0.06)`; ctx.lineWidth = 2;
         ctx.beginPath(); pts.forEach((p, k) => (k ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.stroke();
-        // emergent fan: glow + core
+        // emergent fan: a faint wide glow and a thin core, fading with distance
         const L = W * 1.5, end = [o[0] + d[0] * L, o[1] + d[1] * L];
         const g2 = ctx.createLinearGradient(o[0], o[1], end[0], end[1]);
-        g2.addColorStop(0, `rgba(${r},${g},${bb},0.55)`); g2.addColorStop(0.5, `rgba(${r},${g},${bb},0.18)`); g2.addColorStop(1, `rgba(${r},${g},${bb},0)`);
-        ctx.strokeStyle = g2; ctx.lineWidth = 7;
-        ctx.beginPath(); ctx.moveTo(o[0], o[1]); ctx.lineTo(end[0], end[1]); ctx.stroke();
-        ctx.lineWidth = 1.4; ctx.stroke();
+        g2.addColorStop(0, `rgba(${r},${g},${bb},0.30)`); g2.addColorStop(0.45, `rgba(${r},${g},${bb},0.12)`); g2.addColorStop(1, `rgba(${r},${g},${bb},0)`);
+        ctx.strokeStyle = g2;
+        ctx.beginPath(); ctx.moveTo(o[0], o[1]); ctx.lineTo(end[0], end[1]);
+        ctx.globalAlpha = 0.18; ctx.lineWidth = 9; ctx.stroke();
+        ctx.globalAlpha = 1; ctx.lineWidth = 1.5; ctx.stroke();
       });
     }
     ctx.globalCompositeOperation = 'source-over';
@@ -128,16 +144,26 @@ export default function mount(root) {
     h('div.hero', {}, hero.canvas,
       h('div.hero-text', {},
         h('h1', { html: 'Optica <em>Viva</em>' }),
-        h('p', {}, t('A living laboratory of the optics behind every photograph, every film frame and every image from a space telescope. Each phenomenon is computed from first principles in your browser: exact ray tracing, Fourier diffraction, thin-film interference and turbulence statistics. Nothing is a canned animation.')))),
+        h('p', {}, t('A living laboratory of the optics behind every photograph, every film frame and every image from a space telescope. Each phenomenon is computed from first principles in your browser: exact ray tracing, Fourier diffraction, thin-film interference and turbulence statistics. Nothing is a canned animation.'))),
+      h('span.hero-hint', { 'aria-hidden': 'true' }, t('Drag the prism to turn it'))),
   );
   const mods = MODULES.map(translated);
+  // a card's picture: a snapshot of the laboratory, captured from the running page
+  const pic = (id, big) => { const src = thumbOf(id); return src && READY.has(id) ? h('img.thumb', { src, alt: '', width: big ? 800 : 400, height: big ? 500 : 250, loading: big ? 'eager' : 'lazy', decoding: 'async' }) : null; };
+  const card = (m, href, kicker, title, blurb, cls = '') => {
+    const p = pic(m.id);
+    return h('a.mcard' + cls + (p ? '.has-thumb' : ''), { href, style: { '--c': m.c } }, p, h('div.mbody', {}, h('span.k', {}, kicker), h('h3', {}, title), h('p', {}, blurb)));
+  };
+  root.append(h('section.block.featured', {}, h('h2', {}, t('Featured laboratories')),
+    h('div.feat', {}, ...FEATURED.map((id) => mods.find((m) => m.id === id)).map((m) =>
+      h('a.fcard', { href: '#/' + m.id, style: { '--c': m.c } }, pic(m.id, true), h('div.fbody', {}, h('span.k', {}, m.group), h('h3', {}, m.title), h('p', {}, m.blurb)))))));
   const groups = [...new Set(mods.filter((m) => m.blurb).map((m) => m.group))];
   root.append(h('section.block', { style: { marginTop: '38px' } },
     h('div.stat-row', {},
       h('div.stat', {}, h('b', {}, `${[...READY].filter((id) => id !== 'home').length} / ${MODULES.length - 1}`), h('span', {}, READY.size >= MODULES.length ? t('interactive laboratories and reference pages') : t('laboratories live (the rest are in progress)'))),
       h('div.stat', {}, h('b', {}, String(COUNT)), h('span', {}, t('catalogued phenomena with governing equations'))),
       h('div.stat', {}, h('b', {}, String(GLASS_NAMES.length)), h('span', {}, t('real glasses (Sellmeier), {n} lens and telescope prescriptions', { n: Object.keys(LENSES).length }))),
-      h('div.stat', {}, h('b', {}, '0'), h('span', {}, t('precomputed images: everything is simulated live'))),
+      h('div.stat', {}, h('b', {}, '0'), h('span', {}, t('precomputed results: every laboratory computes its pictures live'))),
     )));
   let visited = new Set();
   try { visited = new Set(JSON.parse(localStorage.getItem('ov-visited') || '[]')); } catch { /* storage unavailable */ }
@@ -158,12 +184,12 @@ export default function mount(root) {
     h('p.lede', {}, t('A few minutes each: the tour moves the controls for you, one step at a time, and says what to look at.')),
     h('div.cards', {}, ...TOURS.map((tour) => {
       const m = mods.find((x) => x.id === tour.lab);
-      return h('a.mcard', { href: `#/${tour.lab}?tour=${tour.id}`, style: { '--c': m.c } }, h('span.k', {}, t('{lab} · {n} steps', { lab: m.title, n: tour.steps.length })), h('h3', {}, t(tour.title)), h('p', {}, t(tour.blurb)));
+      return card(m, `#/${tour.lab}?tour=${tour.id}`, t('{lab} · {n} steps', { lab: m.title, n: tour.steps.length }), t(tour.title), t(tour.blurb));
     }))));
   for (const g of groups) {
     root.append(h('section.block', {}, h('h2', {}, g),
       h('div.cards', {}, ...mods.filter((m) => m.group === g && m.blurb).map((m) =>
-        h('a.mcard' + (READY.has(m.id) ? '' : '.soon'), { href: '#/' + m.id, style: { '--c': m.c } }, h('span.k', {}, READY.has(m.id) ? m.group : m.group + ' · ' + t('coming soon')), h('h3', {}, m.title), h('p', {}, m.blurb))))));
+        card(m, '#/' + m.id, READY.has(m.id) ? m.group : m.group + ' · ' + t('coming soon'), m.title, m.blurb, READY.has(m.id) ? '' : '.soon')))));
   }
   root.append(h('section.block', {}, h('h2', {}, t('How to read this laboratory')),
     h('div.prose', { html: `<p>${t(READ_1)}</p><p>${t(READ_2)}</p>` })));
