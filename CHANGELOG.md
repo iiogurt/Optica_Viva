@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.37.0] - 2026-11-11
+
 ### Changed
 - **More pictures drawn at device pixels**: a colour-mapped field now goes through the image pipeline too (`paintMap` in `js/lib/pixels.js`), with smooth sampling, a soft toe on logarithmic displays and apertures whose outer edge is sharp while thin partly covered features, such as the gaps between Webb's mirror segments, stay visible. This covers the wavefront, interferogram, PSF, through-focus and segment-phasing pictures (Zernike), the wavefront and PSF of the ray tracer, the direct and coronagraphic images, the lucky-imaging frames and the four interferometry maps. The PSF page's pupil shows Webb's segment gaps again.
 
@@ -898,7 +900,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.36.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.37.0...HEAD
+[1.37.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.36.0...v1.37.0
 [1.36.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.35.0...v1.36.0
 [1.35.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.34.0...v1.35.0
 [1.34.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.33.0...v1.34.0
