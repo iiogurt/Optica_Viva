@@ -9,6 +9,8 @@ import { fresnel, stackReflectance, COATINGS } from '../lib/thinfilm.js';
 import { spectralBasis, linspace, cmf, xyzToLinearRGB, gamutClip, oetf } from '../lib/color.js';
 import { rasterAperture, psf, rescale } from '../lib/pupil.js';
 import { plot, range } from '../lib/plot.js';
+import { paint, encode } from '../lib/pixels.js';
+import { makeScene, radiance, aces } from '../lib/flarescene.js';
 import { t } from '../lib/i18n.js';
 
 const LAMS = linspace(420, 680, 8);
@@ -198,14 +200,15 @@ export default function mount(root, meta) {
     view.redraw(); rplot.redraw(); fplot.redraw();
   }, 40);
 
+  // the scene in linear light, mapped to the screen by one tone curve (js/lib/flarescene.js); the
+  // ghosts and the sunstar are added on top as before
+  const SCENE = makeScene(), px = [0, 0, 0], EXPOSE = 0.3;
   function drawView(ctx, w, hh) {
-    // dusk landscape
-    const sky = ctx.createLinearGradient(0, 0, 0, hh);
-    sky.addColorStop(0, '#0d1630'); sky.addColorStop(0.55, '#3a3350'); sky.addColorStop(0.75, '#a8665a'); sky.addColorStop(1, '#2b1d1d');
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, w, hh);
-    ctx.fillStyle = '#0b0b10'; ctx.beginPath(); ctx.moveTo(0, hh);
-    for (let x = 0; x <= w; x += 6) ctx.lineTo(x, hh * 0.74 - 30 * Math.sin(x / 90) - 18 * Math.sin(x / 31 + 2) - (x > w * 0.6 && x < w * 0.66 ? 60 : 0));
-    ctx.lineTo(w, hh); ctx.fill();
+    const [su, sv] = sun, aspect = w / hh;
+    paint(view, { x: 0, y: 0, w, h: hh }, (u, v, o) => {
+      radiance(SCENE, u, v, su, sv, aspect, px);
+      o[0] = encode(aces(px[0] * EXPOSE)); o[1] = encode(aces(px[1] * EXPOSE)); o[2] = encode(aces(px[2] * EXPOSE));
+    }, `${su},${sv}`);
     if (!G) return;
     const st = G.st;
     // sensor 36 × 24 mm mapped to the canvas; field angle from sun position

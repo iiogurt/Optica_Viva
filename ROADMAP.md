@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 479 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 481 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -571,7 +571,7 @@ Candidates, in order of how much the third dimension adds:
 - [x] **P2 · M** **Motion**: tween between parameter states and animate page changes, respecting reduced motion. *In a guided tour, Next glides each slider to its new value (about ½ s, in slider position so logarithmic controls move evenly; `setControl(key, v, { animate: true })`), with the page recomputing on the way; the reader's own input stops it. A new page fades and rises into place. Both are off with reduced motion. Cross-fading a picture between two computed states remains possible later.*
 - [ ] **P2 · L** **3-D materials**: glass with reflections and edge highlights, soft shadows, label collision avoidance, tighter framing.
 - [x] **P3 · M** **Phone layout**: the picture pinned above the controls sheet. *Opening the sheet fixes the lab's first picture to the top of the screen (a placeholder keeps the page still) and fits the sheet below it; it stays while the page scrolls and is placed again when the screen turns. Checked by the smoke test on three pages.*
-- [ ] **P3 · M** **A real flare scene**: a procedurally rendered high-dynamic-range scene instead of the flat landscape.
+- [x] **P3 · M** **A real flare scene**: a procedurally rendered high-dynamic-range scene instead of the flat landscape. *`js/lib/flarescene.js`: a dusk sky with the forward-scattering glow round the sun (it follows the dragged sun), thin clouds lit from below, three ridges fading into the haze, and a lake that mirrors them with ripples and a glitter path; linear radiance through one filmic tone curve, drawn at device pixels. The ghosts and the sunstar are added on top unchanged. The ghosts are still added in display values; adding them in linear light before the tone curve would need their calibration redone.*
 
 ### v2.0 Learning platform
 

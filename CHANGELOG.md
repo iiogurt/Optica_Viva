@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 - **Phones: the picture stays in view while you move the sliders.** Opening the controls sheet pins the laboratory's first picture to the top of the screen and fits the sheet below it, however far the page scrolls; closing the sheet puts the picture back. The smoke test checks it on the PSF, black-hole and depth-of-field pages.
+- **Flare, ghosts & coatings: a real scene.** The flat dusk drawing is replaced by a landscape rendered in linear light (`js/lib/flarescene.js`): a sky whose glow follows the sun as you drag it, thin clouds lit from below, three mountain ridges fading into the haze, and a lake that mirrors them with ripples and a glitter path under the sun, mapped to the screen by one filmic tone curve at device pixels. The ghosts and the sunstar are computed and added as before.
 
 ## [1.38.0] - 2026-11-11
 
