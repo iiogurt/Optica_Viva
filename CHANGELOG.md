@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.49.0] - 2026-11-11
+
 ### Added
 - **New laboratory: In-camera lens corrections** (`#/corrections`). A test chart recorded through a lens with barrel or pincushion distortion, vignetting and lateral colour, beside the camera's corrected picture, the top-left star zoomed before and after, and the cost from the centre to the corner: sensor pixels per output pixel (radially dr_d/dr_u, tangentially r_d/r_u), the share of the field kept after cropping, and the signal-to-noise ratio of brightened corners (√V of the centre's). Each correction can be switched off to see what it hides.
 
@@ -980,7 +982,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.48.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.49.0...HEAD
+[1.49.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.48.0...v1.49.0
 [1.48.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.47.0...v1.48.0
 [1.47.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.46.0...v1.47.0
 [1.46.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.45.0...v1.46.0
