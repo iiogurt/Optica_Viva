@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.42.0] - 2026-11-11
+
 ### Changed
 - CLAUDE.md: the next-work summary now covers v1.31–v1.41 and the conventions they added (image pipeline, card pictures, linked readouts, slider glides).
 
@@ -944,7 +946,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.41.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.42.0...HEAD
+[1.42.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.41.0...v1.42.0
 [1.41.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.40.0...v1.41.0
 [1.40.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.39.0...v1.40.0
 [1.39.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.38.0...v1.39.0
