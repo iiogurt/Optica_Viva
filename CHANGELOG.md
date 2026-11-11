@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Halation & diffusion filters** (`#/halation`). Light that reaches the film base is reflected at its back, totally beyond the critical angle, and returns as a ring of radius 2t tan θc (0.19 mm for a 125 µm base of index 1.65), caught mostly by the red layer: the red glow of film without its anti-halation backing. A diffusion filter's haze for comparison. A night street in linear light convolved with both by FFT, as the whole frame or a 4× crop, with the radial profile of the returning light and the Fresnel reflection at the base.
+
 ## [1.46.0] - 2026-11-11
 
 ### Added

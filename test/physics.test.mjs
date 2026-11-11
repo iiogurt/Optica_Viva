@@ -441,3 +441,26 @@ test('pool caustics: Snell in vector form, the depth where a wave first focuses,
   const p = line(a.tw - e), q = line(a.tw + e);
   near(Math.abs((q.x - p.x) / (p.t - q.t)), a.tangential, 1e-6, 'tangential apparent depth');
 });
+
+test('halation: total reflection in the film base sets the ring; the kernels conserve light', async () => {
+  const H = await import('../js/lib/halation.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
+  const n = 1.65, t = 0.125, tc = H.criticalAngle(n);
+  near((tc * 180) / Math.PI, 37.31, 0.01, 'critical angle (°)');
+  near(H.ringRadius(t, n) * 1000, 190.5, 0.2, 'ring radius 2t tan θc (µm)');
+  // Lambertian light beyond θc is all reflected: the returned share is cos²θc plus the Fresnel part below
+  const ret = H.returned(n);
+  assert.ok(ret > Math.cos(tc) ** 2 && ret < Math.cos(tc) ** 2 + 0.06, `returned ${ret} just above cos²θc = ${Math.cos(tc) ** 2}`);
+  near(H.returned(n, 0.02), 0.02 * ret, 1e-12, 'a backing scales it');
+  // the light per area peaks just outside r_c, where total reflection begins: a ring
+  const rc = H.ringRadius(t, n), d = (f) => H.halationDensity(f * rc, t, n);
+  assert.ok(d(1.01) > 6 * d(0.5) && d(1.01) > d(0.99) && d(1.01) > d(1.1) && d(1.1) > d(1.5), 'bright ring just outside r_c');
+  // the gridded kernel holds the returned light (all of it but the far tail on a 36 mm grid)
+  const K = H.halationKernel(256, 36 / 256, t, n);
+  near(K.reduce((s, v) => s + v, 0), ret, 0.01 * ret, 'kernel energy');
+  near(H.diffusionKernel(128, 0.1, 0.2, 0.6).reduce((s, v) => s + v, 0), 1, 1e-12, 'diffusion filter conserves light');
+  // FFT convolution of a single bright pixel returns the kernel, shifted to that pixel
+  const N = 64, a = new Float64Array(N * N); a[10 * N + 20] = 1;
+  const D = H.diffusionKernel(N, 0.2, 0.3, 0.8), c = H.convolve(a, D, N);
+  near(c[10 * N + 20], D[0], 1e-9, 'centre'); near(c[12 * N + 23], D[2 * N + 3], 1e-9, 'offset (3, 2)');
+});
