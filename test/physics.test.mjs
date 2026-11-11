@@ -371,3 +371,19 @@ test('portrait photograph: 2 × 2 rays per pixel give the same picture as a sing
   assert.ok(Math.abs(mean(four) / mean(one) - 1) < 0.06, `mean brightness ${mean(four)} vs ${mean(one)}`);
   assert.ok(Math.abs(four.rb - one.rb) < 1e-9, 'same disc size');
 });
+
+test('Milky Way mission photograph: the stack is √frames less noisy than one frame, around the planned sky level', async () => {
+  const { plan, milkywayShot } = await import('../js/lib/milkyway.js');
+  const P = plan({}), r = milkywayShot(P, { W: 200, H: 130 });
+  // the noise is the difference between the two pictures, whose clean parts are identical
+  let s = 0, s2 = 0, n = 0;
+  for (let k = 0; k < r.one.length; k++) { const d = r.one[k] - r.stack[k]; s += d; s2 += d * d; n++; }
+  // expected: photon noise of the actual signal (the stack stands in for it) plus read noise, for one
+  // frame and the stack together
+  let v = 0; for (const x of r.stack) v += Math.max(0, x) + P.sigma * P.sigma;
+  const sd = Math.sqrt(s2 / n - (s / n) ** 2), expect = Math.sqrt((v / n) * (1 + 1 / P.frames));
+  assert.ok(Math.abs(sd / expect - 1) < 0.12, `noise of one frame ${sd} vs about ${expect}`);
+  assert.ok(Math.abs(r.sky - P.Fs * P.t) < 1e-9, 'sky level = F_s t');
+  const again = milkywayShot(P, { W: 200, H: 130 });
+  assert.equal(again.one[777], r.one[777], 'seeded: the same picture every time');
+});

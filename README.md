@@ -123,7 +123,7 @@ Every image below is a screenshot of the running app. Each one is a simulation r
 Missions are real tasks. Enter your equipment and situation (or pick a real camera body, planetary camera or telescope from the presets), and the page combines several laboratory models into a plan with the reason for every setting.
 
 **Photograph the Milky Way** · `#/mission-milkyway`<br>
-<img src="docs/screenshots/mission-milkyway.webp" alt="Milky Way mission: exposure, aperture, ISO and number of frames, with a star drawn on the pixel grid at the planned exposure and at the 500 rule" width="70%">
+<img src="docs/screenshots/mission-milkyway.webp" alt="Milky Way mission: exposure, aperture, ISO and number of frames, the photograph the plan gives as one frame and as the stack, with a star drawn on the pixel grid at the planned exposure and at the 500 rule" width="70%">
 
 The longest exposure before stars trail (sidereal drift f ω cos δ against two pixels or the Airy disk, compared with the 500 and NPF rules), the ISO-invariance point of a two-stage read-noise model, sky and detail electrons from the Bortle class, and the number of frames for a signal-to-noise ratio of 5 on the faintest detail you choose.
 
@@ -1120,6 +1120,7 @@ The numerical core was checked against published or analytically known values. E
 | FDTD wavelength in vacuum and in glass (n = 1.5), 16 cells per λ | 16.02, 10.56 cells | 16, 10.67 (numerical dispersion below 1.5 %) |
 | FDTD double slit against the Huygens–Fresnel integral | RMS difference below 0.12, central fringe within 3 cells | 2-D Huygens–Fresnel |
 | Portrait photograph: irradiance of a spherical light of angular radius a at the geometric terminator; background blur disc | sin a / 4; disc = planned c_bg | (cos θ + sin a)²/(4 sin a) at cos θ = 0; diameter 2r/px·mm = c_bg |
+| Milky Way photograph: noise of one frame against the planned stack | √(signal + σ²)·√(1 + 1/N) | within 12 % of the measured difference between the two pictures |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
 | Autofocus defocus blur, 50 mm f/2 at 2 m, subject 3 m; 200 mm f/2, 0.6 m ↔ 10 m | 213.675 µm; 31.973 mm and 47.000 mm, half-pupil shift 0.424 A Δv/v | Thin-lens similar triangles, b = A\|Δv\|/v(u), and a ray trace through both pupil halves |

@@ -1,6 +1,9 @@
 // German interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "Your photograph, computed from the plan: a crop at 100 %, one frame and the stack": "Ihr Foto, aus dem Plan berechnet: ein Ausschnitt in 100 %, ein Einzelbild und der Stapel",
+  "One {t} frame at ISO {iso}": "Ein Einzelbild von {t} bei ISO {iso}",
+  "Stack of {n} frames ({min} min)": "Stapel aus {n} Bildern ({min} min)",
   "Your photograph, computed from the plan": "Ihr Foto, aus dem Plan berechnet",
   "seen once": "einmal zu sehen",
   "seen {n} times": "{n}-mal zu sehen",

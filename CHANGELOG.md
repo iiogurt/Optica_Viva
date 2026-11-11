@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Photograph the Milky Way: the photograph your plan gives.** A crop of the frame at 100 %, side by side as one sub-exposure and as the stack of the planned number of frames, computed from the plan's own rates: the sky glow of the chosen Bortle class, the faint detail you asked for (with dark lanes), stars from a realistic count, blurred by the lens and trailed by the planned amount, photon and read noise at the chosen ISO. With one stretch for both, a single frame is noise and the stack shows the structure.
+
 ## [1.43.0] - 2026-11-11
 
 ### Added
