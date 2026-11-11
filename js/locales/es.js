@@ -1,6 +1,7 @@
 // Spanish interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "Your photograph, computed from the plan": "Tu foto, calculada a partir del plan",
   "seen once": "visto una vez",
   "seen {n} times": "visto {n} veces",
   "{d} m · blur {c} µm{ok}": "{d} m · desenfoque {c} µm{ok}",

@@ -460,6 +460,9 @@ button.term:hover, button.term:focus-visible { color: var(--accent-2); }
 @media (max-width: 1100px) { .path { grid-template-columns: minmax(0, 1fr); } }
 
 /* Missions: steps with the answer first */
+.mission-shot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 0.5fr); gap: 14px; align-items: start; }
+.mission-shot > .msteps { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+@media (max-width: 1100px) { .mission-shot { grid-template-columns: minmax(0, 1fr); } .mission-shot > figure.stage { max-width: 420px; margin: 0 auto; width: 100%; } }
 .msteps { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
 .mstep { border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(180deg, var(--panel-2), var(--panel)); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
 .mstep-head { display: flex; align-items: center; gap: 10px; }

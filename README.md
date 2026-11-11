@@ -133,7 +133,7 @@ The longest exposure before stars trail (sidereal drift f ω cos δ against two 
 The Nyquist focal ratio for your pixels, frames short enough to freeze the seeing, the capture length before Jupiter's rotation blurs detail, Fried's share of lucky frames, and when atmospheric dispersion calls for a corrector.
 
 **Portrait session** · `#/mission-portrait`<br>
-<img src="docs/screenshots/mission-portrait.webp" alt="Portrait mission: distance and lens, aperture, background blur and light, with a top view of the set" width="70%">
+<img src="docs/screenshots/mission-portrait.webp" alt="Portrait mission: distance and lens, aperture, background blur and light, the photograph the plan gives, and a top view of the set" width="70%">
 
 Where to stand and which lens fills the frame without enlarging the nose, the widest aperture that keeps both eyes sharp, how much the background blurs, and how big and close the light should be.
 
@@ -938,7 +938,7 @@ Optica_Viva/
 │   │   ├── misconceptions.js  Predict-then-reveal questions on common misconceptions
 │   │   ├── milkyway.js        Milky Way mission: trailing limit, ISO invariance, frames to stack
 │   │   ├── path.js            The home page's "Start here" path
-│   │   ├── portrait.js        Portrait mission: perspective, focal length, depth of field, background blur, light
+│   │   ├── portrait.js        Portrait mission: perspective, focal length, depth of field, background blur, light, and the photograph the plan gives
 │   │   ├── random.js          Seeded random numbers for every simulation (mulberry32, Box–Muller, Poisson)
 │   │   ├── raytrace.js        Exact ray tracer (spheres + even aspheres), paraxial analysis, ray aiming, OPD
 │   │   ├── optimise.js        Damped-least-squares (Levenberg–Marquardt) lens optimiser
@@ -1119,6 +1119,7 @@ The numerical core was checked against published or analytically known values. E
 | Mie, 10 µm droplets: first corona minimum | 1.83° | Fraunhofer 1.22λ/(2a) = 1.92° |
 | FDTD wavelength in vacuum and in glass (n = 1.5), 16 cells per λ | 16.02, 10.56 cells | 16, 10.67 (numerical dispersion below 1.5 %) |
 | FDTD double slit against the Huygens–Fresnel integral | RMS difference below 0.12, central fringe within 3 cells | 2-D Huygens–Fresnel |
+| Portrait photograph: irradiance of a spherical light of angular radius a at the geometric terminator; background blur disc | sin a / 4; disc = planned c_bg | (cos θ + sin a)²/(4 sin a) at cos θ = 0; diameter 2r/px·mm = c_bg |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
 | Autofocus defocus blur, 50 mm f/2 at 2 m, subject 3 m; 200 mm f/2, 0.6 m ↔ 10 m | 213.675 µm; 31.973 mm and 47.000 mm, half-pupil shift 0.424 A Δv/v | Thin-lens similar triangles, b = A\|Δv\|/v(u), and a ray trace through both pupil halves |

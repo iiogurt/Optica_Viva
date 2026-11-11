@@ -347,3 +347,27 @@ test("G-tilt image motion per axis: Tyler's 0.1706 (λ/D)² (D/r₀)^{5/3}", asy
   const { tiltVariance, LAM0 } = await import('../js/lib/shimmer.js');
   near(tiltVariance(0.2, 0.05) / ((LAM0 / 0.2) ** 2 * (0.2 / 0.05) ** (5 / 3)), 0.1706, 0.0017, 'coefficient');
 });
+
+test('portrait mission photograph: spherical-light irradiance and background discs of the planned size', async () => {
+  const { sphereLight, portraitShot, plan } = await import('../js/lib/portrait.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
+  const a = 0.3, s = Math.sin(a);
+  near(sphereLight(s, a), s, 1e-12, 'continuous where the whole light is visible');
+  near(sphereLight(-s, a), 0, 1e-12, 'zero where none is');
+  near(sphereLight(0, a), s / 4, 1e-12, 'a quarter at the geometric terminator');
+  near(sphereLight(0.5, 1e-6), 0.5, 1e-9, 'a point light gives Lambert cos θ');
+  const P = plan({ d: 2, N: 2, B: 3 }), S = P.S, W = 120, H = 180, sw = Math.min(S.w, S.h);
+  const r = portraitShot({ W, H, sw, sh: Math.max(S.w, S.h), f: P.f * 1000, N: 2, d: 2, B: 3, light: 0.9, ld: 1.2, Hf: 0.55 });
+  near((2 * r.rb) / (W / sw), P.bg * 1000, 1e-9, 'disc diameter on the sensor = planned background blur (mm)');
+  const k = Math.round(H * 0.4) * W + W / 2; // the face, near the middle of the frame
+  assert.ok(r.rgb[k * 3] > 0.15 && r.rgb[k * 3] > 3 * r.rgb[(2 * W + 2) * 3], 'the lit face is far brighter than the wall');
+});
+
+test('portrait photograph: 2 × 2 rays per pixel give the same picture as a single ray, only smoother', async () => {
+  const { portraitShot, plan } = await import('../js/lib/portrait.js');
+  const P = plan({}), S = P.S, a = { sw: Math.min(S.w, S.h), sh: Math.max(S.w, S.h), f: P.f * 1000, N: 2, d: 2, B: 3, light: 0.9, ld: 1.2, Hf: 0.55, W: 60, H: 90 };
+  const one = portraitShot(a), four = portraitShot({ ...a, ss: 2 });
+  const mean = (r) => r.rgb.reduce((s, v) => s + v, 0) / r.rgb.length;
+  assert.ok(Math.abs(mean(four) / mean(one) - 1) < 0.06, `mean brightness ${mean(four)} vs ${mean(one)}`);
+  assert.ok(Math.abs(four.rb - one.rb) < 1e-9, 'same disc size');
+});

@@ -40,6 +40,7 @@ import { shadowLab } from './starshade.js';
 import { fieldPSFs } from './fieldpsf.js';
 import { makeLight, renderScene } from './lighting.js';
 import { runAF } from './autofocus.js';
+import { portraitShot } from './portrait.js';
 
 // Polychromatic PSF of an aperture with optional defocus, plus profile, encircled energy and Strehl.
 // p = { spec, n, Dpx, lambdas (nm), ref (nm), defocus (waves RMS at ref), falseColor }
@@ -676,4 +677,6 @@ function bhRows(p) { BH_TABLE ||= orbitTable(); const r = diskImage({ ...p, tabl
 
 function benchRays(p) { const r = benchPhotons(p); return { result: r, transfer: [r.X.buffer, r.Y.buffer, r.Z.buffer] }; }
 
-export const TASKS = { benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
+function portraitShotTask(p) { const r = portraitShot(p); return { result: r, transfer: [r.rgb.buffer] }; }
+
+export const TASKS = { portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };

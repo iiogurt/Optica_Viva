@@ -1,6 +1,7 @@
 // French interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "Your photograph, computed from the plan": "Votre photo, calculée à partir du plan",
   "seen once": "vu une fois",
   "seen {n} times": "vu {n} fois",
   "{d} m · blur {c} µm{ok}": "{d} m · flou {c} µm{ok}",
