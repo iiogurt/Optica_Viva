@@ -700,6 +700,16 @@ The **CCD equation for stacks**: a faint galaxy behind a sky set by the **Bortle
 <tr>
 <td valign="top" colspan="2">
 
+**Satellite trails & stacking** · `#/trails`<br>
+<img src="docs/screenshots/trails.webp" alt="One frame with a satellite trail, the mean of all frames with ghosts of every trail, the median and the sigma-clipped mean without them; what a trail leaves in a mean stack against the number of frames" width="70%">
+
+**Satellite trails** across a deep-sky stack (a trail deposits F·p/ω per pixel: flux × dwell time) and three ways of **combining frames**: the mean keeps 1/N of every trail, which sinks below the noise only once N > (e_trail/σ)²; the median removes them at √(π/2) times the noise; κσ-clipping around the median (σ from the median absolute deviation) removes them almost for free.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Field-dependent PSF** · `#/fieldpsf`<br>
 <img src="docs/screenshots/fieldpsf.webp" alt="A 5 by 5 mosaic of PSFs across the field of a Ritchey–Chrétien telescope, a map of RMS wavefront error with astigmatic nodes, and RMS vs field for three designs" width="70%">
 
@@ -825,6 +835,7 @@ flowchart LR
 | Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
 | Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
 | Infrared & UV | Camera signal ∫E ρ T Q c̄ dλ at 10 nm from 300 to 1100 nm: 5778 K Sun with an ozone cut, λ⁻⁴ sky, representative reflectance curves (leaf red edge at 715 nm), silicon QE, Bayer dyes transparent beyond ~800 nm, ideal filter edges; white balance and red–blue swap; monochrome where a channel is blind; focus of a thin achromat from Sellmeier glass data | irphoto |
+| Satellite trails | Frames of the stacking laboratory's galaxy and stars with sky, photon (Gaussian) and read noise; Poisson number of trails per frame, random position and direction, Gaussian profile, depth F·p/ω; per-pixel mean, median and κσ-clip around the median with σ = 1.4826 MAD | trails |
 | Lens corrections | Brown radial distortion r_d = r_u(1 + k₁r_u² + k₂r_u⁴) with an exact inverse (Newton, tabulated); vignetting cos⁴ of the field angle times a mechanical fall-off; lateral colour as ±scale of red and blue; 240 × 160 sensor, 2 × 2 samples, photon + read noise; correction by bilinear resampling into the largest rectangle the sensor covers | corrections |
 | Halation | Lambertian light in the base, Fresnel reflection at its back (total beyond θc), return radius 2t tan θ; kernel K(r) averaged over each grid cell; red-layer weighting 1 : 0.28 : 0.05; diffusion filter as (1 − s)δ + s·exponential halo; FFT convolution on 512² | halation |
 | Pool caustics | Sum of travelling waves (deep-water ω = √(gk)) with wave vectors that divide the 1.2 m patch; vector Snell refraction at the local normal with the index of water at 640, 545 and 460 nm; 16 rays per floor pixel splatted bilinearly (mean = flat water); absorption of pure water down and back up | caustics |
@@ -957,6 +968,7 @@ Optica_Viva/
 │   │   ├── shimmer.js         Seeing on the camera feed: G-tilt maps by FFT, short-exposure blur, frame warp
 │   │   ├── turbulence.js      Seeded Gaussian noise and von Kármán phase screens (FFT + subharmonics)
 │   │   ├── shake.js           Hand-held shake model, type-2 stabiliser servo with gyro random walk, Monte-Carlo sharpness
+│   │   ├── trails.js          Satellite trails: depth F·p/ω, frames with trails, mean / median / κσ-clip combination
 │   │   ├── stacking.js        CCD equation for stacks, sky brightness from Bortle class, sky-limited sub length
 │   │   ├── starshade.js       Fresnel shadow of an apodised occulter (Filon quadrature, Bessel J₀), suppression spectrum
 │   │   ├── spectro.js         Gratings, blaze, prisms, resolving power, line lists, instrument profile
@@ -1040,7 +1052,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (70)
+│   └── modules/               One file per page (71)
 ├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── vendor/fonts/              Fraunces, Inter, JetBrains Mono (OFL 1.1), variable woff2, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
@@ -1198,6 +1210,7 @@ The numerical core was checked against published or analytically known values. E
 | Sky: vertical Rayleigh optical depth at 550 nm; air mass at 60–80° | 0.0973 (Bucholtz 1995); Kasten & Young (1989) | 0.0968; within 1.5 % (3 % at 85°, where refraction lengthens the real path) |
 | Lens corrections: sampling of the corrected picture; a grid line after straightening | dr_d/dr_u and r_d/r_u | match numerical derivatives (10⁻⁸); the line stays in one pixel column from top to bottom |
 | Infrared: foliage against sky; achromat focus | far brighter than the sky at 720 nm, far darker in the visible; F and C at one focus | ratio > 2 at 720 nm and < 0.2 in the visible; F–C difference < 10⁻⁹ mm; 850 nm 0.05–0.4 mm behind |
+| Satellite trails: noise of the median and of a 3σ clip against the mean (51 Gaussian frames) | √(π/2) = 1.25; ≈ 1 | within 7 %; < 1.06; a one-frame outlier of 40σ: mean keeps 1/N, median and clip remove it |
 | Mirages: gradient at which a level ray curves like the Earth; ship hidden at 20 km from 3 m in standard air | 0.129 K/m at 15 °C; 11.4 m | κ = 1/R_E exactly; ray tracer within 0.15 m of (L − √(2R′z₀))²/(2R′), R′ = R_E/(1 − k) |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
@@ -1232,6 +1245,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Sky colours | Single scattering only (the sky near the horizon and in twilight comes out too dark), one aerosol type, an approximate ozone band, no refraction | No clouds, no multiple scattering, no polarisation here (see Polarisation) |
 | Lens corrections | Radial distortion only (no decentring), bilinear resampling, no sharpening after correction, shot and read noise only | Cameras' own profiles and sharpening differ |
 | Infrared & UV | Representative spectra, not measurements; ideal filter edges; one thin achromat for the focus | Real cameras' infrared colours depend on their dyes and processing |
+| Satellite trails | Gaussian noise, frames already aligned, trails straight and uniform | No flares or tumbling satellites, no frame registration |
 | Mirages | Horizontally uniform, steady air; one wavelength; dry air; smooth model profiles | No shimmer, no green flash, no tilted or moving layers |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
 | Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |

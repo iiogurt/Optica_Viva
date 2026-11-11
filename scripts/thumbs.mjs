@@ -18,7 +18,7 @@ const PICK = {
   gallery: '.gallery img, .block img',
 };
 // lab → which picture (0 = the first) when a later one shows the laboratory better
-const NTH = { detectors: 4, zernike: 3, gear: 1 };
+const NTH = { detectors: 4, zernike: 3, gear: 1, trails: 3 };
 const ALL = 'figure.stage canvas:not(.stage-over)';
 // lab → extra milliseconds to wait, for pictures that build up over several passes
 const SETTLE = { atmospheric: 9000 };
