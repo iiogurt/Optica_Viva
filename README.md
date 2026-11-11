@@ -922,6 +922,7 @@ Optica_Viva/
 │   │   ├── earthobs3d.js      3-D Earth observation at true scale: orbit, swath, push-broom footprint and imaged strip
 │   │   ├── seeing3d.js        3-D seeing: the frozen-flow phase screen as a relief, the pupil, the residual above it
 │   │   ├── flare3d.js         3-D flare: exact paths of the brightest ghosts through the lens, ranked by irradiance
+│   │   ├── flarescene.js      The flare laboratory's dusk scene in linear light: sky glow, clouds, hazy ridges, a mirroring lake
 │   │   ├── bokeh3d.js         3-D bokeh: rays round the iris through the traced lens, axial and corner footprints
 │   │   ├── starshade3d.js     3-D starshade geometry: petals, separation, IWA line of sight, the shadow on the pupil
 │   │   ├── transit3d.js       3-D transit geometry at true scale: star, tilted orbit, sight-line cylinder, chord, b
