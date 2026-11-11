@@ -4,6 +4,9 @@ import { header, lab, idea, rule, theory, references, liveCalc, missionStep } fr
 import { MODULES } from '../app.js';
 import { designFor } from '../lib/satellite.js';
 import { t } from '../lib/i18n.js';
+import { groundScene, imageFromOrbit } from '../lib/earthobs.js';
+import { makeRng } from '../lib/random.js';
+import { paint, encode, keyOf, bilinear } from '../lib/pixels.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const len = (m) => (m < 1 ? (m * 100).toFixed(0) + ' cm' : m.toPrecision(3) + ' m');
@@ -33,7 +36,29 @@ export default function mount(root, meta) {
     missionStep(4, 'Data', null, ''),
   ];
   const view = stage({ aspect: 2.6, label: 'The telescope to scale with a person (1.8 m)', draw: drawScale, minH: 200 });
-  root.append(lab([h('div.msteps', {}, ...steps.map((s) => s.el)), view.el], [h('div.card', {}, ctl.el), calc.el]));
+  const shot = stage({ aspect: 2.45, label: 'Your satellite\'s picture, computed from the design: an 80 × 56 m crossroads', draw: drawShot, minH: 220 });
+  root.append(lab([h('div.msteps', {}, ...steps.map((s) => s.el)), shot.el, view.el], [h('div.card', {}, ctl.el), calc.el]));
+
+  // The picture the design gives, with the Earth-observation laboratory's models (js/lib/earthobs.js):
+  // the ground at 10 cm, and the same ground blurred by the mirror, integrated over the pixel and one
+  // pixel of motion, sampled at the GSD, with photon and read noise for the planned TDI signal.
+  const SCENE = groundScene(80, 56, 0.1, makeRng(5).u);
+  // the 10 cm ground averaged over 3 × 3 cells for display, so 15 cm lane markings shrink without vanishing
+  const REF = (() => { const k = 3, W = Math.floor(SCENE.W / k), H = Math.floor(SCENE.H / k), g = new Float32Array(W * H); for (let y = 0; y < H * k; y++) for (let x = 0; x < W * k; x++) g[Math.floor(y / k) * W + Math.floor(x / k)] += SCENE.g[y * SCENE.W + x] / (k * k); return { g, W, H }; })();
+  let SHOT = null;
+  function drawShot(ctx, w, hh, st) {
+    ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
+    if (!SHOT) return;
+    const gap = 14, top = 50, pw = Math.min((w - 3 * gap) / 2, ((hh - top - 10) * 80) / 56), ph = (pw * 56) / 80;
+    const panels = [[REF.g, REF.W, REF.H, t('The ground (10 cm)')], [SHOT.img, SHOT.w, SHOT.h, t('From orbit: {gsd} pixels, SNR {snr}', { gsd: len(R.st.gsd), snr: R.snr.toFixed(0) })]];
+    panels.forEach(([a, W, H, label], i) => {
+      const x0 = gap + i * (pw + gap);
+      // the reference is resampled smoothly, the satellite's pixels are shown as squares
+      paint(st, { x: x0, y: top, w: pw, h: ph }, (u, v, o) => { const r = i ? a[Math.min(H - 1, (v * H) | 0) * W + Math.min(W - 1, (u * W) | 0)] : bilinear(a, W, H, u * W - 0.5, v * H - 0.5); o[0] = o[1] = o[2] = encode(Math.max(0, r) * 1.6); }, keyOf(SHOT), i);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(label, x0, top - 8);
+    });
+  }
 
   let R = null;
   function update() {
@@ -69,7 +94,8 @@ export default function mount(root, meta) {
     f &= ${texNum(r.f, 3)}\ \text{m},\quad D = ${texNum(r.D, 3)}\ \text{m},\quad N = f/D = ${texNum(r.f / r.D, 3)}\\
     \text{lines} &= ${texNum(r.lineRate, 3)}\ \text{s}^{-1}
     \end{aligned}`);
-    view.redraw();
+    SHOT = imageFromOrbit(SCENE, { gsd: st.gsd, e: R.e }, { H: st.H * 1000, D: R.D, N: R.N }, makeRng(9).g);
+    view.redraw(); shot.redraw();
   }
 
   function drawScale(ctx, w, hh) {
@@ -108,5 +134,5 @@ export default function mount(root, meta) {
     'R. D. Fiete, "Image quality and λFN/p for remote sensing systems", Optical Engineering 38, 1229 (1999).',
     'W. J. Larson and J. R. Wertz (eds.), <i>Space Mission Analysis and Design</i>, 3rd ed., Microcosm (1999).',
   ]));
-  return () => [view].forEach((s) => s.destroy());
+  return () => [shot, view].forEach((s) => s.destroy());
 }

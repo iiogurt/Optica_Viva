@@ -153,7 +153,7 @@ Shutter angles that cancel mains flicker, which dimmed LED fixtures band on a ro
 Two cameras for the same shot, or two telescopes: which gathers more light, blurs the background more or shows finer detail, and which settings make them equivalent.
 
 **Design an Earth-observation satellite** · `#/mission-satellite`<br>
-<img src="docs/screenshots/mission-satellite.webp" alt="Satellite design mission: focal length, mirror, TDI stages and data rate, with the telescope drawn next to a person" width="70%">
+<img src="docs/screenshots/mission-satellite.webp" alt="Satellite design mission: focal length, mirror, TDI stages and data rate, the crossroads as the satellite records it, with the telescope drawn next to a person" width="70%">
 
 From the ground resolution you want to the focal length, mirror, TDI stages and data rate.
 

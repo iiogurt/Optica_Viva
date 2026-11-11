@@ -1,6 +1,9 @@
 // Spanish interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "Your satellite's picture, computed from the design: an 80 × 56 m crossroads": "La imagen de tu satélite, calculada a partir del diseño: un cruce de 80 × 56 m",
+  "The ground (10 cm)": "El suelo (10 cm)",
+  "From orbit: {gsd} pixels, SNR {snr}": "Desde la órbita: píxeles de {gsd}, SNR {snr}",
   "Your photograph, computed from the plan: a crop at 100 %, one frame and the stack": "Tu foto, calculada a partir del plan: un recorte al 100 %, una toma y el apilado",
   "One {t} frame at ISO {iso}": "Una toma de {t} a ISO {iso}",
   "Stack of {n} frames ({min} min)": "Apilado de {n} tomas ({min} min)",
