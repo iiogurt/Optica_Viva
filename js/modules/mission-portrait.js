@@ -5,6 +5,9 @@ import { MODULES } from '../app.js';
 import { SENSORS } from '../lib/sensors.js';
 import { plan, FRAMINGS } from '../lib/portrait.js';
 import { t } from '../lib/i18n.js';
+import { latest } from '../lib/compute.js';
+import { paint, bilinear, encode, keyOf } from '../lib/pixels.js';
+import { aces } from '../lib/flarescene.js';
 
 const titleOf = (id) => MODULES.find((m) => m.id === id)?.title || id;
 const cm = (m) => (m < 1 ? (m * 100).toFixed(m < 0.1 ? 1 : 0) + ' cm' : m.toFixed(2) + ' m');
@@ -35,7 +38,34 @@ export default function mount(root, meta) {
     missionStep(4, 'Light', 'lighting', titleOf('lighting')),
   ];
   const view = stage({ aspect: 2.6, label: 'Seen from above: camera, sharp zone, face, light and background (sideways distances compressed)', draw: drawTop, minH: 200 });
-  root.append(lab([h('div.msteps', {}, ...steps.map((s) => s.el)), view.el], [h('div.card', {}, ctl.el), calc.el]));
+  const shot = stage({ aspect: 2 / 3, label: 'Your photograph, computed from the plan', draw: drawShot, minH: 300, maxH: 620 });
+  root.append(lab([h('div.mission-shot', {}, h('div.msteps', {}, ...steps.map((s) => s.el)), shot.el), view.el], [h('div.card', {}, ctl.el), calc.el]));
+
+  // The photograph the plan gives (js/lib/portrait.js), rendered in the compute worker at about the
+  // canvas's resolution and drawn through the image pipeline.
+  const shotJob = latest('portrait');
+  let SHOT = null;
+  // a quick picture at once, the full-resolution one with 2 × 2 rays per pixel once the controls settle
+  let refineTimer = 0;
+  function renderShot() {
+    const st = P.st, S = P.S, W = Math.max(120, Math.min(360, Math.round(shot.w * shot.dpr))), H = Math.round(W * 1.5);
+    const args = { sw: Math.min(S.w, S.h), sh: Math.max(S.w, S.h), f: P.f * 1000, N: st.N, d: st.d, B: st.B, light: st.light, ld: st.ld, Hf: FRAMINGS[st.framing][1] };
+    clearTimeout(refineTimer);
+    shotJob('portraitShot', { ...args, W: Math.round(W / 2), H: Math.round(H / 2) }).then((r) => { SHOT = r; shot.redraw(); }, () => {});
+    refineTimer = setTimeout(() => shotJob('portraitShot', { ...args, W, H, ss: 2 }).then((r) => { SHOT = r; shot.redraw(); }, () => {}), 400);
+  }
+  function drawShot(ctx, w, hh) {
+    ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
+    if (!SHOT) return;
+    const { rgb, W, H } = SHOT, sc = Math.min(w / W, hh / H), dw = W * sc, dh = H * sc, R = new Float32Array(W * H), G = new Float32Array(W * H), B = new Float32Array(W * H);
+    if (!SHOT.planes) { for (let k = 0; k < W * H; k++) { R[k] = rgb[k * 3]; G[k] = rgb[k * 3 + 1]; B[k] = rgb[k * 3 + 2]; } SHOT.planes = [R, G, B]; }
+    const [r, g, b] = SHOT.planes;
+    paint(shot, { x: (w - dw) / 2, y: (hh - dh) / 2, w: dw, h: dh }, (u, v, o) => {
+      const x = u * W - 0.5, y = v * H - 0.5;
+      o[0] = encode(aces(bilinear(r, W, H, x, y) * 1.4)); o[1] = encode(aces(bilinear(g, W, H, x, y) * 1.4)); o[2] = encode(aces(bilinear(b, W, H, x, y) * 1.4));
+    }, keyOf(SHOT));
+  }
+  shot.resized = () => P && renderShot();
 
   let P = null;
   function update() {
@@ -72,6 +102,7 @@ export default function mount(root, meta) {
     \text{near}, \text{far} &= ${texNum(r.near, 4)},\ ${texNum(r.far, 4)}\ \text{m}
     \end{aligned}`);
     view.redraw();
+    renderShot();
   }
 
   // Top view (not to scale across): camera on the left, the face, the background, and the light.
@@ -122,5 +153,5 @@ export default function mount(root, meta) {
     'F. Hunter, S. Biver and P. Fuqua, <i>Light: Science and Magic</i>, 5th ed., Routledge (2015): portrait lighting.',
     'H. M. Merklinger, <i>The INs and OUTs of FOCUS</i> (1992): background blur as a share of the frame.',
   ]));
-  return () => [view].forEach((s) => s.destroy());
+  return () => { clearTimeout(refineTimer); SHOT = null; [view, shot].forEach((s) => s.destroy()); };
 }

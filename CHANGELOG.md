@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Portrait session: the photograph your plan gives.** Beside the plan, a portrait computed from it: the face seen from the planned distance with the planned focal length (closer means a larger nose), lit by a round light of the planned size and distance (the exact irradiance of a spherical source, so a small light gives a hard edge across the face and a large one a soft one), each part of the face blurred by its own depth of field, and the string lights on the wall behind turned into discs of exactly the planned size. Rendered in the compute worker: a quick picture at once, then one with 2 × 2 rays per pixel once the controls settle.
+
 ## [1.42.0] - 2026-11-11
 
 ### Changed
