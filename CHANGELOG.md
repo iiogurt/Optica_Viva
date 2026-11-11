@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: HDR displays: PQ & HLG** (`#/hdrdisplay`). How a screen codes brightness: BT.1886 gamma 2.4, SMPTE ST 2084 PQ and BT.2100 HLG with its peak-dependent system gamma. One dark ramp quantised by 8- and 10-bit SDR, 10-bit HLG and 10- and 12-bit PQ shows where banding appears; the step between neighbouring codes is plotted against the 1 % threshold; a scale places DCI (48 nits) and Dolby Cinema (108) screens, SDR and HDR televisions and phones among the world's light levels.
+
 ## [1.52.0] - 2026-11-11
 
 ### Added
