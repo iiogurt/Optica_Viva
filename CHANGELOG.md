@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Imaging a black hole: the pictures and the brightness cut are linked.** Pointing at either picture marks that position on the cut (with its values), and pointing at the cut draws the same line on both pictures, labelled in µas.
+
 ### Changed
 - **More pictures drawn at the screen's pixels.** Halos, rainbows & glories: the corona and the glory are round, so each pixel now reads the computed profile at its own distance, averaged over the pixel's width (no more moiré in the fine rings, no stepped rim); in the halo sky the horizon, the Sun and the sky's gradient are computed at each pixel (anti-aliased over one pixel) and only the traced halo light is sampled from its grid, so the horizon no longer shows steps. Gravitational lensing: after the quick 320-pixel picture both panels are traced again at the canvas's resolution and drawn one to one, so the knots along the arcs are resolved. The starshade's shadow is evaluated per pixel from its profile, and the field-PSF mosaic and RMS map are sampled smoothly.
 
