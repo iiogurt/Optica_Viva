@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.46.0] - 2026-11-11
+
 ### Added
 - **New laboratory: Pool caustics & apparent depth** (`#/caustics`). The bright net on a pool floor, traced ray by ray through a wavy surface (Snell's law in vector form at the local normal, in three colours), with moving waves on request; a side view of sunlight converging under the crests; the depth where a crest focuses, n/((n − 1)Ak²); and how deep the floor looks, d/n straight down and astigmatic at a slant. The tracer's first fold agrees with that depth within 1 %, and the floor receives exactly the light of flat water on average. The catalogue's "Caustics" now opens it.
 
@@ -965,7 +967,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.45.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.46.0...HEAD
+[1.46.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.45.0...v1.46.0
 [1.45.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.44.0...v1.45.0
 [1.44.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.43.0...v1.44.0
 [1.43.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.42.0...v1.43.0
