@@ -12,7 +12,8 @@
     "smoke": "node scripts/smoke.mjs && node scripts/offline.mjs",
     "ci": "npm run check && npm test && npm run smoke",
     "bench": "node scripts/bench.mjs",
-    "screenshots": "node scripts/screenshots.mjs"
+    "screenshots": "node scripts/screenshots.mjs",
+    "thumbs": "node scripts/thumbs.mjs"
   },
   "repository": {
     "type": "git",

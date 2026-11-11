@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **A picture on every home-page card**: a snapshot of the laboratory's own render, captured from the running page by `npm run thumbs` (`scripts/thumbs.mjs`, 400 × 250 WebP, loaded as the page scrolls). Guided tours show their laboratory's picture too; on phones the picture sits beside the text. `test/thumbs.test.mjs` checks that every card has its picture at the right size.
+- **Featured laboratories**: the black hole, the PSF and the halos shown large below the hero.
+- **The hero prism can be dragged**: sideways turns it. A short hint says so.
+
+### Changed
+- **Hero spectrum**: 90 thin rays whose colours together make white, with a faint glow, instead of 48 broad saturated bands. The beam still follows the mouse, and the picture redraws when you drag or point even with reduced motion.
+- The home page's statistic now reads "0 precomputed results: every laboratory computes its pictures live", since the card pictures are stored snapshots.
+
 ## [1.37.0] - 2026-11-11
 
 ### Changed

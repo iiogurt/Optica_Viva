@@ -190,14 +190,46 @@ button.btn:hover, a.btn:hover { border-color: var(--accent); }
 .hero-text { position: absolute; left: clamp(20px, 5vw, 72px); bottom: clamp(28px, 7vh, 72px); max-width: 640px; pointer-events: none; }
 .hero-text h1 { font: 300 clamp(44px, 7vw, 92px)/0.95 var(--font-serif); margin: 0 0 18px; letter-spacing: -0.02em; }
 .hero-text h1 em { font-style: italic; background: var(--spectrum); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero canvas { cursor: grab; touch-action: pan-y; }
+.hero canvas.dragging { cursor: grabbing; }
+.hero-hint { position: absolute; right: clamp(16px, 3vw, 40px); bottom: 16px; font: 11px/1 var(--font-mono); color: var(--fg-faint); pointer-events: none; }
+/* featured laboratories: one large, two beside it */
+.feat { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); grid-template-rows: auto auto; gap: 14px; }
+.fcard { position: relative; display: block; border-radius: var(--radius); border: 1px solid var(--line); overflow: hidden; color: var(--fg); text-decoration: none !important; background: #05060a; transition: border-color .2s; }
+.fcard:first-child { grid-row: span 2; }
+.fcard:hover { border-color: var(--line-2); }
+.fcard .thumb { display: block; width: 100%; height: 100%; aspect-ratio: 16 / 10; object-fit: cover; transition: transform .6s cubic-bezier(.2, .7, .2, 1); }
+.fcard:hover .thumb { transform: scale(1.025); }
+.fcard .fbody { position: absolute; inset: auto 0 0 0; padding: 40px 20px 16px; background: linear-gradient(180deg, transparent, rgba(5, 6, 10, .78) 45%, rgba(5, 6, 10, .94)); }
+.fcard h3 { font: 500 22px/1.2 var(--font-serif); margin: 0 0 4px; }
+.fcard:first-child h3 { font-size: 30px; }
+.fcard p { margin: 0; color: var(--fg-dim); font-size: 13.2px; line-height: 1.5; max-width: 60ch; }
+.fcard:not(:first-child) p { display: none; }
+.fcard .k { font: 600 10px/1 var(--font-sans); letter-spacing: .14em; text-transform: uppercase; color: var(--c); margin-bottom: 8px; display: block; }
+@media (max-width: 860px) { .feat { grid-template-columns: minmax(0, 1fr); } .fcard:first-child { grid-row: auto; } .fcard:first-child h3 { font-size: 24px; } }
+/* phones: a card's picture beside its text, and the featured cards without their blurb */
+@media (max-width: 600px) {
+  .mcard.has-thumb { flex-direction: row; min-height: 0; }
+  .mcard.has-thumb .thumb { width: 36%; flex: none; aspect-ratio: auto; height: auto; min-height: 112px; border-bottom: 0; border-right: 1px solid var(--line); }
+  .mcard.has-thumb .mbody { padding: 12px 14px; min-width: 0; }
+  .mcard.has-thumb h3 { font-size: 16px; }
+  .mcard.has-thumb p { font-size: 12.6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .fcard p { display: none; }
+}
 .hero-text p { color: var(--fg-dim); font-size: 17px; margin: 0; max-width: 54ch; text-shadow: 0 2px 12px #000; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
-.mcard { position: relative; display: block; padding: 18px; border-radius: var(--radius); border: 1px solid var(--line); background: linear-gradient(180deg, var(--panel-2), var(--panel)); color: var(--fg); text-decoration: none !important; overflow: hidden; transition: transform .2s, border-color .2s; min-height: 150px; }
+.mcard { position: relative; display: flex; flex-direction: column; padding: 0; border-radius: var(--radius); border: 1px solid var(--line); background: linear-gradient(180deg, var(--panel-2), var(--panel)); color: var(--fg); text-decoration: none !important; overflow: hidden; transition: transform .2s, border-color .2s; min-height: 150px; }
 .mcard:hover { transform: translateY(-3px); border-color: var(--line-2); }
 .mcard::before { content: ''; position: absolute; inset: -40% -40% auto auto; width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, var(--c), transparent 70%); opacity: .18; transition: opacity .2s; }
 .mcard:hover::before { opacity: .32; }
 .mcard h3 { font: 500 18px/1.25 var(--font-serif); margin: 0 0 6px; }
 .mcard p { margin: 0; color: var(--fg-dim); font-size: 13.2px; line-height: 1.5; }
+.mcard .mbody { position: relative; padding: 18px; }
+/* a card's picture: a snapshot of the laboratory, edge to edge above the text */
+.mcard .thumb { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; background: #05060a; border-bottom: 1px solid var(--line); filter: brightness(.88) saturate(.92); transition: filter .25s; }
+.mcard:hover .thumb, .mcard:focus-visible .thumb { filter: none; }
+.mcard.has-thumb::before { display: none; }
+.mcard.has-thumb .mbody { padding-top: 14px; }
 .mcard .k { font: 600 10px/1 var(--font-sans); letter-spacing: .14em; text-transform: uppercase; color: var(--c); margin-bottom: 10px; display: block; }
 .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
 .stat { padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 255, 255, 0.015); }
