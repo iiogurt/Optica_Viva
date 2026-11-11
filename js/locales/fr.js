@@ -1,6 +1,8 @@
 // French interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "seen once": "vu une fois",
+  "seen {n} times": "vu {n} fois",
   "Featured laboratories": "Laboratoires à la une",
   "Drag the prism to turn it": "Faites glisser le prisme pour le tourner",
   "Open the full laboratory in Optica Viva ↗": "Ouvrir le laboratoire complet dans Optica Viva ↗",
