@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- **More pictures drawn at device pixels**: a colour-mapped field now goes through the image pipeline too (`paintMap` in `js/lib/pixels.js`), with smooth sampling, a soft toe on logarithmic displays and apertures whose outer edge is sharp while thin partly covered features, such as the gaps between Webb's mirror segments, stay visible. This covers the wavefront, interferogram, PSF, through-focus and segment-phasing pictures (Zernike), the wavefront and PSF of the ray tracer, the direct and coronagraphic images, the lucky-imaging frames and the four interferometry maps. The PSF page's pupil shows Webb's segment gaps again.
+
 ### Added
 - **Image pipeline** (`js/lib/pixels.js`): pictures computed on a grid are drawn at the screen's device pixels instead of being stretched by the browser. Each pixel samples the field (Catmull–Rom), passes through one tone curve whose soft toe fades a display floor out instead of cutting it, and is dithered before rounding to 8 bits. Large pictures show a half-resolution preview at once and refine, in slices that keep the page responsive, once the controls settle.
 

@@ -3,7 +3,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { airy, besselJ1 as besselJ1x } from '../lib/pupil.js';
 import { latest } from '../lib/compute.js';
 import { linspace } from '../lib/color.js';
-import { paint, catmull, bilinear, toe, encode } from '../lib/pixels.js';
+import { paint, catmull, bilinear, toe, encode, edge } from '../lib/pixels.js';
 import { plot } from '../lib/plot.js';
 import { view3d } from '../lib/gl3d.js';
 import { psfMesh } from '../lib/surf3d.js';
@@ -170,7 +170,7 @@ export default function mount(root, meta) {
     const { n, Dpx, amp } = data; prepare();
     const crop = Dpx + 8, off = (n - crop) / 2, side = Math.min(w, hh) - 16;
     paint(pup, { x: (w - side) / 2, y: (hh - side) / 2, w: side, h: side }, (u, v, o) => {
-      const a = bilinear(amp, n, n, off + u * crop - 0.5, off + v * crop - 0.5);
+      const a = edge(bilinear(amp, n, n, off + u * crop - 0.5, off + v * crop - 0.5), (side * pup.dpr) / crop);
       o[0] = encode(a); o[1] = encode(a * 0.6); o[2] = encode(a * 0.23);
     }, ver);
   }

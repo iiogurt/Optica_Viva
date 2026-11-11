@@ -1,4 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, texNum } from '../lib/ui.js';
+import { paintMap, keyOf } from '../lib/pixels.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
@@ -25,7 +26,7 @@ export default function mount(root, meta) {
   const ro = h('div');
   const calc = liveCalc();
   const names = { best: N_('Best frame'), worst: N_('Worst frame'), long: N_('Long exposure (all frames)'), tt: N_('Shift-and-add (all frames)'), lucky: N_('Lucky: best frames, shift-and-add') };
-  const views = Object.fromEntries(Object.keys(names).map((k) => [k, stage({ aspect: 1, label: names[k], draw: (c, w, hh) => drawImg(c, w, hh, k), minH: 150 })]));
+  const views = Object.fromEntries(Object.keys(names).map((k) => [k, stage({ aspect: 1, label: names[k], draw: (c, w, hh, st) => drawImg(c, w, hh, k, st), minH: 150 })]));
   const hist = stage({ aspect: 2.2, label: '', draw: drawHist, cls: 'plain', minH: 200 });
   const curve = stage({ aspect: 2.2, label: '', draw: drawCurve, cls: 'plain', minH: 200 });
   const note = h('p.note', {}, t('Simulating frames in the worker…'));
@@ -53,16 +54,11 @@ export default function mount(root, meta) {
       [...Object.values(views), hist, curve].forEach((x) => x.redraw());
     });
   }
-  function drawImg(ctx, w, hh, key) {
+  function drawImg(ctx, w, hh, key, st) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!R) return;
-    const N = R.N, C = 32, a = R[key], ic = imageCanvas(C, C);
-    for (let y = 0; y < C; y++) for (let x = 0; x < C; x++) {
-      const v = a[(y + N / 2 - C / 2) * N + x + N / 2 - C / 2], t = Math.round(255 * Math.max(0, Math.min(1, Math.sqrt(v / 0.6)))) * 3, o = (y * C + x) * 4;
-      ic.data[o] = INF[t]; ic.data[o + 1] = INF[t + 1]; ic.data[o + 2] = INF[t + 2]; ic.data[o + 3] = 255;
-    }
-    ic.put();
-    const sz = Math.min(w, hh) - 4; ctx.imageSmoothingEnabled = true; ctx.drawImage(ic.c, (w - sz) / 2, (hh - sz) / 2, sz, sz);
+    const N = R.N, C = 32, a = R[key], sz = Math.min(w, hh) - 4;
+    paintMap(st, { x: (w - sz) / 2, y: (hh - sz) / 2, w: sz, h: sz }, { a, w: N, h: N, x0: N / 2 - C / 2, y0: N / 2 - C / 2, cw: C, ch: C, lut: INF, value: (v) => Math.sqrt(Math.max(0, v) / 0.6) }, keyOf(a));
     let pk = 0; for (const v of a) pk = Math.max(pk, v);
     ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.fillText('S = ' + pk.toFixed(2), 6, hh - 8);
   }

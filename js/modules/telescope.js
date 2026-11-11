@@ -1,4 +1,5 @@
 import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { paintMap, toe, keyOf } from '../lib/pixels.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { rasterAperture, zernike } from '../lib/pupil.js';
 import { fft2d } from '../lib/fft.js';
@@ -97,8 +98,8 @@ export default function mount(root, meta) {
   }, () => runCoro());
   const ro = h('div');
   const calc = liveCalc();
-  const direct = stage({ aspect: 1, label: 'Direct image (log, 10 decades)', draw: (c, w, hh) => drawImg(c, w, hh, 'direct') });
-  const coro = stage({ aspect: 1, label: 'Coronagraphic image (same stretch)', draw: (c, w, hh) => drawImg(c, w, hh, 'coro') });
+  const direct = stage({ aspect: 1, label: 'Direct image (log, 10 decades)', draw: (c, w, hh, st) => drawImg(c, w, hh, 'direct', st) });
+  const coro = stage({ aspect: 1, label: 'Coronagraphic image (same stretch)', draw: (c, w, hh, st) => drawImg(c, w, hh, 'coro', st) });
   const planes = stage({ aspect: 3, label: 'Pupil · focal-plane mask · Lyot plane (|E|, log)', draw: drawPlanes, minH: 160 });
   const prof = stage({ aspect: 2.4, label: '', draw: drawProf, cls: 'plain', minH: 220 });
   const v3 = view3d({ label: '3-D: the coronagraph along the beam, with the computed field on each plane', aspect: 2.2, minH: 240, yaw: -1.05, pitch: 0.25 });
@@ -141,21 +142,12 @@ export default function mount(root, meta) {
   }
 
   const INF = lut('inferno');
-  function toImg(data, crop, dec, floor = 0) {
-    const off = (n - crop) / 2, ic = imageCanvas(crop, crop);
-    for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-      const v = Math.max(0, 1 + Math.log10(data[(y + off) * n + x + off] + 1e-30) / dec);
-      const t = Math.round(Math.min(1, v) * 255) * 3, o = (y * crop + x) * 4;
-      ic.data[o] = INF[t]; ic.data[o + 1] = INF[t + 1]; ic.data[o + 2] = INF[t + 2]; ic.data[o + 3] = 255;
-    }
-    ic.put(); return ic.c;
-  }
-  function drawImg(ctx, w, hh, kind) {
+  function drawImg(ctx, w, hh, kind, st) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!C) return;
-    const crop = 224, side = Math.min(w, hh);
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(toImg(kind === 'direct' ? C.dI : C.cI, crop, 10), (w - side) / 2, (hh - side) / 2, side, side);
+    const crop = 224, side = Math.min(w, hh), off = (n - crop) / 2;
+    paintMap(st, { x: (w - side) / 2, y: (hh - side) / 2, w: side, h: side }, { a: kind === 'direct' ? C.dI : C.cI, w: n, h: n, x0: off, y0: off, cw: crop, ch: crop, lut: INF,
+      pre: (v) => Math.log10(v + 1e-30), value: (v) => toe(1 + v / 10) }, keyOf(C));
     const sc = side / crop;
     const px = w / 2 + C.st.sep * Q * sc;
     ctx.strokeStyle = '#6be3a4'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(px, hh / 2, 3 * Q * sc, 0, 7); ctx.stroke();

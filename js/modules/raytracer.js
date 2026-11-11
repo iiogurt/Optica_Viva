@@ -1,4 +1,4 @@
-import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, readUrlParam, bindUrlParam, syncUrl } from '../lib/ui.js';
+import { h, controls, stage, readouts, debounce, fmt, texNum, readUrlParam, bindUrlParam, syncUrl } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { LENSES, paraxial, aimRay, trace, toPlane, autoSemiDiameters, surfaceSag, seidel, fieldCurves, mediaIndices, hasMirrors } from '../lib/raytrace.js';
 import { parseZmx, lensToJSON, lensFromJSON, validateLens, encodeLens, decodeLens, LENS_LIMITS } from '../lib/lensio.js';
@@ -9,6 +9,7 @@ import { plot, range } from '../lib/plot.js';
 import { latest } from '../lib/compute.js';
 import { mtfDiffraction } from '../lib/pupil.js';
 import { lut } from '../lib/color.js';
+import { paintMap, toe, keyOf } from '../lib/pixels.js';
 import { view3d } from '../lib/gl3d.js';
 import { lensScene } from '../lib/lens3d.js';
 import { t, N_ } from '../lib/i18n.js';
@@ -515,38 +516,21 @@ export default function mount(root, meta) {
   }, 120);
 
   const infer = lut('inferno'), div = lut('diverging');
-  function drawPSF(ctx, w, hh) {
+  function drawPSF(ctx, w, hh, st) {
     ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
     if (!psfData) return;
     const d = psfData, n = d.n;
     const side = Math.min(hh - 60, w / 2 - 24);
     // OPD map (central crop = pupil)
     const crop = 128, off = (n - crop) / 2;
-    const ic = imageCanvas(crop, crop);
     let wmax = 1e-9;
     for (let i = 0; i < n * n; i++) if (d.amp[i]) wmax = Math.max(wmax, Math.abs(d.Wmap[i]));
-    for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-      const k = (y + off) * n + x + off, o = (y * crop + x) * 4;
-      if (!d.amp[k]) { ic.data[o + 3] = 0; continue; }
-      const t = Math.round(((d.Wmap[k] / wmax) * 0.5 + 0.5) * 255);
-      ic.data[o] = div[t * 3]; ic.data[o + 1] = div[t * 3 + 1]; ic.data[o + 2] = div[t * 3 + 2]; ic.data[o + 3] = 255;
-    }
-    ic.put();
-    const x1 = w / 4 - side / 2, y1 = 28;
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(ic.c, x1, y1, side, side);
+    const x1 = w / 4 - side / 2, y1 = 28, win = { w: n, h: n, x0: off, y0: off, cw: crop, ch: crop };
+    paintMap(st, { x: x1, y: y1, w: side, h: side }, { ...win, a: d.Wmap, mask: d.amp, bg: [5, 6, 10], lut: div, value: (v) => (v / wmax) * 0.5 + 0.5 }, keyOf(d), 0);
     // PSF (log stretch, central 128 px)
-    const ip = imageCanvas(crop, crop);
     let mx = 0; for (let i = 0; i < n * n; i++) mx = Math.max(mx, d.I[i]);
-    for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-      const v = d.I[(y + off) * n + x + off] / mx;
-      const t = Math.max(0, Math.min(255, Math.round((1 + Math.log10(v + 1e-12) / 4) * 255)));
-      const o = (y * crop + x) * 4;
-      ip.data[o] = infer[t * 3]; ip.data[o + 1] = infer[t * 3 + 1]; ip.data[o + 2] = infer[t * 3 + 2]; ip.data[o + 3] = 255;
-    }
-    ip.put();
     const x2 = (3 * w) / 4 - side / 2;
-    ctx.drawImage(ip.c, x2, y1, side, side);
+    paintMap(st, { x: x2, y: y1, w: side, h: side }, { ...win, a: d.I, lut: infer, pre: (v) => Math.log10(v / mx + 1e-12), value: (v) => toe(1 + v / 4) }, keyOf(d), 1);
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
     ctx.fillText(`OPD  P-V ${d.pvW.toFixed(2)} λ   RMS ${d.rmsW.toFixed(3)} λ   ${d.transmitted < 0.995 ? t('pupil {p} % (vignetted)', { p: (d.transmitted * 100).toFixed(0) }) : `(±${(wmax / (d.lam / 1000)).toFixed(2)} λ)`}`, x1, hh - 10);
     const field = crop * d.lam / 1000 * d.N / 2; // µm across crop (Q = 2)

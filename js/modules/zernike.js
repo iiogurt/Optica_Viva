@@ -1,4 +1,5 @@
-import { h, controls, stage, readouts, debounce, imageCanvas, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, debounce, texNum } from '../lib/ui.js';
+import { paint, paintMap, catmull, bilinear, toe, edge, keyOf } from '../lib/pixels.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { rasterAperture, ZERNIKE_NAMES } from '../lib/pupil.js';
 import { lut } from '../lib/color.js';
@@ -55,9 +56,9 @@ export default function mount(root, meta) {
   const amp = rasterAperture({ type: 'circle' }, n, Dpx, 4);
   let D = null;
 
-  const wf = stage({ aspect: 1, label: 'Wavefront W(ρ,θ)', draw: (c, w, hh) => drawMap(c, w, hh, 'wf') });
-  const ifg = stage({ aspect: 1, label: 'Interferogram (Fizeau)', draw: (c, w, hh) => drawMap(c, w, hh, 'ifg') });
-  const ps = stage({ aspect: 1, label: 'PSF', draw: (c, w, hh) => drawMap(c, w, hh, 'psf') });
+  const wf = stage({ aspect: 1, label: 'Wavefront W(ρ,θ)', draw: (c, w, hh, st) => drawMap(c, w, hh, 'wf', st) });
+  const ifg = stage({ aspect: 1, label: 'Interferogram (Fizeau)', draw: (c, w, hh, st) => drawMap(c, w, hh, 'ifg', st) });
+  const ps = stage({ aspect: 1, label: 'PSF', draw: (c, w, hh, st) => drawMap(c, w, hh, 'psf', st) });
   const tf = stage({ aspect: 5, label: 'Through focus: −1, −½, 0, +½, +1 λ of added defocus', draw: drawThrough, minH: 130 });
   const sp = stage({ aspect: 2.4, label: '', draw: drawStrehl, cls: 'plain', minH: 220 });
   const v3 = view3d({ label: '3-D: the wavefront over the pupil (left) and the star image it makes, log brightness (right)', aspect: 2.3, minH: 260, yaw: -0.5, pitch: 0.55 });
@@ -111,63 +112,48 @@ export default function mount(root, meta) {
   }
 
   const DIV = lut('diverging'), INF = lut('inferno');
-  function drawMap(ctx, w, hh, kind) {
+  function drawMap(ctx, w, hh, kind, st) {
     ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
     if (!D) return;
-    const side = Math.min(w, hh) - 16;
+    const side = Math.min(w, hh) - 16, rect = { x: (w - side) / 2, y: (hh - side) / 2, w: side, h: side };
     if (kind === 'psf') {
-      const crop = 96, off = (n - crop) / 2, ic = imageCanvas(crop, crop);
-      let mx = 0; for (let k = 0; k < n * n; k++) mx = Math.max(mx, D.I[k]);
-      for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-        let v = D.I[(y + off) * n + x + off] / (D.P0);
-        v = ctl.state.log ? Math.max(0, 1 + Math.log10(v + 1e-12) / 4) : Math.min(1, v);
-        const t = Math.round(v * 255) * 3, o = (y * crop + x) * 4;
-        ic.data[o] = INF[t]; ic.data[o + 1] = INF[t + 1]; ic.data[o + 2] = INF[t + 2]; ic.data[o + 3] = 255;
-      }
-      ic.put(); ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);
+      const crop = 96, off = (n - crop) / 2, log = ctl.state.log;
+      paintMap(st, rect, { a: D.I, w: n, h: n, x0: off, y0: off, cw: crop, ch: crop, lut: INF,
+        pre: log ? (v) => Math.log10(v / D.P0 + 1e-12) : (v) => v / D.P0, value: log ? (v) => toe(1 + v / 4) : (v) => v }, `${keyOf(D)}|${log}`);
       ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
       ctx.fillText(t('S = {strehl} (peak rel. to perfect)', { strehl: D.strehl.toFixed(3) }), w - 10, hh - 10);
       return;
     }
-    const crop = Dpx + 4, off = (n - crop) / 2, ic = imageCanvas(crop, crop);
-    const lim = Math.max(0.05, Math.max(Math.abs(D.pv / 2), ...[0]) );
+    const crop = Dpx + 4, off = (n - crop) / 2;
+    const lim = Math.max(0.05, Math.abs(D.pv / 2));
     let wmax = 1e-6; for (let k = 0; k < n * n; k++) if (amp[k] > 0.5) wmax = Math.max(wmax, Math.abs(D.W[k]));
-    for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-      const k = (y + off) * n + x + off, o = (y * crop + x) * 4;
-      if (amp[k] < 0.5) { ic.data[o + 3] = 0; continue; }
-      if (kind === 'wf') {
-        const t = Math.round((D.W[k] / Math.max(wmax, lim) * 0.5 + 0.5) * 255) * 3;
-        ic.data[o] = DIV[t]; ic.data[o + 1] = DIV[t + 1]; ic.data[o + 2] = DIV[t + 2];
-      } else {
-        // double-pass Fizeau interferogram: fringe = 2W, plus reference tilt
-        const xn = (x + off - n / 2) / (Dpx / 2);
-        const ph = 2 * Math.PI * (2 * D.W[k] + ctl.state.tilt * xn / 2);
-        const v = 0.5 + 0.5 * Math.cos(ph);
-        ic.data[o] = 60 + 195 * v; ic.data[o + 1] = 40 + 160 * v; ic.data[o + 2] = 20 + 40 * v;
-      }
-      ic.data[o + 3] = 255;
+    const bg = [5, 6, 10];
+    if (kind === 'wf') {
+      const sc = Math.max(wmax, lim);
+      paintMap(st, rect, { a: D.W, w: n, h: n, x0: off, y0: off, cw: crop, ch: crop, lut: DIV, mask: amp, bg, value: (v) => (v / sc) * 0.5 + 0.5 }, keyOf(D));
+    } else {
+      // double-pass Fizeau interferogram: fringe = 2W, plus reference tilt
+      const tilt = ctl.state.tilt, sc = (side * st.dpr) / crop;
+      paint(st, rect, (u, v, o) => {
+        const x = off + u * crop - 0.5, y = off + v * crop - 0.5, m = edge(bilinear(amp, n, n, x, y), sc);
+        if (m <= 0) { o[0] = bg[0] / 255; o[1] = bg[1] / 255; o[2] = bg[2] / 255; return; }
+        const xn = (x - n / 2) / (Dpx / 2);
+        const f = 0.5 + 0.5 * Math.cos(2 * Math.PI * (2 * catmull(D.W, n, n, x, y) + tilt * xn / 2));
+        o[0] = (bg[0] + (60 + 195 * f - bg[0]) * m) / 255; o[1] = (bg[1] + (40 + 160 * f - bg[1]) * m) / 255; o[2] = (bg[2] + (20 + 40 * f - bg[2]) * m) / 255;
+      }, `${keyOf(D)}|${tilt}`);
     }
-    ic.put(); ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);
     ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
     ctx.fillText(kind === 'wf' ? `±${wmax.toFixed(2)} λ` : t('double pass: 1 fringe = λ/2'), w - 10, hh - 10);
   }
 
-  function drawThrough(ctx, w, hh) {
+  function drawThrough(ctx, w, hh, st) {
     ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
     if (!D) return;
     const crop = 80, off = (n - crop) / 2, side = Math.min(hh - 30, w / 5 - 12);
     D.through.forEach((I, i) => {
-      const ic = imageCanvas(crop, crop);
-      for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-        const v = Math.max(0, 1 + Math.log10(I[(y + off) * n + x + off] / D.P0 + 1e-12) / 3.5);
-        const t = Math.round(v * 255) * 3, o = (y * crop + x) * 4;
-        ic.data[o] = INF[t]; ic.data[o + 1] = INF[t + 1]; ic.data[o + 2] = INF[t + 2]; ic.data[o + 3] = 255;
-      }
-      ic.put();
       const x0 = (w / 5) * i + (w / 5 - side) / 2;
-      ctx.drawImage(ic.c, x0, 24, side, side);
+      paintMap(st, { x: x0, y: 24, w: side, h: side }, { a: I, w: n, h: n, x0: off, y0: off, cw: crop, ch: crop, lut: INF,
+        pre: (v) => Math.log10(v / D.P0 + 1e-12), value: (v) => toe(1 + v / 3.5) }, keyOf(D), i);
     });
   }
 
@@ -193,8 +179,8 @@ export default function mount(root, meta) {
     seed: { type: 'range', label: 'Random realisation', min: 1, max: 20, step: 1, value: 3 },
     lam: { type: 'range', label: 'Wavelength', min: 0.6, max: 5, step: 0.05, value: 2, unit: 'µm' },
   }, () => recomputeSeg());
-  const segPupil = stage({ aspect: 1, label: 'Segment piston map', draw: (c, w, hh) => drawSeg(c, w, hh, 'pupil') });
-  const segPsf = stage({ aspect: 1, label: 'Image of a star', draw: (c, w, hh) => drawSeg(c, w, hh, 'psf') });
+  const segPupil = stage({ aspect: 1, label: 'Segment piston map', draw: (c, w, hh, st) => drawSeg(c, w, hh, 'pupil', st) });
+  const segPsf = stage({ aspect: 1, label: 'Image of a star', draw: (c, w, hh, st) => drawSeg(c, w, hh, 'psf', st) });
   const segRo = h('div');
   segSection.append(lab([h('div.grid-2', {}, segPupil.el, segPsf.el)], [h('div.card', {}, segCtl.el), h('div.card', {}, segRo)]));
   root.append(segSection);
@@ -217,33 +203,22 @@ export default function mount(root, meta) {
     }).catch(console.error);
   }, 40);
 
-  function drawSeg(ctx, w, hh, kind) {
+  function drawSeg(ctx, w, hh, kind, st) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!SD) return;
-    const side = Math.min(w, hh) - 16;
+    const side = Math.min(w, hh) - 16, rect = { x: (w - side) / 2, y: (hh - side) / 2, w: side, h: side };
     if (kind === 'pupil') {
-      const crop = DS + 4, off = (nS - crop) / 2, ic = imageCanvas(crop, crop);
+      const crop = DS + 4, off = (nS - crop) / 2;
       let wm = 1e-6; for (let k = 0; k < nS * nS; k++) if (SD.amp[k]) wm = Math.max(wm, Math.abs(SD.W[k]));
-      for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-        const k = (y + off) * nS + x + off, o = (y * crop + x) * 4;
-        if (!SD.amp[k]) continue;
-        const t = Math.round((SD.W[k] / wm * 0.5 + 0.5) * 255) * 3;
-        ic.data[o] = DIV[t] * SD.amp[k]; ic.data[o + 1] = DIV[t + 1] * SD.amp[k]; ic.data[o + 2] = DIV[t + 2] * SD.amp[k]; ic.data[o + 3] = 255;
-      }
-      ic.put(); ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);
+      // piston steps between segments stay sharp: bilinear sampling
+      paintMap(st, rect, { a: SD.W, w: nS, h: nS, x0: off, y0: off, cw: crop, ch: crop, lut: DIV, mask: SD.amp, linear: true, value: (v) => (v / wm) * 0.5 + 0.5 }, keyOf(SD));
       ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
       ctx.fillText(t('±{wm} µm OPD', { wm: wm.toFixed(2) }), w - 10, hh - 10);
       return;
     }
-    const crop = SD.st.stage === 'raw' ? nS : 160, off = (nS - crop) / 2, ic = imageCanvas(crop, crop);
-    for (let y = 0; y < crop; y++) for (let x = 0; x < crop; x++) {
-      const v = Math.max(0, 1 + Math.log10(SD.I[(y + off) * nS + x + off] / SD.mx + 1e-12) / 4.5);
-      const t = Math.round(v * 255) * 3, o = (y * crop + x) * 4;
-      ic.data[o] = INF[t]; ic.data[o + 1] = INF[t + 1]; ic.data[o + 2] = INF[t + 2]; ic.data[o + 3] = 255;
-    }
-    ic.put(); ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(ic.c, (w - side) / 2, (hh - side) / 2, side, side);
+    const crop = SD.st.stage === 'raw' ? nS : 160, off = (nS - crop) / 2;
+    paintMap(st, rect, { a: SD.I, w: nS, h: nS, x0: off, y0: off, cw: crop, ch: crop, lut: INF,
+      pre: (v) => Math.log10(v / SD.mx + 1e-12), value: (v) => toe(1 + v / 4.5) }, keyOf(SD));
     const mas = (crop / 4) * (SD.st.lam * 1e-6 / 6.6) * 206265 * 1000;
     ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
     ctx.fillText(t('field {f} · λ {l} µm', { f: mas > 2000 ? (mas / 1000).toFixed(1) + '″' : mas.toFixed(0) + ' mas', l: SD.st.lam }), w - 10, hh - 10);

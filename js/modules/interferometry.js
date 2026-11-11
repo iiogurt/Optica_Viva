@@ -1,4 +1,5 @@
-import { h, controls, stage, readouts, imageCanvas, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, texNum } from '../lib/ui.js';
+import { paintMap, keyOf } from '../lib/pixels.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
@@ -81,10 +82,10 @@ export default function mount(root, meta) {
   }, () => updA());
   const aro = h('div');
   const uv = stage({ aspect: 1, label: 'u-v coverage (each baseline traces an ellipse as the Earth turns)', draw: drawUV, minH: 220 });
-  const beam = stage({ aspect: 1, label: 'Dirty beam (point-spread function of the array)', draw: (c, w, hh) => drawMap(c, w, hh, 'beam', true), minH: 220 });
-  const skyV = stage({ aspect: 1, label: 'True sky', draw: (c, w, hh) => drawMap(c, w, hh, 'sky'), minH: 200 });
-  const dirty = stage({ aspect: 1, label: 'Dirty image (sky ⊗ dirty beam)', draw: (c, w, hh) => drawMap(c, w, hh, 'dirty', true), minH: 200 });
-  const rest = stage({ aspect: 1, label: 'After Högbom CLEAN, restored', draw: (c, w, hh) => drawMap(c, w, hh, 'restored'), minH: 200 });
+  const beam = stage({ aspect: 1, label: 'Dirty beam (point-spread function of the array)', draw: (c, w, hh, st) => drawMap(c, w, hh, 'beam', true, st), minH: 220 });
+  const skyV = stage({ aspect: 1, label: 'True sky', draw: (c, w, hh, st) => drawMap(c, w, hh, 'sky', false, st), minH: 200 });
+  const dirty = stage({ aspect: 1, label: 'Dirty image (sky ⊗ dirty beam)', draw: (c, w, hh, st) => drawMap(c, w, hh, 'dirty', true, st), minH: 200 });
+  const rest = stage({ aspect: 1, label: 'After Högbom CLEAN, restored', draw: (c, w, hh, st) => drawMap(c, w, hh, 'restored', false, st), minH: 200 });
   const v3 = view3d({ label: '3-D: the Earth turns under the source, and each baseline, as the source sees it, traces its track in the u-v plane', aspect: 1.7, minH: 280, yaw: 0.75, pitch: 0.35 });
   sec2.append(lab([h('div.grid-2', {}, uv.el, beam.el), v3.el, h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' } }, skyV.el, dirty.el, rest.el)], [h('div.card', {}, actl.el), h('div.card', {}, aro)]));
   root.append(sec2);
@@ -123,19 +124,14 @@ export default function mount(root, meta) {
     for (const [u, v] of A.uv) ctx.fillRect(cx + u * sc - 0.8, cy - v * sc - 0.8, 1.6, 1.6);
     ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '11px Inter, sans-serif'; ctx.fillText(`u, v up to ${A.bmax.toExponential(1)} λ`, 8, hh - 8);
   }
-  function drawMap(ctx, w, hh, key, signed = false) {
+  function drawMap(ctx, w, hh, key, signed = false, st) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
     if (!A) return;
-    const N = A.N, a = A[key], ic = imageCanvas(N, N);
-    let mx = 1e-12, mn = 0; for (const v of a) { if (v > mx) mx = v; if (v < mn) mn = v; }
-    for (let k = 0; k < N * N; k++) {
-      const o = k * 4;
-      if (signed) { const t = Math.round((Math.max(-1, Math.min(1, a[k] / mx)) * 0.5 + 0.5) * 255) * 3; ic.data[o] = DIV[t]; ic.data[o + 1] = DIV[t + 1]; ic.data[o + 2] = DIV[t + 2]; }
-      else { const t = Math.round(255 * Math.max(0, Math.min(1, a[k] / mx))) * 3; ic.data[o] = INF[t]; ic.data[o + 1] = INF[t + 1]; ic.data[o + 2] = INF[t + 2]; }
-      ic.data[o + 3] = 255;
-    }
-    ic.put();
-    const sz = Math.min(w, hh) - 4; ctx.imageSmoothingEnabled = true; ctx.drawImage(ic.c, (w - sz) / 2, (hh - sz) / 2, sz, sz);
+    const N = A.N, a = A[key], sz = Math.min(w, hh) - 4;
+    let mx = 1e-12; for (const v of a) if (v > mx) mx = v;
+    paintMap(st, { x: (w - sz) / 2, y: (hh - sz) / 2, w: sz, h: sz }, signed
+      ? { a, w: N, h: N, lut: DIV, value: (v) => Math.max(-1, Math.min(1, v / mx)) * 0.5 + 0.5 }
+      : { a, w: N, h: N, lut: INF, value: (v) => v / mx }, keyOf(a));
   }
 
   update(); updA();
