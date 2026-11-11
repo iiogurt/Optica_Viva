@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.48.0] - 2026-11-11
+
 ### Added
 - **New laboratory: Sky colours & sunsets** (`#/sky`). Sunlight scattered by molecules, haze and ozone in a round atmosphere, computed wavelength by wavelength (single scattering): a 200° panorama towards or away from the Sun at any height down to 6° below the horizon, the Sun's colour from the light that gets through, the transmission spectrum, and the air mass against the flat-Earth 1/cos z and Kasten & Young. The vertical Rayleigh optical depth comes out 0.0968 (Bucholtz: 0.0973). The catalogue's "Rayleigh scattering & the blue sky" and "Extinction & airmass" now open it.
 
@@ -975,7 +977,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.47.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.48.0...HEAD
+[1.48.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.47.0...v1.48.0
 [1.47.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.46.0...v1.47.0
 [1.46.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.45.0...v1.46.0
 [1.45.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.44.0...v1.45.0
