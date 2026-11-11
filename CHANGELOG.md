@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Sharpness (MTF): the Siemens stars and the MTF chart are linked.** A star of 72 spokes carries the spatial frequency ν = 72/(2πr) at radius r; pointing at a radius of either star rings it on both and reads the chart at that frequency, and pointing at the chart draws the ring where the star carries it, so you can see where each curve's contrast is lost.
+
 ## [1.41.0] - 2026-11-11
 
 ### Added

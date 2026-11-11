@@ -1,11 +1,11 @@
-import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, debounce, imageCanvas, fmt, texNum, rafThrottle } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { mtfDiffraction, airy } from '../lib/pupil.js';
 import { fft2d } from '../lib/fft.js';
 import { latest } from '../lib/compute.js';
 import { cmf } from '../lib/color.js';
 import { plot, range } from '../lib/plot.js';
-import { t, N_ } from '../lib/i18n.js';
+import { t, N_, localNum } from '../lib/i18n.js';
 
 const sinc = (x) => (Math.abs(x) < 1e-9 ? 1 : Math.sin(Math.PI * x) / (Math.PI * x));
 
@@ -153,6 +153,39 @@ export default function mount(root, meta) {
     ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect((w - side) / 2 + 6, hh - 24, 190, 18);
     ctx.fillStyle = '#ff9c9c'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
     ctx.fillText(t('┄ Nyquist radius (moiré inside)'), (w - side) / 2 + 10, hh - 11);
+  }
+
+  // The star and the MTF chart are linked. On a star of 72 spokes the pattern at radius r (in sensor
+  // mm) has spatial frequency ν = 72 / (2π r): pointing at a radius marks its frequency on the
+  // chart, and pointing at the chart draws the ring where the star carries that frequency.
+  const SPOKES = 72;
+  function ring(nu, fromStar) {
+    for (const st of [opt, smp]) {
+      const o = st.over();
+      if (nu == null || !M || !(nu > 0)) continue;
+      const side = Math.min(st.w, st.h), r = (SPOKES / (2 * Math.PI * nu) / (M.p / OS)) * (side / NS);
+      if (r > side / 2) continue;
+      // the star is light grey: a cyan ring over a dark outline, the label on a dark box
+      o.beginPath(); o.arc(st.w / 2, st.h / 2, r, 0, 7);
+      o.strokeStyle = 'rgba(0,0,0,0.75)'; o.lineWidth = 4; o.stroke();
+      o.strokeStyle = '#6ad7ff'; o.lineWidth = 1.8; o.stroke();
+      const label = t('{nu} cycles/mm', { nu: localNum(fmt(nu, 3)) }), ly = Math.max(18, st.h / 2 - r - 10);
+      o.font = '11px "JetBrains Mono", monospace'; o.textAlign = 'center'; o.textBaseline = 'middle';
+      const lw = o.measureText(label).width + 10;
+      o.fillStyle = 'rgba(0,0,0,0.75)'; o.fillRect(st.w / 2 - lw / 2, ly - 9, lw, 18);
+      o.fillStyle = '#fff'; o.fillText(label, st.w / 2, ly);
+    }
+    if (fromStar) chart.mark(nu);
+  }
+  chart.hover = (i) => ring(i ? i.x : null, false);
+  for (const st of [opt, smp]) {
+    st.canvas.addEventListener('pointermove', rafThrottle((e) => {
+      if (!M) return;
+      const box = st.canvas.getBoundingClientRect(), side = Math.min(st.w, st.h);
+      const rpx = Math.hypot(e.clientX - box.left - st.w / 2, e.clientY - box.top - st.h / 2), rmm = rpx * (NS / side) * (M.p / OS);
+      ring(rpx > 4 && rpx < side / 2 ? SPOKES / (2 * Math.PI * rmm) : null, true);
+    }));
+    st.canvas.addEventListener('pointerleave', () => requestAnimationFrame(() => ring(null, true)));
   }
 
   function drawChart(ctx, w, hh) {
