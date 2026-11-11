@@ -1,6 +1,8 @@
 // German interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "seen once": "einmal zu sehen",
+  "seen {n} times": "{n}-mal zu sehen",
   "Featured laboratories": "Ausgewählte Labore",
   "Drag the prism to turn it": "Prisma ziehen, um es zu drehen",
   "Open the full laboratory in Optica Viva ↗": "Das vollständige Labor in Optica Viva öffnen ↗",

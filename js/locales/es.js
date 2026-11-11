@@ -1,6 +1,8 @@
 // Spanish interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "seen once": "visto una vez",
+  "seen {n} times": "visto {n} veces",
   "Featured laboratories": "Laboratorios destacados",
   "Drag the prism to turn it": "Arrastra el prisma para girarlo",
   "Open the full laboratory in Optica Viva ↗": "Abrir el laboratorio completo en Optica Viva ↗",

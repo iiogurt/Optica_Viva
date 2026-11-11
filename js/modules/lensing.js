@@ -1,11 +1,11 @@
-import { h, controls, stage, readouts, imageCanvas, fmt, texNum } from '../lib/ui.js';
+import { h, controls, stage, readouts, imageCanvas, fmt, texNum, rafThrottle } from '../lib/ui.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
 import { angularDiameterDistance as DA, C_KMS as C } from '../lib/optics.js';
-import { FOV, SFOV } from '../lib/lensing.js';
+import { FOV, SFOV, deflect, images } from '../lib/lensing.js';
 import { runOn, parallel, rowBands, poolSize } from '../lib/compute.js';
 import { view3d } from '../lib/gl3d.js';
 import { lensingScene, comoving } from '../lib/lensing3d.js';
-import { t } from '../lib/i18n.js';
+import { t, localNum } from '../lib/i18n.js';
 
 const ARC = Math.PI / 180 / 3600;
 
@@ -51,6 +51,42 @@ export default function mount(root, meta) {
   src.canvas.addEventListener('pointerup', () => (dragging = false));
 
   let L = null;
+  // Pointing at the image plane: the lens equation β = θ − α(θ) sends that point back to the source
+  // plane (a cross there), and every other point of the image plane that comes from the same source
+  // point lights up: the multiple images of one point of the galaxy.
+  const G = 110;
+  const point = rafThrottle((e) => {
+    const oi = img.over(), os = src.over();
+    if (!e || !L) return;
+    const side = Math.min(img.w, img.h), box = img.canvas.getBoundingClientRect();
+    const tx = ((e.clientX - box.left - img.w / 2) / side) * FOV, ty = -((e.clientY - box.top - img.h / 2) / side) * FOV;
+    if (Math.abs(tx) > FOV / 2 || Math.abs(ty) > FOV / 2) return;
+    const [ax, ay] = deflect(L.P, tx, ty), bx = tx - ax, by = ty - ay;
+    // the other images: grid points of the image plane that land within tol of β
+    const tol = (FOV / G) * 0.9, X = (x) => img.w / 2 + (x / FOV) * side, Y = (y) => img.h / 2 - (y / FOV) * side;
+    // the images themselves, solved from the lens equation (images() in js/lib/lensing.js); the dots
+    // show where the image plane maps to within a grid step of the source point
+    oi.fillStyle = 'rgba(255,255,255,0.7)';
+    const dot = Math.max(1.2, (side / G) * 0.45);
+    for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) {
+      const x = ((i + 0.5) / G - 0.5) * FOV, y = (0.5 - (j + 0.5) / G) * FOV, [dx, dy] = deflect(L.P, x, y);
+      if (Math.hypot(x - dx - bx, y - dy - by) >= tol) continue;
+      oi.beginPath(); oi.arc(X(x), Y(y), dot, 0, 7); oi.fill();
+    }
+    const roots = images(L.P, [bx, by]).map((p) => [p.x, p.y]);
+    oi.strokeStyle = 'rgba(255,255,255,0.95)'; oi.lineWidth = 1.4;
+    for (const [x, y] of roots) { oi.beginPath(); oi.arc(X(x), Y(y), 9, 0, 7); oi.stroke(); }
+    const ss = Math.min(src.w, src.h), SX = src.w / 2 + (bx / SFOV) * ss, SY = src.h / 2 - (by / SFOV) * ss;
+    if (Math.abs(bx) > SFOV / 2 || Math.abs(by) > SFOV / 2) return;
+    os.strokeStyle = '#fff'; os.lineWidth = 1.4;
+    os.beginPath(); os.moveTo(SX - 9, SY); os.lineTo(SX + 9, SY); os.moveTo(SX, SY - 9); os.lineTo(SX, SY + 9); os.stroke();
+    os.font = '11px "JetBrains Mono", monospace'; os.fillStyle = '#fff'; os.shadowColor = '#000'; os.shadowBlur = 4; os.textAlign = 'left';
+    const tx0 = Math.min(src.w - 160, SX + 12), ty0 = Math.max(40, SY - 10);
+    os.fillText(`β = (${localNum(bx.toFixed(2))}, ${localNum(by.toFixed(2))})″`, tx0, ty0);
+    os.fillText(roots.length === 1 ? t('seen once') : t('seen {n} times', { n: roots.length }), tx0, ty0 + 15);
+  });
+  img.canvas.addEventListener('pointermove', point);
+  img.canvas.addEventListener('pointerleave', () => requestAnimationFrame(() => { img.over(); src.over(); }));
   function params() { const st = ctl.state; return { model: st.model, b: st.b, q: st.q, pa: (st.pa * Math.PI) / 180, gamma: st.model === 'sie' ? st.gamma : 0, gpa: ((st.pa + 70) * Math.PI) / 180 }; }
 
   // Renders run in the compute workers (js/lib/lensing.js): the image plane in parallel row bands,
