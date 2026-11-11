@@ -262,6 +262,7 @@ export function stage({ aspect = 16 / 9, draw, minH = 160, maxH = Infinity, labe
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(hh * dpr);
     canvas.style.height = hh + 'px';
     st.redraw();
+    st.resized && st.resized(); // a page that computes at the canvas's resolution can recompute
   };
   st.redraw = () => {
     if (!st.w) return;
