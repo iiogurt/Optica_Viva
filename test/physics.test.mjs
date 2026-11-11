@@ -464,3 +464,25 @@ test('halation: total reflection in the film base sets the ring; the kernels con
   const D = H.diffusionKernel(N, 0.2, 0.3, 0.8), c = H.convolve(a, D, N);
   near(c[10 * N + 20], D[0], 1e-9, 'centre'); near(c[12 * N + 23], D[2 * N + 3], 1e-9, 'offset (3, 2)');
 });
+
+test('sky: Rayleigh optical depth, λ⁻⁴, air mass, a blue sky, a red low Sun, the Earth\'s shadow', async () => {
+  const S = await import('../js/lib/sky.js');
+  const { xyzToLinearRGB } = await import('../js/lib/color.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
+  const v = S.column(0, 1, 400);
+  near(S.rayleighBeta(550) * v[0], 0.0973, 0.002, 'vertical Rayleigh optical depth at 550 nm (Bucholtz 1995)');
+  const ratio = S.rayleighBeta(450) / S.rayleighBeta(700);
+  assert.ok(ratio > (700 / 450) ** 4 && ratio < 1.05 * (700 / 450) ** 4, `blue/red ${ratio}: λ⁻⁴ plus the dispersion of air`);
+  near(S.airMass(0), 1, 1e-9, 'air mass overhead');
+  // Kasten & Young include refraction, which lengthens the path near the horizon
+  for (const [z, tol] of [[60, 0.015], [75, 0.015], [80, 0.015], [85, 0.03]]) near(S.airMass((z * Math.PI) / 180) / S.kastenYoung(z), 1, tol, `air mass at ${z}° vs Kasten & Young`);
+  // with the Sun high the sky overhead is blue; the low Sun is red
+  const sky = xyzToLinearRGB(S.toXYZ(S.skyRadiance([0, 0, 1], [Math.cos(0.5), 0, Math.sin(0.5)], { aod: 0.05 })));
+  assert.ok(sky[2] > sky[1] && sky[1] > sky[0], `overhead sky ${sky.map((x) => x.toExponential(2))}: blue > green > red`);
+  const sun = S.sunColour((2 * Math.PI) / 180, { aod: 0.1 }).rgb;
+  assert.ok(sun[0] > 2 * sun[1] && sun[1] > sun[2], `Sun at 2°: red ${sun}`);
+  // twilight, Sun 3° below the horizon, looking away: the air just above the horizon is in the Earth's
+  // shadow, darker than the air 10° up
+  const s = [-Math.cos(-0.052), 0, Math.sin(-0.052)], lum = (el) => S.toXYZ(S.skyRadiance([Math.cos(el), 0, Math.sin(el)], s, { aod: 0.05 }))[1];
+  assert.ok(lum(0.01) < lum(0.17), 'the Earth\'s shadow on the horizon opposite the Sun');
+});

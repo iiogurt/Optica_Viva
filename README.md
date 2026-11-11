@@ -387,6 +387,16 @@ Light traced **exactly through air whose temperature changes with height**: the 
 
 </td>
 </tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Sky colours & sunsets** · `#/sky`<br>
+<img src="docs/screenshots/sky.webp" alt="A computed sky at sunset, orange near the Sun and blue-green above; the share of sunlight transmitted against wavelength; air mass against the Sun's height" width="70%">
+
+**Why the sky is blue and the setting Sun red**: single scattering of sunlight in a round atmosphere, wavelength by wavelength, by molecules (Rayleigh, index of air from Peck & Reeder, King factor), haze (Ångström's law, Henyey–Greenstein) and ozone's Chappuis band; the Sun's colour from the light that gets through; air mass against Kasten & Young; and, looking away from the Sun at twilight, the Earth's shadow.
+
+</td>
+</tr>
 </table>
 
 ### Light, sensor & time
@@ -796,6 +806,7 @@ flowchart LR
 | Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
 | Halation | Lambertian light in the base, Fresnel reflection at its back (total beyond θc), return radius 2t tan θ; kernel K(r) averaged over each grid cell; red-layer weighting 1 : 0.28 : 0.05; diffusion filter as (1 − s)δ + s·exponential halo; FFT convolution on 512² | halation |
 | Pool caustics | Sum of travelling waves (deep-water ω = √(gk)) with wave vectors that divide the 1.2 m patch; vector Snell refraction at the local normal with the index of water at 640, 545 and 460 nm; 16 rays per floor pixel splatted bilinearly (mean = flat water); absorption of pure water down and back up | caustics |
+| Sky colours | Single scattering in a spherical atmosphere (R_E = 6371 km, top 100 km): Rayleigh σ = 8π³(n² − 1)²/(3N²λ⁴)·F_K with Peck & Reeder n(λ), F_K = 1.048, scale height 8.43 km (the column of P₀/(mg)); aerosol β ∝ λ^(−α), scale height 1.2 km, Henyey–Greenstein g = 0.76; ozone Chappuis band (Gaussian approximation, 300 DU, tent profile 10–40 km); 8 wavelengths, 5778 K Sun, CIE 1931 | sky |
 | Mirages | n − 1 = K P/T (2.77·10⁻⁴ at 15 °C, 1013.25 hPa), hydrostatic pressure; surface layer ΔT·e^(−z/h) plus an optional warm layer; exact stratified ray equation z'' = (1 + z'²)(1/n) dn/dz by RK4 with steps shrinking in thin layers; flat-Earth transformation n(1 + z/R_E); window found by scanning ±12 mrad | mirage |
 | Drop scattering | Lorenz–Mie series (Bohren & Huffman's BHMIE; logarithmic derivative by downward recurrence from its exact top value, Lentz's continued fraction), real water index, 16 wavelengths × 3 radii, solar-disc smear, 5800 K sunlight | atmospheric |
 | Optics bench | Forward photon tracing, one wavelength per photon (400–700 nm), through convex glass shapes (half-spaces, spheres, a cylinder); Sellmeier index, unpolarised Fresnel by Russian roulette, TIR; CIE 1931 colour on the screen | bench |
@@ -905,6 +916,7 @@ Optica_Viva/
 │   │   ├── fft.js             Radix-2 complex FFT, 2-D FFT, fftshift
 │   │   ├── adc.js             Edlén air index, atmospheric refraction/dispersion, two-doublet ADC
 │   │   ├── caustics.js        Pool caustics: waves, vector Snell refraction, floor light; apparent depth
+│   │   ├── sky.js             Sky colours: Rayleigh, haze and ozone, single scattering in a round atmosphere, air mass
 │   │   ├── mirage.js          Mirages: index of air, temperature profiles, exact rays in stratified air, transfer curves
 │   │   ├── atmo.js            Atmospheric optics: ice-crystal halo ray tracing, Lorenz–Mie scattering, rainbow geometry
 │   │   ├── autofocus.js       Phase and contrast autofocus on a defocused scene strip
@@ -1004,7 +1016,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (67)
+│   └── modules/               One file per page (68)
 ├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── vendor/fonts/              Fraunces, Inter, JetBrains Mono (OFL 1.1), variable woff2, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
@@ -1159,6 +1171,7 @@ The numerical core was checked against published or analytically known values. E
 | Milky Way photograph: noise of one frame against the planned stack | √(signal + σ²)·√(1 + 1/N) | within 12 % of the measured difference between the two pictures |
 | Pool caustics: depth where a wave h = A sin kx first focuses overhead sunlight; tangential apparent depth at 34° in air | n/((n − 1)Ak²) = 2.28 m for 4 mm, 30 cm waves; d cos³θa/(n cos³θw) | traced rays fold within 1 %; envelope of neighbouring rays within 10⁻⁶ |
 | Halation: ring radius for a 125 µm base of index 1.65; share of Lambertian light beyond θc | 190.5 µm; cos²θc = 63.3 % | 2t tan(arcsin 1/n); returned share 67.4 % (Fresnel adds the part below θc) |
+| Sky: vertical Rayleigh optical depth at 550 nm; air mass at 60–80° | 0.0973 (Bucholtz 1995); Kasten & Young (1989) | 0.0968; within 1.5 % (3 % at 85°, where refraction lengthens the real path) |
 | Mirages: gradient at which a level ray curves like the Earth; ship hidden at 20 km from 3 m in standard air | 0.129 K/m at 15 °C; 11.4 m | κ = 1/R_E exactly; ray tracer within 0.15 m of (L − √(2R′z₀))²/(2R′), R′ = R_E/(1 − k) |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
@@ -1190,6 +1203,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
 | Pool caustics | Geometric optics (no diffraction at the caustics), a point-like Sun, gentle waves, a flat floor; no light reflected back from the floor | Lines stay sharp at any depth; no bubbles or breaking waves |
 | Halation | One bounce in a clear base, Lambertian scattering in the emulsion, fixed per-layer weights; the filter's halo is a single exponential | No softening on the way back, no film-specific spectral data |
+| Sky colours | Single scattering only (the sky near the horizon and in twilight comes out too dark), one aerosol type, an approximate ozone band, no refraction | No clouds, no multiple scattering, no polarisation here (see Polarisation) |
 | Mirages | Horizontally uniform, steady air; one wavelength; dry air; smooth model profiles | No shimmer, no green flash, no tilted or moving layers |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
 | Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |
