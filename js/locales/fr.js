@@ -3,6 +3,7 @@
 export default {
   "seen once": "vu une fois",
   "seen {n} times": "vu {n} fois",
+  "{d} m · blur {c} µm{ok}": "{d} m · flou {c} µm{ok}",
   "Featured laboratories": "Laboratoires à la une",
   "Drag the prism to turn it": "Faites glisser le prisme pour le tourner",
   "Open the full laboratory in Optica Viva ↗": "Ouvrir le laboratoire complet dans Optica Viva ↗",

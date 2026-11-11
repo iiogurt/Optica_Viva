@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Depth of field: the photograph, the distance scale and the blur chart are linked.** Every row of ground in the photograph lies at one distance; pointing at it draws the row across the picture with its distance and blur (green with ✓ inside the circle of confusion), marks it on the scale and reads the blur chart there. Pointing at the chart draws its distance across the photograph.
 - **Gravitational lensing: point at the image to see where its light came from.** The lens equation β = θ − α(θ) maps the pointed spot back to the source plane (a cross with its position); every spot of the image plane that comes from the same point of the galaxy is dotted, and the images, solved from the lens equation, are ringed and counted ("seen 4 times" inside the diamond caustic).
 
 ## [1.40.0] - 2026-11-11
