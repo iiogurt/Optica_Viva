@@ -1,6 +1,9 @@
 // French interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "Your satellite's picture, computed from the design: an 80 × 56 m crossroads": "L’image de votre satellite, calculée à partir de la conception : un carrefour de 80 × 56 m",
+  "The ground (10 cm)": "Le sol (10 cm)",
+  "From orbit: {gsd} pixels, SNR {snr}": "Depuis l’orbite : pixels de {gsd}, SNR {snr}",
   "Your photograph, computed from the plan: a crop at 100 %, one frame and the stack": "Votre photo, calculée à partir du plan : un recadrage à 100 %, une pose et la pile",
   "One {t} frame at ISO {iso}": "Une pose de {t} à ISO {iso}",
   "Stack of {n} frames ({min} min)": "Pile de {n} poses ({min} min)",

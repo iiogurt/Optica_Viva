@@ -591,7 +591,6 @@ Candidates, in order of how much the third dimension adds:
 Ideas worth keeping but not yet scheduled:
 
 - *(from v1.2)* **WebGPU compute path** for FFTs, phase screens and per-pixel ray casting, with a mandatory CPU fallback; waits until the Raspberry Pi 4 or the CI runners expose a WebGPU adapter to test it on.
-- *(from v1.42)* **A picture of the result on the other missions** (the portrait session and the Milky Way have one): Jupiter through the seeing, the eclipse exposure set, the satellite's ground image at its GSD.
 - *(from v1.36)* **Soft shadows and tighter framing in the 3-D views**: the scenes have no ground to cast onto, and shadow maps are heavy on the Raspberry Pi; framing would fit the camera to the meshes rather than to every ray.
 - *(from v1.36)* **Wide-gamut output** (Display P3 canvases) for spectral colours: needs the colours kept outside sRGB through the computation (the PSF clips negative components today) and a P3 screen to check it on; gains nothing on sRGB screens.
 - *(from v1.3)* Traced relative illumination across the field (real-ray pupil area and cos⁴ projection) in the ray tracer.
