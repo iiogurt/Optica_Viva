@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.43.0] - 2026-11-11
+
 ### Added
 - **Portrait session: the photograph your plan gives.** Beside the plan, a portrait computed from it: the face seen from the planned distance with the planned focal length (closer means a larger nose), lit by a round light of the planned size and distance (the exact irradiance of a spherical source, so a small light gives a hard edge across the face and a large one a soft one), each part of the face blurred by its own depth of field, and the string lights on the wall behind turned into discs of exactly the planned size. Rendered in the compute worker: a quick picture at once, then one with 2 × 2 rays per pixel once the controls settle.
 
@@ -949,7 +951,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.42.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.43.0...HEAD
+[1.43.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.42.0...v1.43.0
 [1.42.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.41.0...v1.42.0
 [1.41.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.40.0...v1.41.0
 [1.40.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.39.0...v1.40.0
