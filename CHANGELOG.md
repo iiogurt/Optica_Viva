@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.53.0] - 2026-11-11
+
 ### Added
 - **New laboratory: HDR displays: PQ & HLG** (`#/hdrdisplay`). How a screen codes brightness: BT.1886 gamma 2.4, SMPTE ST 2084 PQ and BT.2100 HLG with its peak-dependent system gamma. One dark ramp quantised by 8- and 10-bit SDR, 10-bit HLG and 10- and 12-bit PQ shows where banding appears; the step between neighbouring codes is plotted against the 1 % threshold; a scale places DCI (48 nits) and Dolby Cinema (108) screens, SDR and HDR televisions and phones among the world's light levels.
 
@@ -1000,7 +1002,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.52.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.53.0...HEAD
+[1.53.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.52.0...v1.53.0
 [1.52.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.51.0...v1.52.0
 [1.51.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.50.0...v1.51.0
 [1.50.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.49.0...v1.50.0
