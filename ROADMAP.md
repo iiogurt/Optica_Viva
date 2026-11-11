@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 500 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 503 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -593,6 +593,10 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P2 · M** **In-camera lens corrections** (`#/corrections`): straightening, brightening and realigning in software, and what the corners lose in detail, field and signal-to-noise. *From the backlog's "further phenomena".*
 
+### v1.50 Infrared & ultraviolet
+
+- [x] **P2 · M** **Infrared & ultraviolet photography** (`#/irphoto`): the Wood effect, dark skies and black water in infrared, a flower's ultraviolet bullseye, and the infrared focus shift of an achromat. *From the backlog's "further phenomena". Measured spectra (leaves, sensors, dyes) would replace the representative curves.*
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -627,7 +631,7 @@ Ideas worth keeping but not yet scheduled:
 - Aerial perspective and haze with Koschmieder's law in the DoF scene.
 - Light-field (plenoptic) refocusing.
 - *(from the October 2026 exploration)* Further phenomena:
-  - Photography and cinema: infrared and UV photography (Wood effect, IR focus shift); stereo 3D (interaxial, convergence, depth budget); HDR display transfer functions (PQ, HLG) and cinema screen luminance.
+  - Photography and cinema: stereo 3D (interaxial, convergence, depth budget); HDR display transfer functions (PQ, HLG) and cinema screen luminance.
   - Astronomy and space: satellite trails and their rejection in stacks; radial-velocity precision; planetary-imaging sampling; free-space laser communication link budgets; star trackers; phase angle and sun glint; LIGO as an optical instrument (shot noise vs radiation pressure).
   - Atmosphere and nature: Brocken spectres; zodiacal light and airglow.
 

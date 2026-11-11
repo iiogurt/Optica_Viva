@@ -505,3 +505,22 @@ test('lens corrections: Brown inverse, sampling cost, crop, and straight lines a
   const cols = [12, 30, 130, 148].map(darkest);
   assert.ok(Math.max(...cols) - Math.min(...cols) <= 1, `the line stays in one column: ${cols}`);
 });
+
+test('infrared and ultraviolet photography: the Wood effect, black water, the UV bullseye, infrared focus', async () => {
+  const P = await import('../js/lib/irphoto.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: ${a} vs ${b}`);
+  const lum = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2], sum = (c) => c[0] + c[1] + c[2];
+  const shot = (m, f) => P.camera(m === 'sky' ? P.skylight : (l) => P.sunlight(l) * P.MATERIALS[m](l), P.FILTERS[f].T);
+  const vis = lum(shot('leaf', 'normal')) / lum(shot('sky', 'normal')), ir = lum(shot('leaf', 'ir720')) / lum(shot('sky', 'ir720'));
+  assert.ok(vis < 0.2 && ir > 2, `foliage against sky: ${vis} in the visible, ${ir} at 720 nm`);
+  assert.ok(sum(shot('water', 'ir720')) < 0.05 * sum(shot('grass', 'ir720')), 'water black in the infrared');
+  assert.ok(sum(shot('centre', 'uv')) < 0.3 * sum(shot('petal', 'uv')), 'the flower\'s centre absorbs ultraviolet');
+  // the Bayer dyes are transparent beyond about 850 nm: all channels see nearly the same
+  const c900 = P.bayer.map((f) => f(900));
+  assert.ok(Math.max(...c900) / Math.min(...c900) < 1.15, `channels at 900 nm: ${c900}`);
+  // a thin achromat brings F and C to one focus; the near infrared falls behind, by a fraction of a millimetre
+  const a = P.achromat(50);
+  near(a.f(486.13), a.f(656.27), 1e-9, 'F and C focus together');
+  const d850 = a.shift(850) - a.shift(550);
+  assert.ok(d850 > 0.05 && d850 < 0.4, `850 nm focuses ${d850} mm behind 550 nm`);
+});

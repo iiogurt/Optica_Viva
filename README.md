@@ -511,6 +511,16 @@ Film as a **Boolean model** of randomly placed silver-halide grains with a log-n
 <tr>
 <td valign="top" colspan="2">
 
+**Infrared & ultraviolet photography** · `#/irphoto`<br>
+<img src="docs/screenshots/irphoto.webp" alt="A landscape through a 720 nm infrared filter with white foliage and black water; reflectance, sky, silicon and filter spectra; the focus of an achromat against wavelength" width="70%">
+
+What a camera sees **beyond the visible**: a landscape through a hot mirror, 590, 720 or 850 nm long-pass filters, full spectrum or an ultraviolet-pass filter, computed from spectra (sunlight, a λ⁻⁴ sky, representative reflectances with the leaf's red edge, silicon, Bayer dyes that turn transparent in the near infrared). Foliage turns white (the Wood effect), the sky and water dark, a flower shows its ultraviolet bullseye, and a thin N-BK7/F2 achromat focuses the infrared behind the visible: the red mark on old focus scales.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **In-camera lens corrections** · `#/corrections`<br>
 <img src="docs/screenshots/corrections.webp" alt="A test chart recorded with barrel distortion and dark corners beside the camera's corrected version; the top-left star zoomed before and after; the cost in sampling and signal-to-noise from the centre to the corner" width="70%">
 
@@ -814,6 +824,7 @@ flowchart LR
 | Birefringence | Stress-optic law with the Hertz/Frocht disk stress field, white-light interference colours from 61 wavelengths; extraordinary-ray walk-off in uniaxial crystals | polarisation |
 | Skylight | Single-scattering Rayleigh slab (Chandrasekhar), optical depth after Hansen & Travis (1974), 16 wavelengths, 5778 K sun; DoP sin²γ/(1+cos²γ) | polarisation |
 | Halos | Monte-Carlo rays through hexagonal ice prisms (plates c/a = 0.15, columns 2.5) with random, plate and column orientations and a Gaussian wobble; unpolarised Fresnel reflection by Russian roulette, total internal reflection; ice index fitted to Warren & Brandt (2008); CIE 1931 colour | atmospheric |
+| Infrared & UV | Camera signal ∫E ρ T Q c̄ dλ at 10 nm from 300 to 1100 nm: 5778 K Sun with an ozone cut, λ⁻⁴ sky, representative reflectance curves (leaf red edge at 715 nm), silicon QE, Bayer dyes transparent beyond ~800 nm, ideal filter edges; white balance and red–blue swap; monochrome where a channel is blind; focus of a thin achromat from Sellmeier glass data | irphoto |
 | Lens corrections | Brown radial distortion r_d = r_u(1 + k₁r_u² + k₂r_u⁴) with an exact inverse (Newton, tabulated); vignetting cos⁴ of the field angle times a mechanical fall-off; lateral colour as ±scale of red and blue; 240 × 160 sensor, 2 × 2 samples, photon + read noise; correction by bilinear resampling into the largest rectangle the sensor covers | corrections |
 | Halation | Lambertian light in the base, Fresnel reflection at its back (total beyond θc), return radius 2t tan θ; kernel K(r) averaged over each grid cell; red-layer weighting 1 : 0.28 : 0.05; diffusion filter as (1 − s)δ + s·exponential halo; FFT convolution on 512² | halation |
 | Pool caustics | Sum of travelling waves (deep-water ω = √(gk)) with wave vectors that divide the 1.2 m patch; vector Snell refraction at the local normal with the index of water at 640, 545 and 460 nm; 16 rays per floor pixel splatted bilinearly (mean = flat water); absorption of pure water down and back up | caustics |
@@ -916,6 +927,7 @@ Optica_Viva/
 │   │   ├── detectors.js       Up-the-ramp slopes and jump detection, IPC, CTI trails, persistence
 │   │   ├── eye.js             Le Grand schematic eye, ocular chromatic aberration, retinal MTF vs pupil, CoC from acuity
 │   │   ├── film.js            Boolean-model emulsion: development probability, H&D curve, Selwyn granularity, DQE, reciprocity
+│   │   ├── irphoto.js         Infrared and ultraviolet photography: spectra, filters, camera signal, achromat focus, the scene
 │   │   ├── halation.js        Halation in the film base and diffusion filters: kernels, night street, FFT convolution
 │   │   ├── fieldpsf.js        Two-mirror telescopes: Seidel sums through mirrors, RC/DK conics, nodal aberrations, PSFs across the field
 │   │   ├── earthobs.js        Earth observation: GSD, push-broom and TDI, Q, MTF, rendered ground
@@ -1028,7 +1040,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (69)
+│   └── modules/               One file per page (70)
 ├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── vendor/fonts/              Fraunces, Inter, JetBrains Mono (OFL 1.1), variable woff2, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
@@ -1185,6 +1197,7 @@ The numerical core was checked against published or analytically known values. E
 | Halation: ring radius for a 125 µm base of index 1.65; share of Lambertian light beyond θc | 190.5 µm; cos²θc = 63.3 % | 2t tan(arcsin 1/n); returned share 67.4 % (Fresnel adds the part below θc) |
 | Sky: vertical Rayleigh optical depth at 550 nm; air mass at 60–80° | 0.0973 (Bucholtz 1995); Kasten & Young (1989) | 0.0968; within 1.5 % (3 % at 85°, where refraction lengthens the real path) |
 | Lens corrections: sampling of the corrected picture; a grid line after straightening | dr_d/dr_u and r_d/r_u | match numerical derivatives (10⁻⁸); the line stays in one pixel column from top to bottom |
+| Infrared: foliage against sky; achromat focus | far brighter than the sky at 720 nm, far darker in the visible; F and C at one focus | ratio > 2 at 720 nm and < 0.2 in the visible; F–C difference < 10⁻⁹ mm; 850 nm 0.05–0.4 mm behind |
 | Mirages: gradient at which a level ray curves like the Earth; ship hidden at 20 km from 3 m in standard air | 0.129 K/m at 15 °C; 11.4 m | κ = 1/R_E exactly; ray tracer within 0.15 m of (L − √(2R′z₀))²/(2R′), R′ = R_E/(1 − k) |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
@@ -1218,6 +1231,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Halation | One bounce in a clear base, Lambertian scattering in the emulsion, fixed per-layer weights; the filter's halo is a single exponential | No softening on the way back, no film-specific spectral data |
 | Sky colours | Single scattering only (the sky near the horizon and in twilight comes out too dark), one aerosol type, an approximate ozone band, no refraction | No clouds, no multiple scattering, no polarisation here (see Polarisation) |
 | Lens corrections | Radial distortion only (no decentring), bilinear resampling, no sharpening after correction, shot and read noise only | Cameras' own profiles and sharpening differ |
+| Infrared & UV | Representative spectra, not measurements; ideal filter edges; one thin achromat for the focus | Real cameras' infrared colours depend on their dyes and processing |
 | Mirages | Horizontally uniform, steady air; one wavelength; dry air; smooth model profiles | No shimmer, no green flash, no tilted or moving layers |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
 | Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |
