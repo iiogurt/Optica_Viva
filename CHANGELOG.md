@@ -12,6 +12,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **Phones: the picture stays in view while you move the sliders.** Opening the controls sheet pins the laboratory's first picture to the top of the screen and fits the sheet below it, however far the page scrolls; closing the sheet puts the picture back. The smoke test checks it on the PSF, black-hole and depth-of-field pages.
 - **Flare, ghosts & coatings: a real scene.** The flat dusk drawing is replaced by a landscape rendered in linear light (`js/lib/flarescene.js`): a sky whose glow follows the sun as you drag it, thin clouds lit from below, three mountain ridges fading into the haze, and a lake that mirrors them with ripples and a glitter path under the sun, mapped to the screen by one filmic tone curve at device pixels. The ghosts and the sunstar are computed and added as before.
 
+### Fixed
+- **Opening a page right after a guided tour could lose its link.** A settings write still pending from the previous page (most often a slider still gliding after a tour's last step) could land on the new page's address, replacing its settings and its `?tour=` with the old page's. Writes now apply only to the page their controls belong to, and a new page stops any glide still running.
+
 ## [1.38.0] - 2026-11-11
 
 ### Added

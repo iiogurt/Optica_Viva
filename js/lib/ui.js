@@ -101,7 +101,14 @@ export const texNum = (v, d = 3) => {
 // ── Shareable state: every control mirrors its non-default value into the URL hash ─────
 // (#/psf?preset=jwst&band=nir). The router calls resetUrlState() before mounting a page.
 let urlKeys = new Map(), allKeys = new Map(), setters = new Map(), panels = 0;
-export function resetUrlState() { urlKeys = new Map(); allKeys = new Map(); setters = new Map(); panels = 0; }
+// slider glides still running (setControl … animate); a new page stops them, or the old page's
+// settings would be written into the new page's link
+const glides = new Set();
+// the page the current controls belong to: a write still pending when the link has already moved
+// to another page (before the router has reset these) must not touch that page's link
+let urlPage = null;
+const pageOf = () => location.hash.split('?')[0] || '#/';
+export function resetUrlState() { glides.forEach((id) => cancelAnimationFrame(id)); glides.clear(); urlKeys = new Map(); allKeys = new Map(); setters = new Map(); panels = 0; urlPage = typeof location === 'object' ? pageOf() : null; }
 // Every control's current value, defaults included (for saved settings).
 export const allSettings = () => Object.fromEntries([...allKeys].map(([k, get]) => [k, get()]));
 // Set a control as if the reader had moved it (guided tours). Returns its row, or null if the page has no such control.
@@ -117,10 +124,10 @@ export function setControl(key, v, { animate = false } = {}) {
 export const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2);
 const hashParams = () => new URLSearchParams(location.hash.split('?')[1] || '');
 function writeUrl() {
+  if (urlPage !== null && pageOf() !== urlPage) return;
   const p = new URLSearchParams();
   for (const [k, get] of urlKeys) { const v = get(); if (v != null) p.set(k, v); }
-  const base = location.hash.split('?')[0] || '#/';
-  history.replaceState(null, '', base + (p.toString() ? '?' + p : ''));
+  history.replaceState(null, '', pageOf() + (p.toString() ? '?' + p : ''));
 }
 const writeUrlSoon = rafThrottle(writeUrl);
 function parseParam(s, raw) {
@@ -191,12 +198,14 @@ export function controls(spec, onChange) {
         const p0 = toPos(state[key]), p1 = toPos(v), t0 = performance.now();
         if (!(Math.abs(p1 - p0) > 1e-4)) { api.set[key](v); fire(); return; }
         const step = (now) => {
+          glides.delete(glide);
+          if (!input.isConnected) return; // the page has gone
           const x = Math.min(1, (now - t0) / ms);
           state[key] = x < 1 ? fromPos(p0 + (p1 - p0) * ease(x)) : v;
           input.value = Math.round(toPos(state[key]) * 1000); show(); fire();
-          if (x < 1) glide = requestAnimationFrame(step); else writeUrlSoon();
+          if (x < 1) glides.add((glide = requestAnimationFrame(step))); else writeUrlSoon();
         };
-        glide = requestAnimationFrame(step);
+        glides.add((glide = requestAnimationFrame(step)));
       });
       show();
       row = h('label.ctl.ctl-range', {}, h('span.ctl-label', {}, tr(s.label), out), input);
