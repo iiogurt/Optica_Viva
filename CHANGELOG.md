@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.38.0] - 2026-11-11
+
 ### Added
 - **A picture on every home-page card**: a snapshot of the laboratory's own render, captured from the running page by `npm run thumbs` (`scripts/thumbs.mjs`, 400 × 250 WebP, loaded as the page scrolls). Guided tours show their laboratory's picture too; on phones the picture sits beside the text. `test/thumbs.test.mjs` checks that every card has its picture at the right size.
 - **Featured laboratories**: the black hole, the PSF and the halos shown large below the hero.
@@ -911,7 +913,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.37.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.38.0...HEAD
+[1.38.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.37.0...v1.38.0
 [1.37.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.36.0...v1.37.0
 [1.36.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.35.0...v1.36.0
 [1.35.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.34.0...v1.35.0
