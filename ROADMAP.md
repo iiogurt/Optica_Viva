@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 494 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 497 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -585,6 +585,10 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P2 · M** **Halation & diffusion filters** (`#/halation`): the red ring of film without its backing, from total reflection in the base, and a Pro-Mist filter's haze, on a night street. *From the backlog's "further phenomena" (diffusion filters and film halation).*
 
+### v1.48 Sky colours
+
+- [x] **P2 · M** **Sky colours & sunsets** (`#/sky`): Rayleigh, haze and ozone, single scattering in a round atmosphere, the colour of the Sun, air mass, the Earth's shadow. *Answers the catalogue's "Rayleigh scattering & the blue sky" and "Extinction & airmass". Multiple scattering (which brightens the horizon and twilight) is left for later.*
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -621,7 +625,7 @@ Ideas worth keeping but not yet scheduled:
 - *(from the October 2026 exploration)* Further phenomena:
   - Photography and cinema: in-camera lens corrections and their resolution cost; infrared and UV photography (Wood effect, IR focus shift); stereo 3D (interaxial, convergence, depth budget); HDR display transfer functions (PQ, HLG) and cinema screen luminance.
   - Astronomy and space: satellite trails and their rejection in stacks; radial-velocity precision; planetary-imaging sampling; free-space laser communication link budgets; star trackers; phase angle and sun glint; LIGO as an optical instrument (shot noise vs radiation pressure).
-  - Atmosphere and nature: Brocken spectres; extinction and airmass; zodiacal light and airglow.
+  - Atmosphere and nature: Brocken spectres; zodiacal light and airglow.
 
 ---
 

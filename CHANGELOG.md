@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Sky colours & sunsets** (`#/sky`). Sunlight scattered by molecules, haze and ozone in a round atmosphere, computed wavelength by wavelength (single scattering): a 200° panorama towards or away from the Sun at any height down to 6° below the horizon, the Sun's colour from the light that gets through, the transmission spectrum, and the air mass against the flat-Earth 1/cos z and Kasten & Young. The vertical Rayleigh optical depth comes out 0.0968 (Bucholtz: 0.0973). The catalogue's "Rayleigh scattering & the blue sky" and "Extinction & airmass" now open it.
+
 ## [1.47.0] - 2026-11-11
 
 ### Added
