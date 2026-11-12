@@ -709,3 +709,31 @@ test('star trackers: centroid photon limit, S-curve, star counts, limiting magni
   // Liebe's worked numbers for this field: 52.7″ per pixel, 1.05″ across and 10.5″ in roll
   rel((15 * 3600) / 1024 * sc / Math.sqrt(N), 1.0547, 0.001, 'cross-boresight'); rel(liebe / S.ARCSEC, 10.53, 0.01, 'roll');
 });
+
+test('phase angle and sun glint: Lambert and Lommel–Seeliger phase functions, the Moon, Fresnel and Cox–Munk', async () => {
+  const G = await import('../js/lib/glint.js');
+  const rel = (a, e, tol, msg) => near(a / e, 1, tol, msg);
+  // disk-integrated phase curves against their closed forms (Russell 1916; Lommel–Seeliger)
+  for (const d of [0, 45, 90, 135]) {
+    const a = d * G.RAD;
+    near(G.diskFlux('lambert', a, 0, 240), G.lambertPhase(a), 0.002, `Lambert ${d}°`);
+    near(G.diskFlux('moon', a, 0, 240) / G.diskFlux('moon', 0, 0, 240), G.lsPhase(a), 0.002, `Lommel–Seeliger ${d}°`);
+  }
+  near(G.lambertPhase(Math.PI / 2), 1 / Math.PI, 1e-12, 'half phase 1/π');
+  // the measured Moon: the half Moon 2.6 magnitudes (about 11 times) fainter than the full Moon
+  near(G.moonMag(90) - G.moonMag(0), 2.6, 0.01, 'half Moon'); rel(1 / G.moonPhase(90), 11, 0.02, 'factor');
+  // Fresnel: water at normal incidence ((n − 1)/(n + 1))², and 1 at grazing incidence
+  near(G.fresnel(1), ((1.34 - 1) / 2.34) ** 2, 1e-12, 'normal'); near(G.fresnel(0), 1, 1e-9, 'grazing');
+  // Cox–Munk: the glint peak in the mirror direction is R/(4σ² cos²θs)
+  const s2 = G.slopeVar(7); near(s2, 0.003 + 0.00512 * 7, 1e-15, 'σ²');
+  const pk = G.principalPlane(30, 7, 30, 30, 1)[0][1];
+  rel(pk, G.fresnel(Math.cos(30 * G.RAD)) / (4 * s2 * Math.cos(30 * G.RAD) ** 2), 1e-9, 'mirror-direction glint');
+  // energy: the glint integrated over the view hemisphere returns about the Fresnel reflectance of a flat sea
+  const ts = 30 * G.RAD, sun = [Math.sin(ts), 0, Math.cos(ts)], s2c = G.slopeVar(2);
+  let E = 0; const nt = 400, np = 400;
+  for (let i = 0; i < nt; i++) for (let j = 0; j < np; j++) {
+    const th = ((i + 0.5) / nt) * (Math.PI / 2), ph = ((j + 0.5) / np) * 2 * Math.PI, v = [Math.sin(th) * Math.cos(ph), Math.sin(th) * Math.sin(ph), Math.cos(th)];
+    E += G.glint([0, 0, 1], sun, v, s2c) * Math.cos(th) * Math.sin(th) * (Math.PI / 2 / nt) * (2 * Math.PI / np);
+  }
+  rel(E / Math.PI, G.fresnel(Math.cos(ts)), 0.05, 'glint energy');
+});

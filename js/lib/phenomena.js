@@ -299,6 +299,7 @@ export const GROUPS = [
       [N_('Radial-velocity precision'), 'rv', 's', N_('A star\'s Doppler wobble, measured to below a metre per second from thousands of spectral lines; photon noise, rotation and resolution set the limit.'), r`\sigma_V=\Big(\sum_i\frac{(\partial A_i/\partial v)^2}{A_i}\Big)^{-1/2}`],
       [N_('Laser communication links'), 'lasercom', 's', N_('A laser beam sent across the solar system spreads to thousands of kilometres; photon-counting receivers and pulse-position codes make each detected photon carry several bits.'), r`P_r=\frac{P_tG_t}{4\pi R^2}A_r\eta,\ \ C=(1-e^{-n_s})\log_2M`],
       [N_('Star trackers & sub-pixel centroids'), 'startracker', 's', N_('A camera that identifies star patterns and measures each star\'s centre to a fraction of a pixel, fixing a spacecraft\'s attitude to about an arcsecond; roll is several times less certain.'), r`\sigma_\perp\approx\frac{\sigma_c\,\mathrm{IFOV}}{\sqrt N},\ \ \sigma_c\ge\frac{\sigma}{\sqrt S}`],
+      [N_('Phase angle & sun glint'), 'glint', 'pvs', N_('A lit sphere fades with phase angle at a rate set by its surface (matt clouds, dusty regolith, water); wind-roughened seas mirror the Sun in a glint whose size measures the wave slopes.'), r`\Phi_L=\frac{\sin\alpha+(\pi-\alpha)\cos\alpha}{\pi},\ \ \sigma^2=0.003+0.00512\,U`],
     ],
   },
   {
