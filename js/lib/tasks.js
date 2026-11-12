@@ -44,6 +44,7 @@ import { portraitShot } from './portrait.js';
 import { mirageScene } from './mirage.js';
 import { makeWaves, floorLight } from './caustics.js';
 import { whitened, qtransform } from './ligo.js';
+import { budget as lcBudget, dataRate as lcRate, rateCurve as lcCurve, ORDERS as LC_ORDERS } from './lasercom.js';
 import { spectrum as rvSpectrumOf, precision as rvPrecision, monteCarlo as rvMonteCarlo } from './rv.js';
 import { halationRender } from './halation.js';
 import { skyPanorama } from './sky.js';
@@ -694,6 +695,11 @@ let rvCache = null;
 const rvSpec = (p) => { const key = JSON.stringify(p); if (!rvCache || rvCache.key !== key) rvCache = { key, sp: rvSpectrumOf(p) }; return rvCache.sp; };
 function rvTask(p) { const sp = rvSpec(p), q = rvPrecision(sp, 1), flux = sp.flux.slice(); return { result: { flux, n: sp.n, dv: sp.dv, l0: sp.l0, l1: sp.l1, lines: sp.lines, sigma1: q.sigma, Q: q.Q }, transfer: [flux.buffer] }; }
 function rvMCTask({ spec, trials, seed }) { const e = rvMonteCarlo(rvSpec(spec), 1, trials, seed); return { result: e, transfer: [e.buffer] }; }
+// laser link: the rate at the chosen settings, the rate for every PPM order, and the rate against distance
+function lasercomTask(p) {
+  const b = lcBudget(p), now = lcRate(b.rate, p.M, p.Ts, p.nb, 4000);
+  return { result: { now, orders: LC_ORDERS.map((M) => [M, lcRate(b.rate, M, p.Ts, p.nb, 2000).rate]), curve: lcCurve(p) } };
+}
 function ligoTask(p) { const r = whitened(p.o, p.m1, p.m2, p.D, p.seed), sp = qtransform(r.data); return { result: { ...r, sp }, transfer: [r.data.buffer, r.clean.buffer, sp.data.buffer] }; }
 function causticsTask(p) { const r = floorLight(makeWaves(p.waves), p.floor); return { result: r, transfer: r.map((a) => a.buffer) }; }
 
@@ -719,4 +725,4 @@ function trailsTask(p) {
   return { result, transfer: [outs.mean.buffer, outs.median.buffer, outs.clip.buffer] };
 }
 
-export const TASKS = { rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
+export const TASKS = { lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
