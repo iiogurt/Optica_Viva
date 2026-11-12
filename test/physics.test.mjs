@@ -615,3 +615,30 @@ test('LIGO quantum noise: the standard quantum limit, Kimble\'s crossover, squee
   const tmax = (row) => { let mj = 0; for (let j = 0; j < q.M; j++) if (q.data[row * q.M + j] > q.data[row * q.M + mj]) mj = j; return mj; };
   assert.ok(tmax(10) < tmax(40), 'the chirp rises in frequency');
 });
+
+test('radial velocities: Bouchy photon-noise limit, its Monte-Carlo check, rotation, resolution and K', async () => {
+  const V = await import('../js/lib/rv.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol * Math.abs(b), `${msg}: ${a} vs ${b}`);
+  // semi-amplitudes: Earth 8.95 cm/s, Jupiter 12.5 m/s, 51 Peg b ≈ 54 m/s (m sin i = 0.46 M_J; measured 56)
+  const K = (p) => V.semiAmplitude(p.mp, p.P, p.M);
+  near(K(V.PLANETS.earth), 0.0895, 0.01, 'Earth'); near(K(V.PLANETS.jupiter), 12.46, 0.01, 'Jupiter'); near(K(V.PLANETS.peg51), 55, 0.05, '51 Peg b');
+  // rotation kernel: unit sum and symmetric; Gaussian kernel unit sum
+  const rk = V.rotationKernel(10000, 300); let s = 0; for (const x of rk) s += x; near(s, 1, 1e-12, 'rotation kernel sum');
+  assert.ok(Math.abs(rk[0] - rk[rk.length - 1]) < 1e-15, 'symmetric');
+  // a single Gaussian line: σ_V matches the analytic Σ (dA/dv)²/A integral (depth d ≪ 1, N electrons per pixel)
+  const sp = { n: 4001, dv: 100, flux: new Float32Array(4001), l0: 500 }, d = 0.01, w = 3000;
+  for (let i = 0; i < sp.n; i++) sp.flux[i] = 1 - d * Math.exp(-0.5 * (((i - 2000) * sp.dv) / w) ** 2);
+  // ∫ (dA/dv)²/A dv ≈ N d² ∫ (v/w²)² e^{−v²/w²} dv = N d² √π/(2w); the pixel sum is that integral / Δv
+  const N = 1e6, analytic = 1 / Math.sqrt((N * d * d * Math.sqrt(Math.PI)) / (2 * w) / sp.dv);
+  near(V.precision(sp, N).sigma, analytic, 0.02, 'single Gaussian line');
+  // σ scales as 1/√N
+  near(V.precision(sp, 4 * N).sigma, V.precision(sp, N).sigma / 2, 1e-9, '1/√N');
+  // a full synthetic G spectrum: Monte-Carlo scatter of the least-squares velocity matches σ_V (48 trials: ±15 %)
+  const g = V.spectrum({ type: 'G', R: 115000, vsini: 2000, l0: 500, l1: 540 }), p = V.precision(g, 1e4), mc = V.monteCarlo(g, 1e4, 48);
+  let v = 0; for (const e of mc) v += e * e; near(Math.sqrt(v / mc.length), p.sigma, 0.25, 'Monte-Carlo vs Bouchy');
+  // faster rotation and lower resolution both cost precision
+  const fast = V.precision(V.spectrum({ type: 'G', R: 115000, vsini: 10000, l0: 500, l1: 540 }), 1e4).sigma, lowR = V.precision(V.spectrum({ type: 'G', R: 40000, vsini: 2000, l0: 500, l1: 540 }), 1e4).sigma;
+  assert.ok(fast > 2 * p.sigma && lowR > 1.5 * p.sigma, `rotation ${fast}, resolution ${lowR} vs ${p.sigma}`);
+  // the sinusoid fit: K recovered within a few σ_K, and σ_K ≈ σ √(2/N)
+  const fit = V.observe(10, 2, 400, 9); near(fit.sigmaK, 2 * Math.sqrt(2 / 400), 0.15, 'σ_K'); assert.ok(Math.abs(fit.K - 10) < 4 * fit.sigmaK, 'K recovered');
+});

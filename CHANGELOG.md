@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Radial velocities: weighing planets with light** (`#/rv`). A synthetic spectrum of thousands of lines for an F, G, K or M star, broadened by rotation and the spectrograph's resolving power and shown as an echelle spectrograph records it; the photon-noise limit of Connes and Bouchy et al. with a close look at where the velocity information sits (the steep line flanks) and a live Monte-Carlo check; the reflex motion of 51 Pegasi b, a hot Neptune, Proxima b, Jupiter or Earth, with simulated measurements, stellar jitter and the fitted semi-amplitude. A catalogue entry links it.
+
 ## [1.54.0] - 2026-11-12
 
 ### Added

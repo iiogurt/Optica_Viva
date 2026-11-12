@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Sixty interactive laboratories, nine missions, a physics primer and a catalogue of 246 phenomena.
+Sixty-one interactive laboratories, nine missions, a physics primer and a catalogue of 247 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -501,6 +501,16 @@ A scene **rendered wavelength by wavelength**: 24 colour patches, a Siemens star
 <tr>
 <td valign="top" colspan="2">
 
+**Radial velocities: weighing planets with light** · `#/rv`<br>
+<img src="docs/screenshots/rv.webp" alt="A synthetic stellar spectrum in echelle rows from violet to red; a close look at two lines with noisy pixels and the weight of each pixel; a histogram of simulated velocity measurements against the photon-noise limit" width="70%">
+
+**How a spectrograph measures a star's wobble**: a synthetic spectrum of thousands of lines for F, G, K or M stars, broadened by rotation (Gray's profile) and the spectrograph's resolving power; the photon-noise limit σ_V = (Σ (∂A/∂v)²/A)^(−1/2) of Connes and Bouchy et al., checked live by least-squares velocities of noisy spectra; the semi-amplitude K of 51 Pegasi b, Proxima b, Jupiter or Earth and simulated measurements with stellar jitter.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Filters & HDR** · `#/hdr`<br>
 <img src="docs/screenshots/hdr.webp" alt="Sunset as shot, merged HDR, exposure fusion and SNR curves" width="70%">
 
@@ -796,7 +806,7 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 **Catalogue of phenomena** · `#/catalogue`<br>
 <img src="docs/screenshots/catalogue.webp" alt="Overview of the 13 catalogue groups with counts of simulated phenomena">
 
-**246 phenomena in 13 groups**, browsed by group from a navigator or searched across all groups, with domain and "only simulated" filters. Each entry opens, from simple to exact, to a **worked example with real numbers**, a fuller explanation and its governing equation, a link to its laboratory and related entries. Every group, entry and search has its own link (`#/catalogue?g=…&e=…`).
+**247 phenomena in 13 groups**, browsed by group from a navigator or searched across all groups, with domain and "only simulated" filters. Each entry opens, from simple to exact, to a **worked example with real numbers**, a fuller explanation and its governing equation, a link to its laboratory and related entries. Every group, entry and search has its own link (`#/catalogue?g=…&e=…`).
 
 <img src="docs/screenshots/catalogue-entry.webp" alt="An opened catalogue entry: the Airy disk with example, explanation, equation and related entries">
 
@@ -868,6 +878,7 @@ flowchart LR
 | Stereo 3-D | Parallel cameras with horizontal image translation, P = (S/s)·f·b·(1/C − 1/Z); viewer Z_p = Ve/(e − P), e = 65 mm; width scale M f Z_p/(Z V), depth scale dZ_p/dZ; two ray-traced 320 × 180 views (spheres, ground, wall), red–cyan anaglyph | stereo |
 | HDR displays | SMPTE ST 2084 PQ EOTF and inverse; BT.2100 HLG OETF, inverse and OOTF with system gamma 1.2 + 0.42 log₁₀(L_w/1000) on luminance; BT.1886 gamma 2.4 with zero black; nearest-code quantisation at 8, 10 and 12 bit | hdrdisplay |
 | LIGO | Kimble et al. (2001) conventional interferometer, S_h = ½h_SQL²(1/K + K), K = 16ω₀γP/(c m L Ω²(γ²+Ω²)), tuned signal recycling as a wider γ (Buonanno & Chen); squeezing e^{∓2r}; Newtonian stationary-phase inspiral to f_ISCO, ρ² = 4∫|h̃|²/S_h df; whitened 4 s record at 4096 Hz (seeded noise), constant-Q map (Q = 6, 96 rows) | ligo |
+| Radial velocities | Seeded line list (800–2800 lines per 100 nm by spectral type) as Gaussian optical depths on a grid uniform in velocity (3 pixels per resolution element), Gray rotation profile (ε = 0.6) and Gaussian line-spread function c/R; photon-noise limit σ_V = (Σ (∂A/∂v)²/A)^(−1/2) (Connes 1985; Bouchy et al. 2001) and its Monte-Carlo check in the worker; K = (2πG/P)^(1/3) m_p sin i/(M⋆+m_p)^(2/3), least-squares sinusoid of known period | rv |
 | Satellite trails | Frames of the stacking laboratory's galaxy and stars with sky, photon (Gaussian) and read noise; Poisson number of trails per frame, random position and direction, Gaussian profile, depth F·p/ω; per-pixel mean, median and κσ-clip around the median with σ = 1.4826 MAD | trails |
 | Lens corrections | Brown radial distortion r_d = r_u(1 + k₁r_u² + k₂r_u⁴) with an exact inverse (Newton, tabulated); vignetting cos⁴ of the field angle times a mechanical fall-off; lateral colour as ±scale of red and blue; 240 × 160 sensor, 2 × 2 samples, photon + read noise; correction by bilinear resampling into the largest rectangle the sensor covers | corrections |
 | Halation | Lambertian light in the base, Fresnel reflection at its back (total beyond θc), return radius 2t tan θ; kernel K(r) averaged over each grid cell; red-layer weighting 1 : 0.28 : 0.05; diffusion filter as (1 − s)δ + s·exponential halo; FFT convolution on 512² | halation |
@@ -1005,6 +1016,7 @@ Optica_Viva/
 │   │   ├── stereo.js          Stereoscopic 3-D: parallax, perceived distance, roundness, two-camera rendering
 │   │   ├── hdrdisplay.js      HDR displays: PQ, HLG and SDR transfer functions, quantisation steps, light levels
 │   │   ├── ligo.js            LIGO: quantum noise, standard quantum limit, squeezing, inspiral SNR, whitened data, Q-map
+│   │   ├── rv.js              Radial velocities: synthetic spectra, photon-noise limit, Monte Carlo, planet semi-amplitudes
 │   │   ├── stacking.js        CCD equation for stacks, sky brightness from Bortle class, sky-limited sub length
 │   │   ├── starshade.js       Fresnel shadow of an apodised occulter (Filon quadrature, Bessel J₀), suppression spectrum
 │   │   ├── spectro.js         Gratings, blaze, prisms, resolving power, line lists, instrument profile
@@ -1082,13 +1094,13 @@ Optica_Viva/
 │   │   ├── thumbs.js          Home-page card pictures: which laboratories have one, which are featured
 │   │   ├── satellite.js       Satellite mission: focal length, mirror, TDI stages, data rate
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (246 entries in 13 groups)
+│   │   ├── phenomena.js       Catalogue data (247 entries in 13 groups)
 │   │   ├── phenomena-details.js  Explanation and worked example for every catalogue entry
 │   │   ├── plot.js            Canvas charting (log axes, legends above the plot, bands, hover readout)
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (74)
+│   └── modules/               One file per page (75)
 ├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── vendor/fonts/              Fraunces, Inter, JetBrains Mono (OFL 1.1), variable woff2, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
@@ -1250,6 +1262,7 @@ The numerical core was checked against published or analytically known values. E
 | Stereo 3-D: orthostereo rig (b = e, f/s = V/S, C = V) | Z_p = Z, roundness 1, true size | exact at 1.5–40 m (10⁻⁹, roundness 10⁻⁴) |
 | HDR displays: PQ (ST 2084) reference points | 100 nits → 0.5081 (10-bit code 520), 1000 nits → 0.7518 (769), 10 000 nits → 1; HLG knee 0.5 at E = 1/12, γ = 1.2 at 1000 nits | match (10⁻⁴; round trips 10⁻⁹) |
 | LIGO: standard quantum limit and Kimble's crossover | h_SQL(100 Hz, 40 kg, 3994.5 m) = 1.83 × 10⁻²⁴ /√Hz; K = 1 at Ω = γ when I₀ = I_SQL; total ≥ SQL; f_ISCO(2.8 M☉) = 1570 Hz | match (10⁻¹²; f_ISCO 1 %) |
+| Radial velocities: K and the photon-noise limit | K(Earth) = 8.95 cm/s, K(Jupiter) = 12.46 m/s, K(51 Peg b) ≈ 54 m/s (measured 56); σ_V of one Gaussian line against the analytic integral; Monte-Carlo scatter against σ_V | match (1 %; line 2 %; Monte Carlo within its 48-trial sampling) |
 | Mirages: gradient at which a level ray curves like the Earth; ship hidden at 20 km from 3 m in standard air | 0.129 K/m at 15 °C; 11.4 m | κ = 1/R_E exactly; ray tracer within 0.15 m of (L − √(2R′z₀))²/(2R′), R′ = R_E/(1 − k) |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
@@ -1288,6 +1301,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Stereo 3-D | Central seat, eyes 65 mm apart, parallel cameras; comfort limits are rules of thumb | No off-axis seats, no keystone of toed-in rigs |
 | HDR displays | Grey scale only (HLG's OOTF applied to luminance), zero black level, no tone mapping beyond a display's peak; visibility of steps judged against a fixed 1 % rather than Barten's full model | No dithering, noise or display EOTF deviations |
 | LIGO | Quantum noise only (no seismic, suspension or coating thermal noise), lossless squeezing, tuned signal recycling; optimally oriented Newtonian inspiral without merger, ringdown or redshift | Ranges are upper bounds; real detectors are 1.5–2× less sensitive in the middle band |
+| Radial velocities | Synthetic line list, flat continuum and equal signal-to-noise ratio in every pixel; photon noise only (jitter added by hand); circular orbits with sin i = 1 | No telluric lines, blaze, calibration or activity models |
 | Mirages | Horizontally uniform, steady air; one wavelength; dry air; smooth model profiles | No shimmer, no green flash, no tilted or moving layers |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
 | Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |
