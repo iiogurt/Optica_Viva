@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.58.0] - 2026-11-12
+
 ### Added
 - **New laboratory: Phase angle & sun glint** (`#/glint`). A sphere of matt cloud (Lambert), dusty regolith (Lommel–Seeliger) or ocean shaded at any phase angle; disk-integrated phase curves computed in the worker against their closed forms and the measured Moon, whose half phase is 11 times fainter than full; the Sun's glint on a wind-roughened sea with Cox & Munk's slope distribution and Fresnel reflectance, seen straight down from orbit and along the Sun's plane for several wind speeds. A catalogue entry links it (250 phenomena).
 
@@ -1028,7 +1030,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.57.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.58.0...HEAD
+[1.58.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.57.0...v1.58.0
 [1.57.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.56.0...v1.57.0
 [1.56.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.55.0...v1.56.0
 [1.55.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.54.0...v1.55.0
