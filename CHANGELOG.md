@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Phase angle & sun glint** (`#/glint`). A sphere of matt cloud (Lambert), dusty regolith (Lommel–Seeliger) or ocean shaded at any phase angle; disk-integrated phase curves computed in the worker against their closed forms and the measured Moon, whose half phase is 11 times fainter than full; the Sun's glint on a wind-roughened sea with Cox & Munk's slope distribution and Fresnel reflectance, seen straight down from orbit and along the Sun's plane for several wind speeds. A catalogue entry links it (250 phenomena).
+
 ## [1.57.0] - 2026-11-12
 
 ### Added
