@@ -1,6 +1,19 @@
 // German interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "Halation": "Halation",
+  "Light passing through the film reflects off the back of the base and re-exposes the emulsion, leaving a red glow and a ring around highlights.": "Licht, das den Film durchdringt, wird an der Rückseite des Trägers reflektiert und belichtet die Emulsion erneut: ein roter Schein und ein Ring um Spitzlichter.",
+  "Beyond the visible, foliage shines white in the near infrared, the blue sky turns dark and flowers show ultraviolet patterns; lenses need refocusing.": "Jenseits des Sichtbaren leuchtet Laub im nahen Infrarot weiß, der blaue Himmel wird dunkel und Blüten zeigen Ultraviolettmuster; Objektive müssen nachfokussiert werden.",
+  "Satellite trails & outlier rejection": "Satellitenspuren & Ausreißerverwerfung",
+  "Satellites crossing a long exposure leave bright lines; combining many frames by the median or by sigma-clipping removes them, at a cost in noise.": "Satelliten, die eine Langzeitbelichtung kreuzen, hinterlassen helle Linien; der Median oder Sigma-Clipping vieler Aufnahmen entfernt sie, auf Kosten von Rauschen.",
+  "Gravitational-wave interferometry & the quantum limit": "Gravitationswellen-Interferometrie & die Quantengrenze",
+  "LIGO's 4 km interferometer measures strains of 10⁻²³; photon shot noise and radiation pressure on the mirrors set the standard quantum limit, which squeezed light beats.": "LIGOs 4-km-Interferometer misst Dehnungen von 10⁻²³; Schrotrauschen der Photonen und Strahlungsdruck auf die Spiegel setzen die Standard-Quantengrenze, die gequetschtes Licht unterbietet.",
+  "HDR display coding (PQ & HLG)": "HDR-Codierung für Displays (PQ & HLG)",
+  "High-dynamic-range video codes absolute luminance up to 10 000 nits with the perceptual quantiser, or relative luminance with hybrid log-gamma, so that no code step is visible.": "HDR-Video codiert absolute Leuchtdichten bis 10 000 Nits mit dem Perceptual Quantizer oder relative mit Hybrid Log-Gamma, sodass keine Codestufe sichtbar ist.",
+  "Stereoscopic depth": "Stereoskopische Tiefe",
+  "Two pictures taken a short distance apart give each eye its own view; the parallax on the screen decides where each object appears and whether the eyes must diverge.": "Zwei Bilder aus leicht versetzten Positionen geben jedem Auge seine eigene Ansicht; die Parallaxe auf der Leinwand bestimmt, wo jedes Objekt erscheint und ob die Augen divergieren müssen.",
+  "Digital lens corrections": "Digitale Objektivkorrekturen",
+  "Cameras undo distortion, vignetting and lateral colour in software; the stretched corners lose detail, the frame is cropped and brightened corners are noisier.": "Kameras beheben Verzeichnung, Vignettierung und Farbquerfehler per Software; die gedehnten Ecken verlieren Details, das Bild wird beschnitten und aufgehellte Ecken rauschen stärker.",
   "Black holes, 36 + 29 suns (like GW150914)": "Schwarze Löcher, 36 + 29 Sonnen (wie GW150914)",
   "Black hole + neutron star, 10 + 1.4 suns": "Schwarzes Loch + Neutronenstern, 10 + 1,4 Sonnen",
   "Two neutron stars, 1.4 + 1.4 suns": "Zwei Neutronensterne, 1,4 + 1,4 Sonnen",
