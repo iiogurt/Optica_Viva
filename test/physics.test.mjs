@@ -676,3 +676,36 @@ test('laser links: Gaussian gain, pointing loss, PPM capacity and the DSOC and L
   rel(rf.rate, rf.Pr / (L.KB * L.KA.T * 10 ** (L.KA.ebn0Db / 10)), 0.01, 'Ka band, power-limited');
   rel(L.radioRate(384.4e6).rate, L.KA.B * L.KA.se, 1e-9, 'Ka band at the Moon, bandwidth-limited');
 });
+
+test('star trackers: centroid photon limit, S-curve, star counts, limiting magnitude and Liebe\'s roll error', async () => {
+  const S = await import('../js/lib/startracker.js'), { makeRng } = await import('../js/lib/random.js');
+  const rel = (a, e, tol, msg) => near(a / e, 1, tol, msg);
+  // mean distance of a random point in a unit square from its centre: (√2 + ln(1+√2))/6
+  const r = makeRng(3); let m = 0; for (let i = 0; i < 200000; i++) m += Math.hypot(r.u() - 0.5, r.u() - 0.5);
+  rel(m / 200000, S.MEAN_R, 0.005, 'mean distance');
+  // centre of mass of a bright, well-sampled spot: √(σ² + 1/12)/√S per axis
+  rel(S.centroidError(1.5, 1e5, 0, { trials: 1500, seed: 5 }), Math.sqrt(1.5 ** 2 + 1 / 12) / Math.sqrt(1e5), 0.08, 'photon-limited centroid');
+  // S-curve: zero by symmetry at the pixel centre; large for a sharp spot, tiny for σ = 1 in ±3σ
+  const sharp = S.sCurve(0.3, 3), wide = S.sCurve(1, S.windowFor(1)[0]);
+  near(sharp[20][1], 0, 1e-12, 'centre');
+  assert.ok(Math.max(...sharp.map((q) => Math.abs(q[1]))) > 0.04 && Math.max(...wide.map((q) => Math.abs(q[1]))) < 0.01, 'S-curve amplitudes');
+  // star counts: about 9100 stars to magnitude 6.5 (Yale Bright Star Catalogue: 9110 objects)
+  rel(S.starsBrighter(6.5), 9110, 0.15, 'stars to 6.5');
+  // the limiting magnitude stands exactly 5σ above the noise of the pixels under the spot
+  const p = { fov: 15, n: 1024, D: 0.016, t: 0.05, sigma: 1, read: 20, dark: 100, lat: 1, well: 20000, rate: 1 };
+  const e = S.electrons(S.limitingMag(p), p.D, p.t), npx = S.noiseArea(p.sigma, S.smear(p));
+  rel(e / Math.sqrt(e + npx * (p.read ** 2 + p.dark * p.t)), 5, 1e-9, '5σ');
+  rel(S.smear(p), (1 * 0.05 * 1024) / 15, 1e-12, 'trail length');
+  // roll: least-squares rotation of 25 random stars with 0.1 px centroids against Liebe's estimate
+  // (Liebe uses the mean distance 0.3825 n; a least-squares fit the rms distance n/√6, 6 % better)
+  const g = makeRng(8); let s2 = 0; const T = 4000, N = 25, n = 1024, sc = 0.1;
+  for (let k = 0; k < T; k++) {
+    let num = 0, den = 0;
+    for (let i = 0; i < N; i++) { const x = (g.u() - 0.5) * n, y = (g.u() - 0.5) * n, dx = sc * g.g(), dy = sc * g.g(); num += x * dy - y * dx; den += x * x + y * y; }
+    s2 += (num / den) ** 2;
+  }
+  const liebe = Math.atan(sc / (S.MEAN_R * n)) / Math.sqrt(N);
+  rel(Math.sqrt(s2 / T), liebe * (S.MEAN_R * Math.sqrt(6)), 0.05, 'least-squares roll');
+  // Liebe's worked numbers for this field: 52.7″ per pixel, 1.05″ across and 10.5″ in roll
+  rel((15 * 3600) / 1024 * sc / Math.sqrt(N), 1.0547, 0.001, 'cross-boresight'); rel(liebe / S.ARCSEC, 10.53, 0.01, 'roll');
+});
