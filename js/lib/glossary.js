@@ -67,6 +67,7 @@ export const GLOSSARY = [
   { term: 'Colour temperature', match: ['colou?r temperatures?'], lab: 'colour', def: 'How warm (orange) or cool (blue) a white light looks, given as the temperature of a glowing body of that colour.' },
   { term: 'Coating', match: ['coatings?'], lab: 'flare', def: 'Thin layers on a lens surface that make reflected light cancel itself, so less light is reflected.' },
   // ── Astronomy and space ──
+  { term: 'Centroid', match: ['centroids?'], lab: 'startracker', def: 'The centre of light of a blurred star image, found by weighting each pixel by its brightness; it can be located to a small fraction of a pixel.' },
   { term: 'Pulse-position modulation', match: ['pulse-position modulation', 'pulse-position codes?', 'PPM'], lab: 'lasercom', def: 'A way of sending data with light pulses: each pulse lands in one of many short time slots, and which slot it lands in carries the message.' },
   { term: 'Link budget', match: ['link budgets?'], lab: 'lasercom', def: 'The account of a communication link: the transmitted power, every gain and loss on the way, and what is left at the receiver.' },
   { term: 'Seeing', match: ['seeing'], lab: 'seeing', def: 'The blurring of stars by turbulence in the air; also the size of the blurred star image.' },

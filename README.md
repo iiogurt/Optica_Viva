@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Sixty-two interactive laboratories, nine missions, a physics primer and a catalogue of 248 phenomena.
+Sixty-three interactive laboratories, nine missions, a physics primer and a catalogue of 249 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -521,6 +521,16 @@ A scene **rendered wavelength by wavelength**: 24 colour patches, a Siemens star
 <tr>
 <td valign="top" colspan="2">
 
+**Star trackers: finding your way by the stars** · `#/startracker`<br>
+<img src="docs/screenshots/startracker.webp" alt="A star tracker's 15-degree field with detected stars ringed and the brightest four joined; one star up close in its pixels with its true centre and measured centroid; centroid error against magnitude; the S-curve of a sharp and a defocused spot" width="70%">
+
+**How a small camera tells a spacecraft where it points**: a star field drawn from the sky's star counts, the limiting magnitude for the aperture, exposure, read noise and smear while turning; one star up close in its pixels with its true centre and centre of mass; centroid errors of simulated exposures against the photon limit σ/√S, the S-curve of a sharp spot, and the pointing and roll errors of Liebe's formulas, with every star weighted by its own centroid error.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Filters & HDR** · `#/hdr`<br>
 <img src="docs/screenshots/hdr.webp" alt="Sunset as shot, merged HDR, exposure fusion and SNR curves" width="70%">
 
@@ -816,7 +826,7 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 **Catalogue of phenomena** · `#/catalogue`<br>
 <img src="docs/screenshots/catalogue.webp" alt="Overview of the 13 catalogue groups with counts of simulated phenomena">
 
-**248 phenomena in 13 groups**, browsed by group from a navigator or searched across all groups, with domain and "only simulated" filters. Each entry opens, from simple to exact, to a **worked example with real numbers**, a fuller explanation and its governing equation, a link to its laboratory and related entries. Every group, entry and search has its own link (`#/catalogue?g=…&e=…`).
+**249 phenomena in 13 groups**, browsed by group from a navigator or searched across all groups, with domain and "only simulated" filters. Each entry opens, from simple to exact, to a **worked example with real numbers**, a fuller explanation and its governing equation, a link to its laboratory and related entries. Every group, entry and search has its own link (`#/catalogue?g=…&e=…`).
 
 <img src="docs/screenshots/catalogue-entry.webp" alt="An opened catalogue entry: the Airy disk with example, explanation, equation and related entries">
 
@@ -890,6 +900,7 @@ flowchart LR
 | LIGO | Kimble et al. (2001) conventional interferometer, S_h = ½h_SQL²(1/K + K), K = 16ω₀γP/(c m L Ω²(γ²+Ω²)), tuned signal recycling as a wider γ (Buonanno & Chen); squeezing e^{∓2r}; Newtonian stationary-phase inspiral to f_ISCO, ρ² = 4∫|h̃|²/S_h df; whitened 4 s record at 4096 Hz (seeded noise), constant-Q map (Q = 6, 96 rows) | ligo |
 | Radial velocities | Seeded line list (800–2800 lines per 100 nm by spectral type) as Gaussian optical depths on a grid uniform in velocity (3 pixels per resolution element), Gray rotation profile (ε = 0.6) and Gaussian line-spread function c/R; photon-noise limit σ_V = (Σ (∂A/∂v)²/A)^(−1/2) (Connes 1985; Bouchy et al. 2001) and its Monte-Carlo check in the worker; K = (2πG/P)^(1/3) m_p sin i/(M⋆+m_p)^(2/3), least-squares sinusoid of known period | rv |
 | Laser links | Gaussian beam of on-axis gain 0.8145 (πD/λ)² (Klein & Degnan 1974) and 1/e² half-angle √(8/G); P_r = P_t G_t A_r η/(4πR²) with mean pointing loss 1/(1+4σ²/θ₀²) and the clear sky 0.9^airmass; M-ary PPM capacity of the Poisson channel, log₂M − E[log₂ Σ L^(k_j−k_1)], by Monte Carlo with common random numbers (noise photons scattered uniformly into the empty slots), with a code 1 dB from capacity; Ka-band radio at Eb/N0 = 1 dB and at most 2 bit/s/Hz | lasercom |
+| Star trackers | Star counts N(<m) ≈ 4800·10^(0.46(m−6)) over the sky with a galactic-latitude factor; signal Φ₀ 10^(−0.4m) A t with Φ₀ = 2 × 10¹⁰ e⁻ s⁻¹ m⁻²; limiting magnitude at 5σ over the noise area 2√π σ (2√π σ + L) of a spot smeared by L pixels; centre of mass of pixel-integrated Gaussian spots with Poisson and read noise and a full well, by Monte Carlo in the worker; attitude from Liebe (2002), σ_⊥ = IFOV/√I and σ_roll = atan(1/(0.3825 n √I)) with I = ∫ (dN/dm) σ_c⁻² dm | startracker |
 | Satellite trails | Frames of the stacking laboratory's galaxy and stars with sky, photon (Gaussian) and read noise; Poisson number of trails per frame, random position and direction, Gaussian profile, depth F·p/ω; per-pixel mean, median and κσ-clip around the median with σ = 1.4826 MAD | trails |
 | Lens corrections | Brown radial distortion r_d = r_u(1 + k₁r_u² + k₂r_u⁴) with an exact inverse (Newton, tabulated); vignetting cos⁴ of the field angle times a mechanical fall-off; lateral colour as ±scale of red and blue; 240 × 160 sensor, 2 × 2 samples, photon + read noise; correction by bilinear resampling into the largest rectangle the sensor covers | corrections |
 | Halation | Lambertian light in the base, Fresnel reflection at its back (total beyond θc), return radius 2t tan θ; kernel K(r) averaged over each grid cell; red-layer weighting 1 : 0.28 : 0.05; diffusion filter as (1 − s)δ + s·exponential halo; FFT convolution on 512² | halation |
@@ -1027,6 +1038,7 @@ Optica_Viva/
 │   │   ├── stereo.js          Stereoscopic 3-D: parallax, perceived distance, roundness, two-camera rendering
 │   │   ├── hdrdisplay.js      HDR displays: PQ, HLG and SDR transfer functions, quantisation steps, light levels
 │   │   ├── ligo.js            LIGO: quantum noise, standard quantum limit, squeezing, inspiral SNR, whitened data, Q-map
+│   │   ├── startracker.js     Star trackers: star counts, limiting magnitude, centroids and S-curve, attitude errors
 │   │   ├── lasercom.js        Laser links: Gaussian gain, link budget, PPM capacity of the Poisson channel, Ka-band comparison
 │   │   ├── rv.js              Radial velocities: synthetic spectra, photon-noise limit, Monte Carlo, planet semi-amplitudes
 │   │   ├── stacking.js        CCD equation for stacks, sky brightness from Bortle class, sky-limited sub length
@@ -1106,13 +1118,13 @@ Optica_Viva/
 │   │   ├── thumbs.js          Home-page card pictures: which laboratories have one, which are featured
 │   │   ├── satellite.js       Satellite mission: focal length, mirror, TDI stages, data rate
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (248 entries in 13 groups)
+│   │   ├── phenomena.js       Catalogue data (249 entries in 13 groups)
 │   │   ├── phenomena-details.js  Explanation and worked example for every catalogue entry
 │   │   ├── plot.js            Canvas charting (log axes, legends above the plot, bands, hover readout)
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (76)
+│   └── modules/               One file per page (77)
 ├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── vendor/fonts/              Fraunces, Inter, JetBrains Mono (OFL 1.1), variable woff2, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
@@ -1276,6 +1288,7 @@ The numerical core was checked against published or analytically known values. E
 | LIGO: standard quantum limit and Kimble's crossover | h_SQL(100 Hz, 40 kg, 3994.5 m) = 1.83 × 10⁻²⁴ /√Hz; K = 1 at Ω = γ when I₀ = I_SQL; total ≥ SQL; f_ISCO(2.8 M☉) = 1570 Hz | match (10⁻¹²; f_ISCO 1 %) |
 | Radial velocities: K and the photon-noise limit | K(Earth) = 8.95 cm/s, K(Jupiter) = 12.46 m/s, K(51 Peg b) ≈ 54 m/s (measured 56); σ_V of one Gaussian line against the analytic integral; Monte-Carlo scatter against σ_V | match (1 %; line 2 %; Monte Carlo within its 48-trial sampling) |
 | Laser links: DSOC at 386 million km and LLCD at the Moon | 3.44 × 10⁻¹³ W/m² at Earth, beam 5426 km wide; 16.5 Mbit/s; LLCD slot ceiling 1.25 Gbit/s; PPM capacity against brute-force Poisson draws; erasure limit (1 − e^(−n_s)) log₂M; pointing loss against Monte Carlo | DSOC measured 8.3 Mbit/s (factor 2, with assumed efficiencies); LLCD 622 Mbit/s with a rate-½ code; capacity and pointing within 3 % and 1 % |
+| Star trackers: centroids, counts and roll | Centroid of a bright σ = 1.5 px spot √(σ² + 1/12)/√S; N(<6.5) = 8150; mean distance in a unit square 0.3826; least-squares roll of 25 stars against Liebe's estimate; 15° on 1024 px with 0.1 px and 25 stars: 1.05″ and 10.5″ | Monte Carlo within 8 %; Bright Star Catalogue 9110 (11 %); (√2 + ln(1+√2))/6; rms distance n/√6 gives 6 % less, as expected (5 %); Liebe (2002) |
 | Mirages: gradient at which a level ray curves like the Earth; ship hidden at 20 km from 3 m in standard air | 0.129 K/m at 15 °C; 11.4 m | κ = 1/R_E exactly; ray tracer within 0.15 m of (L − √(2R′z₀))²/(2R′), R′ = R_E/(1 − k) |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
@@ -1316,6 +1329,7 @@ Every page states its model's assumptions. The main simplifications are:
 | LIGO | Quantum noise only (no seismic, suspension or coating thermal noise), lossless squeezing, tuned signal recycling; optimally oriented Newtonian inspiral without merger, ringdown or redshift | Ranges are upper bounds; real detectors are 1.5–2× less sensitive in the middle band |
 | Radial velocities | Synthetic line list, flat continuum and equal signal-to-noise ratio in every pixel; photon noise only (jitter added by hand); circular orbits with sin i = 1 | No telluric lines, blaze, calibration or activity models |
 | Laser links | Average losses with fixed efficiencies (optics 0.5 at each end, detector 0.5, zenith sky 0.9); far field taken as Gaussian; capacity with a 1 dB code gap; no modem or code-rate limits | No clouds, scintillation, beam wander, point-ahead or daylight sky model |
+| Star trackers | Mean star counts (within a factor of two) and a Sun-like colour; fixed dark current and full well; plain centre of mass without threshold or S-curve calibration; smear along one axis | No stray light (Sun, Earth, Moon), lens distortion, radiation hits or identification algorithm |
 | Mirages | Horizontally uniform, steady air; one wavelength; dry air; smooth model profiles | No shimmer, no green flash, no tilted or moving layers |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
 | Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |

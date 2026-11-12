@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Star trackers: finding your way by the stars** (`#/startracker`). A star tracker's field drawn from the sky's star counts, with the stars it detects and the pattern of the brightest four; one star up close in its pixels with its true centre and measured centroid; centroid errors of simulated exposures (Poisson and read noise, full well, smear while turning) against the photon limit σ/√S; the S-curve of a sharp spot; and the pointing and roll errors after Liebe (2002). A catalogue entry links it (249 phenomena).
+
 ## [1.56.0] - 2026-11-12
 
 ### Added

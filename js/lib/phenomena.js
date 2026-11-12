@@ -298,6 +298,7 @@ export const GROUPS = [
       [N_('Gravitational-wave interferometry & the quantum limit'), 'ligo', 's', N_('LIGO\'s 4 km interferometer measures strains of 10⁻²³; photon shot noise and radiation pressure on the mirrors set the standard quantum limit, which squeezed light beats.'), r`h_\text{SQL}=\sqrt{\frac{8\hbar}{m\,\Omega^2L^2}}`],
       [N_('Radial-velocity precision'), 'rv', 's', N_('A star\'s Doppler wobble, measured to below a metre per second from thousands of spectral lines; photon noise, rotation and resolution set the limit.'), r`\sigma_V=\Big(\sum_i\frac{(\partial A_i/\partial v)^2}{A_i}\Big)^{-1/2}`],
       [N_('Laser communication links'), 'lasercom', 's', N_('A laser beam sent across the solar system spreads to thousands of kilometres; photon-counting receivers and pulse-position codes make each detected photon carry several bits.'), r`P_r=\frac{P_tG_t}{4\pi R^2}A_r\eta,\ \ C=(1-e^{-n_s})\log_2M`],
+      [N_('Star trackers & sub-pixel centroids'), 'startracker', 's', N_('A camera that identifies star patterns and measures each star\'s centre to a fraction of a pixel, fixing a spacecraft\'s attitude to about an arcsecond; roll is several times less certain.'), r`\sigma_\perp\approx\frac{\sigma_c\,\mathrm{IFOV}}{\sqrt N},\ \ \sigma_c\ge\frac{\sigma}{\sqrt S}`],
     ],
   },
   {
