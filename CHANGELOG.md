@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.56.0] - 2026-11-12
+
 ### Added
 - **New laboratory: Laser links across the solar system** (`#/lasercom`). A spacecraft's laser beam and its footprint at Earth drawn to scale; the Gaussian gain of the transmitting telescope (Klein & Degnan), pointing jitter, atmosphere and the whole link budget step by step in decibels; photon-counting pulse-position modulation with the capacity of the Poisson channel computed by Monte Carlo in the worker and detected photons drawn slot by slot; the data rate against distance next to a Ka-band radio link and the LLCD (622 Mbit/s from the Moon) and DSOC (8.3 Mbit/s from 386 million km) records. A catalogue entry links it (248 phenomena).
 
@@ -1018,7 +1020,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.55.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.56.0...HEAD
+[1.56.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.55.0...v1.56.0
 [1.55.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.54.0...v1.55.0
 [1.54.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.53.0...v1.54.0
 [1.53.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.52.0...v1.53.0
