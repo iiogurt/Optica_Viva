@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.57.0] - 2026-11-12
+
 ### Added
 - **New laboratory: Star trackers: finding your way by the stars** (`#/startracker`). A star tracker's field drawn from the sky's star counts, with the stars it detects and the pattern of the brightest four; one star up close in its pixels with its true centre and measured centroid; centroid errors of simulated exposures (Poisson and read noise, full well, smear while turning) against the photon limit σ/√S; the S-curve of a sharp spot; and the pointing and roll errors after Liebe (2002). A catalogue entry links it (249 phenomena).
 
@@ -1023,7 +1025,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.56.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.57.0...HEAD
+[1.57.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.56.0...v1.57.0
 [1.56.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.55.0...v1.56.0
 [1.55.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.54.0...v1.55.0
 [1.54.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.53.0...v1.54.0
