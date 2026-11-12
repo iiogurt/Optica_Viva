@@ -296,6 +296,7 @@ export const GROUPS = [
       [N_('Nulling interferometry'), null, 's', N_('Two telescopes combined in antiphase cancel the star on axis while passing the light of a nearby planet.'), r`T(\theta)=\sin^2\!\left(\frac{\pi B\theta}{\lambda}\right)`],
       [N_('Satellite trails & outlier rejection'), 'trails', 's', N_('Satellites crossing a long exposure leave bright lines; combining many frames by the median or by sigma-clipping removes them, at a cost in noise.'), r`\sigma_\text{median}\approx\sqrt{\pi/2}\,\frac{\sigma}{\sqrt N}`],
       [N_('Gravitational-wave interferometry & the quantum limit'), 'ligo', 's', N_('LIGO\'s 4 km interferometer measures strains of 10⁻²³; photon shot noise and radiation pressure on the mirrors set the standard quantum limit, which squeezed light beats.'), r`h_\text{SQL}=\sqrt{\frac{8\hbar}{m\,\Omega^2L^2}}`],
+      [N_('Radial-velocity precision'), 'rv', 's', N_('A star\'s Doppler wobble, measured to below a metre per second from thousands of spectral lines; photon noise, rotation and resolution set the limit.'), r`\sigma_V=\Big(\sum_i\frac{(\partial A_i/\partial v)^2}{A_i}\Big)^{-1/2}`],
     ],
   },
   {
