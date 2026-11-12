@@ -43,6 +43,7 @@ import { runAF } from './autofocus.js';
 import { portraitShot } from './portrait.js';
 import { mirageScene } from './mirage.js';
 import { makeWaves, floorLight } from './caustics.js';
+import { whitened, qtransform } from './ligo.js';
 import { halationRender } from './halation.js';
 import { skyPanorama } from './sky.js';
 import { record, correct } from './corrections.js';
@@ -687,6 +688,7 @@ function portraitShotTask(p) { const r = portraitShot(p); return { result: r, tr
 
 function mirageTask(p) { return { result: mirageScene(p), transfer: [] }; }
 
+function ligoTask(p) { const r = whitened(p.o, p.m1, p.m2, p.D, p.seed), sp = qtransform(r.data); return { result: { ...r, sp }, transfer: [r.data.buffer, r.clean.buffer, sp.data.buffer] }; }
 function causticsTask(p) { const r = floorLight(makeWaves(p.waves), p.floor); return { result: r, transfer: r.map((a) => a.buffer) }; }
 
 function halationTask(p) { const r = halationRender(p).map((a) => Float32Array.from(a)); return { result: r, transfer: r.map((a) => a.buffer) }; }
@@ -711,4 +713,4 @@ function trailsTask(p) {
   return { result, transfer: [outs.mean.buffer, outs.median.buffer, outs.clip.buffer] };
 }
 
-export const TASKS = { trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
+export const TASKS = { ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
