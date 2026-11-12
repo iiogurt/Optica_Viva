@@ -642,3 +642,37 @@ test('radial velocities: Bouchy photon-noise limit, its Monte-Carlo check, rotat
   // the sinusoid fit: K recovered within a few σ_K, and σ_K ≈ σ √(2/N)
   const fit = V.observe(10, 2, 400, 9); near(fit.sigmaK, 2 * Math.sqrt(2 / 400), 0.15, 'σ_K'); assert.ok(Math.abs(fit.K - 10) < 4 * fit.sigmaK, 'K recovered');
 });
+
+test('laser links: Gaussian gain, pointing loss, PPM capacity and the DSOC and LLCD links', async () => {
+  const L = await import('../js/lib/lasercom.js'), { makeRng } = await import('../js/lib/random.js');
+  const rel = (a, e, tol, msg) => near(a / e, 1, tol, msg);
+  // Klein–Degnan gain, and the Gaussian far field with θ₀ = √(8/G) has the same on-axis irradiance
+  const G = L.gainTx(0.22, 1550e-9), th = L.divergence(0.22, 1550e-9), R = 1e11;
+  rel(G, 0.8145 * (Math.PI * 0.22 / 1550e-9) ** 2, 1e-12, 'G_t');
+  rel(2 / (Math.PI * (th * R) ** 2), G / (4 * Math.PI * R * R), 1e-12, 'Gaussian on-axis');
+  // pointing loss: mean of exp(−2r²/θ₀²) under Gaussian jitter σ per axis
+  const rng = makeRng(4); let s = 0;
+  for (let i = 0; i < 200000; i++) { const x = 3e-6 * rng.g(), y = 3e-6 * rng.g(); s += Math.exp((-2 * (x * x + y * y)) / (th * th)); }
+  near(s / 200000, L.pointingLoss(3e-6, th), 0.01, 'pointing loss');
+  // capacity: erasure channel without background; against brute-force Poisson draws in every slot with it
+  near(L.capacity(16, 2, 0), (1 - Math.exp(-2)) * 4, 1e-12, 'erasure');
+  near(L.capacity(16, 2, 1e-9, 4000), (1 - Math.exp(-2)) * 4, 0.02, 'tiny background');
+  const brute = (M, ns, nb, n) => {
+    const r = makeRng(99), lnL = Math.log1p(ns / nb); let acc = 0;
+    for (let t = 0; t < n; t++) { const k = Array.from({ length: M }, (_, j) => r.poisson(nb + (j === 0 ? ns : 0))); let q = 0; for (const kj of k) q += Math.exp((kj - k[0]) * lnL); acc += Math.log2(q); }
+    return Math.log2(M) - acc / n;
+  };
+  near(L.capacity(16, 1, 0.05, 20000), brute(16, 1, 0.05, 20000), 0.03, 'capacity with background');
+  assert.ok(L.capacity(64, 1, 0.1, 4000) < L.capacity(64, 1, 0.01, 4000), 'background costs capacity');
+  // DSOC (Psyche, 386 million km): 3.4e-13 W/m², a beam ~5400 km wide, the rate within a factor 2.5 of 8.3 Mbit/s
+  const b = L.budget(L.PRESETS.dsoc), d = L.dataRate(b.rate, 128, 0.5, L.PRESETS.dsoc.nb);
+  rel(b.irr, 3.44e-13, 0.02, 'irradiance at Earth'); rel(b.footprint / 1e3, 5426, 0.01, 'footprint');
+  assert.ok(d.rate > 8.3e6 / 2.5 && d.rate < 8.3e6 * 2.5 && d.perPhoton > 1, `DSOC ${d.rate}, ${d.perPhoton} bit/photon`);
+  // LLCD: photons to spare, so the slots set the rate: log₂16 / (16 × 0.2 ns) = 1.25 Gbit/s (622 Mbit/s after a rate-½ code)
+  const l = L.budget(L.PRESETS.llcd), dl = L.dataRate(l.rate, 16, 0.2, L.PRESETS.llcd.nb);
+  rel(dl.rate, 1.25e9, 0.01, 'LLCD ceiling');
+  // radio: power-limited rate P_r/(kT·Eb/N0)
+  const rf = L.radioRate(386e9);
+  rel(rf.rate, rf.Pr / (L.KB * L.KA.T * 10 ** (L.KA.ebn0Db / 10)), 0.01, 'Ka band, power-limited');
+  rel(L.radioRate(384.4e6).rate, L.KA.B * L.KA.se, 1e-9, 'Ka band at the Moon, bandwidth-limited');
+});

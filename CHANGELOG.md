@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Laser links across the solar system** (`#/lasercom`). A spacecraft's laser beam and its footprint at Earth drawn to scale; the Gaussian gain of the transmitting telescope (Klein & Degnan), pointing jitter, atmosphere and the whole link budget step by step in decibels; photon-counting pulse-position modulation with the capacity of the Poisson channel computed by Monte Carlo in the worker and detected photons drawn slot by slot; the data rate against distance next to a Ka-band radio link and the LLCD (622 Mbit/s from the Moon) and DSOC (8.3 Mbit/s from 386 million km) records. A catalogue entry links it (248 phenomena).
+
 ## [1.55.0] - 2026-11-12
 
 ### Added

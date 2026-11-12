@@ -67,6 +67,8 @@ export const GLOSSARY = [
   { term: 'Colour temperature', match: ['colou?r temperatures?'], lab: 'colour', def: 'How warm (orange) or cool (blue) a white light looks, given as the temperature of a glowing body of that colour.' },
   { term: 'Coating', match: ['coatings?'], lab: 'flare', def: 'Thin layers on a lens surface that make reflected light cancel itself, so less light is reflected.' },
   // ── Astronomy and space ──
+  { term: 'Pulse-position modulation', match: ['pulse-position modulation', 'pulse-position codes?', 'PPM'], lab: 'lasercom', def: 'A way of sending data with light pulses: each pulse lands in one of many short time slots, and which slot it lands in carries the message.' },
+  { term: 'Link budget', match: ['link budgets?'], lab: 'lasercom', def: 'The account of a communication link: the transmitted power, every gain and loss on the way, and what is left at the receiver.' },
   { term: 'Seeing', match: ['seeing'], lab: 'seeing', def: 'The blurring of stars by turbulence in the air; also the size of the blurred star image.' },
   { term: 'Fried parameter', match: ['fried parameters?'], lab: 'seeing', def: 'The width of a patch of air that bends light nearly uniformly, 10–20 cm at a good site in visible light.' },
   { term: 'Adaptive optics', match: ['adaptive optics'], lab: 'wfs', def: 'A system that measures the blurring by the air and cancels it with a flexible mirror, hundreds of times per second.' },
