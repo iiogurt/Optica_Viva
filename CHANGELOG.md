@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.59.0] - 2026-11-12
+
 ### Added
 - **New laboratory: Airglow & zodiacal light: the darkest sky** (`#/nightsky`). The whole night sky from a dark site as a long exposure and as a brightness map in mag/arcsec²: airglow from a layer 90 km up through the van Rhijn factor and the solar cycle, and zodiacal light from Leinert et al.'s (1998) measured table, with the zodiacal cone and the gegenschein, both dimmed by extinction. Charts of the zodiacal light against longitude from the Sun and of the sky from horizon to zenith; the zenith comes out at 21.9 mag/arcsec², and the page reports the faint stars a brighter patch of sky costs. A catalogue entry links it (251 phenomena).
 
@@ -1033,7 +1035,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.58.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.59.0...HEAD
+[1.59.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.58.0...v1.59.0
 [1.58.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.57.0...v1.58.0
 [1.57.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.56.0...v1.57.0
 [1.56.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.55.0...v1.56.0
