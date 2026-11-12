@@ -1,6 +1,19 @@
 // French interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "Halation": "Halo (halation)",
+  "Light passing through the film reflects off the back of the base and re-exposes the emulsion, leaving a red glow and a ring around highlights.": "La lumière qui traverse le film se réfléchit au dos du support et réexpose l’émulsion : une lueur rouge et un anneau autour des hautes lumières.",
+  "Beyond the visible, foliage shines white in the near infrared, the blue sky turns dark and flowers show ultraviolet patterns; lenses need refocusing.": "Au-delà du visible, le feuillage brille en blanc dans le proche infrarouge, le ciel bleu devient sombre et les fleurs révèlent des motifs ultraviolets ; les objectifs doivent être refocalisés.",
+  "Satellite trails & outlier rejection": "Traînées de satellites et rejet des valeurs aberrantes",
+  "Satellites crossing a long exposure leave bright lines; combining many frames by the median or by sigma-clipping removes them, at a cost in noise.": "Les satellites qui traversent une longue pose laissent des lignes brillantes ; la médiane ou l’écrêtage sigma de nombreuses images les supprime, au prix d’un peu de bruit.",
+  "Gravitational-wave interferometry & the quantum limit": "Interférométrie des ondes gravitationnelles et limite quantique",
+  "LIGO's 4 km interferometer measures strains of 10⁻²³; photon shot noise and radiation pressure on the mirrors set the standard quantum limit, which squeezed light beats.": "L’interféromètre de 4 km de LIGO mesure des déformations de 10⁻²³ ; le bruit de grenaille des photons et la pression de radiation sur les miroirs fixent la limite quantique standard, que la lumière comprimée dépasse.",
+  "HDR display coding (PQ & HLG)": "Codage HDR des écrans (PQ & HLG)",
+  "High-dynamic-range video codes absolute luminance up to 10 000 nits with the perceptual quantiser, or relative luminance with hybrid log-gamma, so that no code step is visible.": "La vidéo à grande gamme dynamique code la luminance absolue jusqu’à 10 000 nits avec le quantificateur perceptuel, ou relative avec le hybrid log-gamma, sans qu’aucun pas de code soit visible.",
+  "Stereoscopic depth": "Profondeur stéréoscopique",
+  "Two pictures taken a short distance apart give each eye its own view; the parallax on the screen decides where each object appears and whether the eyes must diverge.": "Deux images prises à faible distance l’une de l’autre donnent à chaque œil sa propre vue ; la parallaxe à l’écran décide où chaque objet apparaît et si les yeux doivent diverger.",
+  "Digital lens corrections": "Corrections numériques des objectifs",
+  "Cameras undo distortion, vignetting and lateral colour in software; the stretched corners lose detail, the frame is cropped and brightened corners are noisier.": "Les appareils corrigent par logiciel distorsion, vignetage et chromatisme latéral ; les coins étirés perdent des détails, l’image est recadrée et les coins éclaircis sont plus bruités.",
   "Black holes, 36 + 29 suns (like GW150914)": "Trous noirs, 36 + 29 soleils (comme GW150914)",
   "Black hole + neutron star, 10 + 1.4 suns": "Trou noir + étoile à neutrons, 10 + 1,4 soleils",
   "Two neutron stars, 1.4 + 1.4 suns": "Deux étoiles à neutrons, 1,4 + 1,4 soleils",
