@@ -737,3 +737,22 @@ test('phase angle and sun glint: Lambert and Lommel–Seeliger phase functions, 
   }
   rel(E / Math.PI, G.fresnel(Math.cos(ts)), 0.05, 'glint energy');
 });
+
+test('night sky: Leinert zodiacal table, van Rhijn airglow, magnitudes and the dark-sky zenith', async () => {
+  const N = await import('../js/lib/nightsky.js');
+  const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  // the table at its nodes and between them; the ecliptic pole 60 S10; no data next to the Sun
+  near(N.zodiacal(90, 0), 202, 1e-9, 'node'); near(N.zodiacal(180, 0), 180, 1e-9, 'gegenschein'); near(N.zodiacal(37, 90), 60, 1e-9, 'pole');
+  near(N.zodiacal(52.5, 0), (710 + 395) / 2, 1e-9, 'between rows'); assert.ok(Number.isNaN(N.zodiacal(5, 3)), 'too near the Sun');
+  // magnitudes: 60 S10 = 23.34, 220 S10 = 21.93 mag/arcsec²
+  near(N.toMag(60), 23.336, 0.001, '60 S10'); near(N.toMag(220), 21.925, 0.001, '220 S10'); near(N.fromMag(N.toMag(137)), 137, 1e-9, 'round trip');
+  // van Rhijn: 1 at the zenith, 1/√(1 − (R/(R+h))²) = 6.01 at the horizon for h = 90 km
+  near(N.vanRhijn(0), 1, 1e-12, 'zenith'); near(N.vanRhijn(90), 1 / Math.sqrt(1 - (6371 / 6461) ** 2), 1e-12, 'horizon'); near(N.vanRhijn(90), 6.01, 0.01, '6.01');
+  // geometry: the Sun d below the horizon on the ecliptic, the antisolar point 180° away
+  const g = N.geometry(65, 22);
+  near(Math.asin(g.sun[2]) / N.RAD, -22, 1e-9, 'Sun altitude'); near(dot(g.sun, g.pole), 0, 1e-12, 'Sun on the ecliptic');
+  near(N.eclipticOf(g.sun.map((x) => -x), g).dLon, 180, 1e-6, 'antisolar');
+  // a dark site's zenith, solar minimum, k = 0.15: about 21.9 mag/arcsec² (Leinert et al. 1998; Patat 2003 at solar maximum: 21.6)
+  near(N.toMag(N.skyAt(90, 0, g, 0, 0.15).total), 21.9, 0.15, 'dark zenith');
+  near(N.toMag(N.skyAt(90, 0, g, 1, 0.15).total), 21.6, 0.2, 'solar maximum');
+});

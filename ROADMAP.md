@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 527 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 530 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -629,6 +629,10 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P2 · M** **Phase angle & sun glint** (`#/glint`): Lambert, Lommel–Seeliger and ocean spheres at any phase angle, phase curves with the measured Moon, and Cox–Munk sun glint seen from orbit. *From the backlog's "further phenomena".*
 
+### v1.59 Airglow & zodiacal light
+
+- [x] **P2 · M** **Airglow & zodiacal light: the darkest sky** (`#/nightsky`): the whole night sky from Leinert's zodiacal table and van Rhijn airglow with extinction, and the faint stars a brighter sky costs. *From the backlog's "further phenomena". Brocken spectres are already covered by the glory in* Halos, rainbows & glories*, and planetary-imaging sampling by the mission* Image Jupiter from your garden.
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -662,9 +666,6 @@ Ideas worth keeping but not yet scheduled:
 - Thermal focus shift lab (dn/dT, housing expansion, athermalisation).
 - Aerial perspective and haze with Koschmieder's law in the DoF scene.
 - Light-field (plenoptic) refocusing.
-- *(from the October 2026 exploration)* Further phenomena:
-  - Astronomy and space: planetary-imaging sampling.
-  - Atmosphere and nature: Brocken spectres; zodiacal light and airglow.
 
 ---
 

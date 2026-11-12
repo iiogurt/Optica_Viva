@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Airglow & zodiacal light: the darkest sky** (`#/nightsky`). The whole night sky from a dark site as a long exposure and as a brightness map in mag/arcsec²: airglow from a layer 90 km up through the van Rhijn factor and the solar cycle, and zodiacal light from Leinert et al.'s (1998) measured table, with the zodiacal cone and the gegenschein, both dimmed by extinction. Charts of the zodiacal light against longitude from the Sun and of the sky from horizon to zenith; the zenith comes out at 21.9 mag/arcsec², and the page reports the faint stars a brighter patch of sky costs. A catalogue entry links it (251 phenomena).
+
 ## [1.58.0] - 2026-11-12
 
 ### Added
