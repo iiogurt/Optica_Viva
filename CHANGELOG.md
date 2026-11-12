@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: LIGO: light at the quantum limit** (`#/ligo`). The quantum noise of a 4 km interferometer with Fabry–Perot arms (Kimble et al. 2001): photon shot noise falling and radiation-pressure noise rising with the arm power, their sum never below the standard quantum limit √(8ħ/(mΩ²L²)), and squeezed light, phase-squeezed or frequency-dependent. A black-hole, neutron-star or mixed binary at a chosen distance in four seconds of simulated whitened detector output, with its constant-Q map, matched-filter signal-to-noise ratio and the quantum-limited neutron-star range.
+
 ## [1.53.0] - 2026-11-11
 
 ### Added

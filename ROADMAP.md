@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 512 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 515 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -609,6 +609,10 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P2 · M** **HDR displays: PQ & HLG** (`#/hdrdisplay`): SDR gamma, PQ and HLG transfer functions, banding of a dark ramp per coding, code steps against the 1 % threshold, and the light levels of cinema, television and phone screens. *From the backlog's "further phenomena".*
 
+### v1.54 LIGO
+
+- [x] **P2 · M** **LIGO: light at the quantum limit** (`#/ligo`): shot noise against radiation pressure, the standard quantum limit, phase and frequency-dependent squeezing, and a binary inspiral in simulated whitened output with its constant-Q map and SNR. *From the backlog's "further phenomena".*
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -643,7 +647,7 @@ Ideas worth keeping but not yet scheduled:
 - Aerial perspective and haze with Koschmieder's law in the DoF scene.
 - Light-field (plenoptic) refocusing.
 - *(from the October 2026 exploration)* Further phenomena:
-  - Astronomy and space: radial-velocity precision; planetary-imaging sampling; free-space laser communication link budgets; star trackers; phase angle and sun glint; LIGO as an optical instrument (shot noise vs radiation pressure).
+  - Astronomy and space: radial-velocity precision; planetary-imaging sampling; free-space laser communication link budgets; star trackers; phase angle and sun glint.
   - Atmosphere and nature: Brocken spectres; zodiacal light and airglow.
 
 ---

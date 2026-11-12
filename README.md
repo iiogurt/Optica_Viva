@@ -491,6 +491,16 @@ A scene **rendered wavelength by wavelength**: 24 colour patches, a Siemens star
 <tr>
 <td valign="top" colspan="2">
 
+**LIGO: light at the quantum limit** · `#/ligo`<br>
+<img src="docs/screenshots/ligo.webp" alt="Whitened detector output with a black-hole chirp and its constant-Q spectrogram; shot noise, radiation-pressure noise, total quantum noise and the standard quantum limit against frequency; a schematic of the interferometer" width="70%">
+
+**A gravitational-wave detector as an optical instrument**: photon shot noise against radiation pressure on the test masses, S_h = ½ h_SQL²(1/K + K) (Kimble et al. 2001), the standard quantum limit √(8ħ/(mΩ²L²)), and phase or frequency-dependent squeezing. A binary inspiral (stationary phase) in four seconds of simulated whitened output with its constant-Q map, the matched-filter SNR and the quantum-limited neutron-star range.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Filters & HDR** · `#/hdr`<br>
 <img src="docs/screenshots/hdr.webp" alt="Sunset as shot, merged HDR, exposure fusion and SNR curves" width="70%">
 
@@ -857,6 +867,7 @@ flowchart LR
 | Infrared & UV | Camera signal ∫E ρ T Q c̄ dλ at 10 nm from 300 to 1100 nm: 5778 K Sun with an ozone cut, λ⁻⁴ sky, representative reflectance curves (leaf red edge at 715 nm), silicon QE, Bayer dyes transparent beyond ~800 nm, ideal filter edges; white balance and red–blue swap; monochrome where a channel is blind; focus of a thin achromat from Sellmeier glass data | irphoto |
 | Stereo 3-D | Parallel cameras with horizontal image translation, P = (S/s)·f·b·(1/C − 1/Z); viewer Z_p = Ve/(e − P), e = 65 mm; width scale M f Z_p/(Z V), depth scale dZ_p/dZ; two ray-traced 320 × 180 views (spheres, ground, wall), red–cyan anaglyph | stereo |
 | HDR displays | SMPTE ST 2084 PQ EOTF and inverse; BT.2100 HLG OETF, inverse and OOTF with system gamma 1.2 + 0.42 log₁₀(L_w/1000) on luminance; BT.1886 gamma 2.4 with zero black; nearest-code quantisation at 8, 10 and 12 bit | hdrdisplay |
+| LIGO | Kimble et al. (2001) conventional interferometer, S_h = ½h_SQL²(1/K + K), K = 16ω₀γP/(c m L Ω²(γ²+Ω²)), tuned signal recycling as a wider γ (Buonanno & Chen); squeezing e^{∓2r}; Newtonian stationary-phase inspiral to f_ISCO, ρ² = 4∫|h̃|²/S_h df; whitened 4 s record at 4096 Hz (seeded noise), constant-Q map (Q = 6, 96 rows) | ligo |
 | Satellite trails | Frames of the stacking laboratory's galaxy and stars with sky, photon (Gaussian) and read noise; Poisson number of trails per frame, random position and direction, Gaussian profile, depth F·p/ω; per-pixel mean, median and κσ-clip around the median with σ = 1.4826 MAD | trails |
 | Lens corrections | Brown radial distortion r_d = r_u(1 + k₁r_u² + k₂r_u⁴) with an exact inverse (Newton, tabulated); vignetting cos⁴ of the field angle times a mechanical fall-off; lateral colour as ±scale of red and blue; 240 × 160 sensor, 2 × 2 samples, photon + read noise; correction by bilinear resampling into the largest rectangle the sensor covers | corrections |
 | Halation | Lambertian light in the base, Fresnel reflection at its back (total beyond θc), return radius 2t tan θ; kernel K(r) averaged over each grid cell; red-layer weighting 1 : 0.28 : 0.05; diffusion filter as (1 − s)δ + s·exponential halo; FFT convolution on 512² | halation |
@@ -993,6 +1004,7 @@ Optica_Viva/
 │   │   ├── trails.js          Satellite trails: depth F·p/ω, frames with trails, mean / median / κσ-clip combination
 │   │   ├── stereo.js          Stereoscopic 3-D: parallax, perceived distance, roundness, two-camera rendering
 │   │   ├── hdrdisplay.js      HDR displays: PQ, HLG and SDR transfer functions, quantisation steps, light levels
+│   │   ├── ligo.js            LIGO: quantum noise, standard quantum limit, squeezing, inspiral SNR, whitened data, Q-map
 │   │   ├── stacking.js        CCD equation for stacks, sky brightness from Bortle class, sky-limited sub length
 │   │   ├── starshade.js       Fresnel shadow of an apodised occulter (Filon quadrature, Bessel J₀), suppression spectrum
 │   │   ├── spectro.js         Gratings, blaze, prisms, resolving power, line lists, instrument profile
@@ -1076,7 +1088,7 @@ Optica_Viva/
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (73)
+│   └── modules/               One file per page (74)
 ├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── vendor/fonts/              Fraunces, Inter, JetBrains Mono (OFL 1.1), variable woff2, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
@@ -1237,6 +1249,7 @@ The numerical core was checked against published or analytically known values. E
 | Satellite trails: noise of the median and of a 3σ clip against the mean (51 Gaussian frames) | √(π/2) = 1.25; ≈ 1 | within 7 %; < 1.06; a one-frame outlier of 40σ: mean keeps 1/N, median and clip remove it |
 | Stereo 3-D: orthostereo rig (b = e, f/s = V/S, C = V) | Z_p = Z, roundness 1, true size | exact at 1.5–40 m (10⁻⁹, roundness 10⁻⁴) |
 | HDR displays: PQ (ST 2084) reference points | 100 nits → 0.5081 (10-bit code 520), 1000 nits → 0.7518 (769), 10 000 nits → 1; HLG knee 0.5 at E = 1/12, γ = 1.2 at 1000 nits | match (10⁻⁴; round trips 10⁻⁹) |
+| LIGO: standard quantum limit and Kimble's crossover | h_SQL(100 Hz, 40 kg, 3994.5 m) = 1.83 × 10⁻²⁴ /√Hz; K = 1 at Ω = γ when I₀ = I_SQL; total ≥ SQL; f_ISCO(2.8 M☉) = 1570 Hz | match (10⁻¹²; f_ISCO 1 %) |
 | Mirages: gradient at which a level ray curves like the Earth; ship hidden at 20 km from 3 m in standard air | 0.129 K/m at 15 °C; 11.4 m | κ = 1/R_E exactly; ray tracer within 0.15 m of (L − √(2R′z₀))²/(2R′), R′ = R_E/(1 − k) |
 | Black hole: capture threshold, weak-field deflection at b = 100M | 3√3 M; 0.04122 rad | 3√3 M; 4/b + 15π/4b² + 128/3b³ = 0.04122 |
 | Shadow of M87* (6.5 × 10⁹ M☉, 16.8 Mpc) | 39.7 µas | EHT ring 42 ± 3 µas (the ring lies just outside the shadow) |
@@ -1274,6 +1287,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Satellite trails | Gaussian noise, frames already aligned, trails straight and uniform | No flares or tumbling satellites, no frame registration |
 | Stereo 3-D | Central seat, eyes 65 mm apart, parallel cameras; comfort limits are rules of thumb | No off-axis seats, no keystone of toed-in rigs |
 | HDR displays | Grey scale only (HLG's OOTF applied to luminance), zero black level, no tone mapping beyond a display's peak; visibility of steps judged against a fixed 1 % rather than Barten's full model | No dithering, noise or display EOTF deviations |
+| LIGO | Quantum noise only (no seismic, suspension or coating thermal noise), lossless squeezing, tuned signal recycling; optimally oriented Newtonian inspiral without merger, ringdown or redshift | Ranges are upper bounds; real detectors are 1.5–2× less sensitive in the middle band |
 | Mirages | Horizontally uniform, steady air; one wavelength; dry air; smooth model profiles | No shimmer, no green flash, no tilted or moving layers |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
 | Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |

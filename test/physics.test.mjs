@@ -580,3 +580,38 @@ test('HDR displays: PQ (ST 2084) and HLG (BT.2100) fixed points, round trips and
   for (const L of [0.1, 1, 10]) assert.ok(D.stepAt(D.CODINGS.pq10, L) < D.stepAt(D.CODINGS.sdr8, L), `PQ 10 finer than SDR 8 at ${L}`);
   near(D.quantise(D.CODINGS.pq12, 100), 100, 0.3, 'PQ 12 quantises 100 nits within a step');
 });
+
+test('LIGO quantum noise: the standard quantum limit, Kimble\'s crossover, squeezing and inspiral SNR', async () => {
+  const Lg = await import('../js/lib/ligo.js');
+  const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol * Math.abs(b), `${msg}: ${a} vs ${b}`);
+  const o = { ...Lg.DEFAULTS };
+  // h_SQL = √(8ħ/(mΩ²L²)): 1.83e-24 /√Hz at 100 Hz for 40 kg and 3994.5 m
+  near(Math.sqrt(Lg.noise(100, o).sql), Math.sqrt((8 * Lg.HBAR) / (40 * (2 * Math.PI * 100) ** 2 * 3994.5 ** 2)), 1e-12, 'SQL formula');
+  near(Math.sqrt(Lg.noise(100, o).sql), 1.83e-24, 0.01, 'SQL value');
+  // total ≥ SQL everywhere, equal where K = 1
+  for (const f of [5, 20, 50, 100, 400, 2000]) assert.ok(Lg.noise(f, o).total >= Lg.noise(f, o).sql * (1 - 1e-12), `above the SQL at ${f} Hz`);
+  const fx = Lg.crossover(o); near(Lg.noise(fx, o).total, Lg.noise(fx, o).sql, 1e-9, 'touches the SQL at the crossover');
+  // Kimble et al.: input power I0 = I_SQL = m L² γ⁴/(4ω0), i.e. P = c m L γ³/(8ω0), makes K = 1 at Ω = γ
+  const g = 2 * Math.PI * o.fbw, w0 = (2 * Math.PI * Lg.C) / o.lambda, P = (Lg.C * o.m * o.L * g ** 3) / (8 * w0);
+  near(Lg.coupling(o.fbw, { ...o, P }), 1, 1e-12, 'K = 1 at γ for I_SQL');
+  // shot noise ∝ 1/P, radiation pressure ∝ P; the SQL does not depend on power
+  near(Lg.noise(1000, { ...o, P: 4 * o.P }).shot, Lg.noise(1000, o).shot / 4, 1e-12, 'shot ∝ 1/P');
+  near(Lg.noise(10, { ...o, P: 4 * o.P }).rp, 4 * Lg.noise(10, o).rp, 1e-12, 'radiation pressure ∝ P');
+  // 6 dB squeezing (×0.251 in power): phase squeezing trades, frequency-dependent lowers both
+  const e = 10 ** -0.6, ph = Lg.noise(30, { ...o, sqz: 'phase', sqzDb: 6 }), fd = Lg.noise(30, { ...o, sqz: 'freq', sqzDb: 6 }), n0 = Lg.noise(30, o);
+  near(ph.shot, n0.shot * e, 1e-12, 'phase: shot'); near(ph.rp, n0.rp / e, 1e-12, 'phase: radiation pressure'); near(fd.total, n0.total * e, 1e-12, 'frequency-dependent');
+  // inspiral: SNR ∝ 1/D and ∝ 𝓜^(5/6) in the |h̃| prefactor; f_ISCO of 2.8 suns ≈ 1570 Hz
+  near(Lg.snr(o, 1.4, 1.4, 100) / Lg.snr(o, 1.4, 1.4, 200), 2, 1e-12, 'SNR ∝ 1/D');
+  near(Lg.fISCO(2.8), 1570, 0.01, 'f_ISCO');
+  near(Lg.hTilde(100, 10, 10, 100) / Lg.hTilde(100, 1.4, 1.4, 100), (Lg.chirpMass(10, 10) / Lg.chirpMass(1.4, 1.4)) ** (5 / 6), 1e-12, '𝓜^(5/6)');
+  near(Lg.chirpMass(1.4, 1.4), 1.2188, 1e-3, 'chirp mass of 1.4 + 1.4');
+  // the whitened record: unit-variance noise, and its in-band SNR close to the analytic one from 20 Hz
+  const r = Lg.whitened(o, 36, 29, 410, 3), z = Lg.whitened(o, 36, 29, 1e12, 3);
+  let v = 0; for (const x of z.data) v += x * x; near(v / z.data.length, 1, 0.05, 'unit variance');
+  near(r.snrWindow, Lg.snr(o, 36, 29, 410, 20), 0.06, 'SNR in the window');
+  // the Q-map: noise averages 1 per row; low frequencies peak before high ones (the chirp rises)
+  const q = Lg.qtransform(r.data), qz = Lg.qtransform(z.data);
+  let s = 0; for (const x of qz.data) s += x; near(s / qz.data.length, 1, 0.1, 'Q-map noise level');
+  const tmax = (row) => { let mj = 0; for (let j = 0; j < q.M; j++) if (q.data[row * q.M + j] > q.data[row * q.M + mj]) mj = j; return mj; };
+  assert.ok(tmax(10) < tmax(40), 'the chirp rises in frequency');
+});
