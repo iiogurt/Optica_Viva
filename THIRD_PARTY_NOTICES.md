@@ -52,6 +52,8 @@ Glass Sellmeier coefficients (SCHOTT AG data sheets; Malitson 1965), CIE colorim
 
 The SCHOTT, OHARA and CDGM glass catalogue in `js/lib/glasscat.js` is generated from the [refractiveindex.info database](https://github.com/polyanskiy/refractiveindex.info-database), which places its data in the public domain (CC0 1.0); it reproduces the makers' published Zemax catalogues (SCHOTT 2017-01-20b, OHARA 2017-11-30, CDGM 2022-06).
 
+The zodiacal-light brightness in `js/lib/nightsky.js` is Table 16 of Ch. Leinert et al., "The 1997 reference of diffuse night sky brightness", A&AS 127, 1 (1998), factual measurement data, transcribed as in the data file of the [m4opt](https://github.com/m4opt/m4opt) project and checked against the paper's ecliptic-pole value.
+
 The Biogon prescription in `js/lib/raytrace.js` is Example 2 of L. Bertele, US patent 2,721,499 (1955), an expired patent; the Hubble Space Telescope and JWST values are published design data (credited on the ray-tracer page).
 
 ## Photographs in *Phenomena in the wild* (`img/gallery/`)
