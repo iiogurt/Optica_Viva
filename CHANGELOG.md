@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.54.0] - 2026-11-12
+
 ### Added
 - **New laboratory: LIGO: light at the quantum limit** (`#/ligo`). The quantum noise of a 4 km interferometer with Fabry–Perot arms (Kimble et al. 2001): photon shot noise falling and radiation-pressure noise rising with the arm power, their sum never below the standard quantum limit √(8ħ/(mΩ²L²)), and squeezed light, phase-squeezed or frequency-dependent. A black-hole, neutron-star or mixed binary at a chosen distance in four seconds of simulated whitened detector output, with its constant-Q map, matched-filter signal-to-noise ratio and the quantum-limited neutron-star range.
 
@@ -1008,7 +1010,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.53.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.54.0...HEAD
+[1.54.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.53.0...v1.54.0
 [1.53.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.52.0...v1.53.0
 [1.52.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.51.0...v1.52.0
 [1.51.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.50.0...v1.51.0
