@@ -67,6 +67,9 @@ export const GLOSSARY = [
   { term: 'Colour temperature', match: ['colou?r temperatures?'], lab: 'colour', def: 'How warm (orange) or cool (blue) a white light looks, given as the temperature of a glowing body of that colour.' },
   { term: 'Coating', match: ['coatings?'], lab: 'flare', def: 'Thin layers on a lens surface that make reflected light cancel itself, so less light is reflected.' },
   // ── Astronomy and space ──
+  { term: 'Parfocal', match: ['parfocal'], lab: 'zoom', def: 'Staying in focus while the focal length is changed.' },
+  { term: 'Variator', match: ['variators?'], lab: 'zoom', def: 'The moving lens group of a zoom that changes its magnification.' },
+  { term: 'Compensator', match: ['compensators?'], lab: 'zoom', def: 'The lens group of a zoom that moves on a cam to keep the image in focus while the variator moves.' },
   { term: 'Airlight', match: ['airlight'], lab: 'haze', def: 'Sunlight scattered by the air towards you from the space between you and a distant object; it veils the object and is what makes the horizon sky bright.' },
   { term: 'Aerial perspective', match: ['aerial perspective'], lab: 'haze', def: 'The paling and bluing of distant objects caused by the air between them and you, a cue the eye uses to judge distance.' },
   { term: 'Speckle', match: ['speckles?'], lab: 'speckle', def: 'The grainy pattern of bright and dark spots that appears when laser light is scattered by a rough surface and its random waves interfere.' },
