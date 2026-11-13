@@ -1,6 +1,7 @@
 // French interface strings, keyed by the English text (see js/lib/i18n.js).
 // test/i18n.test.mjs checks that every key is used and every interface string is here.
 export default {
+  "Pyramid response to a tilt": "Réponse de la pyramide à un basculement",
   "Light-field (plenoptic) cameras": "Caméras plénoptiques (à champ lumineux)",
   "A microlens array in front of the sensor records which part of the lens each ray came through, so photographs can be refocused, stopped down or moved in viewpoint after the shot, at the cost of N² fewer pixels.": "Une matrice de microlentilles devant le capteur enregistre par quelle partie de l’objectif chaque rayon est passé ; on peut ainsi remettre au point, diaphragmer ou déplacer le point de vue après la prise de vue, au prix de N² fois moins de pixels.",
   "Ordinary photo, same lens and picture size": "Photo ordinaire, même objectif et même taille d’image",

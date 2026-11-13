@@ -35,8 +35,8 @@ export default function mount(root, meta) {
   const shView = stage({ aspect: 1, label: 'Shack–Hartmann detector: one diffraction spot per lenslet', draw: drawSH, minH: 220 });
   const psfView = stage({ aspect: 1, label: 'Science PSF, short (left) and long exposure (right), log', draw: drawPSF, minH: 220 });
   const phView = stage({ aspect: 3, label: 'Turbulence · deformable mirror · residual (OPD, common scale)', draw: drawPhase, minH: 150 });
-  const series = stage({ aspect: 2.6, label: '', draw: drawSeries, cls: 'plain', minH: 200 });
-  const modal = stage({ aspect: 2.6, label: '', draw: drawModal, cls: 'plain', minH: 200 });
+  const series = stage({ aspect: 2.6, label: '', name: N_('Wavefront error vs time'), draw: drawSeries, cls: 'plain', minH: 200 });
+  const modal = stage({ aspect: 2.6, label: '', name: N_('Zernike coefficients of the turbulence and of the residual (|a_j|, nm)'), draw: drawModal, cls: 'plain', minH: 200 });
   const runBtn = h('button.btn', { type: 'button' }, t('Pause'));
   const note = h('p.note', {}, '');
   root.append(lab([h('div.grid-2', {}, shView.el, psfView.el), phView.el, h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } }, runBtn, note), h('div.card', { style: { padding: '6px' } }, series.el), h('div.card', { style: { padding: '6px' } }, modal.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
@@ -193,7 +193,7 @@ export default function mount(root, meta) {
   const pro = h('div');
   const pyrImg = stage({ aspect: 1, label: 'Detector: four pupil images behind the pyramid', draw: drawPyrImg, minH: 220 });
   const pyrMaps = stage({ aspect: 1, label: 'Input phase and the slope signals Sx, Sy (common scale)', draw: drawPyrMaps, minH: 220 });
-  const pyrCurve = stage({ aspect: 2.4, label: '', draw: drawPyrCurve, cls: 'plain', minH: 210 });
+  const pyrCurve = stage({ aspect: 2.4, label: '', name: N_('Pyramid response to a tilt'), draw: drawPyrCurve, cls: 'plain', minH: 210 });
   sec2.append(lab([h('div.grid-2', {}, pyrImg.el, pyrMaps.el), h('div.card', { style: { padding: '6px' } }, pyrCurve.el)], [h('div.card', {}, pctl.el), h('div.card', {}, pro)]));
   root.append(sec2);
   const pyrJob = latest('pyramid'), curveJob = latest('pyramidCurve');
