@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Haze & aerial perspective** (`#/haze`). Seven ridges from 0.4 to 70 km fading into the airlight, rendered from spectra with Koschmieder's law: Rayleigh scattering of air computed from its refractive index (5.16 × 10⁻³¹ m² at 532 nm against Bucholtz's 5.168, a clean-air visual range of 341 km) and haze with Ångström's λ^−α; the airlight follows the Sun's direction, so backlit haze glows; a polarising filter darkens the molecular airlight and an infrared camera at 850 nm sees much farther. Charts of contrast against distance at four wavelengths and of extinction against wavelength. The catalogue's "Aerial perspective & haze" entry now opens it, with a new entry on Koschmieder's visual range.
+
 ## [1.63.0] - 2026-11-13
 
 ### Added

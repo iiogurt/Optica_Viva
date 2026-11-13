@@ -67,6 +67,8 @@ export const GLOSSARY = [
   { term: 'Colour temperature', match: ['colou?r temperatures?'], lab: 'colour', def: 'How warm (orange) or cool (blue) a white light looks, given as the temperature of a glowing body of that colour.' },
   { term: 'Coating', match: ['coatings?'], lab: 'flare', def: 'Thin layers on a lens surface that make reflected light cancel itself, so less light is reflected.' },
   // ── Astronomy and space ──
+  { term: 'Airlight', match: ['airlight'], lab: 'haze', def: 'Sunlight scattered by the air towards you from the space between you and a distant object; it veils the object and is what makes the horizon sky bright.' },
+  { term: 'Aerial perspective', match: ['aerial perspective'], lab: 'haze', def: 'The paling and bluing of distant objects caused by the air between them and you, a cue the eye uses to judge distance.' },
   { term: 'Speckle', match: ['speckles?'], lab: 'speckle', def: 'The grainy pattern of bright and dark spots that appears when laser light is scattered by a rough surface and its random waves interfere.' },
   { term: 'Coherent light', match: ['coherent light', 'coherent'], lab: 'speckle', def: 'Light whose waves keep a fixed rhythm with each other, as in a laser, so that they can interfere steadily.' },
   { term: 'Light field', match: ['light fields?', 'light-field'], lab: 'lightfield', def: 'The brightness of light along every ray, described by where the ray crosses two planes: four numbers per ray.' },
