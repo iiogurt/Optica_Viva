@@ -67,6 +67,8 @@ export const GLOSSARY = [
   { term: 'Colour temperature', match: ['colou?r temperatures?'], lab: 'colour', def: 'How warm (orange) or cool (blue) a white light looks, given as the temperature of a glowing body of that colour.' },
   { term: 'Coating', match: ['coatings?'], lab: 'flare', def: 'Thin layers on a lens surface that make reflected light cancel itself, so less light is reflected.' },
   // ── Astronomy and space ──
+  { term: 'Speckle', match: ['speckles?'], lab: 'speckle', def: 'The grainy pattern of bright and dark spots that appears when laser light is scattered by a rough surface and its random waves interfere.' },
+  { term: 'Coherent light', match: ['coherent light', 'coherent'], lab: 'speckle', def: 'Light whose waves keep a fixed rhythm with each other, as in a laser, so that they can interfere steadily.' },
   { term: 'Light field', match: ['light fields?', 'light-field'], lab: 'lightfield', def: 'The brightness of light along every ray, described by where the ray crosses two planes: four numbers per ray.' },
   { term: 'Microlens array', match: ['microlens arrays?'], lab: 'lightfield', def: 'A sheet of thousands of tiny lenses side by side, each one forming its own small image.' },
   { term: 'Athermal', match: ['athermal(?:ised|isation|ization)?'], lab: 'thermal', def: 'Designed so that its focus does not move when the temperature changes.' },
