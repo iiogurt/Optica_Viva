@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Thermal focus shift & athermal design** (`#/thermal`). A camera lens (one glass or a cemented achromat) in its barrel, or a Hubble-like Cassegrain telescope on its truss, from −40 to +60 °C: a cross-section coloured by temperature with the focus moving off the sensor, the star the system images (Fourier optics) with a cut through it, focus error against temperature with the depth of focus ±2λN², the athermal chart of glasses with the barrel's −α, and how many kelvin each truss material tolerates. Glass index against temperature from SCHOTT's six-constant formula and the air's index from Edlén's, so a lens can also be taken from air into vacuum; checked against all 42 relative dn/dT values of TIE-19's table for 14 glasses, the (m² + 1) amplification of a secondary's movement and homologous expansion.
+
 ## [1.60.0] - 2026-11-13
 
 ### Added

@@ -809,3 +809,30 @@ test('microlensing: Paczyński, finite sources, the binary-lens quintic, caustic
   assert.ok(dev > 0.5, `deviation ${dev}`);
   assert.ok(M.survey(lc, E2.tE, 36, 0.01).dchi2 > M.DCHI2, 'detected');
 });
+
+test('thermal focus: SCHOTT dn/dT against TIE-19, the air index, thin-lens and Cassegrain focus shifts', async () => {
+  const M = await import('../js/lib/thermal.js');
+  // relative dn/dT averaged over +20…+40 °C at 1060 nm, the e line and the g line, SCHOTT TIE-19 (2023) Table 1, 10⁻⁶/K
+  const table = { 'N-BK7': [2.4, 3.0, 3.5], F2: [2.7, 4.4, 6.3], 'N-FK51A': [-6.0, -5.7, -5.3], 'N-PK52A': [-6.7, -6.4, -6.0], 'N-SF6': [-0.8, 1.5, 4.8], 'N-SF11': [0.1, 2.4, 5.6], 'N-SK16': [1.7, 2.3, 2.9], 'N-BAK4': [3.1, 3.9, 4.7], 'N-LAK22': [2.4, 3.1, 3.9], 'N-LASF9': [2.9, 5.1, 7.7], 'N-BAF10': [3.8, 4.9, 6.0], 'N-KZFS4': [2.7, 3.7, 4.7], 'P-SK57': [2.9, 3.6, 4.3], 'N-SF5': [1.8, 3.4, 5.5] };
+  for (const [g, v] of Object.entries(table)) [1.06, 0.5461, 0.4358].forEach((l, i) => near(M.dndt(g, l, 20, 40) * 1e6, v[i], 0.06, `${g} at ${l} µm`));
+  // standard air at 15 °C: n − 1 = 2.77 × 10⁻⁴ (Edlén); it falls by 0.93 × 10⁻⁶ per kelvin at 20 °C; vacuum is 1
+  near((M.nAir(0.5893, 15) - 1) * 1e4, 2.771, 0.003, 'air'); near((M.nAir(0.5876, 20.5) - M.nAir(0.5876, 19.5)) * 1e6, -0.93, 0.01, 'dn_air/dT'); near(M.nAir(0.55, 20, 0), 1, 0, 'vacuum');
+  // a thin lens: df/dT = −fγ; the achromat keeps its focal length at 20 °C; an athermal barrel cancels the shift
+  const els = M.lensDesign('N-BK7', 'F2', 200);
+  near(M.lensFocus(els, 20), 200, 1e-9, 'design focus');
+  const g = els.reduce((a, e) => a + e.phi * M.gamma(e.g), 0) * 200;
+  near(M.intercept('N-BK7', 'F2'), g, 1e-9, 'chart intercept = γ of the achromat');
+  near(M.lensDefocus(els, 200, -g, 20.5).defocus * 1000, 0, 2e-3, 'athermal barrel');
+  near((M.lensDefocus(els, 200, 23.1e-6, 21).defocus - M.lensDefocus(els, 200, 23.1e-6, 19).defocus) / 2, -200 * (g + 23.1e-6), 1e-6, 'slope −f(γ + α)');
+  // from air into vacuum the focal length shortens by f(n_air − 1) n/(n − 1)
+  const one = M.lensDesign('N-BK7', null, 200), n = M.nRel('N-BK7');
+  near(M.lensFocus(one, 20, 0) - 200, -200 * (M.nAir() - 1) * n / (n - 1), 2e-3, 'air to vacuum');
+  // Cassegrain: the focus moves (m² + 1) times the secondary's movement; Hubble-like f/2.3 → f/24
+  const c = M.cassegrain({ D: 2.4, F1: 2.3, m: 10.43, b: 1.5 });
+  near(c.d, 4.906, 1e-3, 'spacing'); near(c.N, 23.99, 0.01, 'f/24');
+  const r = M.cassDefocus(c, 0, 1e-7, 21);
+  near(-(r.defocus + c.b * 1e-7) / r.dd, c.m * c.m + 1, 0.01, 'm² + 1');
+  // homologous expansion (everything the same material) keeps the focus on the detector
+  near(M.cassDefocus(c, 5e-6, 5e-6, 40).defocus * 1e6, 0, 1e-3, 'homologous');
+  near(M.depthOfFocus(24, 0.5) * 1000, 576, 1e-9, '±2λN²');
+});
