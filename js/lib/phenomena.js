@@ -209,6 +209,7 @@ export const GROUPS = [
       [N_('Electron-multiplying CCDs'), null, 's', N_('An avalanche register amplifies charge before readout, so single photons beat read noise at the cost of an excess-noise factor of √2.'), r`\mathrm{SNR}=\frac{S}{\sqrt{2(S+D)+(\sigma_r/G)^2}}`],
       [N_('Back-side illumination'), null, 'pvs', N_('Light enters through the thinned back of the chip, avoiding the metal wiring: higher quantum efficiency and wider acceptance angles.'), r`\eta_\text{BSI}\approx0.8\text{–}0.95`],
       [N_('Time-delay integration'), null, 's', N_('Charge is clocked across the sensor in step with the moving image, as in push-broom satellites and drift-scan surveys.'), r`v_\text{clock}=v_\text{image},\ \ \mathrm{SNR}\propto\sqrt{N_\text{stages}}`],
+      [N_('Light-field (plenoptic) cameras'), 'lightfield', 'p', N_('A microlens array in front of the sensor records which part of the lens each ray came through, so photographs can be refocused, stopped down or moved in viewpoint after the shot, at the cost of N² fewer pixels.'), r`E(\mathbf x)=\frac1{|A|}\sum_{\mathbf u\in A}L\big(\mathbf u,\mathbf x+\mathbf u(1-b/b_r)\big)`],
     ],
   },
   {
