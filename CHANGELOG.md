@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.62.0] - 2026-11-13
+
 ### Added
 - **New laboratory: Light-field camera: focus after the shot** (`#/lightfield`). A scene of cards at four depths recorded through a main lens and a microlens array as a 4-D light field (one ray per sensor pixel, rendered on all cores); photographs are made from it afterwards by shift-and-add of the sub-aperture views, with click-to-refocus, a synthetic aperture and a movable viewpoint. The raw sensor shows the lens's aperture under each microlens, an epipolar-plane image shows depth as slope, and a chart compares the blur of an ordinary photograph with the light field's N-times deeper refocusing range. Checked against the predicted disparity between views (to 0.05 microlens) and the sharpening at the right depth.
 
@@ -1052,7 +1054,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.61.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.62.0...HEAD
+[1.62.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.61.0...v1.62.0
 [1.61.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.60.0...v1.61.0
 [1.60.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.59.0...v1.60.0
 [1.59.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.58.0...v1.59.0
