@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Sixty-nine interactive laboratories, nine missions, a physics primer and a catalogue of 255 phenomena.
+Seventy interactive laboratories, nine missions, a physics primer and a catalogue of 256 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -541,6 +541,16 @@ A scene **rendered wavelength by wavelength**: 24 colour patches, a Siemens star
 <tr>
 <td valign="top" colspan="2">
 
+**Haze & aerial perspective** · `#/haze`<br>
+<img src="docs/screenshots/haze.webp" alt="Seven ridges from 0.4 to 70 km fading into a pale blue haze under a blue sky; contrast against distance at four wavelengths with the 2 % threshold; extinction against wavelength for molecules and haze" width="70%">
+
+**Why distant mountains turn pale and blue**: seven ridges from 0.4 to 70 km rendered from spectra with Koschmieder's law, the molecules' Rayleigh scattering computed from the refractive index of air (5.16 × 10⁻³¹ m² at 532 nm, a clean-air visual range of 341 km) and haze with Ångström's λ^−α; the airlight follows the Sun's direction (backlit haze glows), a polarising filter darkens the molecular part, and an infrared camera at 850 nm sees much farther.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Laser speckle & coherent imaging** · `#/speckle`<br>
 <img src="docs/screenshots/speckle.webp" alt="A printed target on rough paper seen in green laser light, hidden by speckle, next to the same target in incoherent light; a histogram of speckle brightness on the exponential law; a cut across the bars; coherent and incoherent transfer functions" width="70%">
 
@@ -886,7 +896,7 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 **Catalogue of phenomena** · `#/catalogue`<br>
 <img src="docs/screenshots/catalogue.webp" alt="Overview of the 13 catalogue groups with counts of simulated phenomena">
 
-**255 phenomena in 13 groups**, browsed by group from a navigator or searched across all groups, with domain and "only simulated" filters. Each entry opens, from simple to exact, to a **worked example with real numbers**, a fuller explanation and its governing equation, a link to its laboratory and related entries. Every group, entry and search has its own link (`#/catalogue?g=…&e=…`).
+**256 phenomena in 13 groups**, browsed by group from a navigator or searched across all groups, with domain and "only simulated" filters. Each entry opens, from simple to exact, to a **worked example with real numbers**, a fuller explanation and its governing equation, a link to its laboratory and related entries. Every group, entry and search has its own link (`#/catalogue?g=…&e=…`).
 
 <img src="docs/screenshots/catalogue-entry.webp" alt="An opened catalogue entry: the Airy disk with example, explanation, equation and related entries">
 
@@ -962,6 +972,7 @@ flowchart LR
 | Laser links | Gaussian beam of on-axis gain 0.8145 (πD/λ)² (Klein & Degnan 1974) and 1/e² half-angle √(8/G); P_r = P_t G_t A_r η/(4πR²) with mean pointing loss 1/(1+4σ²/θ₀²) and the clear sky 0.9^airmass; M-ary PPM capacity of the Poisson channel, log₂M − E[log₂ Σ L^(k_j−k_1)], by Monte Carlo with common random numbers (noise photons scattered uniformly into the empty slots), with a code 1 dB from capacity; Ka-band radio at Eb/N0 = 1 dB and at most 2 bit/s/Hz | lasercom |
 | Star trackers | Star counts N(<m) ≈ 4800·10^(0.46(m−6)) over the sky with a galactic-latitude factor; signal Φ₀ 10^(−0.4m) A t with Φ₀ = 2 × 10¹⁰ e⁻ s⁻¹ m⁻²; limiting magnitude at 5σ over the noise area 2√π σ (2√π σ + L) of a spot smeared by L pixels; centre of mass of pixel-integrated Gaussian spots with Poisson and read noise and a full well, by Monte Carlo in the worker; attitude from Liebe (2002), σ_⊥ = IFOV/√I and σ_roll = atan(1/(0.3825 n √I)) with I = ∫ (dN/dm) σ_c⁻² dm | startracker |
 | Phase angle & sun glint | Spheres of Lambert, Lommel–Seeliger (r = 2/(cos θs + cos θv)) and ocean surfaces shaded per pixel; phase curves by summing r cos θs over the disk in the worker; measured lunar magnitudes V(α) = −12.73 + 0.026\|α\| + 4×10⁻⁹α⁴ (Allen 1976); glint r = πR(ω) p(β)/(4 cos θs cos θv cos⁴β) with Cox–Munk p(β) = exp(−tan²β/σ²)/(πσ²), σ² = 0.003 + 0.00512 U, Fresnel R of water (n = 1.34) | glint |
+| Haze | Koschmieder L = L₀e^{−βz} + L_air(1 − e^{−βz}), saturated airlight L_air = E(β_R P_R + ω₀β_a P_HG)/β with ω₀ = 0.9, g = 0.7; Rayleigh σ = 24π³(n² − 1)²/(λ⁴N²(n² + 2)²)·(6 + 3ρ)/(6 − 7ρ), ρ = 0.0279, n from Edlén, N at 15 °C; aerosol β_a(550) = 3.912/V − β_R(550), β_a ∝ λ^−α; CIE D55 sunlight, vegetation and rock reflectances, CIE 1931 → sRGB white-balanced to sunlight; Rayleigh polarisation sin²θ/(1 + cos²θ) for the polariser; sky by slant-path single scattering with scale heights 8 and 1.5 km; infrared camera at 850 nm | haze |
 | Laser speckle | 256² grid with pixel λN/4 (coherent cut-off n/8 samples); amplitude reflectance A of a printed target or an edge; surface phase 4πh/λ with independent Gaussian heights per pixel (seeded), a second screen for the other polarisation, fully random diffuser phases per frame; each look |F⁻¹[P(f − f_s)F{A e^{iφ}}]|² with the object spectrum transformed once per diffuser position and polarisation; Abbe source points on a grid of spacing NA/(2λ) inside σ·NA/λ; incoherent image |A|² ⊗ |h|² by the OTF; pixel integration by k × k binning; contrast and histogram over a plain paper area | speckle |
 | Light field | Thin main lens focused at z_f, microlenses of pitch N × 15 µm on a 24 × 16 mm sensor, N × N views at the centres of their parts of a round aperture; one ray per pixel from (u, v) towards the object conjugate of the microlens, first-hit flat cards with procedural patterns; refocusing by shift-and-add of the views by u(1 − b/b_r) with bilinear interpolation in linear light (magnification change ignored); synthetic aperture and viewpoint by selecting views; blur √(p² + ((D/N)|b − b_z|/b_z)² + (D_s|b_r − b_z|/b_z)²) | lightfield |
 | Thermal focus shift | Absolute index n_abs(T) = n_rel(20 °C)·n_air + (n² − 1)/(2n)[D₀ΔT + D₁ΔT² + D₂ΔT³ + (E₀ΔT + E₁ΔT²)/(λ² − λ_TK²)] with SCHOTT's constants; air by Edlén (1953) scaled to T and p (TIE-19), vacuum p = 0; CaF₂ and fused silica with one dn/dT; thin elements in contact, achromat split at 20 °C, curvatures ∝ 1/(1 + αΔT), sensor on a barrel ∝ 1 + α_hΔT; athermal-chart intercept (ω₂γ₁ − ω₁γ₂)/(ω₂ − ω₁) (Tamagawa et al. 1994); paraxial Cassegrain with mirrors ∝ 1 + α_mΔT and spacing and instrument ∝ 1 + α_tΔT; depth of focus ±2λN²; star image by FFT of the defocused pupil (128², up to 5 waves), otherwise the geometric disk | thermal |
@@ -1104,6 +1115,7 @@ Optica_Viva/
 │   │   ├── stereo.js          Stereoscopic 3-D: parallax, perceived distance, roundness, two-camera rendering
 │   │   ├── hdrdisplay.js      HDR displays: PQ, HLG and SDR transfer functions, quantisation steps, light levels
 │   │   ├── ligo.js            LIGO: quantum noise, standard quantum limit, squeezing, inspiral SNR, whitened data, Q-map
+│   │   ├── haze.js            Haze: Rayleigh from first principles, Ångström aerosol, Koschmieder airlight, spectral colours
 │   │   ├── speckle.js         Speckle: coherent imaging by FFT, Abbe partial coherence, diffuser and polarisation averaging, statistics
 │   │   ├── lightfield.js      Light field: microlens camera, ray-traced 4-D light field, shift-and-add refocusing, blur geometry
 │   │   ├── thermal.js         Thermal focus: SCHOTT dn/dT, Edlén air, thin-lens and barrel shift, athermal chart, Cassegrain
@@ -1190,13 +1202,13 @@ Optica_Viva/
 │   │   ├── thumbs.js          Home-page card pictures: which laboratories have one, which are featured
 │   │   ├── satellite.js       Satellite mission: focal length, mirror, TDI stages, data rate
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (255 entries in 13 groups)
+│   │   ├── phenomena.js       Catalogue data (256 entries in 13 groups)
 │   │   ├── phenomena-details.js  Explanation and worked example for every catalogue entry
 │   │   ├── plot.js            Canvas charting (log axes, legends above the plot, bands, hover readout)
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
 │   │   ├── ui.js · page.js    DOM builder, controls, canvases, KaTeX helpers, explanation ladder (DOM)
 │   ├── workers/compute.js     Module Web Worker running js/lib/tasks.js
-│   └── modules/               One file per page (83)
+│   └── modules/               One file per page (84)
 ├── vendor/katex/              KaTeX 0.19.1 (MIT), vendored for offline use, with SHA256SUMS
 ├── vendor/fonts/              Fraunces, Inter, JetBrains Mono (OFL 1.1), variable woff2, with SHA256SUMS
 ├── docs/screenshots/          README images (generated)
@@ -1362,6 +1374,7 @@ The numerical core was checked against published or analytically known values. E
 | Laser links: DSOC at 386 million km and LLCD at the Moon | 3.44 × 10⁻¹³ W/m² at Earth, beam 5426 km wide; 16.5 Mbit/s; LLCD slot ceiling 1.25 Gbit/s; PPM capacity against brute-force Poisson draws; erasure limit (1 − e^(−n_s)) log₂M; pointing loss against Monte Carlo | DSOC measured 8.3 Mbit/s (factor 2, with assumed efficiencies); LLCD 622 Mbit/s with a rate-½ code; capacity and pointing within 3 % and 1 % |
 | Star trackers: centroids, counts and roll | Centroid of a bright σ = 1.5 px spot √(σ² + 1/12)/√S; N(<6.5) = 8150; mean distance in a unit square 0.3826; least-squares roll of 25 stars against Liebe's estimate; 15° on 1024 px with 0.1 px and 25 stars: 1.05″ and 10.5″ | Monte Carlo within 8 %; Bright Star Catalogue 9110 (11 %); (√2 + ln(1+√2))/6; rms distance n/√6 gives 6 % less, as expected (5 %); Liebe (2002) |
 | Phase angle & sun glint | Disk-integrated Lambert and Lommel–Seeliger spheres at 0–135°; half Moon; mirror-direction glint; glint integrated over the hemisphere (U = 2 m/s, θs = 30°) | [sin α + (π−α) cos α]/π and 1 − sin(α/2) tan(α/2) ln cot(α/4) (0.002); 2.6 mag = ×11 (Allen); R/(4σ² cos²θs); Fresnel reflectance of flat water (5 %) |
+| Haze: Rayleigh scattering and visual range | σ_R(532 nm) = 5.16 × 10⁻³¹ m²; β_R(550)/β_R(850) between λ⁴ and λ^4.2; clean-air visual range 341 km; contrast exactly 2 % at V; Ångström ratios; phase functions normalised; Rayleigh fully polarised at 90°; a distant ridge takes the horizon sky's colour | Bucholtz (1995): 5.168 × 10⁻³¹ m² (0.1 %); Koschmieder (1924) |
 | Laser speckle: statistics, grain shape, averaging, edge | Contrast 1 and P(I > ⟨I⟩) = e⁻¹ for a rough surface; intensity autocovariance |2J₁(v)/v|² at 1–3 px (first zero 1.22λN); contrast 1/√M for 4 and 16 frames, 1/√2 for two polarisations; gamma law normalised with mean 1; coherent edge overshoot (1/2 + Si(π)/π)² = 1.187, none for incoherent light; OTF(NA/λ) = 0.391 | Goodman (1975, 2020); Gibbs: match (contrast 0.04–0.08 statistical; edge 0.015 on the grid) |
 | Light field: disparity and refocusing | Centroid of a small card moves (D/N)(1 − b/b_z)/p microlenses per view (1.61, 0.57 and −0.50 at 0.45, 0.8 and 4 m); refocusing to its depth raises its peak; 69 of 81 views inside the round aperture; refocus range N·f#·p, N times an ordinary camera's | Ng et al. (2005): match (0.05 microlens) |
 | Thermal focus shift: dn/dT of 14 SCHOTT glasses, air, Cassegrain | Relative dn/dT over +20…+40 °C at 1060 nm, e and g lines for N-BK7, F2, N-FK51A, N-PK52A, N-SF6, N-SF11, N-SK16, N-BAK4, N-LAK22, N-LASF9, N-BAF10, N-KZFS4, P-SK57, N-SF5; n_air − 1 = 2.771 × 10⁻⁴ at 15 °C, dn_air/dT = −0.93 × 10⁻⁶/K; air-to-vacuum shift f(n_air − 1)n/(n − 1); focus moves (m² + 1) × the secondary; homologous expansion keeps focus | SCHOTT TIE-19 (2023) Table 1: all 42 values within 0.06 × 10⁻⁶/K; Edlén (1953); exact |
@@ -1409,6 +1422,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Laser links | Average losses with fixed efficiencies (optics 0.5 at each end, detector 0.5, zenith sky 0.9); far field taken as Gaussian; capacity with a 1 dB code gap; no modem or code-rate limits | No clouds, scintillation, beam wander, point-ahead or daylight sky model |
 | Star trackers | Mean star counts (within a factor of two) and a Sun-like colour; fixed dark current and full well; plain centre of mass without threshold or S-curve calibration; smear along one axis | No stray light (Sun, Earth, Moon), lens distortion, radiation hits or identification algorithm |
 | Phase angle & sun glint | Uniform spheres without atmosphere; Lommel–Seeliger without roughness or opposition surge; isotropic Cox–Munk slopes without shadowing, foam or light from below the surface | Island and the sea's colour illustrative; each picture exposed for its brightest point |
+| Haze | Uniform horizontal air, single scattering, sunlight not dimmed before scattering, unpolarised aerosol; illustrative sky above the horizon and ridge lighting | No clouds, multiple scattering, humidity growth of aerosols or temperature inversions |
 | Laser speckle | Scalar, aberration-free round pupil; surface heights uncorrelated between pixels, no shadowing or multiple scattering; Abbe source points half a cut-off apart (partly correlated patterns); fully random diffuser | Subjective speckle only (seen through a lens); no wavelength diversity, no photon noise |
 | Light field | Ideal microlenses matched to the main lens, no diffraction or crosstalk between microlenses; one ray per pixel (no anti-aliasing); flat cards without lighting; refocusing without the magnification change | No focused (plenoptic 2.0) layout, no depth estimation from the views |
 | Thermal focus shift | Uniform temperature (no gradients), thin lenses in contact, on-axis paraxial telescope; typical expansion coefficients for mount materials; crystals with a single dn/dT | No mount stresses, no glass-to-metal bonding, no focusing mechanisms or refocusing |

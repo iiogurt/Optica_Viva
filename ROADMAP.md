@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 542 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 545 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -649,6 +649,10 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P2 · M** **Laser speckle & coherent imaging** (`#/speckle`): speckle of a rough printed surface by Fourier optics, its statistics and grain size, reduction by diffusers, polarisation, extended sources and pixels, and coherent against incoherent imaging. *From the backlog ("coherent imaging mode"), as a laboratory of its own rather than a mode of the PSF page.*
 
+### v1.64 Haze & aerial perspective
+
+- [x] **P2 · M** **Haze & aerial perspective** (`#/haze`): Koschmieder's law with Rayleigh scattering from first principles and Ångström haze, the Sun's direction, a polarising filter and an infrared camera. *From the backlog, as a laboratory of its own rather than inside the depth-of-field scene.*
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -677,7 +681,6 @@ Ideas worth keeping but not yet scheduled:
 - *(from v1.9 field-dependent PSF)* Three-mirror anastigmats (JWST, Roman) with fifth-order terms from real-ray tracing through mirrors, and field-dependent Zernike maps in the style of STPSF.
 - *(from the catalogue explorer)* Per-entry references and symbol legends for the equations; a printable or PDF export of a catalogue group.
 - Zoom-lens animation, showing group motion and parfocality.
-- Aerial perspective and haze with Koschmieder's law in the DoF scene.
 
 ---
 

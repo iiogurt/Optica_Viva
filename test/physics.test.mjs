@@ -885,3 +885,22 @@ test('speckle: exponential statistics, Airy-shaped grains, 1/√M averaging and 
   // transfer functions: coherent cut-off at NA/λ, incoherent OTF 0.391 at NA/λ and 0 at 2NA/λ
   near(S.ctf(0.99), 1, 0, 'ctf'); near(S.ctf(1.01), 0, 0, 'ctf cut-off'); near(S.otf(1), 0.391, 1e-3, 'otf half'); near(S.otf(2), 0, 1e-12, 'otf cut-off');
 });
+
+test('haze: Rayleigh scattering of air, Koschmieder visual range and airlight', async () => {
+  const H = await import('../js/lib/haze.js');
+  // Rayleigh cross-section of standard air at 532 nm: 5.168 × 10⁻³¹ m² (Bucholtz 1995)
+  near(H.rayleighSigma(532) / 5.168e-31, 1, 0.01, 'σ(532 nm)');
+  // λ^−4 (slightly steeper through n(λ) and the King factor): ratio 550/850 nm about (850/550)^4.08
+  const r = H.betaR(550) / H.betaR(850); assert.ok(r > (850 / 550) ** 4 && r < (850 / 550) ** 4.2, `ratio ${r}`);
+  // pure-air visual range ln 50/β_R ≈ 340 km; at the visual range the contrast is exactly 2 %
+  near(H.pureAirRange() / 1000, 341, 3, 'pure air'); near(H.KOSCHMIEDER, Math.log(50), 0, 'ln 50');
+  for (const V of [5000, 20000, 100000]) near(Math.abs(H.contrast(550, V, V, 1.3)), 0.02, 1e-12, `2 % at ${V / 1000} km`);
+  // Ångström: haze extinction scales as λ^−α; α = 0 is grey
+  near(H.betaA(400, 20000, 0) / H.betaA(800, 20000, 0), 1, 1e-12, 'grey fog'); near(H.betaA(400, 20000, 2) / H.betaA(800, 20000, 2), 4, 1e-12, 'α = 2');
+  // phase functions are normalised over the sphere; Rayleigh light is fully polarised at 90°
+  let sR = 0, sH = 0; for (let i = 0; i < 2000; i++) { const th = ((i + 0.5) / 2000) * Math.PI, w = 2 * Math.PI * Math.sin(th) * (Math.PI / 2000); sR += H.phaseR(th) * w; sH += H.phaseHG(th, 0.7) * w; }
+  near(sR, 1, 1e-4, 'Rayleigh phase'); near(sH, 1, 2e-3, 'HG phase'); near(H.polR(Math.PI / 2), 1, 1e-12, 'polarisation at 90°');
+  // Koschmieder: an object far away takes the horizon's airlight; nearby it keeps its own radiance
+  const o = { V: 30000, alpha: 1.3, theta: 2 }, far = H.colours(o, 'veg', 1e7, 0.6), sky = H.skyColour(o, 0);
+  far.air.forEach((v, i) => near(v, sky[i], 1e-9, 'far ridge = horizon sky')); near(H.colours(o, 'veg', 1, 0.6).air[1], 0, 1e-5, 'no airlight at 1 m');
+});
