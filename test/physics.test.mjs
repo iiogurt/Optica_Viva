@@ -857,3 +857,31 @@ test('light field: disparity between views, shift-and-add refocusing and the N-f
   // refocus range in image space N·f#·p, N times an ordinary camera's f#·p at the same picture size (Ng 2005)
   near(L.refocusRange(g) / (g.fnum * g.p), g.N, 1e-12, 'N-fold range');
 });
+
+test('speckle: exponential statistics, Airy-shaped grains, 1/√M averaging and the coherent edge overshoot', async () => {
+  const S = await import('../js/lib/speckle.js');
+  const n = S.NGRID, reg = [10, 10, 120, 120];
+  // fully developed speckle (rough surface, one look): contrast ≈ 1, P(I > ⟨I⟩) = e⁻¹ (Goodman)
+  const I = S.image('target', 0.5, S.looks({}));
+  const st = S.stats(I, n, reg);
+  near(st.contrast, 1, 0.08, 'contrast'); near(st.values.filter((v) => v > 1).length / st.values.length, Math.exp(-1), 0.02, 'exponential law');
+  // grain shape: the intensity autocovariance is |2J1(v)/v|², v = π·lag/4 on this grid (pixel λN/4); first zero at 1.22λN = 4.88 px
+  const ac = S.autocov(I, n, reg, 6), j1 = (v) => { let s = 0; for (let k = 0; k < 400; k++) { const th = ((k + 0.5) / 400) * Math.PI; s += Math.cos(th - v * Math.sin(th)); } return s / 400; };
+  for (const d of [1, 2, 3]) { const v = (Math.PI * d) / 4; near(ac[d], (2 * j1(v) / v) ** 2, 0.06, `autocovariance at ${d} px`); }
+  near(S.speckleSize(0.532, 8), 5.193, 1e-3, '1.22 λN');
+  // M independent patterns: contrast 1/√M; two polarisations: 1/√2
+  for (const M of [4, 16]) near(S.stats(S.image('target', 0.5, S.looks({ frames: M })), n, reg).contrast, 1 / Math.sqrt(M), 0.04, `${M} frames`);
+  near(S.stats(S.image('target', 0.5, S.looks({ pol: true })), n, reg).contrast, Math.SQRT1_2, 0.08, 'polarisation');
+  // a smooth surface makes no speckle; camera pixels larger than a grain average it down
+  assert.ok(S.stats(S.image('target', 0, S.looks({})), n, S.REGION.target).contrast < 0.03, 'smooth (only the ringing of the print\'s edges)');
+  const b = S.bin(I, n, 8); assert.ok(S.stats(b.a, b.m, reg).contrast < 0.5, 'big pixels');
+  // the gamma law integrates to 1 and has mean 1
+  let s0 = 0, s1 = 0; for (let k = 0; k < 4000; k++) { const x = (k + 0.5) / 400; s0 += S.gammaPdf(x, 4) / 400; s1 += x * S.gammaPdf(x, 4) / 400; }
+  near(s0, 1, 1e-3, 'gamma norm'); near(s1, 1, 1e-3, 'gamma mean');
+  // a coherently imaged edge overshoots to (1/2 + Si(π)/π)² = 1.187 in intensity; the incoherent one does not overshoot
+  near(S.gibbs(), 1.0895, 1e-4, 'Gibbs');
+  const E = S.image('edge', 0, S.looks({}), n, 1, 0), J = S.incoherent('edge', n, 1, 0), row = (A) => Array.from({ length: n }, (_, x) => A[64 * n + x]);
+  near(Math.max(...row(E)), S.gibbs() ** 2, 0.015, 'coherent overshoot'); assert.ok(Math.max(...row(J)) <= 1.0001, 'incoherent edge');
+  // transfer functions: coherent cut-off at NA/λ, incoherent OTF 0.391 at NA/λ and 0 at 2NA/λ
+  near(S.ctf(0.99), 1, 0, 'ctf'); near(S.ctf(1.01), 0, 0, 'ctf cut-off'); near(S.otf(1), 0.391, 1e-3, 'otf half'); near(S.otf(2), 0, 1e-12, 'otf cut-off');
+});

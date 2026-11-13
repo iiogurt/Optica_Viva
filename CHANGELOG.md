@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Laser speckle & coherent imaging** (`#/speckle`). A printed target or an edge on a rough surface imaged through a round lens by Fourier optics, in laser light next to incoherent light: speckle grains of 1.22 λN with exponential statistics, a histogram against the gamma law, and how a rotating diffuser, two polarisations, a larger source (Abbe's method, computed on all cores) or camera pixels larger than a grain lower the contrast towards 1/√M; a cut across the bars or the edge with the coherent 18 % overshoot, and the coherent and incoherent transfer functions. The catalogue's "Coherence & speckle" entry now opens it, with a new entry on coherent and incoherent imaging.
+
 ## [1.62.0] - 2026-11-13
 
 ### Added
