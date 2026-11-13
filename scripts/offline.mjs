@@ -65,6 +65,8 @@ try {
   await visit('#/', 6000);
   st = await state();
   check(st.version === V && st.entries >= before, 'failed refresh keeps the previous complete copy', JSON.stringify(st));
+  // the warning comes once the worker has tried to re-cache every file: give slow machines time
+  for (let i = 0; i < 60 && !page.warnings().some((w) => /not updated/.test(w)); i++) await sleep(500);
   check(page.warnings().some((w) => /not updated/.test(w)), 'the failed update is reported to the page', page.warnings().join(' | '));
   check(await offlineWorks(), 'offline after a failed refresh');
   // 3b. a new sw.js as well: its installation fails and the old worker stays in charge
