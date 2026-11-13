@@ -46,6 +46,7 @@ import { makeWaves, floorLight } from './caustics.js';
 import { whitened, qtransform } from './ligo.js';
 import { phaseCurves } from './glint.js';
 import { skyGrid } from './nightsky.js';
+import { evaluate as mlEvaluate, magMap as mlMagMap, lenses as mlLenses } from './microlensing.js';
 import { errorCurve as stCurve, sCurve as stS, windowFor as stWindow } from './startracker.js';
 import { budget as lcBudget, dataRate as lcRate, rateCurve as lcCurve, ORDERS as LC_ORDERS } from './lasercom.js';
 import { spectrum as rvSpectrumOf, precision as rvPrecision, monteCarlo as rvMonteCarlo } from './rv.js';
@@ -699,6 +700,9 @@ const rvSpec = (p) => { const key = JSON.stringify(p); if (!rvCache || rvCache.k
 function rvTask(p) { const sp = rvSpec(p), q = rvPrecision(sp, 1), flux = sp.flux.slice(); return { result: { flux, n: sp.n, dv: sp.dv, l0: sp.l0, l1: sp.l1, lines: sp.lines, sigma1: q.sigma, Q: q.Q }, transfer: [flux.buffer] }; }
 function rvMCTask({ spec, trials, seed }) { const e = rvMonteCarlo(rvSpec(spec), 1, trials, seed); return { result: e, transfer: [e.buffer] }; }
 // night sky: airglow and zodiacal light over the whole sky
+// microlensing: magnifications at some of the times; rows of the caustic map
+function mlEvalTask(p) { const r = mlEvaluate(p.p, p.taus); return { result: r, transfer: [r.A.buffer, r.point.buffer, r.single.buffer] }; }
+function mlMapTask(p) { const w = p.win, r = mlMagMap(mlLenses(p.s, p.q), w.x0, w.y0 + (w.h * p.j0) / p.ny, w.w, (w.h * (p.j1 - p.j0)) / p.ny, p.nx, p.j1 - p.j0); return { result: r, transfer: [r.buffer] }; }
 function nightskyTask(p) { const g = skyGrid(p, p.n); return { result: g, transfer: [g.zl.buffer, g.ag.buffer] }; }
 // phase angle: disk-integrated phase curves of the three surfaces
 function glintTask(p) { return { result: phaseCurves(p.U) }; }
@@ -734,4 +738,4 @@ function trailsTask(p) {
   return { result, transfer: [outs.mean.buffer, outs.median.buffer, outs.clip.buffer] };
 }
 
-export const TASKS = { nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
+export const TASKS = { mlEval: mlEvalTask, mlMap: mlMapTask, nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };

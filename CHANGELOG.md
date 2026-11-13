@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Microlensing: finding planets with gravity** (`#/microlensing`). A star with a planet drifts in front of a star in the Galactic bulge: the source plane as a caustic map with a zoom where the source crosses the planet's caustic, the images a perfect telescope would see around the Einstein ring (with a true-size inset of the brightest arc), a light curve with a 72-day season of Roman-like photometry every 15 minutes, and the planet's signal against the star alone with its Δχ² and whether it passes the detection threshold of 160. Images from Witt & Mao's binary-lens quintic, caustics from the critical-curve quartic, limb-darkened finite sources by Gould's hexadecapole and by contour integration near caustics; the light curve is computed on all cores, a quick version first. Checked against Paczyński's A(1) = 3/√5, the uniform disk √(1 + 4/ρ²), the sum rule of the five signed magnifications, the caustic topologies of equal masses and the planetary caustic at s − 1/s.
+
 ## [1.59.0] - 2026-11-12
 
 ### Added
