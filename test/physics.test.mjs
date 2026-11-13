@@ -756,3 +756,56 @@ test('night sky: Leinert zodiacal table, van Rhijn airglow, magnitudes and the d
   near(N.toMag(N.skyAt(90, 0, g, 0, 0.15).total), 21.9, 0.15, 'dark zenith');
   near(N.toMag(N.skyAt(90, 0, g, 1, 0.15).total), 21.6, 0.2, 'solar maximum');
 });
+
+test('microlensing: Paczyński, finite sources, the binary-lens quintic, caustic topology and a planet\'s signal', async () => {
+  const M = await import('../js/lib/microlensing.js');
+  const rel = (a, b, tol, msg) => assert.ok(Math.abs(a / b - 1) <= tol, `${msg}: ${a} vs ${b}`);
+  // Paczyński (1986): A(1) = 3/√5 = 1.342, A(0.1) = 10.04
+  near(M.pacz(1), 3 / Math.sqrt(5), 1e-12, 'A(1)'); near(M.pacz(0.1), 10.0375, 1e-4, 'A(0.1)');
+  // a uniform disk centred on the lens: √(1 + 4/ρ²) (Witt & Mao 1994); far from the lens, the point value
+  rel(M.diskUniform(0, 0.1), Math.sqrt(1 + 400), 1e-9, 'disk on axis'); rel(M.diskSingle(0.5, 0.01), M.pacz(0.5), 1e-4, 'small disk');
+  // a limb-darkened disk at u = ρ against a brute-force average over the disk
+  let s = 0, w = 0;
+  for (let i = 0; i < 600; i++) for (let j = 0; j < 600; j++) {
+    const x = (2 * (i + 0.5)) / 600 - 1, y = (2 * (j + 0.5)) / 600 - 1, r2 = x * x + y * y;
+    if (r2 > 1) continue;
+    const I = 1 - 0.5 * (1 - Math.sqrt(1 - r2)); s += I * M.pacz(Math.hypot(0.1 + 0.1 * x, 0.1 * y)); w += I;
+  }
+  rel(M.diskSingle(0.1, 0.1, 0.5), s / w, 2e-3, 'limb-darkened disk');
+  // Einstein radius: 0.3 M☉ at 4 kpc, source at 8 kpc → 0.553 mas, 2.21 AU; the Sun at 8 kpc is 0.58 µas
+  const E = M.einstein({ M: 0.3, DL: 4, DS: 8, mu: 6 });
+  near(E.thetaE, 0.5526, 1e-3, 'θ_E'); near(E.rE, 2.2105, 1e-3, 'r_E'); near(E.thetaS * 1000, 0.581, 1e-3, 'θ*');
+  // a binary lens with a negligible planet is a single lens
+  let L = M.lenses(1.3, 1e-9);
+  rel(M.images(L, 0.3, 0.2).A, M.pacz(Math.hypot(0.3 - L.x1, 0.2)), 1e-6, 'tiny planet');
+  // … and still has three images: a 0.1 Earth-mass planet 7.8 θ_E out keeps its faint image beside it
+  assert.equal(M.images(M.lenses(7.835, 1.001e-6), 0, 0.2).n, 3, 'three images');
+  // five images inside a caustic, whose signed magnifications add up to 1 (Witt & Mao 1995)
+  for (const [sep, q, x, y] of [[1, 1, 0, 0], [0.8, 0.3, 0.02, 0.01], [1.3, 1e-4, 1.3 - 1 / 1.3, 0]]) {
+    L = M.lenses(sep, q);
+    const im = M.images(L, x + (q < 1e-3 ? L.x1 : 0), y);
+    assert.equal(im.n, 5, `five images for s=${sep}, q=${q}`);
+    near(im.list.reduce((a, b) => a + b.mu, 0), 1, 1e-6, 'signed sum');
+  }
+  // caustic topology for equal masses: three curves (close), one (resonant), two (wide), boundaries 1/√2 and 2 (Erdl & Schneider 1993)
+  assert.deepEqual([0.6, 1, 2.5].map((sep) => M.caustics(M.lenses(sep, 1)).curves), [3, 1, 2]);
+  const topo = M.topology(1); near(topo.close, 1 / Math.SQRT2, 1e-9, 'close boundary'); near(topo.wide, 2, 1e-12, 'wide boundary');
+  // the planetary caustic of a wide planet lies at s − 1/s from the star (Han 2006)
+  L = M.lenses(1.5, 1e-4);
+  const xs = M.caustics(L).caus.flat().filter(([x]) => x > 0.3).map(([x]) => x - L.x1);
+  near(xs.reduce((a, b) => a + b, 0) / xs.length, 1.5 - 1 / 1.5, 0.02, 'planetary caustic');
+  // finite sources on a binary lens: contour integration against the exact single lens, and near a caustic against a brute average
+  L = M.lenses(1.3, 1e-9);
+  const R = new Float64Array(10);
+  for (const u of [0, 0.001, 0.01]) rel(M.diskBinary(L, L.x1 + u, 0, 0.002, 0.4, R), M.diskSingle(u, 0.002, 0.4), 2e-3, `contour u=${u}`);
+  L = M.lenses(1.306, 1e-4);
+  const [cx, cy] = M.path(-0.5084, 0.2, (201.5 * Math.PI) / 180);
+  let b = 0, bw = 0;
+  for (let i = 0; i < 80; i++) { const r = Math.sqrt((i + 0.5) / 80), I = 1 - 0.4 * (1 - Math.sqrt(1 - r * r)); for (let j = 0; j < 240; j++) { const a = (2 * Math.PI * (j + 0.5 * (i % 2))) / 240; b += I * M.magPoint(L, cx + r * 0.00182 * Math.cos(a), cy + r * 0.00182 * Math.sin(a), R, true); bw += I; } }
+  rel(M.diskBinary(L, cx, cy, 0.00182, 0.4, R), b / bw, 6e-3, 'near the caustic');
+  // a 10 Earth-mass planet at 2.5 AU from a 0.3 M☉ star whose caustic the source crosses: a strong signal, far above Δχ² = 160
+  const E2 = M.einstein({ M: 0.3, DL: 6, DS: 8, mu: 6 }), p = { s: 2.5 / E2.rE, q: (10 * M.M_EARTH) / 0.3, u0: 0.2, alpha: (201.5 * Math.PI) / 180, rho: E2.rho, ld: 0.4, T: 36 / E2.tE };
+  const lc = M.lightCurve(p), dev = Math.max(...lc.A.map((a, i) => Math.abs(a / lc.single[i] - 1)));
+  assert.ok(dev > 0.5, `deviation ${dev}`);
+  assert.ok(M.survey(lc, E2.tE, 36, 0.01).dchi2 > M.DCHI2, 'detected');
+});

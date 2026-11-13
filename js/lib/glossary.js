@@ -67,6 +67,9 @@ export const GLOSSARY = [
   { term: 'Colour temperature', match: ['colou?r temperatures?'], lab: 'colour', def: 'How warm (orange) or cool (blue) a white light looks, given as the temperature of a glowing body of that colour.' },
   { term: 'Coating', match: ['coatings?'], lab: 'flare', def: 'Thin layers on a lens surface that make reflected light cancel itself, so less light is reflected.' },
   // ── Astronomy and space ──
+  { term: 'Microlensing', match: ['microlensing'], lab: 'microlensing', def: 'The brightening of a distant star when another star passes almost exactly in front of it and its gravity focuses the light; the images are too close together to be seen apart.' },
+  { term: 'Caustic', match: ['caustics?'], lab: 'caustics', def: 'A curve where many light rays bunch up, so that light concentrates there into a bright line; for a gravitational lens, the places where a point source would be magnified without limit.' },
+  { term: 'Light curve', match: ['light curves?'], lab: 'microlensing', def: 'A record of a star\'s brightness against time.' },
   { term: 'Airglow', match: ['airglow'], lab: 'nightsky', def: 'The faint light the upper atmosphere gives off at night, as atoms and molecules split by daytime sunlight recombine about 90 km up.' },
   { term: 'Zodiacal light', match: ['zodiacal light'], lab: 'nightsky', def: 'Sunlight scattered by dust between the planets, seen as a glow along the ecliptic, brightest near the Sun.' },
   { term: 'Ecliptic', match: ['ecliptic'], lab: 'nightsky', def: 'The path of the Sun across the sky over a year, which is also the plane in which the planets orbit.' },

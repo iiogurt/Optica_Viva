@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 530 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 533 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -633,6 +633,10 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P2 · M** **Airglow & zodiacal light: the darkest sky** (`#/nightsky`): the whole night sky from Leinert's zodiacal table and van Rhijn airglow with extinction, and the faint stars a brighter sky costs. *From the backlog's "further phenomena". Brocken spectres are already covered by the glory in* Halos, rainbows & glories*, and planetary-imaging sampling by the mission* Image Jupiter from your garden.
 
+### v1.60 Microlensing
+
+- [x] **P2 · L** **Microlensing: finding planets with gravity** (`#/microlensing`): caustic maps, the lensed images, finite-source light curves of a star with a planet and a season of Roman-like photometry with the detection Δχ². *From the backlog.*
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -661,7 +665,6 @@ Ideas worth keeping but not yet scheduled:
 - *(from v1.9 field-dependent PSF)* Three-mirror anastigmats (JWST, Roman) with fifth-order terms from real-ray tracing through mirrors, and field-dependent Zernike maps in the style of STPSF.
 - *(from the catalogue explorer)* Per-entry references and symbol legends for the equations; a printable or PDF export of a catalogue group.
 - Coherent imaging mode (laser/speckle) in the PSF lab.
-- Gravitational microlensing light curves and planetary anomalies.
 - Zoom-lens animation, showing group motion and parfocality.
 - Thermal focus shift lab (dn/dT, housing expansion, athermalisation).
 - Aerial perspective and haze with Koschmieder's law in the DoF scene.
