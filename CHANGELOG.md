@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Zoom lenses: moving groups** (`#/zoom`). A four-group zoom (+ − + +) traced paraxially from 30 to 106 mm and animated: the variator moves linearly and the compensator follows its cam so the front groups stay afocal and the image never leaves the sensor (parfocal); the stop in the fixed master group keeps the f-number constant while the entrance pupil grows; the cam curves; the view through the lens zooming into a test chart; and the focus error when the compensator is pushed off its cam (the image moves (f₄/f₃)² times as far, at every focal length) or locked. The catalogue's "Parfocal zooms" entry now opens it, with a new entry on constant-aperture zooms.
+
 ## [1.64.0] - 2026-11-13
 
 ### Added

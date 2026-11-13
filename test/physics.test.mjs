@@ -904,3 +904,26 @@ test('haze: Rayleigh scattering of air, Koschmieder visual range and airlight', 
   const o = { V: 30000, alpha: 1.3, theta: 2 }, far = H.colours(o, 'veg', 1e7, 0.6), sky = H.skyColour(o, 0);
   far.air.forEach((v, i) => near(v, sky[i], 1e-9, 'far ridge = horizon sky')); near(H.colours(o, 'veg', 1, 0.6).air[1], 0, 1e-5, 'no airlight at 1 m');
 });
+
+test('zoom lens: parfocal cam, f = M·f4, constant f-number and the compensator sensitivity', async () => {
+  const Z = await import('../js/lib/zoom.js'), D = Z.DESIGN;
+  // independent check with ray-transfer matrices: [y; u] → lens [[1, 0], [−1/f, 1]], gap [[1, d], [0, 1]]
+  const mul = (A, B) => [[A[0][0] * B[0][0] + A[0][1] * B[1][0], A[0][0] * B[0][1] + A[0][1] * B[1][1]], [A[1][0] * B[0][0] + A[1][1] * B[1][0], A[1][0] * B[0][1] + A[1][1] * B[1][1]]];
+  const sys = (L) => { let M = [[1, 0], [0, 1]], x = L[0][0]; for (const [p, f] of L) { M = mul([[1, 0], [-1 / f, 1]], mul([[1, p - x], [0, 1]], M)); x = p; } return M; };
+  const [fmin, fmax] = Z.range();
+  near(fmin, 30.03, 0.01, 'wide end'); near(fmax, 105.82, 0.01, 'long end');
+  for (const f of [30.5, 45, 70, 100]) {
+    const p2 = Z.p2For(f), p3 = Z.cam(p2), st = Z.state(p2, p3), M = sys(Z.lensesAt(p2, p3));
+    near(st.efl, f, 1e-6, `focal length ${f}`); near(-1 / M[1][0], f, 1e-6, `matrix focal length ${f}`);
+    // parfocal: the image of a distant object stays f4 behind G4; the afocal front leaves rays parallel
+    near(st.bfl, D.f4, 1e-9, `parfocal at ${f}`); near(st.afocalOut, 0, 1e-12, 'afocal'); near(st.M, f / D.f4, 1e-9, 'f = M·f4');
+    // constant aperture: entrance pupil M·f4/N, so f/D_EP = N
+    near(f / Z.pupil(st, 2.8), 2.8, 1e-9, 'constant f-number');
+    // an error δ of the compensator moves the image by (f4/f3)²·δ, the same at every focal length
+    near(Z.state(p2, p3 + 0.01).image - (D.p4 + D.f4), -((D.f4 / D.f3) ** 2) * 0.01, 2e-5, 'compensator sensitivity');
+  }
+  // the chief ray of the field edge crosses the axis at the stop in G4
+  const p2 = Z.p2For(50), r = Z.rays(p2, Z.cam(p2), 2.8, Z.halfAngle(50)), tr = Z.trace(r.lenses.slice(0, 3), r.chief[0], r.chief[1]);
+  near(tr.y + tr.u * (D.p4 - tr.x), 0, 1e-9, 'chief ray through the stop');
+  near(Z.depthOfFocus(2.8, 0.03), 0.084, 1e-12, '±N·c');
+});
