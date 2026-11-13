@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.64.0] - 2026-11-13
+
 ### Added
 - **New laboratory: Haze & aerial perspective** (`#/haze`). Seven ridges from 0.4 to 70 km fading into the airlight, rendered from spectra with Koschmieder's law: Rayleigh scattering of air computed from its refractive index (5.16 × 10⁻³¹ m² at 532 nm against Bucholtz's 5.168, a clean-air visual range of 341 km) and haze with Ångström's λ^−α; the airlight follows the Sun's direction, so backlit haze glows; a polarising filter darkens the molecular airlight and an infrared camera at 850 nm sees much farther. Charts of contrast against distance at four wavelengths and of extinction against wavelength. The catalogue's "Aerial perspective & haze" entry now opens it, with a new entry on Koschmieder's visual range.
 
@@ -1062,7 +1064,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.63.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.64.0...HEAD
+[1.64.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.63.0...v1.64.0
 [1.63.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.62.0...v1.63.0
 [1.62.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.61.0...v1.62.0
 [1.61.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.60.0...v1.61.0
