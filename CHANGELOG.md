@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.63.0] - 2026-11-13
+
 ### Added
 - **New laboratory: Laser speckle & coherent imaging** (`#/speckle`). A printed target or an edge on a rough surface imaged through a round lens by Fourier optics, in laser light next to incoherent light: speckle grains of 1.22 λN with exponential statistics, a histogram against the gamma law, and how a rotating diffuser, two polarisations, a larger source (Abbe's method, computed on all cores) or camera pixels larger than a grain lower the contrast towards 1/√M; a cut across the bars or the edge with the coherent 18 % overshoot, and the coherent and incoherent transfer functions. The catalogue's "Coherence & speckle" entry now opens it, with a new entry on coherent and incoherent imaging.
 
@@ -1057,7 +1059,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.62.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.63.0...HEAD
+[1.63.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.62.0...v1.63.0
 [1.62.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.61.0...v1.62.0
 [1.61.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.60.0...v1.61.0
 [1.60.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.59.0...v1.60.0
