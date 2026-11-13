@@ -67,6 +67,8 @@ export const GLOSSARY = [
   { term: 'Colour temperature', match: ['colou?r temperatures?'], lab: 'colour', def: 'How warm (orange) or cool (blue) a white light looks, given as the temperature of a glowing body of that colour.' },
   { term: 'Coating', match: ['coatings?'], lab: 'flare', def: 'Thin layers on a lens surface that make reflected light cancel itself, so less light is reflected.' },
   // ── Astronomy and space ──
+  { term: 'Light field', match: ['light fields?', 'light-field'], lab: 'lightfield', def: 'The brightness of light along every ray, described by where the ray crosses two planes: four numbers per ray.' },
+  { term: 'Microlens array', match: ['microlens arrays?'], lab: 'lightfield', def: 'A sheet of thousands of tiny lenses side by side, each one forming its own small image.' },
   { term: 'Athermal', match: ['athermal(?:ised|isation|ization)?'], lab: 'thermal', def: 'Designed so that its focus does not move when the temperature changes.' },
   { term: 'Microlensing', match: ['microlensing'], lab: 'microlensing', def: 'The brightening of a distant star when another star passes almost exactly in front of it and its gravity focuses the light; the images are too close together to be seen apart.' },
   { term: 'Caustic', match: ['caustics?'], lab: 'caustics', def: 'A curve where many light rays bunch up, so that light concentrates there into a bright line; for a gravitational lens, the places where a point source would be magnified without limit.' },

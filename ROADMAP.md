@@ -78,7 +78,7 @@ flowchart LR
 | Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
 | Catalogue entries | 239, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 535 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 538 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -641,6 +641,10 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P2 · M** **Thermal focus shift & athermal design** (`#/thermal`): a camera lens in its barrel or a Hubble-like telescope on its truss against temperature, with SCHOTT's dn/dT, the air-to-vacuum shift, the athermal chart and the tolerance of each truss material. *From the backlog.*
 
+### v1.62 Light-field camera
+
+- [x] **P2 · M** **Light-field camera: focus after the shot** (`#/lightfield`): a ray-traced 4-D light field through a microlens array, shift-and-add refocusing with click-to-focus, synthetic aperture and viewpoint, the raw sensor, the epipolar-plane image and the resolution-for-focus trade. *From the backlog.*
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -671,7 +675,6 @@ Ideas worth keeping but not yet scheduled:
 - Coherent imaging mode (laser/speckle) in the PSF lab.
 - Zoom-lens animation, showing group motion and parfocality.
 - Aerial perspective and haze with Koschmieder's law in the DoF scene.
-- Light-field (plenoptic) refocusing.
 
 ---
 

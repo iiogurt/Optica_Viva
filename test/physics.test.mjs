@@ -836,3 +836,24 @@ test('thermal focus: SCHOTT dn/dT against TIE-19, the air index, thin-lens and C
   near(M.cassDefocus(c, 5e-6, 5e-6, 40).defocus * 1e6, 0, 1e-3, 'homologous');
   near(M.depthOfFocus(24, 0.5) * 1000, 576, 1e-9, '±2λN²');
 });
+
+test('light field: disparity between views, shift-and-add refocusing and the N-fold refocus range', async () => {
+  const L = await import('../js/lib/lightfield.js');
+  const g = L.camera({ F: 50, fnum: 2, zf: 1400, N: 9 });
+  near(g.b, 1 / (1 / 50 - 1 / 1400), 1e-12, 'image distance'); assert.equal(g.M, 177); assert.equal(g.Mh, 118);
+  // a small card at z: its centroid moves (D/N)(1 − b/b_z)/p microlenses per view (in x and y); refocusing at z sharpens it
+  for (const z of [450, 800, 4000]) {
+    const r = L.render(g, 0, g.Mh, [{ z, x: [0.1, 0.16], y: [0.05, 0.11], tex: 'tiles' }]), plane = g.M * g.Mh;
+    const cen = (k, l) => { let sx = 0, sy = 0, w = 0; const b = (l * g.N + k) * plane; for (let j = 0; j < g.Mh; j++) for (let i = 0; i < g.M; i++) { const o = (b + j * g.M + i) * 3, v = r.lf[o] + r.lf[o + 1] + r.lf[o + 2]; sx += i * v; sy += j * v; w += v; } return [sx / w, sy / w]; };
+    const dx = (cen(8, 4)[0] - cen(0, 4)[0]) / 8, dy = (cen(4, 8)[1] - cen(4, 0)[1]) / 8;
+    near((dx + dy) / 2, L.disparity(g, z), 0.05, `disparity at ${z} mm`);
+    const lin = L.linearise(r.lf), all = L.apertureViews(g, 1), peak = (im) => { let m = 0; for (let i = 0; i < im.length; i += 3) m = Math.max(m, im[i] + im[i + 1] + im[i + 2]); return m; };
+    assert.ok(peak(L.refocus(g, lin, z, all)) > 1.2 * peak(L.refocus(g, lin, z < 1400 ? 3000 : 600, all)), `refocusing sharpens the card at ${z} mm`);
+  }
+  // the round aperture keeps 69 of 81 views; a tiny synthetic aperture keeps the centre view
+  assert.equal(L.apertureViews(g, 1).length, 69); assert.equal(L.apertureViews(g, 0.01).length, 1);
+  // each view sees the lens at f/(N·f#): blur from a view is the full aperture's divided by N
+  near(L.blurAt(g, g.D / g.N, g.b, 600) * g.N, L.blurAt(g, g.D, g.b, 600), 1e-12, 'sub-aperture blur');
+  // refocus range in image space N·f#·p, N times an ordinary camera's f#·p at the same picture size (Ng 2005)
+  near(L.refocusRange(g) / (g.fnum * g.p), g.N, 1e-12, 'N-fold range');
+});
