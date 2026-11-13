@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Fixed
+- The offline check "the failed update is reported to the page" waits up to 30 s for the worker's warning instead of a fixed 6 s, so it no longer fails on slow machines such as a Raspberry Pi, where re-caching the whole app takes longer.
+
 ## [1.61.0] - 2026-11-13
 
 ### Added
