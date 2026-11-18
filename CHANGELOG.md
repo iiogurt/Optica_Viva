@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.67.0] - 2026-11-18
+
 ### Added
 - **Colour science: TLCI-2012, the light as a television camera sees it.** For the chosen light, the EBU's Television Lighting Consistency Index (Tech 3355): a standard broadcast camera (balanced on a 90 % grey, the EBU matrix, 90 % saturation, BT.709 curve) and display (gamma 2.4, BT.709 primaries) render the 18 coloured ColorChecker patches under the test light and a reference of the same colour temperature; CIEDE2000, a fourth-power mean and Qa = 100/(1 + (ΔE/3.16)^2.4). The chart shows each patch as the camera codes it, with the test light inset and errors above the 3.16 watershed framed. All tables (`js/lib/tlcidata.js`) are transcribed from Tech 3355 and checked against its printed sums; the colour temperature uses its tabulated Planckian and daylight loci. Matches a Sekonic C-7000's TLCI of 99 (and its TM-30 and CRI) for a measured light; CIE FL1 gives D6426, d −0.71 and Qa 47, near the document's daylight-tube example (D6434, −0.7, 50). Glossary entry for TLCI.
 
@@ -1085,7 +1087,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.66.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.67.0...HEAD
+[1.67.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.66.0...v1.67.0
 [1.66.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.65.1...v1.66.0
 [1.65.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.65.0...v1.65.1
 [1.65.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.64.0...v1.65.0
