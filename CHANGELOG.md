@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.65.1] - 2026-11-18
+
 ### Changed
 - ROADMAP: the status overview counts 71 laboratories and 257 catalogue entries, its diagram runs to v1.65 and lists only what is still open, and the contents list the v1.45–v1.65 milestones. CLAUDE.md: the next-work summary covers v1.42–v1.65.
 
@@ -1072,7 +1074,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.65.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.65.1...HEAD
+[1.65.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.65.0...v1.65.1
 [1.65.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.64.0...v1.65.0
 [1.64.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.63.0...v1.64.0
 [1.63.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.62.0...v1.63.0
