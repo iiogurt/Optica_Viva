@@ -3940,8 +3940,8 @@ export default {
   "{n} = {s} slices × {a}, each {w}″ × 0.25″": "{n} = {s} franjas × {a}, cada una de {w}″ × 0,25″",
   "blended": "mezcladas",
   "resolved": "separadas",
-  "With {w}″ slices the spectrograph reaches only R = {R}: Hα overlaps the [N II] lines beside it. Velocities are still measured, in a window kept clear of [N II], but the line widths are not reliable. Narrow the slices or choose a higher R.": "Con franjas de {w}″ el espectrógrafo solo llega a R = {R}: Hα se solapa con las líneas [N II] vecinas. Las velocidades se siguen midiendo, en una ventana que evita [N II], pero las anchuras de línea no son fiables. Estreche las franjas o elija un R mayor.",
-  "The slicer turns the 8″ field into <strong>{n} spectra</strong> at R = {R}; {good} of them show Hα at S/N ≥ 5, and their velocities are good to <strong>{rms} km/s</strong> (rms against the true, seeing-blurred field).": "El cortador convierte el campo de 8″ en <strong>{n} espectros</strong> a R = {R}; {good} de ellos muestran Hα con S/R ≥ 5, y sus velocidades son buenas hasta <strong>{rms} km/s</strong> (rms frente al campo verdadero, borroso por el seeing).",
+  "With {w}″ slices the spectrograph reaches only R = {R}: Hα overlaps the [N II] lines beside it. Velocities are still measured, in a window kept clear of [N II], but less accurately, and the line widths are not reliable. Narrow the slices or choose a higher R.": "Con franjas de {w}″ el espectrógrafo solo llega a R = {R}: Hα se solapa con las líneas [N II] vecinas. Las velocidades se siguen midiendo, en una ventana que evita [N II], pero con menos precisión, y las anchuras de línea no son fiables. Estreche las franjas o elija un R mayor.",
+  "The slicer turns the 8″ field into <strong>{n} spectra</strong> at R = {R}; {good} of them show Hα at S/N ≥ 5, and their velocities are good to <strong>{rms} km/s</strong> (rms against the seeing-blurred velocity of the gas, so noise and the slit effect both count as error).": "El cortador convierte el campo de 8″ en <strong>{n} espectros</strong> a R = {R}; {good} de ellos muestran Hα con S/R ≥ 5, y sus velocidades son buenas hasta <strong>{rms} km/s</strong> (rms frente a la velocidad del gas borrosa por el seeing; el ruido y el efecto de rendija cuentan como error).",
   "{n} slices × {w}″": "{n} franjas × {w}″",
   "log scale": "escala logarítmica",
   "Spectrum of spaxel {s}/{a} (S/N {snr})": "Espectro del spaxel {s}/{a} (S/R {snr})",
@@ -3973,4 +3973,5 @@ export default {
   "Rebuilt: velocity": "Reconstruido: velocidad",
   "Rebuilt: velocity dispersion": "Reconstruido: dispersión de velocidades",
   "An image slicer cuts a galaxy into strips and lines them up along one slit: the detector frame, the data cube rebuilt from it, and maps of how the gas rotates, blurred by seeing.": "Un cortador de imagen corta una galaxia en franjas y las alinea a lo largo de una rendija: la imagen del detector, el cubo de datos reconstruido y mapas de la rotación del gas, borrosos por el seeing.",
+  "up to 75°: a thinner disk would be narrower than the 0.125″ sky grid": "hasta 75°: un disco más delgado sería más estrecho que la rejilla del cielo de 0,125″",
 };

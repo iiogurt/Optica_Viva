@@ -144,7 +144,7 @@ export function expose(p) {
   const pxPerArcsec = 2 / W0; // a 0.25″ slice spans 2 spectral pixels: 8 px per arcsec
   const S1 = new Float64Array(NO + 1), S2 = new Float64Array(NO + 2), tmp = new Float64Array(NO), src = new Float64Array(NO);
   const b = OS * FINE * pxPerArcsec; // box width of one fine row, in bins
-  const truthV = new Float64Array(ns * NALONG), truthF = new Float64Array(ns * NALONG), white = new Float64Array(ns * NALONG);
+  const truthV = new Float64Array(ns * NALONG), truthV0 = new Float64Array(ns * NALONG), truthF = new Float64Array(ns * NALONG), white = new Float64Array(ns * NALONG);
   for (let s = 0; s < ns; s++) for (let r = 0; r < m; r++) {
     const j = s * m + r, delta = (r + 0.5) * FINE - w / 2, shift = OS * pxPerArcsec * delta;
     for (let i = 0; i < NF; i++) {
@@ -153,12 +153,12 @@ export function expose(p) {
       boxShift(src, NO, shift, b, tmp, S1, S2);
       for (let q = 0; q < NLAM; q++) frame[q * cols + col] += tmp[q];
       const f = sTwo[k * 3], sp = s * NALONG + a;
-      truthF[sp] += f; truthV[sp] += sTwo[k * 3 + 1] + f * ((C_KMS * pxPerArcsec * delta * g.dl) / g.lc); white[sp] += sTwo[k * 3 + 2];
+      truthF[sp] += f; truthV0[sp] += sTwo[k * 3 + 1]; truthV[sp] += sTwo[k * 3 + 1] + f * ((C_KMS * pxPerArcsec * delta * g.dl) / g.lc); white[sp] += sTwo[k * 3 + 2];
     }
   }
-  for (let sp = 0; sp < truthV.length; sp++) truthV[sp] = truthF[sp] > 0 ? truthV[sp] / truthF[sp] : 0;
+  for (let sp = 0; sp < truthV.length; sp++) { truthV[sp] = truthF[sp] > 0 ? truthV[sp] / truthF[sp] : 0; truthV0[sp] = truthF[sp] > 0 ? truthV0[sp] / truthF[sp] : 0; }
   const skyRate = abPhotons(SKY_MAG, g.lc) * w * ALONG * g.dl * AT;
-  return { frame, cols, ns, m, z, grid: g, skyRate, truthV, truthF, white, R: resolvingPower(R0, w), sigOpt, slitDl: (g.lc / resolvingPower(R0, w)), w, sky: { ha: sTwo, n: NF } };
+  return { frame, cols, ns, m, z, grid: g, skyRate, truthV, truthV0, truthF, white, R: resolvingPower(R0, w), sigOpt, slitDl: (g.lc / resolvingPower(R0, w)), w, sky: { ha: sTwo, n: NF } };
 }
 
 // A noisy exposure of t seconds (counts per pixel, sky included), from a seeded stream. For tests
@@ -186,7 +186,8 @@ export function extract(E, counts, t) {
 }
 
 // Measure Hα in one spectrum: continuum from line-free pixels, then flux, centroid and width
-// (moments) in a window re-centred twice on the line. vmax bounds the search (km/s); inst is the
+// (moments) in a window started at the brightest pixel and re-centred on the line. The spectrum is
+// in photons, so the S/N counts the line's own shot noise as well as the background's. vmax bounds the search (km/s); inst is the
 // expected instrumental σ (nm), which widens the first window and the line mask; sigInst is the
 // calibrated one removed in quadrature.
 export function measure(spec, g, z, { vmax = 300, sigInst = 0, inst = 0 } = {}) {
@@ -201,7 +202,11 @@ export function measure(spec, g, z, { vmax = 300, sigInst = 0, inst = 0 } = {}) 
   const noise = Math.sqrt(v2 / Math.max(1, free.length - 1));
   // never reach past half-way to [N II] 6548, the nearer neighbour of Hα
   const cap = 0.5 * (LINES[1].lam - LINES[0].lam) * (1 + z);
-  let mu = ha, half = Math.min(cap, dv(vmax + 120) + 4 * inst), F = 0, sig = 0, n = 0;
+  // start at the brightest pixel within the search range (Hα outshines [N II] 6548 three to eightfold)
+  let best = -Infinity;
+  let mu = ha;
+  for (let q = 0; q < NLAM; q++) if (Math.abs(lam[q] - ha) <= dv(vmax + 120) + 2 * inst && spec[q] - c > best) { best = spec[q] - c; mu = lam[q]; }
+  let half = Math.min(cap, dv(150) + 4 * inst), F = 0, sig = 0, n = 0;
   for (let it = 0; it < 3; it++) {
     let s0 = 0, s1 = 0, s2 = 0; n = 0;
     for (let q = 0; q < NLAM; q++) { if (Math.abs(lam[q] - mu) > half) continue; const d = spec[q] - c; s0 += d; s1 += d * lam[q]; s2 += d * lam[q] * lam[q]; n++; }
@@ -209,7 +214,8 @@ export function measure(spec, g, z, { vmax = 300, sigInst = 0, inst = 0 } = {}) 
     F = s0; mu = s1 / s0; sig = Math.sqrt(Math.max(0, s2 / s0 - mu * mu));
     half = Math.min(cap, Math.max(3.5 * sig, 3 * g.dl, 3 * inst));
   }
-  const snr = F / (noise * Math.sqrt(n) || 1e-30);
+  // the line's own shot noise (F in photons) adds to the background's
+  const snr = F / (Math.sqrt(Math.max(0, F) + n * noise * noise) || 1e-30);
   const sigma = (C_KMS * Math.sqrt(Math.max(0, sig * sig - sigInst * sigInst))) / mu;
   return { flux: F, snr, v: C_KMS * (mu / ha - 1), sigma, sigObs: sig, cont: c, noise };
 }

@@ -741,7 +741,7 @@ function ifuTask(p) {
   }
   const modelT = model.map((x) => x * t), sky = E.sky.ha, skyHa = new Float32Array(sky.length / 3), skyCont = new Float32Array(sky.length / 3);
   for (let k = 0; k < skyHa.length; k++) { skyHa[k] = sky[3 * k]; skyCont[k] = sky[3 * k + 2]; }
-  const result = { counts, cube, model: modelT, flux, v, sigma, snr, truthV: Float32Array.from(E.truthV), skyHa, skyCont, ns: E.ns, cols: E.cols, R: E.R, lc: E.grid.lc, dl: E.grid.dl, l0: E.grid.l0, skyCounts: E.skyRate * t, sigInst, blended: ifuBlended(E, sigInst), frameRate: E.frame.reduce((a, b) => a + b, 0) };
+  const result = { counts, cube, model: modelT, flux, v, sigma, snr, truthV: Float32Array.from(E.truthV0), skyHa, skyCont, ns: E.ns, cols: E.cols, R: E.R, lc: E.grid.lc, dl: E.grid.dl, l0: E.grid.l0, skyCounts: E.skyRate * t, sigInst, blended: ifuBlended(E, sigInst), frameRate: E.frame.reduce((a, b) => a + b, 0) };
   return { result, transfer: [counts.buffer, cube.buffer, modelT.buffer, flux.buffer, v.buffer, sigma.buffer, snr.buffer, result.truthV.buffer, skyHa.buffer, skyCont.buffer] };
 }
 function causticsTask(p) { const r = floorLight(makeWaves(p.waves), p.floor); return { result: r, transfer: r.map((a) => a.buffer) }; }

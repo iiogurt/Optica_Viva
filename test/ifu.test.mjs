@@ -64,6 +64,17 @@ test('the rebuilt cube recovers the beam-smeared, slit-shifted velocity field', 
   }
 });
 
+test('velocity recovery holds at the corners of the controls', () => {
+  // resolved settings (R ≥ 1250) within 2 km/s rms; with 1″ slices at R₀ 2500 (R = 625) Hα overlaps
+  // [N II] and the page warns: velocities stay within about 12 km/s rms
+  for (const [w, R0, lim] of [[0.25, 2500, 2], [0.5, 10000, 2], [1, 5000, 2], [1, 2500, 12]]) for (const [vmax, incl, seeing] of [[350, 75, 0.3], [50, 20, 2]]) {
+    const E = expose({ R0, w, seeing, incl, vmax }), cube = noiseFree(E), inst = expectedInst(E), fmax = Math.max(...E.truthF);
+    let n = 0, e2 = 0;
+    for (let sp = 0; sp < E.ns * NALONG; sp++) { if (E.truthF[sp] < 0.05 * fmax) continue; const m = measure(spec(cube, sp), E.grid, 0.02, { vmax, inst }); n++; e2 += (m.v - E.truthV[sp]) ** 2; }
+    assert.ok(Math.sqrt(e2 / n) < lim, `${w}″, R₀ ${R0}, v ${vmax}, i ${incl}°, seeing ${seeing}″: rms ${Math.sqrt(e2 / n).toFixed(2)} km/s`);
+  }
+});
+
 test('beam smearing flattens the inner rotation; wide slices shift compact light', () => {
   const sharp = expose({ R0: 10000, w: 0.25, seeing: 0.3, incl: 60, vmax: 200 }), soft = expose({ R0: 10000, w: 0.25, seeing: 1.6, incl: 60, vmax: 200 });
   // the steepest velocity step between neighbouring spaxels along a slice near the centre

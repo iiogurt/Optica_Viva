@@ -3940,8 +3940,8 @@ export default {
   "{n} = {s} slices × {a}, each {w}″ × 0.25″": "{n} = {s} tranches × {a}, chacune {w}″ × 0,25″",
   "blended": "mélangées",
   "resolved": "séparées",
-  "With {w}″ slices the spectrograph reaches only R = {R}: Hα overlaps the [N II] lines beside it. Velocities are still measured, in a window kept clear of [N II], but the line widths are not reliable. Narrow the slices or choose a higher R.": "Avec des tranches de {w}″, le spectrographe n’atteint que R = {R} : Hα chevauche les raies [N II] voisines. Les vitesses restent mesurées, dans une fenêtre qui évite [N II], mais les largeurs de raie ne sont pas fiables. Affinez les tranches ou choisissez un R plus élevé.",
-  "The slicer turns the 8″ field into <strong>{n} spectra</strong> at R = {R}; {good} of them show Hα at S/N ≥ 5, and their velocities are good to <strong>{rms} km/s</strong> (rms against the true, seeing-blurred field).": "Le découpeur transforme le champ de 8″ en <strong>{n} spectres</strong> à R = {R} ; {good} d’entre eux montrent Hα à S/B ≥ 5, et leurs vitesses sont justes à <strong>{rms} km/s</strong> près (rms par rapport au vrai champ, flouté par la turbulence).",
+  "With {w}″ slices the spectrograph reaches only R = {R}: Hα overlaps the [N II] lines beside it. Velocities are still measured, in a window kept clear of [N II], but less accurately, and the line widths are not reliable. Narrow the slices or choose a higher R.": "Avec des tranches de {w}″, le spectrographe n’atteint que R = {R} : Hα chevauche les raies [N II] voisines. Les vitesses restent mesurées, dans une fenêtre qui évite [N II], mais moins précisément, et les largeurs de raie ne sont pas fiables. Affinez les tranches ou choisissez un R plus élevé.",
+  "The slicer turns the 8″ field into <strong>{n} spectra</strong> at R = {R}; {good} of them show Hα at S/N ≥ 5, and their velocities are good to <strong>{rms} km/s</strong> (rms against the seeing-blurred velocity of the gas, so noise and the slit effect both count as error).": "Le découpeur transforme le champ de 8″ en <strong>{n} spectres</strong> à R = {R} ; {good} d’entre eux montrent Hα à S/B ≥ 5, et leurs vitesses sont justes à <strong>{rms} km/s</strong> près (rms par rapport à la vitesse du gaz floutée par la turbulence ; le bruit et l’effet de fente comptent tous deux comme erreur).",
   "{n} slices × {w}″": "{n} tranches × {w}″",
   "log scale": "échelle logarithmique",
   "Spectrum of spaxel {s}/{a} (S/N {snr})": "Spectre du spaxel {s}/{a} (S/B {snr})",
@@ -3973,4 +3973,5 @@ export default {
   "Rebuilt: velocity": "Reconstruit : vitesse",
   "Rebuilt: velocity dispersion": "Reconstruit : dispersion des vitesses",
   "An image slicer cuts a galaxy into strips and lines them up along one slit: the detector frame, the data cube rebuilt from it, and maps of how the gas rotates, blurred by seeing.": "Un découpeur d’image coupe une galaxie en bandes et les aligne le long d’une fente : l’image du détecteur, le cube de données reconstruit et les cartes de la rotation du gaz, floutées par la turbulence.",
+  "up to 75°: a thinner disk would be narrower than the 0.125″ sky grid": "jusqu’à 75° : un disque plus mince serait plus étroit que la grille du ciel de 0,125″",
 };

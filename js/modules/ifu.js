@@ -22,7 +22,7 @@ export default function mount(root, meta) {
   ]));
 
   const ctl = controls({
-    incl: { type: 'range', label: 'Inclination of the disk', min: 0, max: 85, step: 1, value: 60, unit: '°' },
+    incl: { type: 'range', label: 'Inclination of the disk', min: 0, max: 75, step: 1, value: 60, unit: '°', hint: 'up to 75°: a thinner disk would be narrower than the 0.125″ sky grid' },
     vmax: { type: 'range', label: 'Rotation speed', min: 50, max: 350, step: 5, value: 200, unit: 'km/s' },
     seeing: { type: 'range', label: 'Seeing (FWHM)', min: 0.3, max: 2, step: 0.05, value: 0.8, unit: '″' },
     w: { type: 'seg', label: 'Slice width', value: '0.25', options: [['0.25', '0.25″'], ['0.5', '0.5″'], ['1', '1″']] },
@@ -54,10 +54,18 @@ export default function mount(root, meta) {
   [sky, mFlux, mVel, mSig].forEach(pick);
 
   const job = latest('ifu');
-  let D = null, pending = false;
+  let D = null, lastKey = '', timer = 0;
   function update() {
-    const st = ctl.state;
-    job('ifu', { R0: +st.R0, w: +st.w, seeing: st.seeing, incl: st.incl, vmax: st.vmax, fluxHa: 10 ** st.flux * 1e-3, t: st.t, z: Z }).then((r) => { D = { ...r, st: { ...st } }; show(); }, (e) => console.error(e));
+    const st = ctl.state, key = JSON.stringify([st.R0, st.w, st.seeing, st.incl, st.vmax, st.flux, st.t]);
+    // choosing another spaxel only redraws
+    if (D && key === lastKey) { show(); return; }
+    lastKey = key;
+    // while a slider is dragged, compute only where it pauses (each job takes a second or two)
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      const q = ctl.state;
+      job('ifu', { R0: +q.R0, w: +q.w, seeing: q.seeing, incl: q.incl, vmax: q.vmax, fluxHa: 10 ** q.flux * 1e-3, t: q.t, z: Z }).then((r) => { D = { ...r, st: { ...q } }; show(); }, (e) => console.error(e));
+    }, D ? 150 : 0);
     if (D) show(); else { calc.say(t('Tracing the light through the slicer…')); [sky, det, mFlux, mVel, mSig, specSt].forEach((s) => s.redraw()); }
   }
   const spaxelOf = (st, d) => {
@@ -87,8 +95,8 @@ export default function mount(root, meta) {
     ]));
     const m = { snr: d.snr[sp], v: d.v[sp], N: d.flux[sp] };
     calc.say(d.blended
-      ? t('With {w}″ slices the spectrograph reaches only R = {R}: Hα overlaps the [N II] lines beside it. Velocities are still measured, in a window kept clear of [N II], but the line widths are not reliable. Narrow the slices or choose a higher R.', { w, R: fmt(d.R, 3) })
-      : t('The slicer turns the 8″ field into <strong>{n} spectra</strong> at R = {R}; {good} of them show Hα at S/N ≥ 5, and their velocities are good to <strong>{rms} km/s</strong> (rms against the true, seeing-blurred field).', { n, R: fmt(d.R, 3), good, rms: isFinite(rms) ? fmt(rms, 2) : '—' }));
+      ? t('With {w}″ slices the spectrograph reaches only R = {R}: Hα overlaps the [N II] lines beside it. Velocities are still measured, in a window kept clear of [N II], but less accurately, and the line widths are not reliable. Narrow the slices or choose a higher R.', { w, R: fmt(d.R, 3) })
+      : t('The slicer turns the 8″ field into <strong>{n} spectra</strong> at R = {R}; {good} of them show Hα at S/N ≥ 5, and their velocities are good to <strong>{rms} km/s</strong> (rms against the seeing-blurred velocity of the gas, so noise and the slit effect both count as error).', { n, R: fmt(d.R, 3), good, rms: isFinite(rms) ? fmt(rms, 2) : '—' }));
     calc.set(String.raw`\begin{aligned}
     R &= R_0\,(0.25''/w) = ${texNum(d.R, 4)}\\
     \Delta v &= c/R = ${texNum(dv, 3)}\ \text{km/s}\\
@@ -191,14 +199,14 @@ export default function mount(root, meta) {
 <h3>Three ways to cut up an image</h3>
 <p>An integral-field unit rearranges a two-dimensional field so that a spectrograph built for a long slit can take every point's spectrum at once. A <em>lenslet array</em> in the focal plane makes a grid of tiny pupil images and disperses each one (TIGER, OSIRIS); the spectra are tilted so they do not overlap. A <em>fibre bundle</em> picks up the field with optical fibres and re-arranges them along a slit (the SAMI and MaNGA surveys); fibres are flexible but lose light to focal-ratio degradation and gaps. An <em>image slicer</em> uses a stack of tilted mirrors to cut the field into strips and a second set of mirrors to lay them end to end; it keeps nearly all the light and the spatial information along each strip (Bowen 1938 for stellar slits; Content 1997 for integral fields; MUSE, KMOS, the JWST NIRSpec IFU). This page simulates a slicer.</p>
 <h3>The model</h3>
-<p>The galaxy is a thin rotating disk with an arctangent rotation curve \(v(R) = \tfrac{2}{\pi}v_\text{max}\arctan(R/r_t)\) (Courteau 1997), seen at inclination \(i\), so that the line-of-sight velocity is \(v(R)\sin i\cos\varphi\). Hα and [N II] (fixed at 3 : 1 for the doublet) come from an exponential disk with star-forming knots, [S II] alongside; the stars give a continuum. Every 0.125″ sky pixel gets its own spectrum, each line integrated exactly over the spectral pixels with its gas velocity dispersion and the spectrograph optics. The seeing (a Gaussian) blurs this cube <em>wavelength by wavelength</em>: blurring a velocity map instead would miss beam smearing, because light from fast and slow gas mixes inside the line profile.</p>
+<p>The galaxy is a thin rotating disk at redshift \(z = 0.02\) with an arctangent rotation curve \(v(R) = \tfrac{2}{\pi}v_\text{max}\arctan(R/r_t)\) (Courteau 1997, \(r_t = 0.8''\)), seen at inclination \(i\) with its major axis 20° from the slices, so that the line-of-sight velocity is \(v(R)\sin i\cos\varphi\). The gas has a velocity dispersion of 25 km/s, the Hα disk a scale length of 1.3″; the galaxy is cut off at the edge of the 8″ field. Hα and [N II] (fixed at 3 : 1 for the doublet) come from an exponential disk with star-forming knots, [S II] alongside; the stars give a continuum. Every 0.125″ sky pixel gets its own spectrum, each line integrated exactly over the spectral pixels with its gas velocity dispersion and the spectrograph optics. The seeing (a Gaussian) blurs this cube <em>wavelength by wavelength</em>: blurring a velocity map instead would miss beam smearing, because light from fast and slow gas mixes inside the line profile.</p>
 <h3>The slice is the slit</h3>
 <p>A slice of width \(w\) is the spectrograph's entrance slit, so the slit-limited resolving power is \(R(w) = R_0\,(0.25''/w)\), and light that enters a slice a distance \(\delta\) off its centre line lands \((\delta/w)\,\lambda/R\) further along the spectrum. The pipeline here, like a simple real one, assigns each pixel its nominal wavelength, so a slice lit unevenly (a compact knot, good seeing, wide slices) gets a false velocity: the <em>slit effect</em>. The page traces it sub-strip by sub-strip.</p>
 </div><div>
 <h3>Detector and rebuilt cube</h3>
 <p>The slices sit side by side on the detector, two dark columns apart; each column is one spaxel's spectrum. The counts are Poisson in source plus sky (a 20.8 mag arcsec⁻² continuum) with 3 e⁻ read noise, for an 8 m telescope with 20 % throughput. Rebuilding the cube is the inverse map from detector columns to (slice, position); the known sky level is subtracted.</p>
 <h3>Measuring the lines</h3>
-<p>In each spaxel the continuum comes from line-free pixels, and Hα is measured by moments in a window re-centred on the line: flux \(F = \sum d_k\), velocity \(v = c\,(\bar\lambda/\lambda_\text{Hα}(1+z) - 1)\) and width \(\sigma^2 = \sum (\lambda_k - \bar\lambda)^2 d_k / F\). The instrument's own width is calibrated, as with an arc lamp, by sending a line of no intrinsic width through the same slicing and binning, and removed in quadrature: \(\sigma_\text{gas}^2 = \sigma^2 - \sigma_\text{inst}^2\). Spaxels below S/N 5 are greyed out, because a first moment drifts towards its window's centre in noise.</p>
+<p>In each spaxel the continuum comes from line-free pixels, and Hα is measured by moments in a window re-centred on the line: flux \(F = \sum d_k\), velocity \(v = c\,(\bar\lambda/\lambda_\text{Hα}(1+z) - 1)\) and width \(\sigma^2 = \sum (\lambda_k - \bar\lambda)^2 d_k / F\). The instrument's own width is calibrated, as with an arc lamp, by sending a line of no intrinsic width through the same slicing and binning, and removed in quadrature: \(\sigma_\text{gas}^2 = \sigma^2 - \sigma_\text{inst}^2\). That calibration assumes an evenly lit slice; where a compact knot lights one edge, the true profile is narrower. The S/N counts the line's own photon noise as well as the sky's and the detector's. Spaxels below S/N 5 are greyed out on the flux and velocity maps, and below S/N 10 on the dispersion map, because a first moment drifts towards its window's centre in noise and a second moment needs more light still.</p>
 <p>With photon noise alone the velocity is good to \(\sigma_v = c\,\sigma_\lambda/(\lambda\sqrt N)\) for \(N\) line photons; sky and read noise make it worse. When the instrumental profile is wider than about a fifth of the 1.5 nm between Hα and [N II] 6548, the lines blend and the page says so.</p>
 <h3>What is left out</h3>
 <p>Night-sky emission lines (OH), atmospheric dispersion and refraction, diffraction and cross-talk inside the slicer, detector cosmetics and calibration errors, and dust. The seeing is Gaussian and the same at every wavelength.</p>
@@ -211,7 +219,7 @@ export default function mount(root, meta) {
     'S. Courteau, "Optical rotation curves and linewidths for Tully–Fisher applications", <i>AJ</i> 114, 2402 (1997).',
     'Emission-line wavelengths (air) from the SDSS line list; [N II] 6583/6548 = 3 from atomic transition probabilities.',
   ]));
-  return () => [sky, det, mFlux, mVel, mSig, specSt].forEach((s) => s.destroy());
+  return () => { clearTimeout(timer); [sky, det, mFlux, mVel, mSig, specSt].forEach((s) => s.destroy()); };
 }
 
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };

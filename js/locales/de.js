@@ -3940,8 +3940,8 @@ export default {
   "{n} = {s} slices × {a}, each {w}″ × 0.25″": "{n} = {s} Streifen × {a}, je {w}″ × 0,25″",
   "blended": "verschmolzen",
   "resolved": "getrennt",
-  "With {w}″ slices the spectrograph reaches only R = {R}: Hα overlaps the [N II] lines beside it. Velocities are still measured, in a window kept clear of [N II], but the line widths are not reliable. Narrow the slices or choose a higher R.": "Mit {w}″ breiten Streifen erreicht der Spektrograph nur R = {R}: Hα überlappt die benachbarten [N II]-Linien. Geschwindigkeiten werden weiterhin gemessen, in einem Fenster ohne [N II], aber die Linienbreiten sind nicht zuverlässig. Schmalere Streifen oder ein höheres R wählen.",
-  "The slicer turns the 8″ field into <strong>{n} spectra</strong> at R = {R}; {good} of them show Hα at S/N ≥ 5, and their velocities are good to <strong>{rms} km/s</strong> (rms against the true, seeing-blurred field).": "Der Bildzerleger macht aus dem 8″-Feld <strong>{n} Spektren</strong> bei R = {R}; {good} davon zeigen Hα mit S/N ≥ 5, und ihre Geschwindigkeiten stimmen auf <strong>{rms} km/s</strong> (rms gegenüber dem wahren, vom Seeing verwaschenen Feld).",
+  "With {w}″ slices the spectrograph reaches only R = {R}: Hα overlaps the [N II] lines beside it. Velocities are still measured, in a window kept clear of [N II], but less accurately, and the line widths are not reliable. Narrow the slices or choose a higher R.": "Mit {w}″ breiten Streifen erreicht der Spektrograph nur R = {R}: Hα überlappt die benachbarten [N II]-Linien. Geschwindigkeiten werden weiterhin gemessen, in einem Fenster ohne [N II], aber ungenauer, und die Linienbreiten sind nicht zuverlässig. Schmalere Streifen oder ein höheres R wählen.",
+  "The slicer turns the 8″ field into <strong>{n} spectra</strong> at R = {R}; {good} of them show Hα at S/N ≥ 5, and their velocities are good to <strong>{rms} km/s</strong> (rms against the seeing-blurred velocity of the gas, so noise and the slit effect both count as error).": "Der Bildzerleger macht aus dem 8″-Feld <strong>{n} Spektren</strong> bei R = {R}; {good} davon zeigen Hα mit S/N ≥ 5, und ihre Geschwindigkeiten stimmen auf <strong>{rms} km/s</strong> (rms gegenüber der vom Seeing verwaschenen Gasgeschwindigkeit; Rauschen und Spalteffekt zählen beide als Fehler).",
   "{n} slices × {w}″": "{n} Streifen × {w}″",
   "log scale": "logarithmisch",
   "Spectrum of spaxel {s}/{a} (S/N {snr})": "Spektrum von Spaxel {s}/{a} (S/N {snr})",
@@ -3973,4 +3973,5 @@ export default {
   "Rebuilt: velocity": "Rekonstruiert: Geschwindigkeit",
   "Rebuilt: velocity dispersion": "Rekonstruiert: Geschwindigkeitsdispersion",
   "An image slicer cuts a galaxy into strips and lines them up along one slit: the detector frame, the data cube rebuilt from it, and maps of how the gas rotates, blurred by seeing.": "Ein Bildzerleger schneidet eine Galaxie in Streifen und reiht sie entlang eines Spalts auf: das Detektorbild, der daraus rekonstruierte Datenwürfel und Karten der Gasrotation, verwaschen vom Seeing.",
+  "up to 75°: a thinner disk would be narrower than the 0.125″ sky grid": "bis 75°: eine dünnere Scheibe wäre schmaler als das 0,125″-Himmelsraster",
 };
