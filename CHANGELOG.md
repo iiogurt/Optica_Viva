@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Colour science: TLMF-2013 and the colourist's advice.** A switch compares the light either with its own reference (TLCI) or with a second light (TLMF-2013, the EBU's luminaire matching factor): the camera stays balanced to the second light, the first is only scaled to the same luma, and all 24 patches count, so a colour cast on the greys shows. Two lights that look the same white can match badly for the camera (a red-enhanced LED against tungsten: TLCI 67, TLMF 12). Under the chart, the colourist's advice table of Tech 3355 gives the corrections in lightness, chroma and hue for 12 hue sectors; for CIE FL1 it agrees in direction everywhere with the document's daylight-tube example. Glossary entry for TLMF.
+
 ## [1.67.0] - 2026-11-18
 
 ### Added

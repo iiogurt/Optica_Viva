@@ -4,12 +4,12 @@ import { plot } from '../lib/plot.js';
 import { oetf, wavelengthCSS } from '../lib/color.js';
 import { ILLUMINANTS, TCS, CMF } from '../lib/colordata.js';
 import { CES } from '../lib/cesdata.js';
-import { tlci } from '../lib/tlci.js';
+import { tlci, tlmf } from '../lib/tlci.js';
 import { CHECKER_NAMES } from '../lib/tlcidata.js';
 import { view3d } from '../lib/gl3d.js';
 import { colourSolidScene, gamutCoverage, samplesOutside } from '../lib/colour3d.js';
 import { LAMBDA, xyz, chromaticity, uv1960, blackbody, daylight, cri, tm30, sampleSRGB, planck, CAMERAS, EXTRA_PATCHES, cameraColour, wbGains, lutherResidual, metamer, xyzToSRGB, lab as cielab, adapt, deltaE00, D65_XYZ } from '../lib/colorsci.js';
-import { t } from '../lib/i18n.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const css = (rgb) => `rgb(${rgb.map((v) => Math.round(255 * oetf(Math.min(1, Math.max(0, v))))).join(',')})`;
 const TCS_NAMES = ['Light greyish red', 'Dark greyish yellow', 'Strong yellow green', 'Moderate yellowish green', 'Light bluish green', 'Light blue', 'Light violet', 'Light reddish purple', 'Strong red (R9)', 'Strong yellow', 'Strong green', 'Strong blue', 'Light yellowish pink (skin)', 'Moderate olive green (leaf)'];
@@ -47,9 +47,13 @@ export default function mount(root, meta) {
 
   // ── TLCI-2012: the same light judged by a standard broadcast camera and display ──
   const secT = h('section.block', {}, h('h2', {}, 'Through a television camera: TLCI-2012 (EBU Tech 3355)'));
-  const tro = h('div'), tcalc = liveCalc('Television lighting consistency');
+  const tro = h('div'), tcalc = liveCalc('Television lighting consistency'), adviceEl = h('div.card', { style: { padding: '10px 12px', overflowX: 'auto' } });
+  const tctl = controls({
+    tmode: { type: 'seg', label: 'Compare with', value: 'tlci', options: [['tlci', 'Its own reference (TLCI)'], ['tlmf', 'A second light (TLMF)']] },
+    tmatch: { type: 'select', label: 'Second light', value: 'bb3200', when: (st) => st.tmode === 'tlmf', options: [['bb3200', 'Tungsten 3200 K (black body)'], ['day5600', 'Daylight 5600 K (CIE D series)'], ...Object.entries(ILLUMINANTS).map(([k, v]) => [k, v.name])] },
+  }, () => lastS && updateTLCI(lastS));
   const checker = stage({ aspect: 1.5, label: 'ColorChecker through the EBU standard camera: reference light, test light inset', draw: drawChecker, minH: 260 });
-  secT.append(lab([checker.el], [h('div.card', {}, tro), tcalc.el]));
+  secT.append(lab([checker.el, adviceEl], [h('div.card', {}, tctl.el), h('div.card', {}, tro), tcalc.el]));
   root.append(secT);
 
   let C = null;
@@ -286,30 +290,61 @@ export default function mount(root, meta) {
     ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.moveTo(P.X(0.5), P.Y(0)); ctx.lineTo(P.X(16.5), P.Y(0)); ctx.stroke();
   }
 
-  // TLCI: Qa, the EBU's CCT and distance, and a chart coded 0–255 from the camera signal (sRGB rule [60])
-  let TL = null;
+  // TLCI (the light against its own reference) or TLMF (against a second, real light): Qa, the EBU's
+  // CCT and distance, the colourist's advice and a chart coded 0–255 from the camera signal ([60])
+  let TL = null, lastS = null;
+  const matchSpd = (k) => (k === 'bb3200' ? blackbody(3200) : k === 'day5600' ? daylight(5600) : ILLUMINANTS[k].spd);
+  const matchName = (k) => (k === 'bb3200' ? t('Tungsten 3200 K (black body)') : k === 'day5600' ? t('Daylight 5600 K (CIE D series)') : ILLUMINANTS[k].name);
   function updateTLCI(S) {
-    const q = tlci(S.spd);
+    lastS = S;
+    const st = tctl.state, matching = st.tmode === 'tlmf';
+    const q = matching ? { ...tlmf(S.spd, matchSpd(st.tmatch)), count: 24, label: 'TLMF' } : { ...tlci(S.spd), count: 18, label: 'TLCI' };
     TL = q;
-    const coloured = q.patches.slice(0, 18), worst = coloured.reduce((b, p, i) => (p.used && (!coloured[b].used || p.dE > coloured[b].dE) ? i : b), 0);
-    const refName = q.T < 3400 ? t('black body') : q.T > 5000 ? t('CIE daylight') : t('black body at 3400 K and daylight at 5000 K mixed, {p} % daylight', { p: ((100 * (q.T - 3400)) / 1600).toFixed(0) });
-    tro.replaceChildren(readouts([
-      ['Television lighting consistency index Qa', q.Qa === null ? '—' : q.Qa.toFixed(1)],
-      ['Colour temperature (EBU method)', `${q.T.toFixed(0)} K (${q.locus === 'daylight' ? t('daylight locus') : t('Planckian locus')})`],
-      ['Distance from the locus d', (q.d >= 0 ? '+' : '') + q.d.toFixed(2)],
-      ['Reference for TLCI', refName],
-      ['Mean colour error ΔE*a (4th-power mean)', Number.isFinite(q.dEa) ? q.dEa.toFixed(2) : '—'],
-      ['Largest error', t('{v} on {name}', { v: coloured[worst].dE.toFixed(1), name: t(CHECKER_NAMES[worst]) })],
-      ['Coloured patches used', t('{n} of 18', { n: q.n })],
-    ]));
-    if (q.Qa === null) tcalc.say(t('Every coloured patch clips in the camera under this light, so TLCI is undefined.'));
+    const scored = q.patches.slice(0, q.count), worst = scored.reduce((b, p, i) => (p.used && (!scored[b].used || p.dE > scored[b].dE) ? i : b), 0);
+    const common = [
+      [N_('Mean colour error ΔE*a (4th-power mean)'), Number.isFinite(q.dEa) ? q.dEa.toFixed(2) : '—'],
+      [N_('Largest error'), t('{v} on {name}', { v: scored[worst].dE.toFixed(1), name: t(CHECKER_NAMES[worst]) })],
+    ];
+    if (matching) {
+      tro.replaceChildren(readouts([
+        ['Luminaire matching factor Qa', q.Qa === null ? '—' : q.Qa.toFixed(1)],
+        ['Matched against', matchName(st.tmatch)],
+        ...common,
+        ['Patches used', t('{n} of 24', { n: q.n })],
+      ]));
+    } else {
+      const refName = q.T < 3400 ? t('black body') : q.T > 5000 ? t('CIE daylight') : t('black body at 3400 K and daylight at 5000 K mixed, {p} % daylight', { p: ((100 * (q.T - 3400)) / 1600).toFixed(0) });
+      tro.replaceChildren(readouts([
+        ['Television lighting consistency index Qa', q.Qa === null ? '—' : q.Qa.toFixed(1)],
+        ['Colour temperature (EBU method)', `${q.T.toFixed(0)} K (${q.locus === 'daylight' ? t('daylight locus') : t('Planckian locus')})`],
+        ['Distance from the locus d', (q.d >= 0 ? '+' : '') + q.d.toFixed(2)],
+        ['Reference for TLCI', refName],
+        ...common,
+        ['Coloured patches used', t('{n} of 18', { n: q.n })],
+      ]));
+    }
+    const v = q.Qa === null ? null : { Q: q.Qa.toFixed(0), dE: q.dEa.toFixed(1), other: matching ? matchName(st.tmatch) : '' };
+    if (!v) tcalc.say(t('Every coloured patch clips in the camera under this light, so TLCI is undefined.'));
+    else if (matching) tcalc.say(q.Qa >= 50
+      ? t('With the camera balanced to {other}, this light matches it at <strong>TLMF {Q}</strong>: in the same shot its colours and greys differ by ΔE {dE} on average, small enough to correct.', v)
+      : t('With the camera balanced to {other}, this light matches it at <strong>TLMF {Q}</strong>: in the same shot its colours and greys differ by ΔE {dE} on average, too much to mix the two lights without filters or correction.', v));
     else tcalc.say(q.Qa >= 50
-      ? t('A standard television camera sees this light at <strong>TLCI {Q}</strong>: colours are off by ΔE {dE} on average, small enough for a colourist to correct (50 is the watershed).', { Q: q.Qa.toFixed(0), dE: q.dEa.toFixed(1) })
-      : t('A standard television camera sees this light at <strong>TLCI {Q}</strong>: colours are off by ΔE {dE} on average, beyond what a colourist can easily correct (50 is the watershed).', { Q: q.Qa.toFixed(0), dE: q.dEa.toFixed(1) }));
+      ? t('A standard television camera sees this light at <strong>TLCI {Q}</strong>: colours are off by ΔE {dE} on average, small enough for a colourist to correct (50 is the watershed).', v)
+      : t('A standard television camera sees this light at <strong>TLCI {Q}</strong>: colours are off by ΔE {dE} on average, beyond what a colourist can easily correct (50 is the watershed).', v));
     tcalc.set(String.raw`\begin{aligned}
     \Delta E^*_a &= \Big(\tfrac{1}{${q.n}}\textstyle\sum_i \Delta E_{00,i}^4\Big)^{1/4} = ${Number.isFinite(q.dEa) ? texNum(q.dEa, 3) : '\\text{—}'}\\
     Q_a &= \frac{100}{1 + (\Delta E^*_a/3.16)^{2.4}} = ${q.Qa === null ? '\\text{—}' : texNum(q.Qa, 3)}
     \end{aligned}`);
+    // the colourist's advice table: steps of correction per hue sector, as in Tech 3355 Figure 5
+    const marks = (n) => (n === null || n === undefined ? '?' : n === 0 ? '0' : (n > 0 ? '+' : '−').repeat(Math.min(9, Math.abs(n))));
+    const cell = (n) => h('td', { style: { padding: '2px 10px', fontFamily: '"JetBrains Mono", monospace', color: n > 0 ? '#8fe3a8' : n < 0 ? '#ff9c8a' : 'var(--fg-dim)' } }, marks(n));
+    adviceEl.replaceChildren(
+      h('div', { style: { fontSize: '13px', fontWeight: '600', marginBottom: '6px' } }, t("Colourist's advice: how much to correct in each hue sector")),
+      h('table', { style: { borderCollapse: 'collapse', fontSize: '12.5px' } },
+        h('thead', {}, h('tr', {}, ...['Sector', 'Lightness', 'Chroma', 'Hue'].map((x) => h('th', { style: { textAlign: 'left', padding: '2px 10px', color: 'var(--fg-dim)', fontWeight: '500' } }, t(x))))),
+        h('tbody', {}, ...q.advice.map((a) => h('tr', {}, h('td', { style: { padding: '2px 10px', fontFamily: '"JetBrains Mono", monospace' }, title: a.interpolated ? t('no patch in this sector: taken from its neighbours') : '' }, a.sector + (a.interpolated ? ' *' : '')), cell(a.L), cell(a.C), cell(a.H))))),
+      h('p', { style: { fontSize: '12px', color: 'var(--fg-dim)', margin: '6px 0 0' } }, t('+ increase, − reduce; for hue, + turns the colours anticlockwise (red towards yellow). One step is 3.16/6 ≈ 0.53 ΔE. * no patch in this sector: taken from its neighbours.')),
+    );  checker.redraw();
   }
 
   function drawChecker(ctx, w, hh) {
@@ -323,7 +358,7 @@ export default function mount(root, meta) {
       const x = x0 + (i % 6) * (cw + gap), y = top + Math.floor(i / 6) * (ch + gap);
       ctx.fillStyle = code(p.ref); ctx.fillRect(x, y, cw, ch);
       ctx.fillStyle = code(p.test); ctx.fillRect(x + cw * 0.3, y + ch * 0.22, cw * 0.4, ch * 0.4);
-      if (i < 18) {
+      if (i < TL.count) {
         const light = p.ref[1] > 0.55;
         ctx.fillStyle = light ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.85)';
         ctx.fillText(p.used ? `ΔE ${p.dE.toFixed(1)}` : t('clipped'), x + cw / 2, y + ch - 6);
@@ -332,9 +367,9 @@ export default function mount(root, meta) {
     });
     // the score at the top right beside the caption; the key on one line, or two on narrow canvases
     ctx.textAlign = 'right'; ctx.fillStyle = '#fff'; ctx.font = '12px "JetBrains Mono", monospace';
-    ctx.fillText(TL.Qa === null ? 'TLCI —' : `TLCI ${TL.Qa.toFixed(0)}`, w - 10, 20);
+    ctx.fillText(TL.Qa === null ? `${TL.label} —` : `${TL.label} ${TL.Qa.toFixed(0)}`, w - 10, 20);
     ctx.textAlign = 'left'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    const k1 = t('coded 0–255 from the camera signal'), k2 = t('red frame: ΔE ≥ 3.16 · grey row not scored');
+    const k1 = t('coded 0–255 from the camera signal'), k2 = TL.count === 24 ? t('red frame: ΔE ≥ 3.16 · all 24 patches scored') : t('red frame: ΔE ≥ 3.16 · grey row not scored');
     if (narrow) { ctx.fillText(k1, x0, hh - 21); ctx.fillText(k2, x0, hh - 7); } else ctx.fillText(`${k1} · ${k2}`, x0, hh - 7);
   }
 
@@ -498,7 +533,11 @@ export default function mount(root, meta) {
 <p>The constant 3.16 is the error a daylight fluorescent tube produced, which professional colourists judged the limit of what can be corrected acceptably: Qa = 50 is the watershed, and the scale cannot go negative. A patch whose camera or display signal falls below zero would clip in a real camera, so it is left out (the page reports how many were used). The grey row is shown but not scored.</p>
 <h3>Reference light and colour temperature</h3>
 <p>The colour temperature is found by the document's own method: the foot of the normal from the light's chromaticity to the tabulated Planckian locus in CIE 1960 \((u, v)\), or, above 5000 K, to the tabulated daylight locus. Its tables use Planck's law with \(c_2 = 1.435\times10^{-2}\) m K, so illuminant A reads 2848 K here instead of 2856 K. The reference is Planckian below 3400 K, CIE daylight above 5000 K, and between them a linear mixture of the Planckian at 3400 K and daylight at 5000 K. The distance \(d\) from that locus is in units of 0.0054 (about one just-noticeable difference), negative towards green; values beyond 1 make the colour temperature, and so the comparison, less meaningful. The document's adjustment of \(d\) between 4000 and 5000 K is left out, because as printed it moves a black body off its own locus; \(d\) does not enter Qa.</p>
-<p>All tables are transcribed from Tech 3355 and checked against its printed sums. The page reproduces a Sekonic C-7000 meter's TLCI of 99 for a measured 12 000 K light, and for CIE FL1 gives D6426, \(d = -0.71\) and Qa 47, close to the document's example for a daylight tube (D6434, \(-0.7\), 50), which may not be the same spectrum. Not implemented: the colourist's advice table and the Television Luminaire Matching Factor (TLMF-2013) for mixed lights.</p>
+<p>All tables are transcribed from Tech 3355 and checked against its printed sums. The page reproduces a Sekonic C-7000 meter's TLCI of 99 for a measured 12 000 K light, and for CIE FL1 gives D6426, \(d = -0.71\) and Qa 47, close to the document's example for a daylight tube (D6434, \(-0.7\), 50), which may not be the same spectrum.</p>
+<h3>Advice for the colourist</h3>
+<p>Tech 3355 also says what a colourist would have to do. Each patch is placed in one of 12 hue sectors of 30°, centred on the primaries, the secondaries and the colours between them, by the hue angle of its BT.709 colour-difference signals \(C_R = 0.635(R' - Y')\), \(C_B = 0.5389(B' - Y')\) under the test light. In each sector the mean CIEDE2000 lightness, chroma and hue terms give \(6\Delta/3.16\) steps of correction, rounded, in the opposite direction (one step is about half a ΔE unit). Sectors without a patch take the mean of their neighbours. For CIE FL1 the table agrees with the document's example for a daylight tube in direction everywhere and within two steps in every cell.</p>
+<h3>Mixing two lights: TLMF-2013</h3>
+<p>The <em>Television Luminaire Matching Factor</em> asks whether a second light can be used in the same shot as the first. The calculation is the same, with two differences: the reference is a real light, and the camera is balanced only once, to the reference; the test light is merely scaled so that a 90 % grey has unit luma. A colour cast on the greys therefore counts, so all 24 patches are scored. Two lights that look the same white to the eye can match badly for the camera: a red-enhanced LED at 2850 K against tungsten scores about 66 for TLCI but only 12 for TLMF, because the camera, whose sensitivities differ from the eye's, sees the LED's greys turn green. The scale is steep: a black body 100 K from a 3200 K reference already scores 82.</p>
 </div></div>`));
   root.append(theory('How a camera sees colour', String.raw`
 <div class="theory-cols"><div>

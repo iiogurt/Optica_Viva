@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { BASIS, CMF2, PLANCK_LOCUS, DAYLIGHT_LOCUS, CHECKER, CAMERA, CAMERA_MATRIX } from '../js/lib/tlcidata.js';
-import { tlci, cctEBU, planckEBU, daylightEBU, referenceEBU, fromQa, TLCI_WL } from '../js/lib/tlci.js';
+import { tlci, tlmf, cctEBU, planckEBU, daylightEBU, referenceEBU, fromQa, TLCI_WL, hueEBU, SECTORS } from '../js/lib/tlci.js';
 import { ILLUMINANTS } from '../js/lib/colordata.js';
 import { blackbody, daylight, tm30, cri } from '../js/lib/colorsci.js';
 
@@ -75,4 +75,38 @@ test('every light on the page gives a finite TLCI from all 18 coloured patches',
   near(cctEBU(ILLUMINANTS.A.spd).T, 2856 * 1.435 / 1.4388, 1, 'illuminant A with the EBU c2');
   // d is the plain distance from the named locus: a black body sits on it at every temperature
   for (const T of [3000, 4500, 4990]) near(cctEBU(blackbody(T)).d, 0, 0.03, `black body ${T} K: d`);
+});
+
+test('hue sectors of the advice table are centred on the primaries and secondaries', () => {
+  const sector = (rgb) => SECTORS[Math.floor((((hueEBU(rgb) - hueEBU([1, 0, 0]) + 15) % 360) + 360) % 360 / 30) % 12];
+  assert.deepEqual([[1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 1, 1], [0, 0, 1], [1, 0, 1]].map(sector), ['R', 'Y', 'G', 'C', 'B', 'M']);
+  for (const a of tlci(planckEBU(3000)).advice) assert.deepEqual([a.L, a.C, a.H], [0, 0, 0], `${a.sector}: a reference needs no correction`);
+});
+
+test("CIE FL1's colourist's advice follows the daylight-tube example of Tech 3355, Figure 5", () => {
+  // Figure 5 (lightness, chroma, hue steps per sector) for the document's daylight tube. FL1 scores a
+  // little worse (Qa 47 against 50), so steps may differ, but never by more than two or in direction.
+  const fig = { R: [6, 3, 1], 'R/Y': [0, 1, -3], Y: [0, -1, -2], 'Y/G': [0, -1, 0], G: [-1, 0, 2], 'G/C': [0, 0, 1], C: [0, 1, 0], 'C/B': [2, 0, -3], B: [1, -1, 0], 'B/M': [2, -1, 6], M: [4, 0, 6], 'M/R': [6, 0, 7] };
+  for (const a of tlci(ILLUMINANTS.FL1.spd).advice) {
+    [a.L, a.C, a.H].forEach((v, k) => {
+      const f = fig[a.sector][k];
+      assert.ok(Math.abs(v - f) <= 2, `${a.sector} ${'LCH'[k]}: ${v} against ${f}`);
+      assert.ok(v * f >= 0, `${a.sector} ${'LCH'[k]}: direction ${v} against ${f}`);
+    });
+  }
+});
+
+test('TLMF: a light matches itself, ignores its brightness, and shows camera metamerism', () => {
+  for (const k of ['A', 'FL11', 'LED-B3']) near(tlmf(ILLUMINANTS[k].spd, ILLUMINANTS[k].spd).Qa, 100, 1e-9, `${k} against itself`);
+  near(tlmf(ILLUMINANTS.FL2.spd.map((v) => 7 * v), ILLUMINANTS.A.spd).Qa, tlmf(ILLUMINANTS.FL2.spd, ILLUMINANTS.A.spd).Qa, 1e-9, 'brightness does not matter');
+  assert.equal(tlmf(ILLUMINANTS.FL2.spd, ILLUMINANTS.A.spd).n, 24, 'all 24 patches count');
+  // a red-enhanced LED and tungsten look the same white to the eye (Duv within 0.0005 at ≈ 2850 K)
+  // but not to the camera: balanced to tungsten, the LED's greys turn green, so the match is poor
+  const m = tlmf(ILLUMINANTS['LED-BH1'].spd, ILLUMINANTS.A.spd);
+  assert.ok(m.Qa < tlci(ILLUMINANTS['LED-BH1'].spd).Qa - 30, 'TLMF below TLCI');
+  assert.ok(m.patches[18].dE > 5, 'the white patch carries a visible cast');
+  // the match falls steadily as the second light's colour temperature moves away from 3200 K
+  const q = [3200, 3250, 3300, 3400, 4300].map((T) => tlmf(planckEBU(T), planckEBU(3200)).Qa);
+  near(q[0], 100, 1e-9, 'same temperature');
+  q.slice(1).forEach((v, i) => assert.ok(v < q[i], `falls from ${q[i].toFixed(1)} to ${v.toFixed(1)}`));
 });

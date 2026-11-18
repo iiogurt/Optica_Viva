@@ -68,6 +68,7 @@ export const GLOSSARY = [
   { term: 'Colour rendering index', match: ['colou?r rendering ind(?:ices|ex)'], lab: 'colour', def: 'A score out of 100 for how natural eight standard colours look under a lamp compared with a reference light of the same colour temperature.' },
   { term: 'Fidelity index', match: ['fidelity ind(?:ices|ex)'], lab: 'colour', def: 'A newer score out of 100 (Rf) for how closely 99 real-world colours under a lamp match their look under a reference light.' },
   { term: 'Gamut index', match: ['gamut ind(?:ices|ex)'], lab: 'colour', def: 'A score (Rg) that tells whether a lamp makes colours look more saturated (above 100) or duller (below 100) on average than the reference light.' },
+  { term: 'TLMF', match: ['TLMF'], lab: 'colour', def: 'The Television Luminaire Matching Factor: how well a second lamp matches the first in the same shot, as a standard television camera balanced to the first sees it.' },
   { term: 'TLCI', match: ['TLCI'], lab: 'colour', def: 'The Television Lighting Consistency Index: a score out of 100 for how well a standard television camera reproduces colours under a lamp; 50 is the limit of easy correction.' },
   { term: 'Coating', match: ['coatings?'], lab: 'flare', def: 'Thin layers on a lens surface that make reflected light cancel itself, so less light is reflected.' },
   // ── Astronomy and space ──
