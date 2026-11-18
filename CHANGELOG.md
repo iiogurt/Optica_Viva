@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Vignetting: relative illumination traced through real lenses.** A new section traces the Cooke, Tessar, Double-Gauss, Petzval, retrofocus and Biogon prescriptions: at each field angle the area of the bundle that passes every surface (its outline found by bisection from the chief ray) and the real image height give the relative illumination by energy conservation, RI = A⊥(θ)/A⊥(0) · f² sin θ/(h dh/dθ), which is exactly cos⁴θ for a thin lens. The element diameters (from just the axial beam to the full-field beam) and stopping down separate mechanical vignetting from the natural falloff; the transmitted bundles are drawn at five field angles. Computed in the worker. Agrees within 1.2 % with the image-space direction-cosine method and with a dense Monte Carlo trace; the Biogon reaches 39 % at 45° against cos⁴'s 25 %.
+
 ## [1.68.0] - 2026-11-18
 
 ### Added

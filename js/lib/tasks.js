@@ -43,6 +43,7 @@ import { runAF } from './autofocus.js';
 import { portraitShot } from './portrait.js';
 import { mirageScene } from './mirage.js';
 import { makeWaves, floorLight } from './caustics.js';
+import { tracedVignetting } from './relillum.js';
 import { whitened, qtransform } from './ligo.js';
 import { phaseCurves } from './glint.js';
 import { skyGrid } from './nightsky.js';
@@ -721,6 +722,7 @@ function lasercomTask(p) {
   return { result: { now, orders: LC_ORDERS.map((M) => [M, lcRate(b.rate, M, p.Ts, p.nb, 2000).rate]), curve: lcCurve(p) } };
 }
 function ligoTask(p) { const r = whitened(p.o, p.m1, p.m2, p.D, p.seed), sp = qtransform(r.data); return { result: { ...r, sp }, transfer: [r.data.buffer, r.clean.buffer, sp.data.buffer] }; }
+function relIllumTask(p) { return { result: tracedVignetting(p), transfer: [] }; }
 function causticsTask(p) { const r = floorLight(makeWaves(p.waves), p.floor); return { result: r, transfer: r.map((a) => a.buffer) }; }
 
 function halationTask(p) { const r = halationRender(p).map((a) => Float32Array.from(a)); return { result: r, transfer: r.map((a) => a.buffer) }; }
@@ -745,4 +747,4 @@ function trailsTask(p) {
   return { result, transfer: [outs.mean.buffer, outs.median.buffer, outs.clip.buffer] };
 }
 
-export const TASKS = { speckleLooks: speckleLooksTask, speckleIncoh: speckleIncohTask, lfRender: lfRenderTask, mlEval: mlEvalTask, mlMap: mlMapTask, nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
+export const TASKS = { speckleLooks: speckleLooksTask, speckleIncoh: speckleIncohTask, lfRender: lfRenderTask, mlEval: mlEvalTask, mlMap: mlMapTask, nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, relIllum: relIllumTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
