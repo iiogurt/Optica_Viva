@@ -27,15 +27,15 @@ function nearest(L, u, v) {
   return best;
 }
 
-// CCT the EBU way, and d: the distance from the locus in units of 0.0054 (negative towards green),
-// with the 4000–5000 K correction of equations [16]–[17].
+// CCT the EBU way, and d: the distance from that locus in units of 0.0054 (negative towards green).
+// The document's adjustment of d between 4000 and 5000 K ([16]–[17]) is left out: as printed it
+// moves a black body at 4500 K off its own locus and makes daylight jump at 5000 K. d is a readout
+// only and does not enter Qa.
 export function cctEBU(spd) {
   const X = dot(spd, CMF2[0]), Y = dot(spd, CMF2[1]), Z = dot(spd, CMF2[2]), s = X + Y + Z, [u, v] = uv(X / s, Y / s);
   const p = nearest(PL, u, v);
   if (p.T >= 5000) { const q = nearest(DL, u, v); return { T: q.T, d: (q.side * q.d) / 0.0054, locus: 'daylight' }; }
-  let d = (p.side * p.d) / 0.0054;
-  if (p.T > 4000) d = d > 0 ? d + (0.9 * (5000 - p.T)) / 1000 : d - (0.9 * (p.T - 4000)) / 1000;
-  return { T: p.T, d, locus: 'Planckian' };
+  return { T: p.T, d: (p.side * p.d) / 0.0054, locus: 'Planckian' };
 }
 
 // Reference spectra, each 100 at 560 nm: Planck with c2 = 1.435e7 nm K [9]; CIE daylight with the

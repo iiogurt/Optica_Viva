@@ -12,7 +12,7 @@ Optica Viva is released under the [MIT License](LICENSE). It includes or derives
 
 ## EBU Tech 3355 (TLCI-2012)
 
-The tables in `js/lib/tlcidata.js` are transcribed from the appendices of EBU Tech 3355, *Method for the assessment of the colorimetric properties of luminaires: the Television Lighting Consistency Index (TLCI-2012) and the Television Luminaire Matching Factor (TLMF-2013)* (European Broadcasting Union, Geneva, March 2017): the CIE 1931 colour-matching functions, the Planckian and daylight loci, the daylight vectors, the ColorChecker reflectances (from E. W. Taylor, BBC Research Department Report 1988/2) and the EBU standard camera responsivities and matrix (from EBU Tech 3353). The document, freely downloadable from the EBU, carries no licence statement; the project owner approved including the tables (2026-11-18). ColorChecker is a trademark of X-Rite.
+The tables in `js/lib/tlcidata.js` are transcribed from the appendices of EBU Tech 3355, *Method for the assessment of the colorimetric properties of luminaires: the Television Lighting Consistency Index (TLCI-2012) and the Television Luminaire Matching Factor (TLMF-2013)* (European Broadcasting Union, Geneva, March 2017): the CIE 1931 colour-matching functions, the Planckian and daylight loci, the daylight vectors, the ColorChecker reflectances (from E. W. Taylor, BBC Research Department Report 1988/2) and the EBU standard camera responsivities and matrix (from EBU Tech 3353). The document, freely downloadable from the EBU, carries no licence statement; the project owner approved including the tables (2026-11-18). ColorChecker is a registered trademark of its owner.
 
 ## Sekonic measurement (test fixture)
 

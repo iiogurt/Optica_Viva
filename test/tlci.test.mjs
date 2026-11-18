@@ -73,4 +73,6 @@ test('every light on the page gives a finite TLCI from all 18 coloured patches',
     assert.equal(q.n, 18, `${k}: patches used`);
   }
   near(cctEBU(ILLUMINANTS.A.spd).T, 2856 * 1.435 / 1.4388, 1, 'illuminant A with the EBU c2');
+  // d is the plain distance from the named locus: a black body sits on it at every temperature
+  for (const T of [3000, 4500, 4990]) near(cctEBU(blackbody(T)).d, 0, 0.03, `black body ${T} K: d`);
 });
