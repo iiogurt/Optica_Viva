@@ -198,6 +198,7 @@ export default function mount(root, meta) {
     f.refUCS.forEach((p, i) => { const c = sampleSRGB(CES[i], f.ref), s = sum[Math.min(15, Math.floor(p[3] / 22.5))]; for (let k = 0; k < 3; k++) s[k] += c[k]; });
     const binCol = sum.map((s, j) => { const m = Math.max(...s) || 1; return s.map((q) => (0.9 * q) / m); });
     const big = f.hue.reduce((b, x, j) => (Math.abs(x.Rcs) > Math.abs(f.hue[b].Rcs) ? j : b), 0);
+    const most = f.hue.reduce((b, x, j) => (x.Rcs > f.hue[b].Rcs ? j : b), 0), least = f.hue.reduce((b, x, j) => (x.Rcs < f.hue[b].Rcs ? j : b), 0);
     const low = f.Ri.reduce((b, x, i) => (x < f.Ri[b] ? i : b), 0);
     const meanDE = f.dE.reduce((a, x) => a + x, 0) / f.dE.length;
     const pct = (v) => (v >= 0 ? '+' : '') + v.toFixed(0) + ' %';
@@ -214,7 +215,8 @@ export default function mount(root, meta) {
       ['Lowest sample score', t('{v} (sample CES{n})', { v: f.Ri[low].toFixed(0), n: String(low + 1).padStart(2, '0') })],
       ['Reference for Rf', refName],
     ]));
-    const base = { Rf: f.Rf.toFixed(0), Ra: r.Ra.toFixed(0), Rg: f.Rg.toFixed(0), j: big + 1, cs: pct(f.hue[big].Rcs) };
+    // the saturated case names the bin that gains most, the dull case the one that loses most
+    const k = f.Rg > 102 ? most : least, base = { Rf: f.Rf.toFixed(0), Ra: r.Ra.toFixed(0), Rg: f.Rg.toFixed(0), j: k + 1, cs: pct(f.hue[k].Rcs) };
     fcalc.say(f.Rg > 102
       ? t('Judged on 99 samples, this light scores <strong>Rf = {Rf}</strong> for fidelity (Ra gave {Ra}) and <strong>Rg = {Rg}</strong> for gamut: colours look more saturated than under the reference light, most of all in hue bin {j} ({cs} chroma).', base)
       : f.Rg < 98
@@ -404,7 +406,8 @@ export default function mount(root, meta) {
 <div class="theory-cols"><div>
 <h3>99 samples in a uniform colour space</h3>
 <p>CIE 224:2017 replaces the colour rendering index's eight pastel samples with 99 <em>colour evaluation samples</em>: measured reflectances of natural objects, skin, textiles, paints, plastics and inks, chosen from more than 100 000 so that they cover colour space evenly in hue and chroma and have no wavelength they are especially sensitive to (David et al. 2015). The same samples underlie ANSI/IES TM-30. Each is rendered under the test light and under a reference of the same correlated colour temperature, using the CIE 1964 10° observer (normalised so that the light's white has \(Y = 100\)), and compared in CAM02-UCS, a uniform space built on the CIECAM02 colour appearance model. The model runs with the illuminant fully discounted (\(D = 1\)), an adapting luminance \(L_A = 100\ \text{cd/m}^2\), background \(Y_b = 20\) and an average surround. From lightness \(J\), colourfulness \(M\) and hue angle \(h\),</p>
-\[J' = \frac{1.7\,J}{1 + 0.007\,J},\quad M' = \frac{\ln(1 + 0.0228\,M)}{0.0228},\quad (a', b') = M'(\cos h, \sin h).\]
+\[J' = \frac{1.7\,J}{1 + 0.007\,J},\qquad M' = \frac{\ln(1 + 0.0228\,M)}{0.0228},\]
+\[(a', b') = M'(\cos h, \sin h).\]
 <p>The fidelity of sample \(i\) follows from its colour difference \(\Delta E_i\), and the general index from the mean difference,</p>
 \[R_{f} = 10\ln\!\big(e^{(100 - c_f\overline{\Delta E})/10} + 1\big),\qquad c_f = 6.73,\]
 <p>which is \(100 - c_f\overline{\Delta E}\) for good lights and approaches zero, never negative, for bad ones. (TM-30-15 used \(c_f = 7.54\); TM-30-18 and later adopted the CIE value.) The reference is Planckian below 4000 K, CIE daylight above 5000 K and between them a mixture whose daylight share rises linearly with temperature, each part normalised to the same luminance. This removes the jump of the colour rendering index, whose reference switches abruptly at 5000 K.</p>
@@ -412,10 +415,10 @@ export default function mount(root, meta) {
 <h3>Gamut, and which way colours move</h3>
 <p>Fidelity cannot say <em>how</em> colours change. TM-30 sorts the samples into 16 bins of hue angle (22.5° each, by their hue under the reference) and averages \((a', b')\) in each bin under both lights. The gamut index is the ratio of the areas of the two 16-sided polygons,</p>
 \[R_g = 100\,\frac{A_\text{test}}{A_\text{ref}},\]
-<p>above 100 when colours look on average more saturated than under the reference, below when duller. For bin \(j\), with the bin's centre direction \(\hat{\mathbf u}_j\) and reference average \(\bar{\mathbf a}'_{\text{ref},j}\), the chroma shift is \(R_{cs,hj} = 100\,(\bar{\mathbf a}'_{\text{test},j} - \bar{\mathbf a}'_{\text{ref},j})\cdot\hat{\mathbf u}_j/\lvert\bar{\mathbf a}'_{\text{ref},j}\rvert\) and the hue shift is the same with the perpendicular direction. The colour vector graphic draws the reference averages on a unit circle and moves each by its normalised shift: a shape stretched towards red and green oversaturates them, a dent desaturates.</p>
-<p>The two numbers trade off: a light can raise Rg only by moving colours away from the reference, which lowers Rf. Studies of preference found that many viewers like a modest increase in red saturation (positive \(R_{cs,h1}\)) at slightly lower fidelity, so TM-30's informative Annex E specifies lights by fidelity, gamut and red chroma together rather than by one number (Royer 2022).</p>
+<p>above 100 when colours look on average more saturated than under the reference, below when duller. For bin \(j\), with the bin's centre direction \(\hat{\mathbf u}_j\) and reference average \(\bar{\mathbf a}'_{\text{ref},j}\), the chroma shift is \(R_{cs,hj} = 100\,(\bar{\mathbf a}'_{\text{test},j} - \bar{\mathbf a}'_{\text{ref},j})\cdot\hat{\mathbf u}_j/\lvert\bar{\mathbf a}'_{\text{ref},j}\rvert\) and the hue shift is the same with the perpendicular direction. The colour vector graphic puts each bin's reference on a unit circle at the bin's mean reference hue and moves it by the bin's shift divided by the reference average's length: a shape stretched towards red and green oversaturates them, a dent desaturates.</p>
+<p>The two numbers trade off: a light can raise Rg only by moving colours away from the reference, which lowers Rf. Studies of preference found that many viewers like a modest increase in red saturation (positive \(R_{cs,h1}\)) at slightly lower fidelity, so TM-30's informative Annex E recommends combinations of fidelity, gamut and red chroma shift for different design intents rather than one number (Royer 2022).</p>
 <h3>This implementation</h3>
-<p>Everything is computed on the 5 nm grid from 380 to 780 nm, which CIE 224 allows. The correlated colour temperature is found as the nearest point of the Planckian locus by direct search rather than by Ohno's method; the two agree to within about 0.5 K for the lamps checked. The page reproduces the reference values of the colour-science project: Rf = 70.1 and Rg = 86 for CIE FL2, Rf = 80.6 for FL1, and all 99 sample scores and 16 bin values of FL2 within the precision those values are quoted to.</p>
+<p>Everything is computed on the 5 nm grid from 380 to 780 nm, which CIE 224 allows. The correlated colour temperature is found as the nearest point of the Planckian locus by direct search rather than by Ohno's method; the two agree to within about 0.5 K for the lamps checked. The page reproduces reference values computed with the official CIE and IES spreadsheets (as quoted by the colour-science project): Rf = 70.1 and Rg = 86 for CIE FL2, Rf = 80.6 for FL1, and all 99 sample scores and 16 bin values of FL2 within the precision those values are quoted to.</p>
 </div></div>`));
   root.append(theory('How a camera sees colour', String.raw`
 <div class="theory-cols"><div>
@@ -443,7 +446,7 @@ export default function mount(root, meta) {
     'M. R. Luo, G. Cui &amp; C. Li, “Uniform colour spaces based on CIECAM02 colour appearance model”, <em>Color Res. Appl.</em> 31, 320 (2006): CAM02-UCS.',
     'A. David, P. T. Fini, K. W. Houser, Y. Ohno, M. P. Royer, K. A. G. Smet, M. Wei &amp; L. Whitehead, “Development of the IES method for evaluating the color rendition of light sources”, <em>Opt. Express</em> 23, 15888 (2015).',
     'M. P. Royer, “Tutorial: background and guidance for using the ANSI/IES TM-30 method for evaluating light source color rendition”, <em>LEUKOS</em> 18, 191 (2022).',
-    'ANSI/IES TM-30-20, <em>Method for evaluating light source color rendition</em>; EBU Tech 3355, <em>Method for the assessment of the colorimetric properties of luminaires: the Television Lighting Consistency Index (TLCI-2012)</em>.',
+    'ANSI/IES TM-30-20, <em>Method for evaluating light source color rendition</em> (current edition TM-30-24); EBU Tech 3355, <em>Method for the assessment of the colorimetric properties of luminaires: the Television Lighting Consistency Index (TLCI-2012)</em>.',
   ]));
 
   return () => [spdView, bars, diagram, cvg, shifts, solid3, sensView, mspec].forEach((s) => s.destroy());

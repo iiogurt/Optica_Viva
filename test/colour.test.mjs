@@ -68,8 +68,9 @@ test('metamers match under the design illuminant and separate under others', asy
   assert.ok(Math.min(...r2) >= 0.0099 && Math.max(...r2) <= 0.9901, 'physically valid reflectance');
 });
 
-// CIE 224:2017 and ANSI/IES TM-30: reference values from the colour-science test suite
-// (colour/quality/tests/test_cfi2017.py and test_tm3018.py, BSD-3-Clause), quoted to 0.1 for the
+// CIE 224:2017 and ANSI/IES TM-30: reference values computed with the official CIE TC1-90 and IES
+// TM-30-18 spreadsheets, as quoted in the colour-science test suite
+// (colour/quality/tests/test_cfi2017.py and test_tm3018.py, BSD-3-Clause), to 0.1 for the
 // sample scores Ri and to whole numbers for the hue bins.
 const CFI_SAMPLE = [0, 0, 0.001, 0.001, 0.002, 0.005, 0.01, 0.021, 0.042, 0.08, 0.14, 0.225, 0.337, 0.479, 0.604, 0.633, 0.551, 0.436, 0.346, 0.282, 0.237, 0.213, 0.21, 0.226, 0.26, 0.311, 0.372, 0.436, 0.499, 0.559, 0.612, 0.658, 0.698, 0.735, 0.771, 0.804, 0.836, 0.868, 0.898, 0.926, 0.952, 0.974, 0.989, 0.998, 1, 0.992, 0.978, 0.957, 0.927, 0.888, 0.844, 0.799, 0.75, 0.698, 0.644, 0.591, 0.539, 0.488, 0.44, 0.395, 0.354, 0.316, 0.281, 0.249, 0.22, 0.194, 0.171, 0.15, 0.131, 0.115, 0.1, 0.088, 0.077, 0.067, 0.059, 0.052, 0.046, 0.04, 0.035, 0.031, 0.027]; // a 3287 K test spectrum (Planckian reference)
 const RI = {
@@ -111,4 +112,14 @@ test('CAM02-UCS: the adopted white has J′ = 100 and no colourfulness', () => {
   const W = [95.047, 100, 108.883];
   const [Jp, a, b] = cam02ucs(W, camState(W));
   near(Jp, 100, 1e-9, 'J′'); near(Math.hypot(a, b), 0, 0.01, 'M′'); // not exactly 0: the published HPE matrix's first row sums to 1.00001
+});
+test('TM-30 is finite with all 16 hue bins filled for every light the page offers', () => {
+  const lights = [...Object.values(ILLUMINANTS).map((v) => v.spd)];
+  for (let T = 1500; T <= 12000; T *= 1.05) lights.push(blackbody(T));
+  for (let T = 4000; T <= 12000; T *= 1.05) lights.push(daylight(T));
+  for (const spd of lights) {
+    const r = tm30(spd);
+    assert.ok(r.hue.every((b) => b.n > 0), 'no empty hue bin');
+    assert.ok([r.Rf, r.Rg, ...r.Ri, ...r.hue.flatMap((b) => [b.Rf, b.Rcs, b.Rhs, ...b.test])].every(Number.isFinite), 'finite');
+  }
 });

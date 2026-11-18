@@ -1342,8 +1342,8 @@ The numerical core was checked against published or analytically known values. E
 | Macro depth of field, 100 mm at 1 : 1, f/8 | exact two-sided blur search within 1 % of the formula | 2N<sub>w</sub>c/m² |
 | CCT of illuminant A; D65 chromaticity | 2856 K; (0.3127, 0.3290) | CIE 15:2018 |
 | Colour rendering index Ra of CIE FL1, FL2, FL4, FL7, FL8, FL10, FL11, FL12 | 75.8, 64.2, 51.4, 90.2, 95.5, 81.0, 82.8, 83.1 | CIE 13.3 tables: 76, 64, 51, 90, 95, 81, 83, 83 |
-| CIE 2017 fidelity Rf of a 3287 K test spectrum, CIE FL1, CIE FL2; FL2 gamut Rg | 81.61, 80.64, 70.12; 86.4; all 99 Rᵢ within 0.06 | 81.6, 80.6, 70.1; 86 (colour-science reference values for CIE 224 and TM-30) |
-| TM-30 hue bins of CIE FL2: Rf,h, Rcs,h, Rhs,h | all 16 bins equal after rounding | colour-science reference values, quoted to 1 %, 1 and 0.01 |
+| CIE 2017 fidelity Rf of a 3287 K test spectrum, CIE FL1, CIE FL2; FL2 gamut Rg | 81.61, 80.64, 70.12; 86.4; all 99 Rᵢ within 0.06 | 81.6, 80.6, 70.1; 86 (official CIE TC1-90 and IES TM-30-18 spreadsheets, via colour-science's tests) |
+| TM-30 hue bins of CIE FL2: Rf,h, Rcs,h, Rhs,h | all 16 bins equal after rounding | same spreadsheets, quoted to 1, 1 % and 0.01 |
 | CIEDE2000, Sharma test pairs 1, 3, 7, 17 | 2.0425, 1.0000, 2.3669, 27.1492 | Sharma, Wu & Dalal (2005), same |
 | Luther–Ives camera (sensitivities = x̄ȳz̄), matrix fitted under A | ΔE₀₀ < 10⁻⁴ on all 24 patches | colorimetric by construction |
 | Constructed metamer of TCS13 (skin) | ΔE₀₀ = 0 in D65; > 5 under FL11 | metameric black ⟂ S x̄, S ȳ, S z̄ |

@@ -282,20 +282,22 @@ export const fidelity = (dE) => 10 * Math.log(Math.exp((100 - 6.73 * dE) / 10) +
 
 // Rf, the 99 sample scores Ri and TM-30's gamut index Rg, the 16 hue bins' fidelity Rf,h, chroma
 // shift Rcs,h and hue shift Rhs,h, and the bins' average a′b′ under test and reference (for the
-// colour vector graphic, normalised so the reference is the unit circle).
+// colour vector graphic, normalised so the reference is the unit circle). Bins depend on the
+// reference's hues; every light this site offers fills all 16 (test/colour.test.mjs sweeps them).
 export function tm30(spd) {
   const { T, duv } = cct(xyz(spd)), ref = referenceIlluminant(T);
   const t = cesUCS(spd), r = cesUCS(ref);
   const dE = t.map((p, i) => Math.hypot(p[0] - r[i][0], p[1] - r[i][1], p[2] - r[i][2]));
   const Rf = fidelity(dE.reduce((s, x) => s + x, 0) / dE.length), Ri = dE.map(fidelity);
-  const bins = Array.from({ length: 16 }, () => ({ n: 0, at: 0, bt: 0, ar: 0, br: 0, dE: 0 }));
-  r.forEach((p, i) => { const B = bins[Math.min(15, Math.floor(p[3] / 22.5))]; B.n++; B.at += t[i][1]; B.bt += t[i][2]; B.ar += p[1]; B.br += p[2]; B.dE += dE[i]; });
-  for (const B of bins) for (const k of ['at', 'bt', 'ar', 'br', 'dE']) B[k] /= B.n;
+  const bins = Array.from({ length: 16 }, () => ({ n: 0, at: 0, bt: 0, ar: 0, br: 0, dE: 0, h: 0 }));
+  r.forEach((p, i) => { const B = bins[Math.min(15, Math.floor(p[3] / 22.5))]; B.n++; B.at += t[i][1]; B.bt += t[i][2]; B.ar += p[1]; B.br += p[2]; B.dE += dE[i]; B.h += p[3]; });
+  for (const B of bins) for (const k of ['at', 'bt', 'ar', 'br', 'dE', 'h']) B[k] /= B.n;
   const area = (k1, k2) => bins.reduce((s, B, j) => { const C = bins[(j + 1) % 16]; return s + (B[k1] * C[k2] - B[k2] * C[k1]) / 2; }, 0);
   const Rg = (100 * area('at', 'bt')) / area('ar', 'br');
   const hue = bins.map((B, j) => {
     const th = ((22.5 * j + 11.25) * Math.PI) / 180, norm = Math.hypot(B.ar, B.br), da = B.at - B.ar, db = B.bt - B.br;
-    const phi = Math.atan2(B.br, B.ar), ux = Math.cos(phi), uy = Math.sin(phi);
+    // the graphic puts the reference on the unit circle at the bin's mean reference hue (TM-30-18)
+    const phi = (B.h * Math.PI) / 180, ux = Math.cos(phi), uy = Math.sin(phi);
     return {
       n: B.n, Rf: fidelity(B.dE),
       Rcs: (100 * (da * Math.cos(th) + db * Math.sin(th))) / norm,

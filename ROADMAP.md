@@ -681,7 +681,7 @@ Candidates, in order of how much the third dimension adds:
 
 ### v1.66 Colour fidelity and gamut (TM-30)
 
-- [x] **P3 · M** **CIE 2017 fidelity Rf and ANSI/IES TM-30** in the colour-science laboratory (`#/colour`): 99 colour evaluation samples in CAM02-UCS, the gamut index Rg, chroma and hue shifts in 16 hue bins and the colour vector graphic, for the same light as the CRI. *From the backlog. Reproduces the colour-science reference values for CIE FL1, FL2 and a test spectrum. TLCI-2012 stays in the backlog: it needs the EBU standard camera model's tables, which are not in an openly licensed dataset here.*
+- [x] **P3 · M** **CIE 2017 fidelity Rf and ANSI/IES TM-30** in the colour-science laboratory (`#/colour`): 99 colour evaluation samples in CAM02-UCS, the gamut index Rg, chroma and hue shifts in 16 hue bins and the colour vector graphic, for the same light as the CRI. *From the backlog. Reproduces the colour-science reference values for CIE FL1, FL2 and a test spectrum. TLCI-2012 stays in the backlog: the EBU publishes the standard camera curves (Tech 3355, Appendix 5) and free software, but no terms were found that allow copying the tables into this MIT-licensed repository; the owner decides.*
 
 ### v2.0 Learning platform
 
@@ -705,7 +705,7 @@ Ideas worth keeping but not yet scheduled:
 - *(from v1.36)* **Wide-gamut output** (Display P3 canvases) for spectral colours: needs the colours kept outside sRGB through the computation (the PSF clips negative components today) and a P3 screen to check it on; gains nothing on sRGB screens.
 - *(from v1.3)* Traced relative illumination across the field (real-ray pupil area and cos⁴ projection) in the ray tracer.
 
-- *(from v1.6 colour science)* TLCI-2012 (EBU Tech 3355 camera model). *TM-30 shipped in v1.66; TLCI needs the EBU standard camera's spectral sensitivities and matrix from a source whose terms allow redistribution.*
+- *(from v1.6 colour science)* TLCI-2012 (EBU Tech 3355 camera model). *TM-30 shipped in v1.66. The EBU publishes the standard camera curves (Tech 3355, Appendix 5; camera model in Tech 3353); whether they may be redistributed here needs the owner's decision or the EBU's permission.*
 - *(from v1.7 spectroscopy)* Integral-field unit simulation: image slicer reformatting a galaxy field into a long slit and reconstructing the data cube.
 - *(from v1.9 starshade)* Petal terms (J<sub>N</sub>, J<sub>2N</sub> …) and 2-D shadows of real petal shapes with manufacturing and deployment errors; sunlight scattered by the petal edges; numerically optimised occulter profiles (Vanderbei, Cady & Kasdin).
 - *(from v1.9 field-dependent PSF)* Three-mirror anastigmats (JWST, Roman) with fifth-order terms from real-ray tracing through mirrors, and field-dependent Zernike maps in the style of STPSF.
