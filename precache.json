@@ -105,6 +105,7 @@
     "js/lib/pupil.js",
     "js/lib/random.js",
     "js/lib/raytrace.js",
+    "js/lib/relillum.js",
     "js/lib/rollingcam.js",
     "js/lib/rv.js",
     "js/lib/satellite.js",

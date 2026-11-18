@@ -244,7 +244,7 @@ Exact tilted-thin-lens imaging, verified against the hinge rule J = f/sin α. Ea
 **Vignetting & relative illumination** · `#/vignetting`<br>
 <img src="docs/screenshots/vignetting.webp" alt="Flat field with third-stop contours and falloff components">
 
-Three independent causes, each computed: natural falloff cosⁿθ; mechanical vignetting from the **exact three-circle overlap** of the pupil and the barrel rims; and pixel vignetting from chief-ray angle against microlens acceptance.
+Three independent causes, each computed: natural falloff cosⁿθ; mechanical vignetting from the **exact three-circle overlap** of the pupil and the barrel rims; and pixel vignetting from chief-ray angle against microlens acceptance. A second section **traces relative illumination through real prescriptions** (Cooke, Tessar, Double-Gauss, Petzval, retrofocus, Biogon): the transmitted bundle's area at each field angle and the real image height, so pupil aberration, rim vignetting and distortion replace the cosⁿ guess; stopping down and trimming the element diameters show which part is mechanical.
 
 </td>
 <td valign="top">
@@ -961,7 +961,8 @@ flowchart LR
 | Model | Implementation | Used by |
 |---|---|---|
 | Glass dispersion | Three-term Sellmeier with Schott catalogue coefficients (12 glasses) and Malitson (1965) for fused silica and CaF₂ | ray tracer, chromatic, flare |
-| Exact ray tracing | 3-D vector Snell refraction through spherical and even-aspheric surfaces (conic + polynomial, Newton intersection), clear-aperture vignetting, Newton ray aiming at the stop | ray tracer |
+| Exact ray tracing | 3-D vector Snell refraction through spherical and even-aspheric surfaces (conic + polynomial, Newton intersection), clear-aperture vignetting, Newton ray aiming at the stop |
+| Traced relative illumination | RI = A⊥(θ)/A⊥(0) · f² sin θ/(h dh/dθ) from energy conservation; A⊥ from the bundle outline (bisection along 64 directions from the chief ray, star-shaped bundle assumed); chief-ray image height on the paraxial image plane; 587.6 nm; no Fresnel losses or aberration blur | ray tracer |
 | First-order optics | y–nu paraxial matrices: EFL, BFD, entrance and exit pupils, Petzval sum | ray tracer, flare |
 | Third-order aberrations | Seidel sums S_I–S_V, C_I, C_II per surface (Welford), including aspheric terms; validated against exact rays | ray tracer |
 | Wavefront | OPD against the exit-pupil reference sphere, sampled on a 41 × 41 pupil grid | ray tracer |
@@ -1196,6 +1197,7 @@ Optica_Viva/
 │   │   ├── portrait.js        Portrait mission: perspective, focal length, depth of field, background blur, light, and the photograph the plan gives
 │   │   ├── random.js          Seeded random numbers for every simulation (mulberry32, Box–Muller, Poisson)
 │   │   ├── raytrace.js        Exact ray tracer (spheres + even aspheres), paraxial analysis, ray aiming, OPD
+│   │   ├── relillum.js        Relative illumination traced through a prescription: bundle area, image height, rims
 │   │   ├── optimise.js        Damped-least-squares (Levenberg–Marquardt) lens optimiser
 │   │   ├── tolerance.js       Monte-Carlo tolerancing (incl. element decenter/tilt) with refocus compensation, sensitivity
 │   │   ├── ghosts.js          Lens-flare ghosts: paraxial matrices and real-ray rasteriser
@@ -1283,6 +1285,8 @@ The numerical core was checked against published or analytically known values. E
 | Angular-diameter distance, z = 0.3 | 919 Mpc | flat ΛCDM (H₀ = 70, Ω<sub>m</sub> = 0.3) ≈ 920 Mpc |
 | Hyperfocal, 50 mm f/2.8, c = 0.029 mm | 31 m | f²/(Nc) + f = 31.0 m |
 | cos⁴ at 37.7° (28 mm FF corner) | −1.35 EV | log₂ cos⁴θ = −1.351 EV |
+| Traced relative illumination, achromat f/5 at 1.5° and 3° | equals cos⁴θ within 2 × 10⁻⁴ | thin-lens limit |
+| Traced relative illumination of seven lens/rim settings at half and full field | within 1.2 % | image-space direction-cosine area (independent method); dense Monte Carlo within 1 % |
 | Traced bokeh disk at 4 EV down: Ø and flux (3 lenses) | within 1 % and 0.5 % | paraxial 2 r<sub>EP</sub> Δz / f; π r<sub>EP</sub>² |
 | Defocused PSF centre (plano-hyperbolic singlet, no spherical aberration), W₀₂₀ = 0.25, 0.5, 1, 1.5, 2 λ | 0.818, 0.423, 0.000, 0.048, 0.001 | Born & Wolf §8.8: sinc²(W₀₂₀/λ) = 0.811, 0.405, 0, 0.045, 0 |
 | Traced bokeh colour fringes | singlet: violet behind, red in front; achromat: green behind, magenta in front | longitudinal colour and secondary spectrum |

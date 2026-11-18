@@ -63,6 +63,7 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.66 Colour fidelity and gamut (TM-30)](#v166-colour-fidelity-and-gamut-tm-30)
   - [v1.67 TLCI-2012](#v167-tlci-2012)
   - [v1.68 TLMF and the colourist's advice](#v168-tlmf-and-the-colourists-advice)
+  - [v1.69 Traced relative illumination](#v169-traced-relative-illumination)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -86,7 +87,7 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"] --> D14["v1.12–1.13<br/>missions · 3 labs"] --> D15["v1.14<br/>4 more labs"] --> D16["v1.15<br/>your own gear"] --> D17["v1.16<br/>tours · exercises · PWA"] --> D18["v1.17<br/>classic lenses · mirrors · TMA"] --> D19["v1.18<br/>glass catalogue · tolerancing · DE/FR/ES"] --> D20["v1.19<br/>translated controls · parallel workers"] --> D21["v1.20–1.23<br/>3-D views"] --> D22["v1.24–1.26<br/>whole interface in DE/FR/ES"] --> D23["v1.27–1.30<br/>halos · waves · black hole"] --> D24["v1.31–1.35<br/>live camera · validation fixes"] --> D25["v1.36–1.41<br/>presentation"] --> D26["v1.42–1.44<br/>mission pictures"] --> D27["v1.45–1.65<br/>21 new laboratories"] --> D28["v1.66<br/>TM-30 fidelity and gamut"] --> D29["v1.67<br/>TLCI-2012"] --> D30["v1.68<br/>TLMF · colourist's advice"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"] --> D14["v1.12–1.13<br/>missions · 3 labs"] --> D15["v1.14<br/>4 more labs"] --> D16["v1.15<br/>your own gear"] --> D17["v1.16<br/>tours · exercises · PWA"] --> D18["v1.17<br/>classic lenses · mirrors · TMA"] --> D19["v1.18<br/>glass catalogue · tolerancing · DE/FR/ES"] --> D20["v1.19<br/>translated controls · parallel workers"] --> D21["v1.20–1.23<br/>3-D views"] --> D22["v1.24–1.26<br/>whole interface in DE/FR/ES"] --> D23["v1.27–1.30<br/>halos · waves · black hole"] --> D24["v1.31–1.35<br/>live camera · validation fixes"] --> D25["v1.36–1.41<br/>presentation"] --> D26["v1.42–1.44<br/>mission pictures"] --> D27["v1.45–1.65<br/>21 new laboratories"] --> D28["v1.66<br/>TM-30 fidelity and gamut"] --> D29["v1.67<br/>TLCI-2012"] --> D30["v1.68<br/>TLMF · colourist's advice"] --> D31["v1.69<br/>traced relative illumination"]
     end
     subgraph Next["Planned"]
         direction TB
@@ -102,7 +103,7 @@ flowchart LR
 | Laboratories | 71 laboratories, 9 missions, the physics primer and the reference pages (catalogue, gallery, your gear) | see Planned milestones |
 | Catalogue entries | 257, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
-| Automated tests | 562 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
+| Automated tests | 566 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
 
 ---
@@ -693,6 +694,10 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P3 · S** **TLMF-2013 and the colourist's advice table** (`#/colour`): a second light matched against the first with the camera balanced to it, all 24 patches scored; the advice table of corrections per hue sector, as in Tech 3355. *From the backlog. The advice table for CIE FL1 agrees in direction everywhere with the document's daylight-tube example.*
 
+### v1.69 Traced relative illumination
+
+- [x] **P3 · M** **Relative illumination traced through real lenses** (`#/vignetting`): the transmitted bundle's area at each field angle (bisection on its outline) and the real image height, from energy conservation; element diameters and stopping down separate mechanical vignetting from the natural falloff. *From the backlog (v1.3). Agrees within 1.2 % with the image-space direction-cosine method; reduces to cos⁴ for a slow narrow-field lens.*
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -713,7 +718,6 @@ Ideas worth keeping but not yet scheduled:
 - *(from v1.2)* **WebGPU compute path** for FFTs, phase screens and per-pixel ray casting, with a mandatory CPU fallback; waits until the Raspberry Pi 4 or the CI runners expose a WebGPU adapter to test it on.
 - *(from v1.36)* **Soft shadows and tighter framing in the 3-D views**: the scenes have no ground to cast onto, and shadow maps are heavy on the Raspberry Pi; framing would fit the camera to the meshes rather than to every ray.
 - *(from v1.36)* **Wide-gamut output** (Display P3 canvases) for spectral colours: needs the colours kept outside sRGB through the computation (the PSF clips negative components today) and a P3 screen to check it on; gains nothing on sRGB screens.
-- *(from v1.3)* Traced relative illumination across the field (real-ray pupil area and cos⁴ projection) in the ray tracer.
 
 - *(from v1.67 TLCI)* A mid-scale external check of TLCI and TLMF against the EBU's own software (its download is blocked to automated clients here).
 - *(from v1.7 spectroscopy)* Integral-field unit simulation: image slicer reformatting a galaxy field into a long slit and reconstructing the data cube.
