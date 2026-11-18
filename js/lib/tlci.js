@@ -5,7 +5,7 @@
 // or daylight locus (above), the camera chain balance → matrix → 90 % saturation → BT.709 OETF, a
 // display with gamma 2.4 and BT.709 primaries, CIEDE2000, a fourth-power mean and Qa = 100/(1 + (ΔE/3.16)^2.4).
 import { CMF2, BASIS, PLANCK_LOCUS, DAYLIGHT_LOCUS, CHECKER, CAMERA, CAMERA_MATRIX, NWL, WL0 } from './tlcidata.js';
-import { lab, deltaE00 } from './colorsci.js';
+import { lab, deltaE00Parts } from './colorsci.js';
 
 export const TLCI_WL = Array.from({ length: NWL }, (_, i) => WL0 + 5 * i);
 const dot = (a, b) => { let s = 0; for (let i = 0; i < NWL; i++) s += a[i] * b[i]; return s; };
@@ -65,29 +65,77 @@ const SAT = (() => { const a = (1 - 90 / 100) / 3; return [[1 - 2 * a, a, a], [a
 export const oetf709 = (L) => (L < 0.018 ? 4.5 * L : 1.099 * L ** 0.45 - 0.099);
 const DISPLAY = [[0.412391, 0.357584, 0.180481], [0.212639, 0.715169, 0.072192], [0.019331, 0.119195, 0.950532]];
 const WHITE = DISPLAY.map((r) => 100 * (r[0] + r[1] + r[2]));
-// Each patch under a light: balanced so that a 90 % neutral gives R = G = B = 1, then matrix,
-// saturation, OETF (signal V′), display (gamma 2.4) and XYZ (Y = 100 for display white).
-export function camera(spd) {
-  const g = CAMERA.map((c) => 0.9 * dot(spd, c));
+// Each patch under a light, then matrix, saturation, OETF (signal V′), display (gamma 2.4) and XYZ
+// (Y = 100 for display white). The camera is balanced on `balanceTo` so that a 90 % neutral gives
+// R = G = B = 1: on the light itself for TLCI, on the reference luminaire for TLMF, where the test
+// light is then only scaled so that the 90 % neutral's luma (BT.709 weights) is 1.
+export function camera(spd, { balanceTo = spd, normaliseLuma = false } = {}) {
+  const g = CAMERA.map((c) => 0.9 * dot(balanceTo, c));
+  let k = 1;
+  if (normaliseLuma) { const n = CAMERA.map((c, j) => (0.9 * dot(spd, c)) / g[j]); k = 1 / (0.2126 * n[0] + 0.7152 * n[1] + 0.0722 * n[2]); }
   return CHECKER.map((r) => {
-    const L = spd.map((s, i) => s * r[i]), C = CAMERA.map((c, k) => dot(L, c) / g[k]);
+    const L = spd.map((s, i) => s * r[i]), C = CAMERA.map((c, j) => (k * dot(L, c)) / g[j]);
     const B = mv(SAT, mv(CAMERA_MATRIX, C)), V = B.map(oetf709);
     const D = V.map((q) => Math.sign(q) * Math.abs(q) ** 2.4), XYZ = mv(DISPLAY, D).map((q) => 100 * q);
     return { V, XYZ, Lab: lab(XYZ, WHITE), clipped: [...C, ...B].some((q) => q < 0) };
   });
 }
 
-// TLCI of a spectrum on the 380–780 nm or 380–760 nm grid (5 nm). Qa is null when every coloured
-// patch is clipped.
+// Compare the patches seen under a test and a reference light; `count` patches take part (18 for
+// TLCI, all 24 for TLMF), less any that clip. Qa is null when none is left.
 export const fromQa = (dE) => 100 / (1 + (dE / 3.16) ** 2.4);
-export function tlci(spdIn) {
-  const spd = spdIn.slice(0, NWL), c = cctEBU(spd), ref = referenceEBU(c.T);
-  const test = camera(spd), refc = camera(ref);
+function compare(test, refc, count) {
   const patches = test.map((t, i) => {
-    const r = refc[i], used = i < 18 && !t.clipped && !r.clipped;
-    return { test: t.V, ref: r.V, dE: deltaE00(r.Lab, t.Lab), used };
+    const r = refc[i], parts = deltaE00Parts(r.Lab, t.Lab);
+    return { test: t.V, ref: r.V, dE: parts.dE, parts, used: i < count && !t.clipped && !r.clipped };
   });
   const used = patches.filter((p) => p.used);
   const dEa = used.length ? (used.reduce((s, p) => s + p.dE ** 4, 0) / used.length) ** 0.25 : NaN;
-  return { ...c, ref, patches, n: used.length, dEa, Qa: used.length ? fromQa(dEa) : null };
+  return { patches, n: used.length, dEa, Qa: used.length ? fromQa(dEa) : null, advice: advice(patches) };
+}
+
+// The colourist's advice table (Tech 3355 §2.1): each used patch goes to one of 12 hue sectors of
+// 30°, centred on the primaries, secondaries and the colours between, by the hue of its BT.709
+// colour-difference signals under the test light; per sector the mean ΔL, ΔC and ΔH (CIEDE2000
+// terms, test − reference) give a correction of round(6Δ/3.16) steps in the opposite direction.
+// Sectors without a patch take the mean of their nearest filled neighbours on either side.
+export const SECTORS = ['R', 'R/Y', 'Y', 'Y/G', 'G', 'G/C', 'C', 'C/B', 'B', 'B/M', 'M', 'M/R'];
+export function hueEBU([R, G, B]) {
+  const Y = 0.2126 * R + 0.7152 * G + 0.0722 * B, CR = 0.635 * (R - Y), CB = 0.5389 * (B - Y);
+  const h = (Math.atan2(CR, CB) * 180) / Math.PI;
+  return (h + 360) % 360;
+}
+const RED = hueEBU([1, 0, 0]);
+export function advice(patches) {
+  const acc = SECTORS.map(() => ({ n: 0, L: 0, C: 0, H: 0 }));
+  for (const p of patches) {
+    if (!p.used) continue;
+    const s = acc[Math.floor((((hueEBU(p.test) - RED + 15) % 360) + 360) % 360 / 30) % 12];
+    s.n++; s.L += p.parts.dL; s.C += p.parts.dC; s.H += p.parts.dH;
+  }
+  const mean = acc.map((a) => (a.n ? { L: a.L / a.n, C: a.C / a.n, H: a.H / a.n } : null));
+  return mean.map((m, j) => {
+    let filled = m, interpolated = false;
+    if (!m) {
+      const find = (dir) => { for (let k = 1; k < 12; k++) { const q = mean[(j + dir * k + 12) % 12]; if (q) return q; } return null; };
+      const a = find(-1), b = find(1);
+      if (a && b) filled = { L: (a.L + b.L) / 2, C: (a.C + b.C) / 2, H: (a.H + b.H) / 2 };
+      interpolated = true;
+    }
+    const steps = (d) => -Math.round((6 * d) / 3.16) || 0;
+    return { sector: SECTORS[j], n: acc[j].n, interpolated, L: filled && steps(filled.L), C: filled && steps(filled.C), H: filled && steps(filled.H) };
+  });
+}
+
+// TLCI of a spectrum on the 380–780 nm or 380–760 nm grid (5 nm).
+export function tlci(spdIn) {
+  const spd = spdIn.slice(0, NWL), c = cctEBU(spd), ref = referenceEBU(c.T);
+  return { ...c, ref, ...compare(camera(spd), camera(ref), 18) };
+}
+
+// TLMF-2013: how well a test luminaire matches a real reference luminaire in the same shot. The
+// camera is balanced to the reference; all 24 patches count, since a colour cast shows on greys.
+export function tlmf(testIn, refIn) {
+  const spd = testIn.slice(0, NWL), ref = refIn.slice(0, NWL);
+  return compare(camera(spd, { balanceTo: ref, normaliseLuma: true }), camera(ref), 24);
 }

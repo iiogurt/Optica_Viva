@@ -97,7 +97,9 @@ export function lab([X, Y, Z], W = D65_XYZ) {
 }
 
 // CIEDE2000 colour difference (Sharma, Wu & Dalal 2005), kL = kC = kH = 1.
-export function deltaE00(l1, l2) {
+export const deltaE00 = (l1, l2) => deltaE00Parts(l1, l2).dE;
+// Its weighted lightness, chroma and hue terms ΔL/S_L, ΔC/S_C, ΔH/S_H (second minus first) and ΔE.
+export function deltaE00Parts(l1, l2) {
   const [L1, a1, b1] = l1, [L2, a2, b2] = l2, rad = Math.PI / 180;
   const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2), Cb = (C1 + C2) / 2;
   const G = 0.5 * (1 - Math.sqrt(Cb ** 7 / (Cb ** 7 + 25 ** 7)));
@@ -114,7 +116,8 @@ export function deltaE00(l1, l2) {
   const T = 1 - 0.17 * Math.cos((hb - 30) * rad) + 0.24 * Math.cos(2 * hb * rad) + 0.32 * Math.cos((3 * hb + 6) * rad) - 0.2 * Math.cos((4 * hb - 63) * rad);
   const dTh = 30 * Math.exp(-(((hb - 275) / 25) ** 2)), Rc = 2 * Math.sqrt(Cpb ** 7 / (Cpb ** 7 + 25 ** 7));
   const Sl = 1 + (0.015 * (Lb - 50) ** 2) / Math.sqrt(20 + (Lb - 50) ** 2), Sc = 1 + 0.045 * Cpb, Sh = 1 + 0.015 * Cpb * T, Rt = -Math.sin(2 * dTh * rad) * Rc;
-  return Math.sqrt((dL / Sl) ** 2 + (dC / Sc) ** 2 + (dH / Sh) ** 2 + Rt * (dC / Sc) * (dH / Sh));
+  const L = dL / Sl, C = dC / Sc, H = dH / Sh;
+  return { dL: L, dC: C, dH: H, dE: Math.sqrt(L * L + C * C + H * H + Rt * C * H) };
 }
 
 // Colour of a reflectance under an illuminant, as seen by an observer adapted to that
