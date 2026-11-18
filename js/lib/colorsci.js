@@ -1,7 +1,9 @@
 // Colour science on tabulated spectra (380–780 nm, 5 nm): tristimulus values, chromaticity,
 // Planckian and CIE daylight illuminants, correlated colour temperature and Duv, the CIE 13.3
-// colour rendering index, chromatic adaptation, CIELAB and CIEDE2000.
+// colour rendering index, chromatic adaptation, CIELAB and CIEDE2000, CIECAM02 and CAM02-UCS, and
+// the CIE 2017 fidelity index with the ANSI/IES TM-30 gamut index and hue-bin measures.
 import { CMF, DBASIS, TCS, NWL, WL0, DWL } from './colordata.js';
+import { CMF10, CES } from './cesdata.js';
 
 export const LAMBDA = Array.from({ length: NWL }, (_, i) => WL0 + i * DWL);
 
@@ -225,4 +227,83 @@ export function metamer(r, spd, strength = 1, wiggle = 3) {
   }
   const a = Math.max(0, amax) * strength;
   return r.map((v, i) => v + a * b[i]);
+}
+
+// ── CIE 2017 colour fidelity (CIE 224:2017) and ANSI/IES TM-30 ───────────────────────────────
+// CIECAM02 (CIE 159:2004) with the illuminant discounted (D = 1), L_A = 100 cd/m², Y_b = 20,
+// average surround, followed by CAM02-UCS (Luo, Cui & Li 2006). Returns [J′, a′, b′, h].
+const CAT02 = [[0.7328, 0.4296, -0.1624], [-0.7036, 1.6975, 0.0061], [0.003, 0.0136, 0.9834]];
+const HPE = [[0.38971, 0.68898, -0.07868], [-0.22981, 1.1834, 0.04641], [0, 0, 1]];
+const mm = (A, B) => A.map((r) => B[0].map((_, j) => r[0] * B[0][j] + r[1] * B[1][j] + r[2] * B[2][j]));
+const HPE_CAT = mm(HPE, inv3(CAT02));
+const CAM = (() => {
+  const LA = 100, Yb = 20, F = 1, c = 0.69, Nc = 1, k = 1 / (5 * LA + 1);
+  const FL = 0.2 * k ** 4 * 5 * LA + 0.1 * (1 - k ** 4) ** 2 * Math.cbrt(5 * LA);
+  const n = Yb / 100, z = 1.48 + Math.sqrt(n), Nbb = 0.725 * (1 / n) ** 0.2;
+  return { F, c, Nc, FL, n, z, Nbb, Ncb: Nbb };
+})();
+const post = (x) => { const f = (CAM.FL * Math.abs(x) / 100) ** 0.42; return (Math.sign(x) * 400 * f) / (27.13 + f) + 0.1; };
+export function camState(XYZw) {
+  const RGBw = mv(CAT02, XYZw), D = RGBw.map((q) => XYZw[1] / q);
+  const resp = (XYZ) => { const R = mv(CAT02, XYZ); return mv(HPE_CAT, [R[0] * D[0], R[1] * D[1], R[2] * D[2]]).map(post); };
+  const w = resp(XYZw), Aw = (2 * w[0] + w[1] + w[2] / 20 - 0.305) * CAM.Nbb;
+  return { resp, Aw };
+}
+export function cam02ucs(XYZ, state) {
+  const [Ra, Ga, Ba] = state.resp(XYZ);
+  const a = Ra - (12 * Ga) / 11 + Ba / 11, b = (Ra + Ga - 2 * Ba) / 9;
+  let h = (Math.atan2(b, a) * 180) / Math.PI; if (h < 0) h += 360;
+  const et = 0.25 * (Math.cos((h * Math.PI) / 180 + 2) + 3.8);
+  const A = (2 * Ra + Ga + Ba / 20 - 0.305) * CAM.Nbb, J = 100 * (A / state.Aw) ** (CAM.c * CAM.z);
+  const t = ((50000 / 13) * CAM.Nc * CAM.Ncb * et * Math.hypot(a, b)) / (Ra + Ga + (21 / 20) * Ba);
+  const M = t ** 0.9 * Math.sqrt(J / 100) * (1.64 - 0.29 ** CAM.n) ** 0.73 * CAM.FL ** 0.25;
+  const Jp = (1.7 * J) / (1 + 0.007 * J), Mp = Math.log(1 + 0.0228 * M) / 0.0228, hr = (h * Math.PI) / 180;
+  return [Jp, Mp * Math.cos(hr), Mp * Math.sin(hr), h];
+}
+
+// The 99 samples under a light, in CAM02-UCS: 10° observer, white normalised to Y = 100.
+function cesUCS(spd) {
+  const tri = (S) => { let X = 0, Y = 0, Z = 0; for (let i = 0; i < NWL; i++) { X += S[i] * CMF10[0][i]; Y += S[i] * CMF10[1][i]; Z += S[i] * CMF10[2][i]; } return [X, Y, Z]; };
+  const W = tri(spd), k = 100 / W[1], st = camState(W.map((q) => q * k));
+  return CES.map((r) => cam02ucs(tri(spd.map((s, i) => s * r[i])).map((q) => q * k), st));
+}
+
+// CIE 224 reference illuminant: Planckian below 4000 K, CIE daylight above 5000 K, and between them
+// a blend in proportion to (T − 4000)/1000 of the two, each normalised to Y = 1 (2° observer).
+export function referenceIlluminant(T) {
+  if (T < 4000) return blackbody(T);
+  if (T > 5000) return daylight(T);
+  const p = blackbody(T), d = daylight(T), yp = xyz(p)[1], yd = xyz(d)[1], m = (T - 4000) / 1000;
+  return p.map((v, i) => (1 - m) * (v / yp) + m * (d[i] / yd));
+}
+
+// ΔE in CAM02-UCS → fidelity score; c_f = 6.73 (CIE 224:2017, TM-30-18 onwards).
+export const fidelity = (dE) => 10 * Math.log(Math.exp((100 - 6.73 * dE) / 10) + 1);
+
+// Rf, the 99 sample scores Ri and TM-30's gamut index Rg, the 16 hue bins' fidelity Rf,h, chroma
+// shift Rcs,h and hue shift Rhs,h, and the bins' average a′b′ under test and reference (for the
+// colour vector graphic, normalised so the reference is the unit circle). Bins depend on the
+// reference's hues; every light this site offers fills all 16 (test/colour.test.mjs sweeps them).
+export function tm30(spd) {
+  const { T, duv } = cct(xyz(spd)), ref = referenceIlluminant(T);
+  const t = cesUCS(spd), r = cesUCS(ref);
+  const dE = t.map((p, i) => Math.hypot(p[0] - r[i][0], p[1] - r[i][1], p[2] - r[i][2]));
+  const Rf = fidelity(dE.reduce((s, x) => s + x, 0) / dE.length), Ri = dE.map(fidelity);
+  const bins = Array.from({ length: 16 }, () => ({ n: 0, at: 0, bt: 0, ar: 0, br: 0, dE: 0, h: 0 }));
+  r.forEach((p, i) => { const B = bins[Math.min(15, Math.floor(p[3] / 22.5))]; B.n++; B.at += t[i][1]; B.bt += t[i][2]; B.ar += p[1]; B.br += p[2]; B.dE += dE[i]; B.h += p[3]; });
+  for (const B of bins) for (const k of ['at', 'bt', 'ar', 'br', 'dE', 'h']) B[k] /= B.n;
+  const area = (k1, k2) => bins.reduce((s, B, j) => { const C = bins[(j + 1) % 16]; return s + (B[k1] * C[k2] - B[k2] * C[k1]) / 2; }, 0);
+  const Rg = (100 * area('at', 'bt')) / area('ar', 'br');
+  const hue = bins.map((B, j) => {
+    const th = ((22.5 * j + 11.25) * Math.PI) / 180, norm = Math.hypot(B.ar, B.br), da = B.at - B.ar, db = B.bt - B.br;
+    // the graphic puts the reference on the unit circle at the bin's mean reference hue (TM-30-18)
+    const phi = (B.h * Math.PI) / 180, ux = Math.cos(phi), uy = Math.sin(phi);
+    return {
+      n: B.n, Rf: fidelity(B.dE),
+      Rcs: (100 * (da * Math.cos(th) + db * Math.sin(th))) / norm,
+      Rhs: (-da * Math.sin(th) + db * Math.cos(th)) / norm,
+      ref: [ux, uy], test: [ux + da / norm, uy + db / norm],
+    };
+  });
+  return { Rf, Rg, Ri, dE, hue, cct: T, duv, ref, test: t, refUCS: r };
 }

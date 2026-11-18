@@ -65,6 +65,9 @@ export const GLOSSARY = [
   { term: 'Chromaticity', match: ['chromaticit(?:y|ies)'], lab: 'colour', def: 'The hue and saturation of a colour without its brightness, given as two numbers (x, y) on the CIE diagram.' },
   { term: 'Metamerism', match: ['metamerism'], lab: 'colour', def: 'Two different spectra that look like the same colour to one viewer or light but not to another.' },
   { term: 'Colour temperature', match: ['colou?r temperatures?'], lab: 'colour', def: 'How warm (orange) or cool (blue) a white light looks, given as the temperature of a glowing body of that colour.' },
+  { term: 'Colour rendering index', match: ['colou?r rendering ind(?:ices|ex)'], lab: 'colour', def: 'A score out of 100 for how natural eight standard colours look under a lamp compared with a reference light of the same colour temperature.' },
+  { term: 'Fidelity index', match: ['fidelity ind(?:ices|ex)'], lab: 'colour', def: 'A newer score out of 100 (Rf) for how closely 99 real-world colours under a lamp match their look under a reference light.' },
+  { term: 'Gamut index', match: ['gamut ind(?:ices|ex)'], lab: 'colour', def: 'A score (Rg) that tells whether a lamp makes colours look more saturated (above 100) or duller (below 100) on average than the reference light.' },
   { term: 'Coating', match: ['coatings?'], lab: 'flare', def: 'Thin layers on a lens surface that make reflected light cancel itself, so less light is reflected.' },
   // ── Astronomy and space ──
   { term: 'Parfocal', match: ['parfocal'], lab: 'zoom', def: 'Staying in focus while the focal length is changed.' },

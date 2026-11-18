@@ -12,7 +12,7 @@ Optica Viva is released under the [MIT License](LICENSE). It includes or derives
 
 ## colour-science datasets
 
-The tables in `js/lib/colordata.js` were generated from the datasets of the [colour-science](https://github.com/colour-science/colour) Python package. They reproduce the CIE publications CIE 15:2018 and CIE 13.3-1995. The colour-science licence:
+The tables in `js/lib/colordata.js` and `js/lib/cesdata.js` were generated from the datasets of the [colour-science](https://github.com/colour-science/colour) Python package (`cesdata.js` from version 0.4.6). They reproduce the CIE publications CIE 15:2018 (including the CIE 1964 10° standard observer), CIE 13.3-1995 and CIE 224:2017 (the 99 colour evaluation samples, which ANSI/IES TM-30 also uses). The reference values in `test/colour.test.mjs` for the CIE 2017 fidelity index and TM-30 are quoted from the same package's test suite, which computed them with the official CIE TC1-90 and IES TM-30-18 spreadsheets. The colour-science licence:
 
 ```
 BSD 3-Clause License
