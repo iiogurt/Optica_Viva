@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Fixed
+- Vignetting: the traced section's slider is now labelled *Diameters of the elements other than the stop*; it always set every element's clear radius except the stop's, not only the front and rear ones.
+
 ## [1.70.0] - 2026-11-18
 
 ### Added

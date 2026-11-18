@@ -151,7 +151,7 @@ export default function mount(root, meta) {
   const tctl = controls({
     lens: { type: 'select', label: 'Lens prescription', value: 'double-gauss', options: TRACED.map((k) => [k, LENSES[k].name]) },
     stop: { type: 'range', label: 'Stop down from full aperture', min: 0, max: 4, step: 1 / 3, value: 0, fmt: (v) => (v ? `${v.toFixed(1)} EV` : t('wide open')) },
-    trim: { type: 'range', label: 'Front and rear element diameters', min: 0, max: 1, step: 0.05, value: 0.5, fmt: (v) => `${Math.round(100 * v)} %`, hint: '0 %: only as wide as the axial beam needs (strong vignetting); 100 %: wide enough for the full-field beam' },
+    trim: { type: 'range', label: 'Diameters of the elements other than the stop', min: 0, max: 1, step: 0.05, value: 0.5, fmt: (v) => `${Math.round(100 * v)} %`, hint: '0 %: only as wide as the axial beam needs (strong vignetting); 100 %: wide enough for the full-field beam' },
   }, () => runTraced());
   const tro = h('div'), tcalc = liveCalc('Traced relative illumination');
   const tcurve = stage({ aspect: 2.4, label: '', draw: drawTraced, cls: 'plain', minH: 220 });
