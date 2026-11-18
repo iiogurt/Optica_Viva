@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.68.0] - 2026-11-18
+
 ### Added
 - **Colour science: TLMF-2013 and the colourist's advice.** A switch compares the light either with its own reference (TLCI) or with a second light (TLMF-2013, the EBU's luminaire matching factor): the camera stays balanced to the second light, the first is only scaled to the same luma, and all 24 patches count, so a colour cast on the greys shows. Two lights that look the same white can match badly for the camera (a red-enhanced LED against tungsten: TLCI 67, TLMF 12). Under the chart, the colourist's advice table of Tech 3355 gives the corrections in lightness, chroma and hue for 12 hue sectors; for CIE FL1 it agrees in direction everywhere with the document's daylight-tube example. Glossary entry for TLMF.
 
@@ -1090,7 +1092,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.67.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.68.0...HEAD
+[1.68.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.67.0...v1.68.0
 [1.67.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.66.0...v1.67.0
 [1.66.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.65.1...v1.66.0
 [1.65.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.65.0...v1.65.1
