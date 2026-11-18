@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+- ROADMAP: the status overview counts 71 laboratories and 257 catalogue entries, its diagram runs to v1.65 and lists only what is still open, and the contents list the v1.45–v1.65 milestones. CLAUDE.md: the next-work summary covers v1.42–v1.65.
+
 ## [1.65.0] - 2026-11-13
 
 ### Added
