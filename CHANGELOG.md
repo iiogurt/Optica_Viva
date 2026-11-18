@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.66.0] - 2026-11-18
+
 ### Added
 - **Colour science: CIE 2017 fidelity and ANSI/IES TM-30.** For the chosen light, the page now also judges 99 colour evaluation samples (natural objects, skin, textiles, paints, inks) in CAM02-UCS: the fidelity index Rf of CIE 224:2017, the TM-30 gamut index Rg, the chroma and hue shift in each of 16 hue bins and the colour vector graphic, beside the classic Ra. The reference light blends black body and daylight between 4000 and 5000 K. Reproduces the official CIE and IES spreadsheets' values for CIE FL1, FL2 and a 3287 K test spectrum: Rf 80.6, 70.1 and 81.6, FL2's Rg 86, every sample score within 0.06 and every hue bin. New data file `js/lib/cesdata.js` (CIE 1964 10° observer and the 99 samples, from colour-science, BSD-3-Clause); glossary entries for the colour rendering, fidelity and gamut indices.
 
@@ -1080,7 +1082,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.65.1...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.66.0...HEAD
+[1.66.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.65.1...v1.66.0
 [1.65.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.65.0...v1.65.1
 [1.65.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.64.0...v1.65.0
 [1.64.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.63.0...v1.64.0
