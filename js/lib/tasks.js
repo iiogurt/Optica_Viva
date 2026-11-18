@@ -43,6 +43,7 @@ import { runAF } from './autofocus.js';
 import { portraitShot } from './portrait.js';
 import { mirageScene } from './mirage.js';
 import { makeWaves, floorLight } from './caustics.js';
+import { expose as ifuExpose, observe as ifuObserve, extract as ifuExtract, measure as ifuMeasure, lsfSigma, expectedInst, blended as ifuBlended, NLAM as IFU_NLAM, NALONG as IFU_NALONG } from './ifu.js';
 import { tracedVignetting } from './relillum.js';
 import { whitened, qtransform } from './ligo.js';
 import { phaseCurves } from './glint.js';
@@ -723,6 +724,26 @@ function lasercomTask(p) {
 }
 function ligoTask(p) { const r = whitened(p.o, p.m1, p.m2, p.D, p.seed), sp = qtransform(r.data); return { result: { ...r, sp }, transfer: [r.data.buffer, r.clean.buffer, sp.data.buffer] }; }
 function relIllumTask(p) { return { result: tracedVignetting(p), transfer: [] }; }
+// Integral-field spectroscopy: the noise-free exposure is cached on everything but the exposure
+// time; each call adds noise, rebuilds the cube and measures Hα in every spaxel.
+let ifuCache = null;
+function ifuTask(p) {
+  const key = JSON.stringify([p.R0, p.w, p.seeing, p.incl, p.vmax, p.fluxHa]);
+  if (!ifuCache || ifuCache.key !== key) {
+    const E = ifuExpose(p), sigInst = lsfSigma(E);
+    ifuCache = { key, E, sigInst, inst: expectedInst(E), model: ifuExtract({ ...E, skyRate: 0 }, E.frame, 1) };
+  }
+  const { E, sigInst, inst, model } = ifuCache, t = p.t, counts = ifuObserve(E, t, p.seed || 1), cube = ifuExtract(E, counts, t);
+  const n = E.ns * IFU_NALONG, flux = new Float32Array(n), v = new Float32Array(n), sigma = new Float32Array(n), snr = new Float32Array(n);
+  for (let sp = 0; sp < n; sp++) {
+    const m = ifuMeasure(cube.subarray(sp * IFU_NLAM, (sp + 1) * IFU_NLAM), E.grid, E.z, { vmax: p.vmax, sigInst, inst });
+    flux[sp] = m.flux; v[sp] = m.v; sigma[sp] = m.sigma; snr[sp] = m.snr;
+  }
+  const modelT = model.map((x) => x * t), sky = E.sky.ha, skyHa = new Float32Array(sky.length / 3), skyCont = new Float32Array(sky.length / 3);
+  for (let k = 0; k < skyHa.length; k++) { skyHa[k] = sky[3 * k]; skyCont[k] = sky[3 * k + 2]; }
+  const result = { counts, cube, model: modelT, flux, v, sigma, snr, truthV: Float32Array.from(E.truthV0), skyHa, skyCont, ns: E.ns, cols: E.cols, R: E.R, lc: E.grid.lc, dl: E.grid.dl, l0: E.grid.l0, skyCounts: E.skyRate * t, sigInst, blended: ifuBlended(E, sigInst), frameRate: E.frame.reduce((a, b) => a + b, 0) };
+  return { result, transfer: [counts.buffer, cube.buffer, modelT.buffer, flux.buffer, v.buffer, sigma.buffer, snr.buffer, result.truthV.buffer, skyHa.buffer, skyCont.buffer] };
+}
 function causticsTask(p) { const r = floorLight(makeWaves(p.waves), p.floor); return { result: r, transfer: r.map((a) => a.buffer) }; }
 
 function halationTask(p) { const r = halationRender(p).map((a) => Float32Array.from(a)); return { result: r, transfer: r.map((a) => a.buffer) }; }
@@ -747,4 +768,4 @@ function trailsTask(p) {
   return { result, transfer: [outs.mean.buffer, outs.median.buffer, outs.clip.buffer] };
 }
 
-export const TASKS = { speckleLooks: speckleLooksTask, speckleIncoh: speckleIncohTask, lfRender: lfRenderTask, mlEval: mlEvalTask, mlMap: mlMapTask, nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, relIllum: relIllumTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
+export const TASKS = { speckleLooks: speckleLooksTask, speckleIncoh: speckleIncohTask, lfRender: lfRenderTask, mlEval: mlEvalTask, mlMap: mlMapTask, nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, ifu: ifuTask, relIllum: relIllumTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };

@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Seventy-one interactive laboratories, nine missions, a physics primer and a catalogue of 257 phenomena.
+Seventy-two interactive laboratories, nine missions, a physics primer and a catalogue of 258 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -782,6 +782,16 @@ A **diffraction model of the Shack–Hartmann sensor**: one FFT spot per lenslet
 <tr>
 <td valign="top" colspan="2">
 
+**Integral-field spectroscopy** · `#/ifu`<br>
+<img src="docs/screenshots/ifu.webp" alt="Detector frame of side-by-side slice spectra with tilted Hα lines, the galaxy with its slices, and rebuilt maps of Hα flux, velocity and dispersion" width="70%">
+
+An **image slicer** cuts an 8″ field into 8, 16 or 32 strips and lays them end to end along one slit. A rotating disk galaxy (arctangent rotation curve, Hα, [N II] and [S II] in air wavelengths, star-forming knots, stellar continuum) is built as a **data cube**, blurred by **seeing wavelength by wavelength**, sliced and dispersed onto a detector with **Poisson and read noise** (8 m telescope, dark-sky continuum). The **slice is the slit**: R falls as slices widen, and light off a slice's centre lands at another wavelength (the **slit effect**). The cube is rebuilt from the frame and Hα measured by moments in every spaxel, with the instrumental width **calibrated like an arc line**: maps of flux, velocity and dispersion, and the spectrum of any spaxel. Shows beam smearing, the detector budget N_spaxels × N_λ ≤ N_pix, and Hα blending with [N II] at low R.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Interferometry & aperture synthesis** · `#/interferometry`<br>
 <img src="docs/screenshots/interferometry.webp" alt="Fringes of a stellar disk and the visibility curve against baseline" width="70%">
 
@@ -906,7 +916,7 @@ From Maxwell to Fourier optics: the electromagnetic → scalar → geometric hie
 **Catalogue of phenomena** · `#/catalogue`<br>
 <img src="docs/screenshots/catalogue.webp" alt="Overview of the 13 catalogue groups with counts of simulated phenomena">
 
-**257 phenomena in 13 groups**, browsed by group from a navigator or searched across all groups, with domain and "only simulated" filters. Each entry opens, from simple to exact, to a **worked example with real numbers**, a fuller explanation and its governing equation, a link to its laboratory and related entries. Every group, entry and search has its own link (`#/catalogue?g=…&e=…`).
+**258 phenomena in 13 groups**, browsed by group from a navigator or searched across all groups, with domain and "only simulated" filters. Each entry opens, from simple to exact, to a **worked example with real numbers**, a fuller explanation and its governing equation, a link to its laboratory and related entries. Every group, entry and search has its own link (`#/catalogue?g=…&e=…`).
 
 <img src="docs/screenshots/catalogue-entry.webp" alt="An opened catalogue entry: the Airy disk with example, explanation, equation and related entries">
 
@@ -969,6 +979,7 @@ flowchart LR
 | Diffraction | Fraunhofer integral by radix-2 2-D FFT of a 4 × 4-supersampled pupil, zero-padded (Q = 4); one FFT per wavelength when aberrated | PSF, Zernike, MTF, seeing, telescope |
 | Colour | CIE 1931 2° colour-matching functions (tabulated CIE data, 5 nm, interpolated) → linear sRGB → sRGB transfer curve | all spectral renders |
 | Spectroscopy | Grating equation, scalar blaze envelope, R = mN; prism R = b\|dn/dλ\| from Sellmeier; sinc² instrument profile convolved with line lists | spectro |
+| Integral-field spectroscopy | Disk galaxy cube on a 0.125″ grid (arctangent rotation, Hα/[N II]/[S II] integrated exactly over 256 spectral pixels), Gaussian seeing per wavelength, slicer with slit-limited R = R₀·0.25″/w and slit-effect shift (δ/w)·λ/R by exact box-shift on cumulative sums, Poisson + read noise, cube extraction, Hα moments with an arc-calibrated instrumental width | ifu |
 | Colorimetry | Tabulated CIE data at 5 nm (1931 observer, S₀/S₁/S₂, A, FL, HP, LED); CCT by golden-section search in (u, v); CIE 13.3 CRI; CIE 224 fidelity Rf and TM-30 Rg (99 samples, 1964 10° observer, CIECAM02 with D = 1 → CAM02-UCS, blended reference 4000–5000 K, 16 hue bins); TLCI-2012 exactly per EBU Tech 3355 (its tables at 5 nm, 380–760 nm; CCT on the tabulated Planckian/daylight loci (d shown without the document's 4000–5000 K adjustment); balance → matrix → 90 % saturation → BT.709 OETF → gamma 2.4 → BT.709 display; CIEDE2000; fourth-power mean; Qa = 100/(1 + (ΔE/3.16)^2.4)); Bradford adaptation; CIEDE2000; camera raw → WB → constrained least-squares 3×3 matrix; metameric blacks by projection | colour |
 | Thin films | Characteristic-matrix method, s and p polarisation, oblique incidence | flare |
 | Polarisation | Stokes vectors and Mueller matrices (diattenuators, retarders, frame rotations); Fresnel reflection and transmission in Mueller form | polarisation |
@@ -1196,6 +1207,7 @@ Optica_Viva/
 │   │   ├── path.js            The home page's "Start here" path
 │   │   ├── portrait.js        Portrait mission: perspective, focal length, depth of field, background blur, light, and the photograph the plan gives
 │   │   ├── random.js          Seeded random numbers for every simulation (mulberry32, Box–Muller, Poisson)
+│   │   ├── ifu.js             Integral-field spectroscopy: galaxy cube, seeing, image slicer, detector, extraction, Hα moments
 │   │   ├── raytrace.js        Exact ray tracer (spheres + even aspheres), paraxial analysis, ray aiming, OPD
 │   │   ├── relillum.js        Relative illumination traced through a prescription: bundle area, image height, rims
 │   │   ├── optimise.js        Damped-least-squares (Levenberg–Marquardt) lens optimiser
@@ -1219,7 +1231,7 @@ Optica_Viva/
 │   │   ├── thumbs.js          Home-page card pictures: which laboratories have one, which are featured
 │   │   ├── satellite.js       Satellite mission: focal length, mirror, TDI stages, data rate
 │   │   ├── sensors.js         Sensor and film formats
-│   │   ├── phenomena.js       Catalogue data (257 entries in 13 groups)
+│   │   ├── phenomena.js       Catalogue data (258 entries in 13 groups)
 │   │   ├── phenomena-details.js  Explanation and worked example for every catalogue entry
 │   │   ├── plot.js            Canvas charting (log axes, legends above the plot, bands, hover readout)
 │   │   ├── underwater.js      Water absorption, colour at depth, flat and dome ports, backscatter
@@ -1285,6 +1297,10 @@ The numerical core was checked against published or analytically known values. E
 | Angular-diameter distance, z = 0.3 | 919 Mpc | flat ΛCDM (H₀ = 70, Ω<sub>m</sub> = 0.3) ≈ 920 Mpc |
 | Hyperfocal, 50 mm f/2.8, c = 0.029 mm | 31 m | f²/(Nc) + f = 31.0 m |
 | cos⁴ at 37.7° (28 mm FF corner) | −1.35 EV | log₂ cos⁴θ = −1.351 EV |
+| IFU: lines through slicer and detector (no seeing, no continuum) | detected / emitted = 1 within 10⁻⁴ | photon budget F · photons per joule · A · η |
+| IFU: velocity field rebuilt from the noise-free detector frame (four slice/R/seeing settings) | rms < 0.2 km/s | flux-weighted, seeing-blurred, slit-shifted line-of-sight velocity |
+| IFU: line widths after removing the calibrated instrumental profile (five settings) | within 0.6 km/s of 20–80 km/s | intrinsic σ, widths in quadrature |
+| IFU: velocity scatter with photon noise only | ±12 % of σ_λ c/(λ√N) | photon-noise limit |
 | Traced relative illumination, achromat f/5 at 1.5° and 3° | equals cos⁴θ within 2 × 10⁻⁴ | thin-lens limit |
 | Traced relative illumination of seven lens/rim settings at half and full field | within 1.2 % | image-space direction-cosine area (independent method); dense Monte Carlo within 1 % |
 | Traced bokeh disk at 4 EV down: Ø and flux (3 lenses) | within 1 % and 0.5 % | paraxial 2 r<sub>EP</sub> Δz / f; π r<sub>EP</sub>² |
@@ -1431,7 +1447,8 @@ Every page states its model's assumptions. The main simplifications are:
 | Depth of field, tilt-shift | Thin-lens model; exact disk kernels, blended between 11 radii in tilt-shift | Blur radius interpolated between stack levels in tilt-shift; disks above r = 8 px blurred at reduced resolution (edge softer by ≤ r/4 px) |
 | Noise | Representative sensor constants (1800 e⁻/µm², QE 0.5) | Trends exact; absolute values illustrative |
 | Seeing | Single frozen-flow layer; screens periodic over 8D | One seam per 8D of travel |
-| Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
+| Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); integral-field units in their own laboratory |
+| Integral-field spectroscopy | Flat sky continuum without OH lines, subtracted exactly; Gaussian seeing, the same at every wavelength; no atmospheric dispersion, slicer diffraction or cross-talk, flat-field or wavelength-calibration errors; moments, not profile fits | Velocities and widths as good as the noise allows; maps illustrative of a typical disk | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
 | Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TM-30 on a 5 nm grid with CCT by direct search instead of Ohno's method (within 0.5 K); TLMF normalises the second light's luma on linear camera signals (the document does not say where); TLCI checked externally only against one meter near the top of the scale and the document's example | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
 | Pool caustics | Geometric optics (no diffraction at the caustics), a point-like Sun, gentle waves, a flat floor; no light reflected back from the floor | Lines stay sharp at any depth; no bubbles or breaking waves |
