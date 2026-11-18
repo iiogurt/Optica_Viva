@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.69.0] - 2026-11-18
+
 ### Added
 - **Vignetting: relative illumination traced through real lenses.** A new section traces the Cooke, Tessar, Double-Gauss, Petzval, retrofocus and Biogon prescriptions: at each field angle the area of the bundle that passes every surface (its outline found by bisection from the chief ray) and the real image height give the relative illumination by energy conservation, RI = A⊥(θ)/A⊥(0) · f² sin θ/(h dh/dθ), which is exactly cos⁴θ for a thin lens. The element diameters (from just the axial beam to the full-field beam) and stopping down separate mechanical vignetting from the natural falloff; the transmitted bundles are drawn at five field angles. Computed in the worker. Agrees within 1.2 % with the image-space direction-cosine method and with a dense Monte Carlo trace; the Biogon reaches 39 % at 45° against cos⁴'s 25 %.
 
@@ -1095,7 +1097,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.68.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.69.0...HEAD
+[1.69.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.68.0...v1.69.0
 [1.68.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.67.0...v1.68.0
 [1.67.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.66.0...v1.67.0
 [1.66.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.65.1...v1.66.0
