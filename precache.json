@@ -130,6 +130,8 @@
     "js/lib/thinfilm.js",
     "js/lib/thumbs.js",
     "js/lib/tilt3d.js",
+    "js/lib/tlci.js",
+    "js/lib/tlcidata.js",
     "js/lib/tolerance.js",
     "js/lib/tours.js",
     "js/lib/trails.js",

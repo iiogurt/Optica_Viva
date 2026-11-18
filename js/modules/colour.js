@@ -4,6 +4,8 @@ import { plot } from '../lib/plot.js';
 import { oetf, wavelengthCSS } from '../lib/color.js';
 import { ILLUMINANTS, TCS, CMF } from '../lib/colordata.js';
 import { CES } from '../lib/cesdata.js';
+import { tlci } from '../lib/tlci.js';
+import { CHECKER_NAMES } from '../lib/tlcidata.js';
 import { view3d } from '../lib/gl3d.js';
 import { colourSolidScene, gamutCoverage, samplesOutside } from '../lib/colour3d.js';
 import { LAMBDA, xyz, chromaticity, uv1960, blackbody, daylight, cri, tm30, sampleSRGB, planck, CAMERAS, EXTRA_PATCHES, cameraColour, wbGains, lutherResidual, metamer, xyzToSRGB, lab as cielab, adapt, deltaE00, D65_XYZ } from '../lib/colorsci.js';
@@ -43,6 +45,13 @@ export default function mount(root, meta) {
   secF.append(lab([cvg.el, h('div.card', { style: { padding: '6px' } }, shifts.el)], [h('div.card', {}, fro), fcalc.el]));
   root.append(secF);
 
+  // ── TLCI-2012: the same light judged by a standard broadcast camera and display ──
+  const secT = h('section.block', {}, h('h2', {}, 'Through a television camera: TLCI-2012 (EBU Tech 3355)'));
+  const tro = h('div'), tcalc = liveCalc('Television lighting consistency');
+  const checker = stage({ aspect: 1.5, label: 'ColorChecker through the EBU standard camera: reference light, test light inset', draw: drawChecker, minH: 260 });
+  secT.append(lab([checker.el], [h('div.card', {}, tro), tcalc.el]));
+  root.append(secT);
+
   let C = null;
   function source(st) {
     if (st.src === 'bb') return { spd: blackbody(st.T), name: `Black body ${st.T.toFixed(0)} K` };
@@ -56,6 +65,7 @@ export default function mount(root, meta) {
     const cols = TCS.map((t) => ({ test: sampleSRGB(t, S.spd), ref: sampleSRGB(t, r.ref) }));
     C = { st, S, r, xy, W, cols };
     updateFidelity(S, r);
+    updateTLCI(S);
     ro.replaceChildren(readouts([
       ['Correlated colour temperature', r.cct.toFixed(0) + ' K'],
       ['Distance from the Planckian locus Duv', (r.duv >= 0 ? '+' : '') + r.duv.toFixed(4)],
@@ -82,7 +92,7 @@ export default function mount(root, meta) {
         h('div', { style: { height: '30px', background: css(c.ref) } }), h('div', { style: { height: '30px', background: css(c.test) } }),
         h('div', { style: { fontSize: '10.5px', padding: '3px 4px', fontFamily: '"JetBrains Mono", monospace', color: r.R[i] < 50 ? 'var(--warn)' : 'var(--fg-dim)' } }, `R${i + 1} ${r.R[i].toFixed(0)}`)))),
     );
-    [spdView, bars, diagram, cvg, shifts].forEach((x) => x.redraw());
+    [spdView, bars, diagram, cvg, shifts, checker].forEach((x) => x.redraw());
     show3d(st, S);
   }
   // 3-D: rebuilt only when the light or the gamut changes; the camera stays put after the first scene
@@ -276,6 +286,58 @@ export default function mount(root, meta) {
     ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.moveTo(P.X(0.5), P.Y(0)); ctx.lineTo(P.X(16.5), P.Y(0)); ctx.stroke();
   }
 
+  // TLCI: Qa, the EBU's CCT and distance, and a chart coded 0–255 from the camera signal (sRGB rule [60])
+  let TL = null;
+  function updateTLCI(S) {
+    const q = tlci(S.spd);
+    TL = q;
+    const coloured = q.patches.slice(0, 18), worst = coloured.reduce((b, p, i) => (p.used && (!coloured[b].used || p.dE > coloured[b].dE) ? i : b), 0);
+    const refName = q.T < 3400 ? t('black body') : q.T > 5000 ? t('CIE daylight') : t('black body at 3400 K and daylight at 5000 K mixed, {p} % daylight', { p: ((100 * (q.T - 3400)) / 1600).toFixed(0) });
+    tro.replaceChildren(readouts([
+      ['Television lighting consistency index Qa', q.Qa === null ? '—' : q.Qa.toFixed(1)],
+      ['Colour temperature (EBU method)', `${q.T.toFixed(0)} K (${q.locus === 'daylight' ? t('daylight locus') : t('Planckian locus')})`],
+      ['Distance from the locus d', (q.d >= 0 ? '+' : '') + q.d.toFixed(2)],
+      ['Reference for TLCI', refName],
+      ['Mean colour error ΔE*a (4th-power mean)', Number.isFinite(q.dEa) ? q.dEa.toFixed(2) : '—'],
+      ['Largest error', t('{v} on {name}', { v: coloured[worst].dE.toFixed(1), name: t(CHECKER_NAMES[worst]) })],
+      ['Coloured patches used', t('{n} of 18', { n: q.n })],
+    ]));
+    if (q.Qa === null) tcalc.say(t('Every coloured patch clips in the camera under this light, so TLCI is undefined.'));
+    else tcalc.say(q.Qa >= 50
+      ? t('A standard television camera sees this light at <strong>TLCI {Q}</strong>: colours are off by ΔE {dE} on average, small enough for a colourist to correct (50 is the watershed).', { Q: q.Qa.toFixed(0), dE: q.dEa.toFixed(1) })
+      : t('A standard television camera sees this light at <strong>TLCI {Q}</strong>: colours are off by ΔE {dE} on average, beyond what a colourist can easily correct (50 is the watershed).', { Q: q.Qa.toFixed(0), dE: q.dEa.toFixed(1) }));
+    tcalc.set(String.raw`\begin{aligned}
+    \Delta E^*_a &= \Big(\tfrac{1}{${q.n}}\textstyle\sum_i \Delta E_{00,i}^4\Big)^{1/4} = ${Number.isFinite(q.dEa) ? texNum(q.dEa, 3) : '\\text{—}'}\\
+    Q_a &= \frac{100}{1 + (\Delta E^*_a/3.16)^{2.4}} = ${q.Qa === null ? '\\text{—}' : texNum(q.Qa, 3)}
+    \end{aligned}`);
+  }
+
+  function drawChecker(ctx, w, hh) {
+    ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
+    if (!TL) return;
+    const code = (V) => `rgb(${V.map((v) => Math.round(255 * Math.min(1, Math.max(0, v)))).join(',')})`;
+    const narrow = w < 560, top = 30, bottom = narrow ? 36 : 22, gap = Math.max(4, w * 0.012), cw = (w - 2 * gap - 5 * gap) / 6, ch = Math.min(cw, (hh - top - bottom - 3 * gap) / 4);
+    const x0 = (w - 6 * cw - 5 * gap) / 2;
+    ctx.font = `${Math.max(9.5, Math.min(12, cw / 8))}px "JetBrains Mono", monospace`; ctx.textAlign = 'center';
+    TL.patches.forEach((p, i) => {
+      const x = x0 + (i % 6) * (cw + gap), y = top + Math.floor(i / 6) * (ch + gap);
+      ctx.fillStyle = code(p.ref); ctx.fillRect(x, y, cw, ch);
+      ctx.fillStyle = code(p.test); ctx.fillRect(x + cw * 0.3, y + ch * 0.22, cw * 0.4, ch * 0.4);
+      if (i < 18) {
+        const light = p.ref[1] > 0.55;
+        ctx.fillStyle = light ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.85)';
+        ctx.fillText(p.used ? `ΔE ${p.dE.toFixed(1)}` : t('clipped'), x + cw / 2, y + ch - 6);
+        if (p.used && p.dE >= 3.16) { ctx.strokeStyle = '#ff6a6a'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, cw - 2, ch - 2); }
+      }
+    });
+    // the score at the top right beside the caption; the key on one line, or two on narrow canvases
+    ctx.textAlign = 'right'; ctx.fillStyle = '#fff'; ctx.font = '12px "JetBrains Mono", monospace';
+    ctx.fillText(TL.Qa === null ? 'TLCI —' : `TLCI ${TL.Qa.toFixed(0)}`, w - 10, 20);
+    ctx.textAlign = 'left'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    const k1 = t('coded 0–255 from the camera signal'), k2 = t('red frame: ΔE ≥ 3.16 · grey row not scored');
+    if (narrow) { ctx.fillText(k1, x0, hh - 21); ctx.fillText(k2, x0, hh - 7); } else ctx.fillText(`${k1} · ${k2}`, x0, hh - 7);
+  }
+
   // ── camera colour: sensitivities, white balance and the colour matrix ──
   const SCENES = { D65: 'CIE D65 daylight', A: 'CIE A (tungsten)', FL11: 'CIE FL11 (tri-band fluorescent)', 'LED-B3': 'CIE LED-B3 (phosphor white)', 'LED-RGB1': 'CIE LED-RGB1 (RGB mix)', HP1: 'CIE HP1 (sodium)' };
   const spdOf = (k) => (k === 'D65' ? daylight(6504) : ILLUMINANTS[k].spd);
@@ -420,6 +482,23 @@ export default function mount(root, meta) {
 <h3>This implementation</h3>
 <p>Everything is computed on the 5 nm grid from 380 to 780 nm, which CIE 224 allows. The correlated colour temperature is found as the nearest point of the Planckian locus by direct search rather than by Ohno's method; the two agree to within about 0.5 K for the lamps checked. The page reproduces reference values computed with the official CIE and IES spreadsheets (as quoted by the colour-science project): Rf = 70.1 and Rg = 86 for CIE FL2, Rf = 80.6 for FL1, and all 99 sample scores and 16 bin values of FL2 within the precision those values are quoted to.</p>
 </div></div>`));
+  root.append(theory('Through a television camera: TLCI-2012', String.raw`
+<div class="theory-cols"><div>
+<h3>Why a camera index</h3>
+<p>Ra, Rf and Rg ask how colours look to a human observer. In television the observer is a camera, whose sensitivities are not the eye's, followed by a colourist who can correct a uniform cast but not colours that move in different directions. The <em>Television Lighting Consistency Index</em> of the EBU (Tech 3355, first issued 2012, from work at the BBC by Sproson and Taylor from 1971) therefore replaces the eye with a standard broadcast camera and display, and scores how differently 18 coloured ColorChecker patches come out under the test light and under a reference of the same colour temperature.</p>
+<h3>The notional camera and display</h3>
+<p>Spectra are summed from 380 to 760 nm in 5 nm steps. The camera's responsivities \(\bar r, \bar g, \bar b\) are averages of measured modern broadcast cameras (EBU Tech 3353). For each light the signals are balanced so that a 90 % neutral gives \(R = G = B = 1\), the white patch then reaching peak white. A 3×3 matrix with rows summing to 1 (\(R_M = 1.182R_C - 0.209G_C + 0.027B_C\), …) is followed by a saturation of 90 %, the BT.709 opto-electronic curve</p>
+\[V = \begin{cases} 4.5\,L, & L < 0.018,\\ 1.099\,L^{0.45} - 0.099, & L \ge 0.018,\end{cases}\]
+<p>and a display with gamma 2.4 and BT.709 primaries, whose light is converted to CIELAB relative to the display's D65 white. The chart on this page shows the camera signal \(V\) coded 0–255, as the document prescribes for computer screens: each patch under the reference light, with the test light inset.</p>
+</div><div>
+<h3>From colour errors to Qa</h3>
+<p>Each patch's difference is CIEDE2000 with unit weights. To keep the worst colours from being diluted by the good ones, the errors are combined as a fourth-power mean, and mapped to</p>
+\[\Delta E^*_a = \Big(\frac1n\sum_{i=1}^{n}\Delta E_i^{4}\Big)^{1/4},\qquad Q_a = \frac{100}{1 + (\Delta E^*_a/3.16)^{2.4}} .\]
+<p>The constant 3.16 is the error a daylight fluorescent tube produced, which professional colourists judged the limit of what can be corrected acceptably: Qa = 50 is the watershed, and the scale cannot go negative. A patch whose camera or display signal falls below zero would clip in a real camera, so it is left out (the page reports how many were used). The grey row is shown but not scored.</p>
+<h3>Reference light and colour temperature</h3>
+<p>The colour temperature is found by the document's own method: the foot of the normal from the light's chromaticity to the tabulated Planckian locus in CIE 1960 \((u, v)\), or, above 5000 K, to the tabulated daylight locus. Its tables use Planck's law with \(c_2 = 1.435\times10^{-2}\) m K, so illuminant A reads 2848 K here instead of 2856 K. The reference is Planckian below 3400 K, CIE daylight above 5000 K, and between them a linear mixture of the Planckian at 3400 K and daylight at 5000 K. The distance \(d\) is in units of 0.0054, negative towards green, with the document's correction between 4000 and 5000 K.</p>
+<p>All tables are transcribed from Tech 3355 and checked against its printed sums. The page reproduces a Sekonic C-7000 meter's TLCI of 99 for a measured 12 000 K light, and for CIE FL1 gives D6426, \(d = -0.71\) and Qa 47, close to the document's example for a daylight tube (D6434, \(-0.7\), 50), which may not be the same spectrum. Not implemented: the colourist's advice table and the Television Luminaire Matching Factor (TLMF-2013) for mixed lights.</p>
+</div></div>`));
   root.append(theory('How a camera sees colour', String.raw`
 <div class="theory-cols"><div>
 <h3>Spectral sensitivities and the Luther–Ives condition</h3>
@@ -446,8 +525,9 @@ export default function mount(root, meta) {
     'M. R. Luo, G. Cui &amp; C. Li, “Uniform colour spaces based on CIECAM02 colour appearance model”, <em>Color Res. Appl.</em> 31, 320 (2006): CAM02-UCS.',
     'A. David, P. T. Fini, K. W. Houser, Y. Ohno, M. P. Royer, K. A. G. Smet, M. Wei &amp; L. Whitehead, “Development of the IES method for evaluating the color rendition of light sources”, <em>Opt. Express</em> 23, 15888 (2015).',
     'M. P. Royer, “Tutorial: background and guidance for using the ANSI/IES TM-30 method for evaluating light source color rendition”, <em>LEUKOS</em> 18, 191 (2022).',
+    'EBU Tech 3353, <em>Development of a “standard” television camera model implemented in the TLCI-2012</em> (2012); E. W. Taylor, <em>The assessment of the colorimetric properties of light sources for use in television scene lighting</em>, BBC Research Department Report 1988/2 (the ColorChecker reflectances); A. Roberts, J. Emmett &amp; P. Böhler, “A Television Lighting Consistency Index”, <em>Proc. IBC</em> (2011).',
     'ANSI/IES TM-30-20, <em>Method for evaluating light source color rendition</em> (current edition TM-30-24); EBU Tech 3355, <em>Method for the assessment of the colorimetric properties of luminaires: the Television Lighting Consistency Index (TLCI-2012)</em>.',
   ]));
 
-  return () => [spdView, bars, diagram, cvg, shifts, solid3, sensView, mspec].forEach((s) => s.destroy());
+  return () => [spdView, bars, diagram, cvg, shifts, checker, solid3, sensView, mspec].forEach((s) => s.destroy());
 }

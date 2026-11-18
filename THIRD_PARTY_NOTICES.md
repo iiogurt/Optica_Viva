@@ -10,6 +10,14 @@ Optica Viva is released under the [MIT License](LICENSE). It includes or derives
 
 `vendor/fonts/` contains three variable typefaces, each under the SIL Open Font License 1.1 (full texts beside the files): **Fraunces** (© The Fraunces Project Authors, [`LICENSE-Fraunces`](vendor/fonts/LICENSE-Fraunces)), **Inter** (© The Inter Project Authors, [`LICENSE-Inter`](vendor/fonts/LICENSE-Inter)) and **JetBrains Mono** (© The JetBrains Mono Project Authors, [`LICENSE-JetBrainsMono`](vendor/fonts/LICENSE-JetBrainsMono)). The files are copied unchanged from the npm packages `@fontsource-variable/fraunces` 5.3.0 (integrity `sha512-9BYGySn4AHEJdgp9Z28tQ3X+laJMEOITXkQarZXeloWQZDq5oOvXJ3kDA8c7MGIfpogIaZfjrQBqmda8POOCKA==`), `@fontsource-variable/inter` 5.3.0 (`sha512-OupL48va4JNofb97w6NYeF9S7W/kHNKM0Er8Dem5nqi4jeOLrVJDoE8tZEpnMJmtkvNbB1EIPPwHcdkF6b1oUA==`) and `@fontsource-variable/jetbrains-mono` 5.3.0 (`sha512-F32xpS2NsGYoQi2ADSkKTgpJj7ozajsGgDJ8woTnqjmIB+dxDIqImjl4pXZVEExu8UFZ2ndhmX18EBS/hdz3Lw==`); their SHA-256 sums are in `vendor/fonts/SHA256SUMS` and checked by `test/fonts.test.mjs`.
 
+## EBU Tech 3355 (TLCI-2012)
+
+The tables in `js/lib/tlcidata.js` are transcribed from the appendices of EBU Tech 3355, *Method for the assessment of the colorimetric properties of luminaires: the Television Lighting Consistency Index (TLCI-2012) and the Television Luminaire Matching Factor (TLMF-2013)* (European Broadcasting Union, Geneva, March 2017): the CIE 1931 colour-matching functions, the Planckian and daylight loci, the daylight vectors, the ColorChecker reflectances (from E. W. Taylor, BBC Research Department Report 1988/2) and the EBU standard camera responsivities and matrix (from EBU Tech 3353). The document, freely downloadable from the EBU, carries no licence statement; the project owner approved including the tables (2026-11-18). ColorChecker is a trademark of X-Rite.
+
+## Sekonic measurement (test fixture)
+
+`test/tlci.test.mjs` contains one spectrum measured with a Sekonic C-7000 and the meter's reported indices, from a file attached to [colour-science issue #974](https://github.com/colour-science/colour/issues/974) by a participant in that discussion. It is used only as reference data in a test.
+
 ## colour-science datasets
 
 The tables in `js/lib/colordata.js` and `js/lib/cesdata.js` were generated from the datasets of the [colour-science](https://github.com/colour-science/colour) Python package (`cesdata.js` from version 0.4.6). They reproduce the CIE publications CIE 15:2018 (including the CIE 1964 10° standard observer), CIE 13.3-1995 and CIE 224:2017 (the 99 colour evaluation samples, which ANSI/IES TM-30 also uses). The reference values in `test/colour.test.mjs` for the CIE 2017 fidelity index and TM-30 are quoted from the same package's test suite, which computed them with the official CIE TC1-90 and IES TM-30-18 spreadsheets. The colour-science licence:
