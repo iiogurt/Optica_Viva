@@ -3918,7 +3918,7 @@ export default {
   "no light": "aucune lumière",
   "At the edge of the field ({th}°) this lens delivers <strong>{ri} %</strong> of the centre's light, where the cos⁴ law predicts {c4} %: its pupil and distortion change the natural falloff, and its rims take {mech} more.": "Au bord du champ ({th}°), cet objectif délivre <strong>{ri} %</strong> de la lumière du centre, là où la loi en cos⁴ prédit {c4} % : sa pupille et sa distorsion modifient la chute naturelle, et ses montures en retirent encore {mech}.",
   "Stop down from full aperture": "Fermer le diaphragme depuis la pleine ouverture",
-  "Front and rear element diameters": "Diamètres des lentilles avant et arrière",
+  "Diameters of the elements other than the stop": "Diamètres des éléments autres que le diaphragme",
   "0 %: only as wide as the axial beam needs (strong vignetting); 100 %: wide enough for the full-field beam": "0 % : juste ce qu’exige le faisceau axial (fort vignetage) ; 100 % : assez pour le faisceau du bord du champ",
   "Full field angle": "Demi-angle de champ",
   "Image height at full field": "Hauteur d’image au bord du champ",
