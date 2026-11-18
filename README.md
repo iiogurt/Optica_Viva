@@ -444,7 +444,7 @@ Row-timed propeller rendering with exposure integration, comparing rolling and g
 **Colour science** · `#/colour`<br>
 <img src="docs/screenshots/colour.webp" alt="Spectrum of a phosphor LED, test colour samples under reference and LED, colour rendering indices" width="70%">
 
-Colorimetry from **CIE tables** (1931 observer, D-series, A, FL, HP and the CIE 15:2018 **LED** illuminants): tristimulus values, correlated colour temperature and **Duv** by search along the Planckian locus. The page computes the **CIE 13.3 colour rendering index** R1–R14 and Ra, reproducing the CIE's own values for the FL series, and shows the 14 test colours side by side under the reference and the test source with Bradford adaptation. It is clear why phosphor LEDs fail **R9**. A camera section models **spectral sensitivities** (typical CMOS, narrow-band, broad, Luther–Ives ideal), **white balance** and a white-preserving **colour matrix** fitted by least squares, with CIEDE2000 errors per patch. A **metamerism** demo builds a metamer that matches exactly in daylight and splits under other lamps and for the camera. A **3-D view** shows the **colour solid** in CIE xyY: every surface colour possible under the chosen light (the optimal colours, or MacAdam limits), with the sRGB, Display P3 or Rec. 2020 gamut as a glass solid and the 14 test colours inside it.
+Colorimetry from **CIE tables** (1931 observer, D-series, A, FL, HP and the CIE 15:2018 **LED** illuminants): tristimulus values, correlated colour temperature and **Duv** by search along the Planckian locus. The page computes the **CIE 13.3 colour rendering index** R1–R14 and Ra, reproducing the CIE's own values for the FL series, and shows the 14 test colours side by side under the reference and the test source with Bradford adaptation. It is clear why phosphor LEDs fail **R9**. For the same light the page also computes the **CIE 2017 colour fidelity index Rf** (CIE 224) from 99 colour evaluation samples in **CAM02-UCS**, and the **ANSI/IES TM-30** gamut index **Rg**, the chroma and hue shift in each of 16 hue bins and the **colour vector graphic**, which shows at a glance which hues a lamp dulls or oversaturates. A camera section models **spectral sensitivities** (typical CMOS, narrow-band, broad, Luther–Ives ideal), **white balance** and a white-preserving **colour matrix** fitted by least squares, with CIEDE2000 errors per patch. A **metamerism** demo builds a metamer that matches exactly in daylight and splits under other lamps and for the camera. A **3-D view** shows the **colour solid** in CIE xyY: every surface colour possible under the chosen light (the optimal colours, or MacAdam limits), with the sRGB, Display P3 or Rec. 2020 gamut as a glass solid and the 14 test colours inside it.
 
 </td>
 </tr>
@@ -968,7 +968,7 @@ flowchart LR
 | Diffraction | Fraunhofer integral by radix-2 2-D FFT of a 4 × 4-supersampled pupil, zero-padded (Q = 4); one FFT per wavelength when aberrated | PSF, Zernike, MTF, seeing, telescope |
 | Colour | CIE 1931 2° colour-matching functions (tabulated CIE data, 5 nm, interpolated) → linear sRGB → sRGB transfer curve | all spectral renders |
 | Spectroscopy | Grating equation, scalar blaze envelope, R = mN; prism R = b\|dn/dλ\| from Sellmeier; sinc² instrument profile convolved with line lists | spectro |
-| Colorimetry | Tabulated CIE data at 5 nm (1931 observer, S₀/S₁/S₂, A, FL, HP, LED); CCT by golden-section search in (u, v); CIE 13.3 CRI; Bradford adaptation; CIEDE2000; camera raw → WB → constrained least-squares 3×3 matrix; metameric blacks by projection | colour |
+| Colorimetry | Tabulated CIE data at 5 nm (1931 observer, S₀/S₁/S₂, A, FL, HP, LED); CCT by golden-section search in (u, v); CIE 13.3 CRI; CIE 224 fidelity Rf and TM-30 Rg (99 samples, 1964 10° observer, CIECAM02 with D = 1 → CAM02-UCS, blended reference 4000–5000 K, 16 hue bins); Bradford adaptation; CIEDE2000; camera raw → WB → constrained least-squares 3×3 matrix; metameric blacks by projection | colour |
 | Thin films | Characteristic-matrix method, s and p polarisation, oblique incidence | flare |
 | Polarisation | Stokes vectors and Mueller matrices (diattenuators, retarders, frame rotations); Fresnel reflection and transmission in Mueller form | polarisation |
 | Birefringence | Stress-optic law with the Hertz/Frocht disk stress field, white-light interference colours from 61 wavelengths; extraordinary-ray walk-off in uniaxial crystals | polarisation |
@@ -1150,9 +1150,10 @@ Optica_Viva/
 │   │   ├── compute.js         Worker API: run(task), latest-only channels, a pool for parallel row bands, main-thread fallback
 │   │   ├── cinema.js          Anamorphic aspect, streak colour, focus breathing models, T-stops
 │   │   ├── colordata.js       CIE tables at 5 nm: 1931 observer, daylight basis, illuminants, CRI test colours
+│   │   ├── cesdata.js         CIE 1964 10° observer and the 99 colour evaluation samples of CIE 224 / TM-30
 │   │   ├── camera.js          Your own camera as a light source: permission, frame grabber, stop on leaving
 │   │   ├── camsample.js       A camera feed on a coarse sensor: pixel aperture, 4-spot OLPF, Bayer mosaic and demosaicing
-│   │   ├── colorsci.js        CCT/Duv, CIE 13.3 CRI, Bradford adaptation, CIELAB, CIEDE2000
+│   │   ├── colorsci.js        CCT/Duv, CIE 13.3 CRI, CIE 2017 Rf and TM-30 (CIECAM02, CAM02-UCS), Bradford, CIELAB, CIEDE2000
 │   │   ├── spectral.js        Spectral camera: scene materials, 25 nm bands, PSF resampling, FFT convolution, eye and camera colour
 │   │   ├── choose.js          Comparison mission: camera equivalence, telescope limits
 │   │   ├── color.js           CIE 1931 CMFs (tabulated), sRGB, colormaps (inferno, viridis, magma)
@@ -1341,6 +1342,8 @@ The numerical core was checked against published or analytically known values. E
 | Macro depth of field, 100 mm at 1 : 1, f/8 | exact two-sided blur search within 1 % of the formula | 2N<sub>w</sub>c/m² |
 | CCT of illuminant A; D65 chromaticity | 2856 K; (0.3127, 0.3290) | CIE 15:2018 |
 | Colour rendering index Ra of CIE FL1, FL2, FL4, FL7, FL8, FL10, FL11, FL12 | 75.8, 64.2, 51.4, 90.2, 95.5, 81.0, 82.8, 83.1 | CIE 13.3 tables: 76, 64, 51, 90, 95, 81, 83, 83 |
+| CIE 2017 fidelity Rf of a 3287 K test spectrum, CIE FL1, CIE FL2; FL2 gamut Rg | 81.61, 80.64, 70.12; 86.4; all 99 Rᵢ within 0.06 | 81.6, 80.6, 70.1; 86 (colour-science reference values for CIE 224 and TM-30) |
+| TM-30 hue bins of CIE FL2: Rf,h, Rcs,h, Rhs,h | all 16 bins equal after rounding | colour-science reference values, quoted to 1 %, 1 and 0.01 |
 | CIEDE2000, Sharma test pairs 1, 3, 7, 17 | 2.0425, 1.0000, 2.3669, 27.1492 | Sharma, Wu & Dalal (2005), same |
 | Luther–Ives camera (sensitivities = x̄ȳz̄), matrix fitted under A | ΔE₀₀ < 10⁻⁴ on all 24 patches | colorimetric by construction |
 | Constructed metamer of TCS13 (skin) | ΔE₀₀ = 0 in D65; > 5 under FL11 | metameric black ⟂ S x̄, S ȳ, S z̄ |
@@ -1421,7 +1424,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Seeing | Single frozen-flow layer; screens periodic over 8D | One seam per 8D of travel |
 | Spectroscopy | Gaussian (seeing) star in a long slit; slit and diffraction widths added in quadrature; scalar blaze theory; illustrative line strengths (17 solar lines); IFU described, not simulated | No Wood anomalies or polarisation; absolute line depths illustrative |
 | Wavefront sensing | One turbulent layer (L₀ = 25 m); modal mirror; centroid windows placed on the noise-free peak; no aliasing term in the analytic budget | Open-loop RMS below the pure Kolmogorov value; no anisoplanatism or multi-conjugate effects |
-| Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TLCI and TM-30 not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
+| Colour science | Camera sensitivities are representative Gaussian filter models with an IR cut, not measured products; 10 synthetic patches extend the 14 CIE samples; TM-30 on a 5 nm grid with CCT by direct search instead of Ohno's method (within 0.5 K); TLCI not computed | Absolute ΔE values are illustrative; trends (Luther residual, metamerism, WB errors) are exact for the models |
 | Pool caustics | Geometric optics (no diffraction at the caustics), a point-like Sun, gentle waves, a flat floor; no light reflected back from the floor | Lines stay sharp at any depth; no bubbles or breaking waves |
 | Halation | One bounce in a clear base, Lambertian scattering in the emulsion, fixed per-layer weights; the filter's halo is a single exponential | No softening on the way back, no film-specific spectral data |
 | Sky colours | Single scattering only (the sky near the horizon and in twilight comes out too dark), one aerosol type, an approximate ozone band, no refraction | No clouds, no multiple scattering, no polarisation here (see Polarisation) |

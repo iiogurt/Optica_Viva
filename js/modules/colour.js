@@ -3,9 +3,10 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { plot } from '../lib/plot.js';
 import { oetf, wavelengthCSS } from '../lib/color.js';
 import { ILLUMINANTS, TCS, CMF } from '../lib/colordata.js';
+import { CES } from '../lib/cesdata.js';
 import { view3d } from '../lib/gl3d.js';
 import { colourSolidScene, gamutCoverage, samplesOutside } from '../lib/colour3d.js';
-import { LAMBDA, xyz, chromaticity, uv1960, blackbody, daylight, cri, sampleSRGB, planck, CAMERAS, EXTRA_PATCHES, cameraColour, wbGains, lutherResidual, metamer, xyzToSRGB, lab as cielab, adapt, deltaE00, D65_XYZ } from '../lib/colorsci.js';
+import { LAMBDA, xyz, chromaticity, uv1960, blackbody, daylight, cri, tm30, sampleSRGB, planck, CAMERAS, EXTRA_PATCHES, cameraColour, wbGains, lutherResidual, metamer, xyzToSRGB, lab as cielab, adapt, deltaE00, D65_XYZ } from '../lib/colorsci.js';
 import { t } from '../lib/i18n.js';
 
 const css = (rgb) => `rgb(${rgb.map((v) => Math.round(255 * oetf(Math.min(1, Math.max(0, v))))).join(',')})`;
@@ -34,6 +35,14 @@ export default function mount(root, meta) {
   const solid3 = view3d({ label: '3-D: every surface colour possible under this light, in CIE xyY, with a display gamut', aspect: 1.6, minH: 280, yaw: -0.35, pitch: 0.42 });
   root.append(lab([h('div.card', { style: { padding: '6px' } }, spdView.el), swatches, h('div.grid-2', {}, h('div.card', { style: { padding: '6px' } }, bars.el), diagram.el), solid3.el], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
+  // ── fidelity and gamut: CIE 2017 Rf and ANSI/IES TM-30 Rg, for the same light ──
+  const secF = h('section.block', {}, h('h2', {}, 'Beyond Ra: 99 samples, fidelity Rf and gamut Rg (CIE 2017, ANSI/IES TM-30)'));
+  const fro = h('div'), fcalc = liveCalc('Fidelity and gamut');
+  const cvg = stage({ aspect: 1.75, label: 'Colour vector graphic: 16 hue bins in CAM02-UCS', draw: drawCVG, minH: 320 });
+  const shifts = stage({ aspect: 2.6, label: '', draw: drawShifts, cls: 'plain', minH: 240 });
+  secF.append(lab([cvg.el, h('div.card', { style: { padding: '6px' } }, shifts.el)], [h('div.card', {}, fro), fcalc.el]));
+  root.append(secF);
+
   let C = null;
   function source(st) {
     if (st.src === 'bb') return { spd: blackbody(st.T), name: `Black body ${st.T.toFixed(0)} K` };
@@ -46,6 +55,7 @@ export default function mount(root, meta) {
     const ler = (683 * S.spd.reduce((a, s, i) => a + s * CMF[1][i], 0)) / S.spd.reduce((a, s) => a + s, 0);
     const cols = TCS.map((t) => ({ test: sampleSRGB(t, S.spd), ref: sampleSRGB(t, r.ref) }));
     C = { st, S, r, xy, W, cols };
+    updateFidelity(S, r);
     ro.replaceChildren(readouts([
       ['Correlated colour temperature', r.cct.toFixed(0) + ' K'],
       ['Distance from the Planckian locus Duv', (r.duv >= 0 ? '+' : '') + r.duv.toFixed(4)],
@@ -72,7 +82,7 @@ export default function mount(root, meta) {
         h('div', { style: { height: '30px', background: css(c.ref) } }), h('div', { style: { height: '30px', background: css(c.test) } }),
         h('div', { style: { fontSize: '10.5px', padding: '3px 4px', fontFamily: '"JetBrains Mono", monospace', color: r.R[i] < 50 ? 'var(--warn)' : 'var(--fg-dim)' } }, `R${i + 1} ${r.R[i].toFixed(0)}`)))),
     );
-    [spdView, bars, diagram].forEach((x) => x.redraw());
+    [spdView, bars, diagram, cvg, shifts].forEach((x) => x.redraw());
     show3d(st, S);
   }
   // 3-D: rebuilt only when the light or the gamut changes; the camera stays put after the first scene
@@ -98,7 +108,7 @@ export default function mount(root, meta) {
     for (let i = 0; i < LAMBDA.length - 1; i++) {
       const x0 = P.X(LAMBDA[i]), x1 = P.X(LAMBDA[i + 1]);
       ctx.fillStyle = wavelengthCSS(LAMBDA[i] + 2.5, 0.55);
-      ctx.beginPath(); ctx.moveTo(x0, P.Y(0)); ctx.lineTo(x0, P.Y(t[i])); ctx.lineTo(x1, P.Y(t[i + 1])); ctx.lineTo(x1, P.Y(0)); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(x0, P.Y(0)); ctx.lineTo(x0, P.Y(spd[i])); ctx.lineTo(x1, P.Y(spd[i + 1])); ctx.lineTo(x1, P.Y(0)); ctx.fill();
     }
     ctx.restore();
   }
@@ -178,6 +188,90 @@ export default function mount(root, meta) {
     ctx.textAlign = 'right';
     for (let v = 0.26; v <= v1; v += 0.04) ctx.fillText(v.toFixed(2), X(u0) - 4, Y(v) + 4);
     ctx.textAlign = 'left'; ctx.fillText(t('dashed: Duv = ±0.01, ±0.02'), X(u0) + 6, Y(v0) - 6);
+  }
+
+  // TM-30: scores, the hue bins' colours (their samples under the reference, as an adapted observer
+  // sees them) and the live calculation
+  let F = null;
+  function updateFidelity(S, r) {
+    const f = tm30(S.spd), sum = Array.from({ length: 16 }, () => [0, 0, 0]);
+    f.refUCS.forEach((p, i) => { const c = sampleSRGB(CES[i], f.ref), s = sum[Math.min(15, Math.floor(p[3] / 22.5))]; for (let k = 0; k < 3; k++) s[k] += c[k]; });
+    const binCol = sum.map((s, j) => { const m = Math.max(...s) || 1; return s.map((q) => (0.9 * q) / m); });
+    const big = f.hue.reduce((b, x, j) => (Math.abs(x.Rcs) > Math.abs(f.hue[b].Rcs) ? j : b), 0);
+    const low = f.Ri.reduce((b, x, i) => (x < f.Ri[b] ? i : b), 0);
+    const meanDE = f.dE.reduce((a, x) => a + x, 0) / f.dE.length;
+    const pct = (v) => (v >= 0 ? '+' : '') + v.toFixed(0) + ' %';
+    F = { f, binCol };
+    const refName = f.cct < 4000 ? t('black body') : f.cct > 5000 ? t('CIE daylight') : t('black body and CIE daylight mixed, {p} % daylight', { p: (100 * (f.cct - 4000) / 1000).toFixed(0) });
+    fro.replaceChildren(readouts([
+      ['Light source', S.name],
+      ['Fidelity index Rf', f.Rf.toFixed(1)],
+      ['Gamut index Rg', f.Rg.toFixed(1)],
+      ['General CRI Ra (R1–R8)', r.Ra.toFixed(1)],
+      ['Red fidelity Rf,h1', f.hue[0].Rf.toFixed(0)],
+      ['Red chroma shift Rcs,h1', pct(f.hue[0].Rcs)],
+      ['Largest chroma shift', t('{v} in hue bin {j}', { v: pct(f.hue[big].Rcs), j: big + 1 })],
+      ['Lowest sample score', t('{v} (sample CES{n})', { v: f.Ri[low].toFixed(0), n: String(low + 1).padStart(2, '0') })],
+      ['Reference for Rf', refName],
+    ]));
+    const base = { Rf: f.Rf.toFixed(0), Ra: r.Ra.toFixed(0), Rg: f.Rg.toFixed(0), j: big + 1, cs: pct(f.hue[big].Rcs) };
+    fcalc.say(f.Rg > 102
+      ? t('Judged on 99 samples, this light scores <strong>Rf = {Rf}</strong> for fidelity (Ra gave {Ra}) and <strong>Rg = {Rg}</strong> for gamut: colours look more saturated than under the reference light, most of all in hue bin {j} ({cs} chroma).', base)
+      : f.Rg < 98
+        ? t('Judged on 99 samples, this light scores <strong>Rf = {Rf}</strong> for fidelity (Ra gave {Ra}) and <strong>Rg = {Rg}</strong> for gamut: colours look duller than under the reference light, most of all in hue bin {j} ({cs} chroma).', base)
+        : t('Judged on 99 samples, this light scores <strong>Rf = {Rf}</strong> for fidelity (Ra gave {Ra}) and <strong>Rg = {Rg}</strong> for gamut: colours are about as saturated as under the reference light.', base));
+    fcalc.set(String.raw`\begin{aligned}
+    \Delta E_i &= \big\lVert \Delta(J',a',b')_i\big\rVert,\quad \overline{\Delta E} = ${texNum(meanDE, 3)}\\
+    R_f &= 10\ln\!\big(e^{(100 - 6.73\,\overline{\Delta E})/10} + 1\big)\\ &= ${texNum(f.Rf, 3)}\\
+    R_g &= 100\,A_\text{test}/A_\text{ref} = ${texNum(f.Rg, 3)}\\
+    R_{cs,h1} &= 100\,\Delta\bar{\mathbf a}'_1\cdot\hat{\mathbf u}_1\big/\lvert\bar{\mathbf a}'_{\text{ref},1}\rvert = ${texNum(f.hue[0].Rcs, 2)}\ \%
+    \end{aligned}`);
+  }
+
+  function drawCVG(ctx, w, hh) {
+    ctx.fillStyle = '#05060a'; ctx.fillRect(0, 0, w, hh);
+    if (!F) return;
+    const { f, binCol } = F, cx = w / 2, cy = hh / 2 + 6, R = Math.min(w, hh) * 0.31;
+    const P = ([a, b]) => [cx + R * a, cy - R * b], deg = Math.PI / 180;
+    for (let j = 0; j < 16; j++) {
+      ctx.fillStyle = css(binCol[j]); ctx.globalAlpha = 0.32;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R * 1.42, -j * 22.5 * deg, -(j + 1) * 22.5 * deg, true); ctx.closePath(); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1;
+    for (const q of [0.6, 0.8, 1.2]) { ctx.beginPath(); ctx.arc(cx, cy, R * q, 0, 7); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    // test polygon, then an arrow per bin from the reference to the test average
+    ctx.beginPath(); f.hue.forEach((b, j) => { const [x, y] = P(b.test); j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fill(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+    f.hue.forEach((b, j) => {
+      const [x0, y0] = P(b.ref), [x1, y1] = P(b.test), L = Math.hypot(x1 - x0, y1 - y0);
+      ctx.strokeStyle = ctx.fillStyle = css(binCol[j].map((q) => Math.min(1, q * 1.25))); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      if (L > 4) { const ux = (x1 - x0) / L, uy = (y1 - y0) / L; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 - 7 * ux - 3.5 * uy, y1 - 7 * uy + 3.5 * ux); ctx.lineTo(x1 - 7 * ux + 3.5 * uy, y1 - 7 * uy - 3.5 * ux); ctx.closePath(); ctx.fill(); }
+      const a = (22.5 * j + 11.25) * deg;
+      ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+      ctx.fillText(String(j + 1), cx + R * 1.32 * Math.cos(a), cy - R * 1.32 * Math.sin(a) + 4);
+    });
+    // top right beside the caption on wide canvases, above the legend on narrow ones
+    const narrow = w < 560;
+    ctx.textAlign = narrow ? 'left' : 'right'; ctx.font = '12px "JetBrains Mono", monospace'; ctx.fillStyle = '#fff';
+    ctx.fillText(`Rf ${f.Rf.toFixed(0)}   Rg ${f.Rg.toFixed(0)}`, narrow ? 10 : w - 10, narrow ? hh - 26 : 20);
+    ctx.textAlign = 'left';
+    ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillText(t('dashed circle: reference · white: test light'), 10, hh - 8);
+  }
+
+  function drawShifts(ctx, w, hh) {
+    if (!F) return;
+    const cs = F.f.hue.map((b) => b.Rcs), m = Math.max(20, Math.ceil(Math.max(...cs.map(Math.abs)) / 10) * 10);
+    const P = plot(ctx, w, hh, { title: 'Chroma shift by hue bin, Rcs,h', x: { min: 0.5, max: 16.5, step: 1, label: 'hue bin', fmt: (v) => String(v) }, y: { min: -m, max: m, label: 'chroma shift (%)' }, series: [] });
+    cs.forEach((v, j) => {
+      const x = P.X(j + 1), bw = (P.X(2) - P.X(1)) * 0.72, y = P.Y(v), y0 = P.Y(0);
+      ctx.fillStyle = css(F.binCol[j]); ctx.fillRect(x - bw / 2, Math.min(y, y0), bw, Math.abs(y0 - y));
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.strokeRect(x - bw / 2, Math.min(y, y0), bw, Math.abs(y0 - y));
+    });
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.moveTo(P.X(0.5), P.Y(0)); ctx.lineTo(P.X(16.5), P.Y(0)); ctx.stroke();
   }
 
   // ── camera colour: sensitivities, white balance and the colour matrix ──
@@ -287,7 +381,7 @@ export default function mount(root, meta) {
 
   root.append(rule(String.raw`\[X = \int S(\lambda)\,R(\lambda)\,\bar x(\lambda)\,d\lambda\quad\text{(likewise } Y, Z)\]
 <p>Three colour-matching functions \(\bar x, \bar y, \bar z\), which stand in for the eye's three kinds of cone, are each multiplied by the light's spectrum \(S\) and the surface's reflectance \(R\), wavelength by wavelength, and summed. Two different spectra that give the same three sums look identical: that is metamerism. A colour rendering index of 100 means test colours look as they do under a reference light of the same colour temperature; good LED lamps reach 90–98, cheap ones 70–80.</p>`,
-    String.raw`The colour-matching functions describe an average observer under standard viewing; real people differ, especially with narrow-band LEDs. The CRI averages only eight pastel colours, so a lamp can score well and still render saturated reds poorly, which is why R9 is listed too.`));
+    String.raw`The colour-matching functions describe an average observer under standard viewing; real people differ, especially with narrow-band LEDs. The CRI averages only eight pastel colours, so a lamp can score well and still render saturated reds poorly, which is why R9 is listed too, and why the fidelity index Rf of CIE 2017 judges 99 samples instead.`));
   root.append(theory('Spectra, colour temperature and colour rendering', String.raw`
 <div class="theory-cols"><div>
 <h3>From spectrum to colour</h3>
@@ -305,6 +399,23 @@ export default function mount(root, meta) {
 <h3>The colour solid</h3>
 <p>No surface reflects more than all the light falling on it, so a light source bounds the colours that objects can have under it. For each chromaticity, the brightest possible surface reflects everything in one band of wavelengths and nothing outside it, or nothing in one band for the purples (Schrödinger 1920). These <em>optimal colours</em> enclose every real surface colour; their outline at each lightness is called the MacAdam limit (MacAdam 1935). The 3-D view draws them in CIE xyY: chromaticity \((x, y)\) on the floor, luminance factor \(Y\) upwards, the perfect white reflector at \(Y = 100\) on top. Each band is built from the 5 nm samples, so the surface is a polyhedron of 81 bands around. Colours are shown as an observer adapted to the source sees them (Bradford to D65). Bradford is linear in XYZ, so under a strongly coloured source the solid's lower edge can stray slightly past the spectral locus drawn on the floor, which belongs to the unadapted observer.</p>
 <p>A display's gamut is the image of its RGB cube: the triangle of its primaries on the floor, with walls above each side and a roof at the brightest mixtures. Its share of all chromaticities is the triangle's area over the area inside the spectral locus in \((x, y)\). That diagram is not perceptually uniform, so the shares overstate wide gamuts compared with \((u', v')\). A colour can be unreachable even when its chromaticity lies inside the triangle, because it is too bright for that hue. A narrow-band source such as the high-pressure sodium lamp shrinks the solid towards a thin sliver: almost nothing can look saturated under it.</p>
+</div></div>`));
+  root.append(theory('Fidelity and gamut: CIE 2017 and ANSI/IES TM-30', String.raw`
+<div class="theory-cols"><div>
+<h3>99 samples in a uniform colour space</h3>
+<p>CIE 224:2017 replaces the colour rendering index's eight pastel samples with 99 <em>colour evaluation samples</em>: measured reflectances of natural objects, skin, textiles, paints, plastics and inks, chosen from more than 100 000 so that they cover colour space evenly in hue and chroma and have no wavelength they are especially sensitive to (David et al. 2015). The same samples underlie ANSI/IES TM-30. Each is rendered under the test light and under a reference of the same correlated colour temperature, using the CIE 1964 10° observer (normalised so that the light's white has \(Y = 100\)), and compared in CAM02-UCS, a uniform space built on the CIECAM02 colour appearance model. The model runs with the illuminant fully discounted (\(D = 1\)), an adapting luminance \(L_A = 100\ \text{cd/m}^2\), background \(Y_b = 20\) and an average surround. From lightness \(J\), colourfulness \(M\) and hue angle \(h\),</p>
+\[J' = \frac{1.7\,J}{1 + 0.007\,J},\quad M' = \frac{\ln(1 + 0.0228\,M)}{0.0228},\quad (a', b') = M'(\cos h, \sin h).\]
+<p>The fidelity of sample \(i\) follows from its colour difference \(\Delta E_i\), and the general index from the mean difference,</p>
+\[R_{f} = 10\ln\!\big(e^{(100 - c_f\overline{\Delta E})/10} + 1\big),\qquad c_f = 6.73,\]
+<p>which is \(100 - c_f\overline{\Delta E}\) for good lights and approaches zero, never negative, for bad ones. (TM-30-15 used \(c_f = 7.54\); TM-30-18 and later adopted the CIE value.) The reference is Planckian below 4000 K, CIE daylight above 5000 K and between them a mixture whose daylight share rises linearly with temperature, each part normalised to the same luminance. This removes the jump of the colour rendering index, whose reference switches abruptly at 5000 K.</p>
+</div><div>
+<h3>Gamut, and which way colours move</h3>
+<p>Fidelity cannot say <em>how</em> colours change. TM-30 sorts the samples into 16 bins of hue angle (22.5° each, by their hue under the reference) and averages \((a', b')\) in each bin under both lights. The gamut index is the ratio of the areas of the two 16-sided polygons,</p>
+\[R_g = 100\,\frac{A_\text{test}}{A_\text{ref}},\]
+<p>above 100 when colours look on average more saturated than under the reference, below when duller. For bin \(j\), with the bin's centre direction \(\hat{\mathbf u}_j\) and reference average \(\bar{\mathbf a}'_{\text{ref},j}\), the chroma shift is \(R_{cs,hj} = 100\,(\bar{\mathbf a}'_{\text{test},j} - \bar{\mathbf a}'_{\text{ref},j})\cdot\hat{\mathbf u}_j/\lvert\bar{\mathbf a}'_{\text{ref},j}\rvert\) and the hue shift is the same with the perpendicular direction. The colour vector graphic draws the reference averages on a unit circle and moves each by its normalised shift: a shape stretched towards red and green oversaturates them, a dent desaturates.</p>
+<p>The two numbers trade off: a light can raise Rg only by moving colours away from the reference, which lowers Rf. Studies of preference found that many viewers like a modest increase in red saturation (positive \(R_{cs,h1}\)) at slightly lower fidelity, so TM-30's informative Annex E specifies lights by fidelity, gamut and red chroma together rather than by one number (Royer 2022).</p>
+<h3>This implementation</h3>
+<p>Everything is computed on the 5 nm grid from 380 to 780 nm, which CIE 224 allows. The correlated colour temperature is found as the nearest point of the Planckian locus by direct search rather than by Ohno's method; the two agree to within about 0.5 K for the lamps checked. The page reproduces the reference values of the colour-science project: Rf = 70.1 and Rg = 86 for CIE FL2, Rf = 80.6 for FL1, and all 99 sample scores and 16 bin values of FL2 within the precision those values are quoted to.</p>
 </div></div>`));
   root.append(theory('How a camera sees colour', String.raw`
 <div class="theory-cols"><div>
@@ -328,8 +439,12 @@ export default function mount(root, meta) {
     'G. Sharma, W. Wu &amp; E. N. Dalal, “The CIEDE2000 color-difference formula: implementation notes, supplementary test data, and mathematical observations”, <em>Color Res. Appl.</em> 30, 21 (2005).',
     'E. Schrödinger, “Theorie der Pigmente von größter Leuchtkraft”, <em>Ann. Phys.</em> 62, 603 (1920); D. L. MacAdam, “Maximum visual efficiency of colored materials”, <em>J. Opt. Soc. Am.</em> 25, 249 (1935): optimal colours.',
     'IEC 61966-2-1:1999, <em>Default RGB colour space: sRGB</em>; ITU-R BT.2020-2, <em>Parameter values for ultra-high definition television systems</em> (2015); SMPTE EG 432-1:2010 (P3 primaries).',
+    'CIE 224:2017, <em>CIE 2017 colour fidelity index for accurate scientific use</em> (CIE, Vienna); CIE 159:2004, <em>A colour appearance model for colour management systems: CIECAM02</em>. The 99 sample reflectances and the 10° observer via the colour-science project (BSD-3-Clause).',
+    'M. R. Luo, G. Cui &amp; C. Li, “Uniform colour spaces based on CIECAM02 colour appearance model”, <em>Color Res. Appl.</em> 31, 320 (2006): CAM02-UCS.',
+    'A. David, P. T. Fini, K. W. Houser, Y. Ohno, M. P. Royer, K. A. G. Smet, M. Wei &amp; L. Whitehead, “Development of the IES method for evaluating the color rendition of light sources”, <em>Opt. Express</em> 23, 15888 (2015).',
+    'M. P. Royer, “Tutorial: background and guidance for using the ANSI/IES TM-30 method for evaluating light source color rendition”, <em>LEUKOS</em> 18, 191 (2022).',
     'ANSI/IES TM-30-20, <em>Method for evaluating light source color rendition</em>; EBU Tech 3355, <em>Method for the assessment of the colorimetric properties of luminaires: the Television Lighting Consistency Index (TLCI-2012)</em>.',
   ]));
 
-  return () => [spdView, bars, diagram, solid3, sensView, mspec].forEach((s) => s.destroy());
+  return () => [spdView, bars, diagram, cvg, shifts, solid3, sensView, mspec].forEach((s) => s.destroy());
 }

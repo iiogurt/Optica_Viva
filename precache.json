@@ -21,6 +21,7 @@
     "js/lib/camera.js",
     "js/lib/camsample.js",
     "js/lib/caustics.js",
+    "js/lib/cesdata.js",
     "js/lib/choose.js",
     "js/lib/cinema.js",
     "js/lib/color.js",

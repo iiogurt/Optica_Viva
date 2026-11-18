@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Colour science: CIE 2017 fidelity and ANSI/IES TM-30.** For the chosen light, the page now also judges 99 colour evaluation samples (natural objects, skin, textiles, paints, inks) in CAM02-UCS: the fidelity index Rf of CIE 224:2017, the TM-30 gamut index Rg, the chroma and hue shift in each of 16 hue bins and the colour vector graphic, beside the classic Ra. The reference light blends black body and daylight between 4000 and 5000 K. Reproduces the reference values for CIE FL1, FL2 and a 3287 K test spectrum: Rf 80.6, 70.1 and 81.6, FL2's Rg 86, every sample score within 0.06 and every hue bin. New data file `js/lib/cesdata.js` (CIE 1964 10° observer and the 99 samples, from colour-science, BSD-3-Clause); glossary entries for the colour rendering, fidelity and gamut indices.
+
+### Fixed
+- Colour science: the rainbow fill under the light's spectrum was not drawn (it read the translation function instead of the spectrum).
+
 ## [1.65.1] - 2026-11-18
 
 ### Changed
