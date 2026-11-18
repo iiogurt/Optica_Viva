@@ -39,6 +39,27 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.20 3-D views](#v120-3-d-views)
   - [v1.27 Sky and waves: visual showpieces](#v127-sky-and-waves-visual-showpieces)
   - [v1.36 Presentation](#v136-presentation)
+  - [v1.45 Mirages](#v145-mirages)
+  - [v1.46 Pool caustics](#v146-pool-caustics)
+  - [v1.47 Halation](#v147-halation)
+  - [v1.48 Sky colours](#v148-sky-colours)
+  - [v1.49 Lens corrections](#v149-lens-corrections)
+  - [v1.50 Infrared & ultraviolet](#v150-infrared--ultraviolet)
+  - [v1.51 Satellite trails](#v151-satellite-trails)
+  - [v1.52 Stereoscopic 3-D](#v152-stereoscopic-3-d)
+  - [v1.53 HDR displays](#v153-hdr-displays)
+  - [v1.54 LIGO](#v154-ligo)
+  - [v1.55 Radial velocities](#v155-radial-velocities)
+  - [v1.56 Laser links](#v156-laser-links)
+  - [v1.57 Star trackers](#v157-star-trackers)
+  - [v1.58 Phase angle & sun glint](#v158-phase-angle--sun-glint)
+  - [v1.59 Airglow & zodiacal light](#v159-airglow--zodiacal-light)
+  - [v1.60 Microlensing](#v160-microlensing)
+  - [v1.61 Thermal focus shift](#v161-thermal-focus-shift)
+  - [v1.62 Light-field camera](#v162-light-field-camera)
+  - [v1.63 Laser speckle & coherent imaging](#v163-laser-speckle--coherent-imaging)
+  - [v1.64 Haze & aerial perspective](#v164-haze--aerial-perspective)
+  - [v1.65 Zoom lenses](#v165-zoom-lenses)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -62,11 +83,11 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"] --> D14["v1.12–1.13<br/>missions · 3 labs"] --> D15["v1.14<br/>4 more labs"] --> D16["v1.15<br/>your own gear"] --> D17["v1.16<br/>tours · exercises · PWA"] --> D18["v1.17<br/>classic lenses · mirrors · TMA"] --> D19["v1.18<br/>glass catalogue · tolerancing · DE/FR/ES"] --> D20["v1.19<br/>translated controls · parallel workers"] --> D21["v1.20<br/>3-D views"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"] --> D14["v1.12–1.13<br/>missions · 3 labs"] --> D15["v1.14<br/>4 more labs"] --> D16["v1.15<br/>your own gear"] --> D17["v1.16<br/>tours · exercises · PWA"] --> D18["v1.17<br/>classic lenses · mirrors · TMA"] --> D19["v1.18<br/>glass catalogue · tolerancing · DE/FR/ES"] --> D20["v1.19<br/>translated controls · parallel workers"] --> D21["v1.20–1.23<br/>3-D views"] --> D22["v1.24–1.26<br/>whole interface in DE/FR/ES"] --> D23["v1.27–1.30<br/>halos · waves · black hole"] --> D24["v1.31–1.35<br/>live camera · validation fixes"] --> D25["v1.36–1.41<br/>presentation"] --> D26["v1.42–1.44<br/>mission pictures"] --> D27["v1.45–1.65<br/>21 new laboratories"]
     end
     subgraph Next["Planned"]
         direction TB
-        N12["v1.36 presentation"] --> N7["v2.0 translated text"] --> N10["MTF validation<br/>(needs data)"]
+        N7["v2.0 translated explanations<br/>(needs the owner's go-ahead)"] --> N10["MTF validation<br/>(needs data)"]
     end
     Done --> Next
     style Done fill:#13241b,stroke:#6be3a4,color:#fff
@@ -75,8 +96,8 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 64 pages, including 9 missions and the reference pages | see Planned milestones |
-| Catalogue entries | 239, each with details and a worked example | link every new lab |
+| Laboratories | 71 laboratories, 9 missions, the physics primer and the reference pages (catalogue, gallery, your gear) | see Planned milestones |
+| Catalogue entries | 257, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
 | Automated tests | 548 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
 | Deployment | GitHub Pages, deployed from `main` by CI | (none) |
