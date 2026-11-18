@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **A new laboratory: integral-field spectroscopy** (`#/ifu`). An image slicer cuts an 8″ field into 8, 16 or 32 strips and lays them end to end along one slit. A rotating disk galaxy (arctangent rotation curve; Hα, [N II] and [S II] at their air wavelengths, star-forming knots, stellar continuum) is built as a data cube, blurred by seeing wavelength by wavelength, sliced and dispersed onto a detector with photon and read noise, and the cube rebuilt from the frame. The slice is the slit: R falls as the slices widen, and light off a slice's centre lands at another wavelength (the slit effect, traced row by row). Hα is measured by moments in every spaxel, with the instrumental width calibrated like an arc line and the window kept clear of [N II]; maps of flux, velocity and velocity dispersion (masked below S/N 5 and 10) and the spectrum of any spaxel, chosen by clicking or with sliders. Computed in the worker, the noise-free frame cached across exposure times. Tests: photons conserved through slicer and detector to 10⁻⁴, the beam-smeared and slit-shifted velocity field recovered to 0.2 km/s, widths in quadrature within 0.6 km/s, velocity scatter at the photon-noise limit within 12 %, no first-moment bias at the S/N mask. Catalogue entry and glossary terms (integral-field unit, image slicer, data cube, spaxel, beam smearing).
+
+### Changed
+- Spectroscopy: the integral-field unit, described there, now links to the new laboratory.
+
 ## [1.69.0] - 2026-11-18
 
 ### Added
