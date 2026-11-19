@@ -1,10 +1,10 @@
 import { h, controls, stage, readouts, texNum, fmt } from '../lib/ui.js';
-import { paint, keyOf } from '../lib/pixels.js';
+import { paint, paintMap, keyOf } from '../lib/pixels.js';
 import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/page.js';
-import { latest } from '../lib/compute.js';
+import { latest, run } from '../lib/compute.js';
 import { plot, range } from '../lib/plot.js';
 import { lut, wavelengthRGB } from '../lib/color.js';
-import { OCCULTERS, fresnelNumber, iwa } from '../lib/starshade.js';
+import { OCCULTERS, fresnelNumber, iwa, apertureGrid, petalEdges } from '../lib/starshade.js';
 import { view3d } from '../lib/gl3d.js';
 import { starshadeScene } from '../lib/starshade3d.js';
 import { t } from '../lib/i18n.js';
@@ -20,27 +20,32 @@ export default function mount(root, meta) {
 <p>A <strong>starshade</strong> is a flower-shaped screen tens of metres wide, flown tens of thousands of kilometres in front of a space telescope. It casts a deep shadow of the star while the planet beside it stays visible. A plain round disc would not work: light bending around its edge makes a bright spot right in the middle of the shadow. The carefully shaped petals cancel that spot.</p>`, [
     "Compare the suppression of the starshade with that of the same-size opaque disc: the disc lets far more light through.",
     "Move the telescope from 80 000 km to <strong>30 000 km</strong>: the Fresnel number falls and starlight leaks into the shadow.",
-    "Set the <strong>Wavelength for the shadow map</strong> to 1000 nm: the shadow is shallower in red light.",
+    "Choose the petal error <strong>One petal turned sideways</strong>: before looking, guess where the leaked starlight appears in the telescope's image. Then compare it with the drawing.",
   ]));
 
   const ctl = controls({
     a: { type: 'range', label: 'Opaque core radius a', min: 4, max: 20, step: 0.5, value: 12.5, unit: 'm' },
     b: { type: 'range', label: 'Petal length scale b', min: 4, max: 20, step: 0.5, value: 12.5, unit: 'm' },
     n: { type: 'range', label: 'Hypergaussian order n', min: 2, max: 10, step: 1, value: 6 },
-    N: { type: 'range', label: 'Number of petals (drawing only)', min: 8, max: 32, step: 1, value: 16 },
+    N: { type: 'range', label: 'Number of petals', min: 8, max: 32, step: 1, value: 16 },
     z: { type: 'range', label: 'Telescope–starshade distance', min: 10000, max: 150000, step: 1000, value: 80000, unit: 'km' },
     D: { type: 'range', label: 'Telescope diameter', min: 1, max: 8, step: 0.1, value: 4, unit: 'm' },
     lam: { type: 'range', label: 'Wavelength for the shadow map', min: 300, max: 1100, step: 10, value: 550, unit: 'nm' },
+    err: { type: 'select', label: 'Petal error', value: 'none', options: [['none', 'Perfect petals'], ['clock', 'One petal turned sideways'], ['width', 'Every petal wider (negative: narrower)'], ['shift', 'One petal slid outwards along its axis']] },
+    d: { type: 'range', label: 'Size of the error (at the petal tip or edge)', min: -1000, max: 1000, step: 10, value: 500, unit: 'µm', when: (st) => st.err !== 'none' },
   }, () => update());
   const ro = h('div');
   const calc = liveCalc();
   const shape = stage({ aspect: 1, label: 'Starshade seen from the telescope', draw: drawShape, minH: 200 });
-  const map = stage({ aspect: 1, label: 'Shadow at the telescope (log intensity)', draw: drawMap, minH: 200 });
+  const map = stage({ aspect: 1, label: 'Shadow at the telescope, azimuthal average (log intensity)', draw: drawMap, minH: 200 });
   const prof = stage({ aspect: 2.1, label: '', draw: drawProf, cls: 'plain', minH: 220 });
   const spec = stage({ aspect: 2.1, label: '', draw: drawSpec, cls: 'plain', minH: 220 });
   const note = h('p.note', {}, t('Computing the Fresnel integrals in the worker…'));
+  const ap = stage({ aspect: 1, label: 'Shadow over the telescope, real petals (log intensity)', draw: drawAp, minH: 200 });
+  const img = stage({ aspect: 1, label: "Leaked starlight in the telescope's image (contrast)", draw: drawImg, minH: 200 });
+  const note2 = h('p.note', {}, t('Computing the exact shadow of the petals…'));
   const v3 = view3d({ label: '3-D: the telescope, the starshade tens of thousands of kilometres away, and its shadow on the telescope', aspect: 1.9, minH: 260, yaw: -0.7, pitch: 0.35 });
-  root.append(lab([h('div.grid-2', {}, shape.el, map.el), note, v3.el, h('div.card', { style: { padding: '6px' } }, prof.el), h('div.card', { style: { padding: '6px' } }, spec.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  root.append(lab([h('div.grid-2', {}, shape.el, map.el), note, h('div.grid-2', {}, ap.el, img.el), note2, v3.el, h('div.card', { style: { padding: '6px' } }, prof.el), h('div.card', { style: { padding: '6px' } }, spec.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   const job = latest('starshade');
   let R = null;
@@ -63,28 +68,86 @@ export default function mount(root, meta) {
     &= \frac{(${texNum(Rt, 3)}\ \text{m})^2}{${texNum(st.lam, 3)}\ \text{nm}\times ${texNum(st.z / 1000, 3)}\,\text{Mm}} = ${texNum(F, 3)}\\
     \theta_\text{IWA} &\approx \frac{a+b}{z} = ${texNum(th, 3)}\ \text{mas}\\
     \lambda/D &= ${texNum((lam / st.D) * MAS, 3)}\ \text{mas}\\
-    E(0) &= 1 + i\,\frac{2\pi}{\lambda z}\int_0^\infty A(r)\,e^{i\pi r^2/\lambda z}\,r\,dr
+    E(0) &= 1 + i\,\frac{2\pi}{\lambda z}\int_0^\infty A(r)\,e^{i\pi r^2/\lambda z}\,r\,dr\\
+    E(\mathbf p) &= 1 + \frac{1}{2\pi}\oint_{\text{edge}}\left(e^{i\pi s^2/\lambda z}-1\right)d\alpha
     \end{aligned}`);
+    // the azimuthally averaged model does not depend on the petals: skip it when only they change
+    const rk = JSON.stringify([st.a, st.b, st.n, st.z, st.D, st.lam]);
+    if (R && R.rk === rk) { show(); runPetals(); return; }
     note.textContent = t('Computing the Fresnel integrals in the worker…');
     const p = { kind: 'hyper', a: st.a, b: st.b, n: st.n, z, D: st.D, lams: lams(st), lamC: lam, rhoMax: Math.max(1.4 * Rt, st.D), nr: 120, specLams, steps: 2000 };
     job('starshade', p).then((r) => {
-      R = { st: { ...st }, p, ...r };
-      const k = R.p.lams.indexOf(lam), sp = r.supp[k];
-      ro.replaceChildren(readouts([
-        [t('Fresnel number at {l} nm', { l: st.lam }), F.toFixed(1)],
-        ['Inner working angle', th.toFixed(0) + ' mas = ' + (th / ((lam / st.D) * MAS)).toFixed(1) + ' λ/D'],
-        ['Suppression over the aperture (starshade)', sp.toExponential(1)],
-        ['Same-size opaque disk', t('{s} (Poisson spot)', { s: r.diskSupp.toExponential(1) })],
-        ['Band with suppression < 10⁻¹⁰', band(r.specSupp, 1e-10)],
-      ]));
-      calc.say(t('At {v1} thousand km the starshade dims the starlight over the telescope to <strong>{v2}</strong> of its unblocked level, against {v3} for a plain disc of the same size. Planets can be seen from <strong>{th} mas</strong> from the star outwards.', { v1: fmt(st.z / 1000, 3), v2: fmt(sp, 2), v3: fmt(r.diskSupp, 2), th: th.toFixed(0) }));
-      note.textContent = t('Shadow of a hypergaussian starshade (a = {a} m, b = {b} m, n = {n}) at {z} km. The telescope aperture is the dashed circle. Scalar Fresnel diffraction, azimuthally averaged petals.', { a: st.a, b: st.b, n: st.n, z: Math.round(st.z) });
-      [map, prof, spec].forEach((x) => x.redraw());
-      show3d(st, z, r.rhos, r.prof[k]);
+      R = { st: { ...st }, p, rk, ...r };
+      show();
+      show3d(st, z, r.rhos, r.prof[R.p.lams.indexOf(lam)]);
     });
+    runPetals();
   }
-  function band(s, thr) {
-    const ok = specLams.filter((_, i) => s[i] < thr);
+
+  // Real petals: the exact two-dimensional field over the aperture (a G×G grid, for the map and the
+  // image) and on a coarser grid across the spectrum. A job takes about a second and a half on a
+  // Raspberry Pi 4 (in the worker that already holds the tasks; starting the pool would cost more),
+  // so it runs where a dragged slider pauses.
+  const G = 48, GS = 10, specP = specLams.filter((_, i) => i % 2 === 0);
+  let PR = null, pTimer = 0, pTicket = 0;
+  const petalKey = (st) => JSON.stringify([st.a, st.b, st.n, st.N, st.z, st.D, st.lam, st.err, st.err === 'none' ? 0 : st.d]);
+  function runPetals() {
+    const st0 = ctl.state;
+    if (PR && PR.key === petalKey(st0)) return;
+    note2.textContent = t('Computing the exact shadow of the petals…');
+    clearTimeout(pTimer);
+    pTimer = setTimeout(() => {
+      const st = { ...ctl.state }, my = ++pTicket, key = petalKey(st), z = st.z * 1e3, lam = st.lam * 1e-9;
+      const o = { a: st.a, b: st.b, n: st.n }, err = st.err === 'none' ? null : { kind: st.err, d: st.d * 1e-6, petal: 0 };
+      const grid = apertureGrid(st.D, G), sg = apertureGrid(st.D, GS);
+      // the map's grid at the chosen wavelength, then each wavelength of the spectrum on a coarser grid
+      const items = [{ lam, x0: grid.x0, dx: grid.dx, nx: G, ys: grid.ys }, ...specP.map((l) => ({ lam: l, x0: sg.x0, dx: sg.dx, nx: GS, ys: sg.ys }))];
+      run('petals', { o, N: st.N, err, z, lamMin: Math.min(lam, specP[0]), rhoMax: st.D / Math.SQRT2, items }).then((res) => {
+        if (my !== pTicket) return null;
+        const field = res[0], spec = res.slice(1).map((f) => sg.idx.reduce((acc, q) => acc + (f[2 * q] ** 2 + f[2 * q + 1] ** 2) / sg.idx.length, 0));
+        const Iap = new Float32Array(G * G);
+        let mean = 0;
+        for (let q = 0; q < G * G; q++) Iap[q] = field[2 * q] ** 2 + field[2 * q + 1] ** 2;
+        for (const q of grid.idx) mean += Iap[q] / grid.idx.length;
+        return run('petalImage', { field, idx: grid.idx, G, D: st.D, lam, n: 512 }).then((im) => {
+          if (my !== pTicket) return;
+          PR = { key, st, Iap, mean, spec, im, z };
+          show();
+        });
+      }).catch((e) => console.error(e));
+    }, PR ? 150 : 0);
+  }
+  // the brightest leak in the image between the inner working angle and twice the tip radius
+  function leak(P) {
+    const { I, n, pix } = P.im, st = P.st, th0 = (st.a + st.b) / P.z, th1 = (2 * OCCULTERS.hyper.Rmax(st)) / P.z;
+    let best = 0, at = 0;
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      const th = Math.hypot(x - n / 2, y - n / 2) * pix;
+      if (th >= th0 && th <= th1 && I[y * n + x] > best) { best = I[y * n + x]; at = th; }
+    }
+    return { best, at };
+  }
+  function show() {
+    if (!R) return;
+    const st = ctl.state, lam = st.lam * 1e-9, k = R.p.lams.indexOf(R.st.lam * 1e-9), sp = R.supp[k], th = iwa(R.st.a + R.st.b, R.st.z * 1e3) * MAS;
+    const P = PR && PR.key === petalKey(st) ? PR : null, L = P ? leak(P) : null;
+    ro.replaceChildren(readouts([
+      [t('Fresnel number at {l} nm', { l: R.st.lam }), fresnelNumber(R.st.a + R.st.b, R.st.lam * 1e-9, R.st.z * 1e3).toFixed(1)],
+      ['Inner working angle', th.toFixed(0) + ' mas = ' + (th / ((lam / st.D) * MAS)).toFixed(1) + ' λ/D'],
+      ['Suppression over the aperture, azimuthal average', sp.toExponential(1)],
+      ['Suppression over the aperture, real petals', P ? P.mean.toExponential(1) : '…'],
+      ['Brightest leak beyond the inner working angle', P ? t('{c} at {th} mas', { c: L.best.toExponential(1), th: (L.at * MAS).toFixed(0) }) : '…'],
+      ['Same-size opaque disk', t('{s} (Poisson spot)', { s: R.diskSupp.toExponential(1) })],
+      ['Band with suppression < 10⁻¹⁰', P ? band(specP, P.spec, 1e-10) : band(specLams, R.specSupp, 1e-10)],
+    ]));
+    const v2 = P ? P.mean : sp;
+    calc.say(t('At {v1} thousand km the starshade dims the starlight over the telescope to <strong>{v2}</strong> of its unblocked level, against {v3} for a plain disc of the same size. Planets can be seen from <strong>{th} mas</strong> from the star outwards.', { v1: fmt(R.st.z / 1000, 3), v2: fmt(v2, 2), v3: fmt(R.diskSupp, 2), th: th.toFixed(0) }));
+    note.textContent = t('Shadow of a hypergaussian starshade (a = {a} m, b = {b} m, n = {n}) at {z} km. The telescope aperture is the dashed circle. Scalar Fresnel diffraction, azimuthally averaged petals.', { a: R.st.a, b: R.st.b, n: R.st.n, z: Math.round(R.st.z) });
+    if (P) note2.textContent = t("Exact Fresnel field of the {N} binary petals over the {D} m telescope (left, 10⁻¹³ … 10⁻⁶) and the image the telescope makes of the light that leaks past them (right, contrast 10⁻¹⁴ … 10⁻⁸ relative to the star's peak; the dashed circle is the inner working angle). Both are oriented like the drawing of the shade, so a leak shows up beside the petal that causes it.", { N: P.st.N, D: P.st.D });
+    [map, prof, spec, ap, img].forEach((x) => x.redraw());
+  }
+  function band(ls, s, thr) {
+    const ok = ls.filter((_, i) => s[i] < thr);
     return ok.length ? `${Math.round(ok[0] * 1e9)}–${Math.round(ok[ok.length - 1] * 1e9)} nm` : 'none';
   }
   function drawShape(ctx, w, hh) {
@@ -101,6 +164,18 @@ export default function mount(root, meta) {
     }
     ctx.fill();
     ctx.beginPath(); ctx.arc(cx, cy, sc * st.a, 0, 2 * Math.PI); ctx.fill();
+    if (st.err !== 'none') {
+      // the petal with the error (the error itself, a fraction of a millimetre, is far too small to see)
+      const err = { kind: st.err, d: st.d * 1e-6, petal: 0 }, js = st.err === 'width' ? [...Array(st.N).keys()] : [0];
+      ctx.fillStyle = 'rgba(255,181,71,0.85)';
+      for (const j of js) {
+        ctx.beginPath();
+        const rs = Array.from({ length: steps + 1 }, (_, i) => st.a + ((Rm - st.a) * i) / steps), e = rs.map((r) => petalEdges(j, r, st, st.N, err));
+        rs.forEach((r, i) => { const x = cx + sc * r * Math.cos(e[i][0]), y = cy + sc * r * Math.sin(e[i][0]); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
+        for (let i = steps; i >= 0; i--) ctx.lineTo(cx + sc * rs[i] * Math.cos(e[i][1]), cy + sc * rs[i] * Math.sin(e[i][1]));
+        ctx.closePath(); ctx.fill();
+      }
+    }
     ctx.strokeStyle = 'rgba(255,181,71,0.7)'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(cx, cy, sc * (st.a + st.b), 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px "JetBrains Mono", monospace';
     ctx.fillText(t('diameter {v1} m tip to tip', { v1: (2 * Rm).toFixed(0) }), 8, hh - 24); ctx.fillStyle = 'rgba(255,181,71,0.9)'; ctx.fillText(t('a + b (IWA radius)'), 8, hh - 9);
@@ -123,6 +198,35 @@ export default function mount(root, meta) {
     ctx.font = '11px "JetBrains Mono", monospace'; ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(4, hh - 22, ctx.measureText(txt).width + 8, 18);
     ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillText(txt, 8, hh - 9);
   }
+  function drawAp(ctx, w, hh) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
+    const P = PR;
+    if (!P) return;
+    const sz = Math.min(w, hh) - 4, x0 = (w - sz) / 2, y0 = (hh - sz) / 2;
+    paintMap(ap, { x: x0, y: y0, w: sz, h: sz }, { a: P.Iap, w: G, h: G, lut: INF, pre: (v) => Math.log10(Math.max(v, 1e-16)), value: (v) => (v + 13) / 7 }, P.key);
+    // only the telescope's circle: darken the corners of the square that was computed
+    ctx.fillStyle = 'rgba(0,0,0,0.82)'; ctx.beginPath(); ctx.rect(0, 0, w, hh); ctx.arc(w / 2, hh / 2, sz / 2, 0, 2 * Math.PI); ctx.fill('evenodd');
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.arc(w / 2, hh / 2, sz / 2, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, 0, w, 26);
+    const txt = t('{D} m telescope; 10⁻¹³ … 10⁻⁶', { D: P.st.D });
+    ctx.font = '11px "JetBrains Mono", monospace'; ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(4, hh - 22, ctx.measureText(txt).width + 8, 18);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillText(txt, 8, hh - 9);
+  }
+  function drawImg(ctx, w, hh) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
+    const P = PR;
+    if (!P) return;
+    const { I, n, pix } = P.im, Th = (1.5 * OCCULTERS.hyper.Rmax(P.st)) / P.z, half = Math.min(n / 2 - 1, Th / pix);
+    const sz = Math.min(w, hh) - 4, x0 = (w - sz) / 2, y0 = (hh - sz) / 2;
+    paintMap(img, { x: x0, y: y0, w: sz, h: sz }, { a: I, w: n, h: n, x0: n / 2 - half, y0: n / 2 - half, cw: 2 * half, ch: 2 * half, lut: INF, pre: (v) => Math.log10(Math.max(v, 1e-16)), value: (v) => (v + 14) / 6 }, P.key);
+    // the inner working angle and the petal tips
+    const s = sz / (2 * half * pix), cx = w / 2, cy = hh / 2;
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.arc(cx, cy, s * ((P.st.a + P.st.b) / P.z), 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, 0, w, 26);
+    const txt = t('±{v} mas; contrast 10⁻¹⁴ … 10⁻⁸', { v: Math.round(half * pix * MAS) });
+    ctx.font = '11px "JetBrains Mono", monospace'; ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(4, hh - 22, ctx.measureText(txt).width + 8, 18);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillText(txt, 8, hh - 9);
+  }
   function drawProf(ctx, w, hh) {
     if (!R) return;
     const rm = R.rhos[R.rhos.length - 1];
@@ -140,7 +244,11 @@ export default function mount(root, meta) {
     if (!R) return;
     plot(ctx, w, hh, {
       title: 'Starlight suppression averaged over the telescope aperture', x: { min: 300, max: 1200, label: 'wavelength (nm)' }, y: { min: 1e-16, max: 10, log: true, label: 'suppression' },
-      series: [{ data: specLams.map((l, i) => [l * 1e9, Math.max(1e-16, R.specSupp[i])]), color: '#ffb547', width: 2.2 }],
+      series: [
+        { data: specLams.map((l, i) => [l * 1e9, Math.max(1e-16, R.specSupp[i])]), color: '#ffb547', width: 2.2, label: t('azimuthal average') },
+        ...(PR && PR.key === petalKey(ctl.state) ? [{ data: specP.map((l, i) => [l * 1e9, Math.max(1e-16, PR.spec[i])]), color: '#6ad7ff', width: 2, label: t('{N} real petals', { N: PR.st.N }) }] : []),
+      ],
+      legend: true,
       bands: [{ y: [1e-16, 1e-10], color: 'rgba(120,230,160,0.06)' }], vlines: [{ x: R.st.lam, color: 'rgba(255,255,255,0.35)' }], hlines: [{ y: 1e-10, color: 'rgba(255,181,71,0.5)' }],
     });
   }
@@ -149,7 +257,7 @@ export default function mount(root, meta) {
 
   root.append(rule(String.raw`\[F = \frac{R^2}{\lambda z},\qquad \theta_\text{IWA} \approx \frac{R}{z}\]
 <p>The Fresnel number \(F\) of a starshade of radius \(R\) at distance \(z\) measures how deep its shadow can be; deep shadows need \(F\) of order 10 or more. A starshade of 25 m radius at 80 000 km in 550 nm light has \(F = 25^2/(550 \times 10^{-9} \times 8 \times 10^{7}) = 14\), and it hides a region of \(25/(8 \times 10^{7})\) rad = 64 mas around the star, the inner working angle. Planets farther out are visible.</p>`,
-    String.raw`These are scaling rules. The actual suppression depends on the petal shape, on manufacturing and deployment accurate to a fraction of a millimetre, and on sunlight scattered off the petal edges. The scalar Fresnel model used here also ignores polarisation and the thickness of the petals.`));
+    String.raw`These are scaling rules. The actual suppression depends on the petal shape, on manufacturing and deployment accurate to a fraction of a millimetre (the petal error controls show how much), and on sunlight scattered off the petal edges, which is not modelled. The scalar Fresnel model used here also ignores polarisation and the thickness of the petals.`));
   root.append(theory('Casting a shadow ten billion times darker', String.raw`
 <div class="theory-cols"><div>
 <h3>Fresnel diffraction behind an occulter</h3>
@@ -157,24 +265,38 @@ export default function mount(root, meta) {
 \[E(\rho) = 1 + \frac{2\pi i}{\lambda z}\,e^{i\pi\rho^2/\lambda z}\int_0^\infty A(r)\,e^{i\pi r^2/\lambda z}\,J_0\!\left(\frac{2\pi r\rho}{\lambda z}\right) r\,dr.\]
 <p>For an opaque disk (\(A = 1\) for \(r\le R\)) the axial integral is elementary, \(E(0) = e^{i\pi F}\), so \(|E(0)|^2 = 1\) exactly: the centre of the shadow of any round object is as bright as if the object were not there. This is the Poisson–Arago spot, the dashed curve in the profile plot. A round occulter is useless; the edge must be soft.</p>
 <h3>Apodisation by petals</h3>
-<p>A smooth transmission profile that falls from 0 to 1 over many Fresnel zones makes the edge contributions cancel. A screen with graded grey transmission cannot be built to \(10^{-10}\) accuracy, but a binary screen can: \(N\) petals whose angular width at radius \(r\) is \(2\pi A(r)/N\) block exactly the fraction \(A(r)\) of each circle. The petals add terms in \(J_{N}, J_{2N},\dots\) which vanish near the axis as \((\pi r\rho/\lambda z)^N\), so 16–24 petals suffice over a telescope-sized region. Cash's hypergaussian</p>
+<p>A smooth transmission profile that falls from 0 to 1 over many Fresnel zones makes the edge contributions cancel. A screen with graded grey transmission cannot be built to \(10^{-10}\) accuracy, but a binary screen can: \(N\) petals whose angular width at radius \(r\) is \(2\pi A(r)/N\) block exactly the fraction \(A(r)\) of each circle. Expanding the petals in a Fourier series in angle, \(A + \sum_j \tfrac{2\sin(j\pi A)}{j\pi}\cos(jN\theta)\), adds to the field terms in \(J_{N}, J_{2N},\dots\) of argument \(2\pi r\rho/\lambda z\). They vanish on the axis and grow like \((\pi r\rho/\lambda z)^N/N!\) away from it. At the edge of a 4 m telescope behind the default shade that argument reaches about 10 at the petal tips. There, 16 petals change the shadow only slightly, while 8 petals let three times as much light into the aperture as the average predicts. Over an 8 m telescope 16 petals let in 60 % more, and 24 petals bring it back to the average. Cash's hypergaussian</p>
 \[A(r) = \exp\!\left[-\left(\frac{r-a}{b}\right)^n\right]\quad(r > a),\qquad A = 1\ (r\le a)\]
 <p>gives suppression below \(10^{-10}\) over a broad band when \(a\), \(b\) and \(z\) are chosen so that \(F\lesssim 15\) at the longest wavelength. Numerically optimised profiles (Vanderbei, Cady and Kasdin) do better with smaller shades.</p>
 </div><div>
+<h3>Real petals: the shadow in two dimensions</h3>
+<p>For a binary screen the area integral collapses onto its edge. With \(\mathbf s\) the vector from the field point \(\mathbf p\) to the edge and \(\alpha\) its direction, \(\nabla\cdot\big[\mathbf s\,(e^{iks^2}-1)/(2iks^2)\big] = e^{iks^2}\) with \(k=\pi/\lambda z\), so</p>
+\[E(\mathbf p) = 1 + \frac{i}{\lambda z}\iint_{\text{shade}} e^{iks^2}\,dA = 1 + \frac{1}{2\pi}\oint_{\text{edge}}\left(e^{iks^2}-1\right)d\alpha,\]
+<p>the boundary-diffraction form used for starshades by Cady (2012). The integrand stays finite on the edge, so no inside-or-outside test is needed. The page traces the hub and the \(2N\) petal edges with Gauss–Legendre panels sized to the Fresnel zones they cross. On the axis it reproduces the radial integral exactly; off the axis it agrees with the Bessel series above to \(10^{-12}\) in field. Its azimuthal mean is again the radial result.</p>
+<p>The errors are those of a real shade:</p>
+<ul>
+<li>One petal can be turned about the centre so that its tip moves sideways.</li>
+<li>Every edge can be moved outwards along its normal: a manufacturing width error.</li>
+<li>One petal can be slid outwards along its own axis, with its base still sealed to the hub.</li>
+</ul>
+<p>Where a petal would overlap its neighbour the two are merged, so nothing is counted twice. The slide hardly matters: the petal's edges move along themselves, and its smooth profile still cancels the edge waves. A sideways turn of a millimetre, or edges a tenth of a millimetre too wide, raise the leak tenfold or more. The leaked light is not spread evenly. In the telescope's image (the Fraunhofer transform of the field over the aperture, in units of the unblocked star's peak) it appears beside the faulty petal, near its tip, which is just outside the inner working angle and exactly where planets are sought. Starshade error budgets (Shaklan et al. 2010) are built from sensitivities like these, one for every kind of error.</p>
 <h3>The geometry in 3-D</h3>
 <p>The 3-D view keeps the distances along the line of sight to scale and enlarges everything across it by one round factor, typically \(5\times10^5\). A 66 m starshade 80 000 km away subtends 170 mas, about the size of a coin seen from 15 km. Because both directions across are enlarged alike, angles are enlarged by the same factor and the line of sight that grazes the petal tips is the inner working angle \((a+b)/z\). The telescope sits deep inside the geometric shadow, a cylinder of radius \(a+b\). The coloured disc around the pupil is the computed shadow: the apodised petals keep the light that diffracts round the edge out of the centre, so the pupil sees \(10^{-10}\) or less where a plain disc would put the bright Poisson spot.</p>
 <h3>The trade-offs</h3>
 <p>Diffraction gets worse at long wavelengths (smaller \(F\), fewer zones over the petal), so the band's red end sets the size. The inner working angle, the smallest star–planet separation that is not covered, is about \((a+b)/z\). Moving the shade further away shrinks the IWA but lowers \(F\), and a larger shade restores \(F\) but must be built and flown to millimetre precision. Typical designs are 30–70 m across at 30 000–100 000 km, with IWAs of 60–100 mas, independent of telescope size. That is the main appeal: the telescope itself needs no coronagraph and no wavefront control.</p>
 <h3>Numerical method and approximations</h3>
-<p>The integral is taken in \(u = r^2\), where the Fresnel phase is linear. Each step integrates the phase exactly (Filon's midpoint rule), which makes the opaque core exact; one Richardson step removes the \(O(\Delta u^2)\) error left by \(J_0\) off axis. At 2000 steps the intensity has converged to better than \(10^{-14}\). Not included: the petal terms (see above), petal shape errors and edge scattering of sunlight, vector diffraction at the edges, and the finite size of the star (about 1 mas, much smaller than the shadow). Suppression is the area-weighted mean over the aperture; the planet's contrast in the image also depends on how the telescope spreads the leaked starlight.</p>
+<p>The azimuthal average is integrated in \(u = r^2\), where the Fresnel phase is linear. Each step integrates the phase exactly (Filon's midpoint rule), which makes the opaque core exact; one Richardson step removes the \(O(\Delta u^2)\) error left by \(J_0\) off axis. \(J_0\) itself is summed from its power series up to an argument of 12 and from Hankel's asymptotic series beyond, accurate to \(10^{-12}\); the usual polynomial fits are good only to \(5\times10^{-8}\), which is too coarse for a field of \(10^{-6}\). At 2000 steps the intensity has converged to better than \(10^{-14}\).</p>
+<p>The two-dimensional field is computed on a \(48\times48\) grid over the aperture at the chosen wavelength and on a \(10\times10\) grid for each point of the spectrum. Along a grid row the phase of each edge point changes by a fixed factor, so the sum needs no sines or cosines. The image is a 512-point FFT of the aperture field. Doubling the edge points changes the result by less than one part in a million.</p>
+<p>Not included: edge scattering of sunlight, vector diffraction at the edges, the petals' thickness, and the finite size of the star (about 1 mas, much smaller than the shadow). The errors are applied to first order in their size over the radius, which is exact to under a nanometre for millimetre errors.</p>
 </div></div>`));
   root.append(references([
     'W. Cash, “Detection of Earth-like planets around nearby stars using a petal-shaped occulter”, <em>Nature</em> 442, 51 (2006).',
     'R. J. Vanderbei, E. Cady &amp; N. J. Kasdin, “Optimal occulter design for finding extrasolar planets”, <em>Astrophys. J.</em> 665, 794 (2007).',
     'S. B. Shaklan <em>et al.</em>, “Error budgeting and tolerancing of starshades for exoplanet detection”, <em>Proc. SPIE</em> 7731 (2010).',
+    'E. Cady, “Boundary diffraction wave integrals for diffraction modeling of external occulters”, <em>Opt. Express</em> 20, 15196 (2012).',
     'S. Seager <em>et al.</em>, “Exo-S: Starshade probe-class exoplanet direct imaging mission concept”, final report, NASA/JPL (2015).',
     'M. Born &amp; E. Wolf, <em>Principles of Optics</em>, 7th ed., §8.8 (Fresnel diffraction, Lommel functions).',
   ]));
 
-  return () => [shape, map, prof, spec, v3].forEach((x) => x.destroy());
+  return () => { clearTimeout(pTimer); pTicket++; [shape, map, prof, spec, ap, img, v3].forEach((x) => x.destroy()); };
 }

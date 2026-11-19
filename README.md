@@ -841,9 +841,9 @@ The **CCD equation for stacks**: a faint galaxy behind a sky set by the **Bortle
 <td width="50%" valign="top">
 
 **Starshade** · `#/starshade`<br>
-<img src="docs/screenshots/starshade.webp" alt="A petalled starshade, its log-intensity shadow at the telescope, shadow profiles at three wavelengths and suppression vs wavelength">
+<img src="docs/screenshots/starshade.webp" alt="A petalled starshade with one petal turned, its log-intensity shadow, the exact shadow over the telescope and the leaked starlight beside the turned petal in the telescope's image">
 
-**Fresnel diffraction behind an occulter** tens of thousands of kilometres in front of the telescope. A round screen has a **Poisson–Arago spot** as bright as the unobstructed star; **Cash's hypergaussian petals** cancel it to below 10⁻¹⁰. Shadow profiles, an aperture-averaged suppression spectrum, the Fresnel number and the inner working angle. A **3-D view** shows the telescope and the starshade at their true separation (across the line of sight enlarged by a stated factor), the starlight passing beside it, the line of sight to a planet at the inner working angle, and the computed shadow on the telescope's plane with the pupil in it.
+**Fresnel diffraction behind an occulter** tens of thousands of kilometres in front of the telescope. A round screen has a **Poisson–Arago spot** as bright as the unobstructed star; **Cash's hypergaussian petals** cancel it to below 10⁻¹⁰. Shadow profiles, an aperture-averaged suppression spectrum, the Fresnel number and the inner working angle. **Real petals**: the exact two-dimensional shadow of the binary outline (Fresnel edge integral), with petal errors (a turned petal, wider edges, a petal slid along its axis), the shadow over the telescope and the telescope's image of the leaked starlight, which appears beside the faulty petal. A **3-D view** shows the telescope and the starshade at their true separation (across the line of sight enlarged by a stated factor), the starlight passing beside it, the line of sight to a planet at the inner working angle, and the computed shadow on the telescope's plane with the pupil in it.
 
 </td>
 </tr>
@@ -1150,7 +1150,7 @@ Optica_Viva/
 │   │   ├── lasercom.js        Laser links: Gaussian gain, link budget, PPM capacity of the Poisson channel, Ka-band comparison
 │   │   ├── rv.js              Radial velocities: synthetic spectra, photon-noise limit, Monte Carlo, planet semi-amplitudes
 │   │   ├── stacking.js        CCD equation for stacks, sky brightness from Bortle class, sky-limited sub length
-│   │   ├── starshade.js       Fresnel shadow of an apodised occulter (Filon quadrature, Bessel J₀), suppression spectrum
+│   │   ├── starshade.js       Fresnel shadow of an apodised occulter (Filon quadrature, Bessel J₀), suppression spectrum; real petals by the edge integral
 │   │   ├── spectro.js         Gratings, blaze, prisms, resolving power, line lists, instrument profile
 │   │   ├── virtual.js         LED-wall moiré (grid frequency, MTFs, aliasing) and PWM refresh banding
 │   │   ├── wfs.js             Shack–Hartmann sensor, modal reconstructor, Noll residuals, closed AO loop
@@ -1332,6 +1332,8 @@ The numerical core was checked against published or analytically known values. E
 | Decentred RC secondary | coma constant over the field; two astigmatic nodes | Thompson (2005) |
 | FFT Strehl vs Maréchal at Strehl ≈ 0.8 | within 3 % | exp(−σ²) |
 | Hypergaussian starshade, a = b = 12.5 m, n = 6, 80 000 km | < 10⁻⁹ within 2 m of the axis at 400–700 nm | Cash (2006) |
+| Real petals: edge integral against the Bessel series of the petal terms (8 petals, up to 6 m off the axis) | agree to 10⁻¹² in field; on the axis and in azimuthal mean equal to the radial model | Fourier series of the petals in angle; Cady (2012) |
+| Bessel J₀ (power series, Hankel's asymptotic series) | 10⁻¹² against Miller's recurrence, 0 ≤ x ≤ 60 | Abramowitz &amp; Stegun 9.1 |
 | Probability of a lucky frame vs D/r₀ (8 × 300 frames) | slope of ln P vs (D/r₀)² within 30 % of −0.1557 | Fried (1978) |
 | Refractivity of standard air at 633 nm | (n − 1)·10⁸ = 27 653 | Edlén (1966) |
 | Refraction at z = 45°, sea level, 550 nm | 57.3″ | (n − 1) tan z |
@@ -1474,7 +1476,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Mirages | Horizontally uniform, steady air; one wavelength; dry air; smooth model profiles | No shimmer, no green flash, no tilted or moving layers |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
 | Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |
-| Starshade | Scalar Fresnel diffraction; petals as an azimuthally averaged transmission (no J<sub>N</sub> petal terms); perfect shape; point star | No edge scattering of sunlight, shape or position errors |
+| Starshade | Scalar Fresnel diffraction; azimuthally averaged transmission for the profiles and the wide map, the exact binary outline (edge integral) over the aperture; three kinds of petal error, to first order in their size; point star | No edge scattering of sunlight, no random edge errors, no petal thickness or vector effects |
 | Lucky imaging | Single frozen screen, monochromatic, no photon or read noise, selection on the true Strehl | Real selection uses a noisy reference star; anisoplanatism ignored |
 | ADC | Plane-parallel refraction (≈ 1 % below z = 70°), dry air, thin prisms; Gaussian seeing ∝ λ^−0.2 | No water vapour, curvature or ADC aberrations |
 | Detectors | One trap species with exponential release (real CTI depends on signal level); illustrative persistence law | Flux dependence of CTI and detector-specific persistence not modelled |

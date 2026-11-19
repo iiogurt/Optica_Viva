@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Starshade: real petals.** The shadow is now also computed exactly for the binary petal outline in two dimensions, from the Fresnel integral collapsed onto the edge (the boundary-diffraction form, E = 1 + (1/2π)∮(e^{iks²} − 1) dα), with Gauss–Legendre panels sized to the Fresnel zones and a trig-free sum along grid rows. The number of petals now matters. Three petal errors can be set: one petal turned sideways, every edge moved outwards along its normal, or one petal slid outwards along its axis; neighbouring petals that would overlap are merged. New pictures: the shadow over the telescope with the real petals, and the telescope's image of the leaked starlight in contrast units, which puts the leak beside the faulty petal just outside the inner working angle. The readouts give the suppression with real petals and the brightest leak beyond the inner working angle; the spectrum gains a real-petal curve. On the axis the edge integral equals the radial model for any number of petals; off it, it agrees with the Bessel series of the petal terms (J_N, J_2N, …) to 10⁻¹² in field, and its azimuthal mean is the radial model. Glossary entries: inner working angle, Bessel function, Fraunhofer transform, error budget.
+
+### Fixed
+- Starshade: Bessel J₀ is now accurate to 10⁻¹² (power series, then Hankel's asymptotic series). The polynomial fits used before were good to only 5 × 10⁻⁸, which shifted shadow intensities near 10⁻¹² by several per cent.
+
 ## [1.70.1] - 2026-11-18
 
 ### Fixed

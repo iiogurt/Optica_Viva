@@ -110,6 +110,10 @@ export const GLOSSARY = [
   { term: 'Arcsecond', match: ['arcseconds?'], lab: 'seeing', def: 'A tiny angle: 1/3600 of a degree, the size of a coin seen from about 5 km.' },
   { term: 'Magnitude', match: ['(?<!of )magnitudes?'], lab: 'stacking', def: 'Astronomers\' brightness scale: 5 magnitudes are a factor of 100, and larger numbers are fainter.' },
   { term: 'Fresnel number', match: ['fresnel numbers?'], lab: 'starshade', def: 'A number that says whether a screen\'s shadow is sharp and geometric (large values) or blurred by diffraction (small values).' },
+  { term: 'Inner working angle', match: ['inner working angles?'], lab: 'starshade', def: 'The smallest angle from a star at which a starshade or coronagraph still lets a planet\'s light through.' },
+  { term: 'Bessel function', match: ['bessel functions?', 'bessel series'], lab: 'starshade', def: 'A family of wave-like curves that describe how waves spread out from anything round, such as a lens or a disc.' },
+  { term: 'Fraunhofer transform', match: ['fraunhofer transforms?', 'fraunhofer diffraction'], lab: 'psf', def: 'The calculation that turns the light across a telescope\'s opening into the picture it forms of a distant point: each tilt of the incoming wave lands at its own spot.' },
+  { term: 'Error budget', match: ['error budgets?'], lab: 'starshade', def: 'A table that shares out how much each manufacturing or alignment mistake may cost, so that all of them together still meet the goal.' },
   { term: 'Einstein ring', match: ['einstein rings?'], lab: 'lensing', def: 'A ring-shaped image of a distant galaxy formed when a massive galaxy lies exactly in front of it.' },
   { term: 'Exoplanet', match: ['exoplanets?'], lab: 'telescope', def: 'A planet orbiting a star other than the Sun.' },
 ];

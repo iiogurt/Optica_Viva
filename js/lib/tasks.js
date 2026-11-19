@@ -36,7 +36,7 @@ import { luckySim } from './lucky.js';
 import { phaseScreen } from './turbulence.js';
 import { tiltMaps } from './shimmer.js';
 import { sceneMap, convolveBand, psfKernel, SW, SH } from './spectral.js';
-import { shadowLab } from './starshade.js';
+import { shadowLab, petalOutline, petalFieldGrid, petalImage } from './starshade.js';
 import { fieldPSFs } from './fieldpsf.js';
 import { makeLight, renderScene } from './lighting.js';
 import { runAF } from './autofocus.js';
@@ -574,6 +574,20 @@ function starshade(p) {
   return { result: { rhos: main.rhos, prof: main.prof, supp: main.supp, specSupp: spec.supp, disk: disk.prof[0], diskSupp: disk.supp[0] }, transfer: [] };
 }
 
+// Real petals: the exact field behind the binary outline on rows of a grid (see petalFieldGrid in
+// js/lib/starshade.js). The outline is cached, so the jobs of one update share it.
+let petalCache = { key: '', L: null };
+function petals(p) {
+  const key = JSON.stringify([p.o, p.N, p.err, p.z, p.lamMin, p.rhoMax]);
+  if (petalCache.key !== key) petalCache = { key, L: petalOutline(p.o, p.N, p.err, { lam: p.lamMin, z: p.z, rhoMax: p.rhoMax }) };
+  const out = p.items.map((it) => petalFieldGrid(petalCache.L, it.lam, p.z, it.x0, it.dx, it.nx, it.ys));
+  return { result: out, transfer: out.map((f) => f.buffer) };
+}
+function petalImageTask(p) {
+  const r = petalImage(p);
+  return { result: r, transfer: [r.I.buffer] };
+}
+
 // PSFs across the field of a two-mirror telescope (see js/lib/fieldpsf.js).
 function fieldPSF(p) {
   const r = fieldPSFs(p), pts = r.pts.map(({ hx, hy, I, C, strehl, rms, grad }) => ({ hx, hy, I, C, strehl, rms, grad }));
@@ -768,4 +782,4 @@ function trailsTask(p) {
   return { result, transfer: [outs.mean.buffer, outs.median.buffer, outs.clip.buffer] };
 }
 
-export const TASKS = { speckleLooks: speckleLooksTask, speckleIncoh: speckleIncohTask, lfRender: lfRenderTask, mlEval: mlEvalTask, mlMap: mlMapTask, nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, ifu: ifuTask, relIllum: relIllumTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
+export const TASKS = { speckleLooks: speckleLooksTask, speckleIncoh: speckleIncohTask, lfRender: lfRenderTask, mlEval: mlEvalTask, mlMap: mlMapTask, nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, ifu: ifuTask, relIllum: relIllumTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, petals, petalImage: petalImageTask, fieldPSF, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
