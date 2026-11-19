@@ -927,3 +927,12 @@ test('zoom lens: parfocal cam, f = M·f4, constant f-number and the compensator 
   near(tr.y + tr.u * (D.p4 - tr.x), 0, 1e-9, 'chief ray through the stop');
   near(Z.depthOfFocus(2.8, 0.03), 0.084, 1e-12, '±N·c');
 });
+
+test('starshade petals: the Fresnel edge integral reproduces the Bessel series of the petal terms', async () => {
+  const { petalOutline, petalField, petalSeriesField } = await import('../js/lib/starshade.js');
+  // Cash-type hypergaussian (a = b = 12.5 m, n = 6) at 80 000 km and 550 nm, 8 petals, 2 m off the axis:
+  // E = 1 + i(2π/λz)e^{ikρ²}∫e^{ikr²}[A J₀ + Σ 2 sin(jπA)/(jπ) (−i)^{jN} cos(jNφ) J_{jN}] r dr
+  const o = { a: 12.5, b: 12.5, n: 6 }, z = 8e7, lam = 550e-9;
+  const f = petalField(petalOutline(o, 8, null, { lam, z, rhoMax: 2 }), lam, z, [2], [0]), g = petalSeriesField(o, 8, lam, z, 2, 0, 6);
+  assert.ok(Math.abs(f[0] - g[0]) < 1e-12 && Math.abs(f[1] - g[1]) < 1e-12, `edge ${f[0]}, ${f[1]}; series ${g[0]}, ${g[1]}`);
+});
