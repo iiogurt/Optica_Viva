@@ -3998,4 +3998,6 @@ export default {
   "Optica Viva, catalogue of optical phenomena · {url} · {date}": "Optica Viva, catálogo de fenómenos ópticos · {url} · {date}",
   "References of the laboratory": "Referencias del laboratorio",
   "Further reading for this group": "Lecturas adicionales para este grupo",
+  "Symbols": "Símbolos",
+  "References of the laboratory: as for {name} above.": "Referencias del laboratorio: como en {name}, más arriba.",
 };

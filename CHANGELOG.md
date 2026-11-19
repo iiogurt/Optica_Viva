@@ -7,10 +7,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Catalogue: a symbol legend for every equation.** Under each entry's equation, every symbol with what it stands for: 975 symbols for the 258 entries, written from the entries' own explanations. A test checks that every listed symbol occurs in its equation and renders in KaTeX. The legends are explanation text and stay English for now.
+
+### Added
 - **Catalogue: references under every entry.** An entry that a laboratory simulates lists that laboratory's references; the 30 entries no laboratory simulates list general texts for their group (only books the laboratories already cite, without chapter numbers). They are printed too. The laboratories' lists are copied into `js/lib/labrefs.js` by `scripts/labrefs.mjs`, which `npm run check` runs to keep the copy current and which rejects any laboratory whose references are not one literal list.
 
 ### Added
-- **Catalogue: print or save as PDF.** A group's *Print or save as PDF* button (and Ctrl+P) prints the group with every entry opened: example, explanation and equation. A print style sheet sets dark type on white, leaves out the sidebar, navigator, search and buttons, keeps each entry on one page, and adds the group's link and the date. The PDF comes from the browser's own print dialogue, with no library. Smoke test in print media.
+- **Catalogue: print or save as PDF.** A group's *Print or save as PDF* button (and Ctrl+P) prints the group with every entry opened: example, explanation and equation. A print style sheet sets dark type on white, leaves out the sidebar, navigator, search and buttons, keeps headings with their text, prints a laboratory's references once per group, and adds the group's link and the date. The PDF comes from the browser's own print dialogue, with no library. Smoke test in print media.
 
 ## [1.71.0] - 2026-11-19
 

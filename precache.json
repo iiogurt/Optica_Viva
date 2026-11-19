@@ -95,6 +95,7 @@
     "js/lib/path.js",
     "js/lib/perspective.js",
     "js/lib/phenomena-details.js",
+    "js/lib/phenomena-symbols.js",
     "js/lib/phenomena.js",
     "js/lib/photons.js",
     "js/lib/pixels.js",
