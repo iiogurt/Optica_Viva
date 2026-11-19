@@ -70,6 +70,7 @@
     "js/lib/interferometry.js",
     "js/lib/irphoto.js",
     "js/lib/jupiter.js",
+    "js/lib/labrefs.js",
     "js/lib/lasercom.js",
     "js/lib/ledset.js",
     "js/lib/lens3d.js",

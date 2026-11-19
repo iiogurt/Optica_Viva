@@ -3,6 +3,7 @@
 //  1. every JavaScript module parses (node --check)
 //  2. every relative link, image and #anchor in the Markdown files resolves
 //  3. precache.json lists the files the service worker needs offline
+//  4. js/lib/labrefs.js holds every laboratory's current references
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join, dirname, resolve, relative } from 'node:path';
@@ -54,5 +55,8 @@ console.log(`links: ${links} relative links checked in ${md.length} Markdown fil
 // 3. the service worker's offline file list
 const pre = spawnSync(process.execPath, [join(ROOT, 'scripts/precache.mjs')], { encoding: 'utf8' });
 if (pre.status !== 0) fail(pre.stderr.trim()); else process.stdout.write(pre.stdout);
+// 4. the laboratories' references copied for the catalogue (js/lib/labrefs.js)
+const lr = spawnSync(process.execPath, [join(ROOT, 'scripts/labrefs.mjs')], { encoding: 'utf8' });
+if (lr.status !== 0) fail(lr.stderr.trim()); else process.stdout.write(lr.stdout);
 if (failures) { console.error(`${failures} problem(s) found`); process.exit(1); }
 console.log('all checks passed');

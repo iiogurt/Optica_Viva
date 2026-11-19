@@ -5,7 +5,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { GROUPS, COUNT } from '../js/lib/phenomena.js';
-import { DETAILS } from '../js/lib/phenomena-details.js';
+import { DETAILS, READING } from '../js/lib/phenomena-details.js';
+import { LAB_REFS } from '../js/lib/labrefs.js';
 
 // the vendored UMD build, evaluated as CommonJS (the package is "type": "module")
 const sandbox = { module: { exports: {} } };
@@ -47,4 +48,13 @@ test('every equation and inline formula renders with KaTeX', () => {
     assert.doesNotThrow(() => katex.renderToString('\\displaystyle ' + e.eq, { throwOnError: true, strict: false }), `${e.name}: ${e.eq}`);
     for (const m of DETAILS[e.name].join(' ').matchAll(/\\\((.+?)\\\)/g)) assert.doesNotThrow(() => katex.renderToString(m[1], { throwOnError: true, strict: false }), `${e.name}: ${m[1]}`);
   }
+});
+
+test('every entry has references: its laboratory\'s, or further reading for its group', () => {
+  for (const e of entries) {
+    const list = e.lab ? LAB_REFS[e.lab] : READING[e.g.id];
+    assert.ok(Array.isArray(list) && list.length, `${e.name}: no references (${e.lab ? 'laboratory ' + e.lab : 'group ' + e.g.id})`);
+  }
+  for (const id of Object.keys(READING)) assert.ok(entries.some((e) => e.g.id === id && !e.lab), `READING for ${id}, which has no unsimulated entry`);
+  for (const r of [...Object.values(LAB_REFS), ...Object.values(READING)].flat()) assert.ok(!/<(?!\/?(em|i|b|strong|sub|sup|a)\b)/.test(r), `unexpected markup: ${r}`);
 });

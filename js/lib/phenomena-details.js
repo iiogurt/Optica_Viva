@@ -275,3 +275,27 @@ export const DETAILS = {
   "Purkinje shift": [r`At low light levels vision switches from cones (peak 555 nm) to rods (peak 507 nm). Reds look darker and blues relatively brighter at dusk; in scotopic vision colour disappears altogether.`, r`Red flowers that are brighter than the leaves at noon look darker than them at dusk.`],
   "Mach bands & acutance": [r`Lateral inhibition in the retina exaggerates the brightness on each side of an edge. Unsharp masking adds similar overshoots, and perceived sharpness (acutance) follows the steepness of edges more than the limiting resolution.`, r`Moderate sharpening with a radius of 1–2 pixels raises acutance visibly without adding detail.`],
 };
+
+// Further reading per group, shown under the entries that no laboratory simulates (laboratory entries
+// show that laboratory's references; see js/lib/labrefs.js). Only general texts the laboratories
+// already cite, without chapter numbers: they cover the group's subject, not a claim about one entry.
+const BW = 'M. Born &amp; E. Wolf, <em>Principles of Optics</em>, 7th ed., Cambridge University Press (1999).';
+const HECHT = 'E. Hecht, <em>Optics</em>, 5th ed., Pearson (2017).';
+const SMITH = 'W. J. Smith, <em>Modern Optical Engineering</em>, 4th ed., McGraw-Hill (2008).';
+const KJ = 'R. Kingslake &amp; R. B. Johnson, <em>Lens Design Fundamentals</em>, 2nd ed., Academic Press (2010).';
+const RAY = 'S. F. Ray, <em>Applied Photographic Optics</em>, 3rd ed., Focal Press (2002).';
+const GOODMAN = 'J. W. Goodman, <em>Introduction to Fourier Optics</em>, 4th ed., W. H. Freeman (2017).';
+export const READING = {
+  'geometrical-image-formation': [HECHT, RAY],
+  'monochromatic-aberrations': [KJ, BW, SMITH],
+  'diffraction-and-wave-optics': [BW, GOODMAN, HECHT],
+  'radiometry-and-illumination': [RAY, SMITH],
+  'stray-light': [SMITH, HECHT, RAY],
+  polarisation: [BW, HECHT],
+  'sensors-sampling-and-noise': ['J. R. Janesick, <em>Photon Transfer: DN → λ</em>, SPIE Press (2007).', 'G. C. Holst, <em>Electro-Optical Imaging System Performance</em>, 5th ed., SPIE Press (2008).'],
+  'time-and-motion': ['G. C. Holst, <em>Electro-Optical Imaging System Performance</em>, 5th ed., SPIE Press (2008).'],
+  'atmosphere-and-environment': ['J. W. Hardy, <em>Adaptive Optics for Astronomical Telescopes</em>, Oxford University Press (1998).', 'C. F. Bohren &amp; E. E. Clothiaux, <em>Fundamentals of Atmospheric Radiation</em>, Wiley-VCH (2006).'],
+  'space-telescopes-and-astronomy': ['D. J. Schroeder, <em>Astronomical Optics</em>, 2nd ed., Academic Press (2000).', 'Ch. Leinert <em>et al.</em>, “The 1997 reference of diffuse night sky brightness”, <em>Astron. Astrophys. Suppl. Ser.</em> 127, 1 (1998).'],
+  'lens-design-and-manufacturing': [KJ, SMITH],
+  'rendering-and-perception': ['G. Wyszecki &amp; W. S. Stiles, <em>Color Science</em>, 2nd ed., Wiley (1982).', 'D. A. Atchison &amp; G. Smith, <em>Optics of the Human Eye</em>, Butterworth-Heinemann (2000).'],
+};
