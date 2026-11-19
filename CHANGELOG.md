@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.72.0] - 2026-11-19
+
 ### Added
 - **Catalogue: a symbol legend for every equation.** Under each entry's equation, every symbol with what it stands for: 975 symbols for the 258 entries, written from the entries' own explanations. A test checks that every listed symbol occurs in its equation and renders in KaTeX. The legends are explanation text and stay English for now.
 
@@ -1127,7 +1129,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.71.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.72.0...HEAD
+[1.72.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.71.0...v1.72.0
 [1.71.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.70.1...v1.71.0
 [1.70.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.70.0...v1.70.1
 [1.70.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.69.0...v1.70.0
