@@ -4,7 +4,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { launch, serve } from './lib/browser.mjs';
+import { launch, serve, sleep } from './lib/browser.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'docs/screenshots');
@@ -35,6 +35,10 @@ try {
     }
     await page.size(1440, Math.max(1400, b + 40));
     await page.goto(site.url + '#/' + route, 7000);
+    // the crop is in page coordinates from the top: undo a page's own scrolling (an opened catalogue
+    // entry scrolls itself into view, which would bring the sticky search bar down over the crop)
+    await page.eval('scrollTo(0, 0)');
+    await sleep(300);
     const img = await page.screenshot({ clip: { x: l, y: t, width: r - l, height: b - t } });
     writeFileSync(resolve(OUT, key + '.webp'), img);
     console.log(`docs/screenshots/${key}.webp  ${Math.round(img.length / 1024)} KB`);

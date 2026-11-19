@@ -3996,4 +3996,6 @@ export default {
   "Print or save as PDF": "Drucken oder als PDF speichern",
   "Print this group with every entry opened, or save it as a PDF from the print dialogue": "Diese Gruppe mit allen geöffneten Einträgen drucken oder im Druckdialog als PDF speichern",
   "Optica Viva, catalogue of optical phenomena · {url} · {date}": "Optica Viva, Katalog optischer Phänomene · {url} · {date}",
+  "References of the laboratory": "Literatur des Labors",
+  "Further reading for this group": "Weiterführende Literatur zu dieser Gruppe",
 };

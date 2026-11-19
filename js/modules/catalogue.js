@@ -1,7 +1,8 @@
 import { h, tex, prose, readUrlParam, bindUrlParam, syncUrl } from '../lib/ui.js';
 import { header } from '../lib/page.js';
 import { GROUPS, COUNT } from '../lib/phenomena.js';
-import { DETAILS } from '../lib/phenomena-details.js';
+import { DETAILS, READING } from '../lib/phenomena-details.js';
+import { LAB_REFS } from '../lib/labrefs.js';
 import { MODULES } from '../app.js';
 import { t, N_ } from '../lib/i18n.js';
 
@@ -69,6 +70,12 @@ export default function mount(root, meta) {
     if (on && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = on.offsetLeft - (nav.clientWidth - on.offsetWidth) / 2;
   }
 
+  function refsEl(e) {
+    const list = e.lab ? LAB_REFS[e.lab] : READING[e.group.id];
+    if (!list || !list.length) return '';
+    return h('div.entry-refs', {}, h('span.k', {}, e.lab ? t('References of the laboratory') : t('Further reading for this group')), h('ol.refs', {}, ...list.map((r) => h('li', { html: r }))));
+  }
+
   // One expandable entry. Its details (equation, explanation, example, related) are built on first open.
   function entryEl(e, open) {
     const body = h('div.entry-body');
@@ -89,6 +96,8 @@ export default function mount(root, meta) {
         example ? h('div.entry-example', {}, h('span.k', {}, t('Example')), prose(example)) : '',
         prose(`<p>${more}</p>`),
         h('div.entry-eq', {}, h('span.k', {}, t('Equation')), h('div.eq', {}, tex('\\displaystyle ' + e.eq, true))),
+        // the laboratory's own references, or general texts for the group when no laboratory simulates it
+        refsEl(e),
         h('div.entry-foot', {},
           e.lab ? h('a.btn', { href: '#/' + e.lab }, t('Open laboratory: {lab} →', { lab: titleOf(e.lab) })) : h('span.note', {}, t('Not simulated in a laboratory yet.')),
           state.q ? h('button.linkish', { type: 'button', onClick: () => go(e.group.id, e.id) }, t('Show in its group: {g}', { g: t(e.group.title) })) : ''),
