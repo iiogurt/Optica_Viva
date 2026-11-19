@@ -77,6 +77,7 @@ export default function mount(root, meta) {
       h('span.entry-desc', {}, t(e.desc)),
       h('span.entry-doms', {}, ...e.doms.split('').map((d) => h('span.tag.' + DOM[d][0], {}, t(DOM[d][1])))));
     const el = h('article.entry', { id: 'entry-' + e.id, style: { '--c': HUES[e.gi % HUES.length] } }, btn, body);
+    el._build = () => build();
     let built = false;
     const build = () => {
       if (built) return;
@@ -126,7 +127,8 @@ export default function mount(root, meta) {
       h('div.cat-ghead', { style: { '--c': HUES[i % HUES.length] } },
         h('span.k', {}, t('Group {i} of {n} · {m} phenomena · {sim} simulated', { i: i + 1, n: GROUPS.length, m: es.length, sim: es.filter((e) => e.lab).length })),
         h('h2', {}, t(g.title)), h('p', {}, t(g.intro)),
-        es.length ? h('div.cat-actions', {}, h('button.linkish', { type: 'button', onClick: () => setAll(true) }, t('Expand all')), h('button.linkish', { type: 'button', onClick: () => setAll(false) }, t('Collapse all'))) : ''),
+        es.length ? h('div.cat-actions', {}, h('button.linkish', { type: 'button', onClick: () => setAll(true) }, t('Expand all')), h('button.linkish', { type: 'button', onClick: () => setAll(false) }, t('Collapse all')), h('button.linkish', { type: 'button', title: t('Print this group with every entry opened, or save it as a PDF from the print dialogue'), onClick: printView }, t('Print or save as PDF'))) : '',
+        h('p.print-only.cat-print-source', {}, t('Optica Viva, catalogue of optical phenomena · {url} · {date}', { url: location.href.split('#')[0] + '#/catalogue?g=' + g.id, date: new Date().toISOString().slice(0, 10) }))),
       es.length ? h('div.cat-entries', {}, ...es.map((e) => entryEl(e, e.id === state.e))) : h('p.note', {}, t('No entries in this group match the filters.')),
       h('div.cat-pager', {}, h('button.btn', { type: 'button', onClick: () => go(prev.id) }, '← ' + t(prev.title)), h('button.btn', { type: 'button', onClick: () => go(next.id) }, t(next.title) + ' →')),
     ];
@@ -143,6 +145,13 @@ export default function mount(root, meta) {
     return out;
   }
 
+  // Printing shows every entry of the view opened (the print style sheet ignores .open), so all their
+  // bodies are built first. Ctrl+P does the same through beforeprint.
+  const buildAll = () => pane.querySelectorAll('.entry').forEach((el) => el._build && el._build());
+  function printView() { buildAll(); window.print(); }
+  window.addEventListener('beforeprint', buildAll);
+  document.documentElement.classList.add('cat-printable');
+
   function setAll(on) { pane.querySelectorAll('.entry-head').forEach((b) => { if ((b.getAttribute('aria-expanded') === 'true') !== on) b.click(); }); state.e = ''; syncUrl(); }
 
   function render() {
@@ -155,5 +164,5 @@ export default function mount(root, meta) {
   }
   render();
   if (state.e) requestAnimationFrame(() => document.getElementById('entry-' + state.e)?.scrollIntoView({ block: 'center' }));
-  return () => clearTimeout(typing);
+  return () => { clearTimeout(typing); window.removeEventListener('beforeprint', buildAll); document.documentElement.classList.remove('cat-printable'); };
 }
