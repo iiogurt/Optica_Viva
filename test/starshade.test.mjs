@@ -1,7 +1,7 @@
 // Starshades: exact Fresnel results for round screens and the deep shadow of a hypergaussian.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { besselJ0, besselJn, shadowField, intensity, fresnelNumber, holeAxial, petalOutline, petalField, petalFieldGrid, petalSeriesField, apertureGrid, petalImage } from '../js/lib/starshade.js';
+import { besselJ0, besselJn, shadowField, intensity, fresnelNumber, holeAxial, petalOutline, petalField, petalFieldGrid, petalSeriesField, apertureGrid, petalImage, petalEdges, petalMinLam, petalNodes } from '../js/lib/starshade.js';
 
 const near = (actual, expected, tol, msg) =>
   assert.ok(Math.abs(actual - expected) <= tol, `${msg}: got ${actual}, expected ${expected} ± ${tol}`);
@@ -145,13 +145,36 @@ test('petal errors: converged, vanishing with the error, symmetric as the shape,
   }
 });
 
-test('petal errors: a petal turned or widened leaks far more than one slid along its own axis', () => {
+test('petal errors: the slide is a rigid translation of the petal, to first order', () => {
+  // translate points of petal 0's upper edge by d along its axis and compare their angle with the
+  // modelled edge at their new radius; the difference must be of second order (d²/r)
+  const N = 16, miss = (d, r) => {
+    const psi = petalEdges(0, r, SH, N)[1], x = r * Math.cos(psi) + d, y = r * Math.sin(psi);
+    return petalEdges(0, Math.hypot(x, y), SH, N, { kind: 'shift', d, petal: 0 })[1] - Math.atan2(y, x);
+  };
+  for (const r of [16, 20, 25, 30]) {
+    const m1 = miss(1e-3, r), m2 = miss(2e-3, r);
+    // under 0.1 µm at the edge for a 1 mm slide, and growing as d² (the first-order terms are exact)
+    assert.ok(Math.abs(m1) * r < 1e-7, `r = ${r} m: ${m1 * r} m`);
+    if (Math.abs(m1) > 1e-11) near(m2 / m1, 4, 0.2, `r = ${r} m: second order`);
+  }
+});
+
+test('petal errors: how much each kind leaks over a 4 m telescope', () => {
   const ideal = apMean(null).mean;
   assert.ok(ideal > 3e-12 && ideal < 1e-11, `ideal ${ideal}`);
   const clock = apMean({ kind: 'clock', d: 1e-3 }).mean, width = apMean({ kind: 'width', d: 1e-4 }).mean, shift = apMean({ kind: 'shift', d: 1e-3 }).mean;
   assert.ok(clock > 5 * ideal, `1 mm sideways: ${clock}`);
   assert.ok(width > 20 * ideal, `edges 0.1 mm out: ${width}`);
-  assert.ok(Math.abs(shift / ideal - 1) < 0.01, `1 mm along the axis: ${shift} vs ${ideal}`);
+  // a slide keeps the smooth profile but opens slits along the valleys: it leaks, but less than a turn
+  assert.ok(shift > 2 * ideal && shift < clock, `1 mm along the axis: ${shift} (ideal ${ideal}, turned ${clock})`);
+});
+
+test('petal work budget: the number of edge points grows as 1/λ and is capped', () => {
+  const r = 4 / Math.SQRT2;
+  assert.ok(petalNodes(SH, 16, 300e-9, Z, r) < 30000, 'the default shade fits at 300 nm');
+  const l = petalMinLam(SH, 16, 1e7, r, 30000);
+  assert.ok(l > 300e-9 && l < 1100e-9 && petalNodes(SH, 16, l, 1e7, r) <= 30000 && petalNodes(SH, 16, 0.99 * l, 1e7, r) > 30000, `10 000 km: from ${l * 1e9} nm`);
 });
 
 test("the telescope's image: an open aperture peaks at contrast 1, and a turned petal's leak sits beside it", () => {

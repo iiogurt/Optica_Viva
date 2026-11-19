@@ -3988,7 +3988,9 @@ export default {
   "Suppression over the aperture, azimuthal average": "Supresión sobre la apertura, promedio azimutal",
   "Suppression over the aperture, real petals": "Supresión sobre la apertura, pétalos reales",
   "Brightest leak beyond the inner working angle": "Fuga más brillante más allá del ángulo de trabajo interior",
-  "Shadow at the telescope, azimuthal average (log intensity)": "Sombra en el telescopio, promedio azimutal (intensidad log)",
-  "Shadow over the telescope, real petals (log intensity)": "Sombra sobre el telescopio, pétalos reales (intensidad log)",
-  "Leaked starlight in the telescope's image (contrast)": "Luz estelar filtrada en la imagen del telescopio (contraste)",
+  "Averaged shadow (log intensity)": "Sombra promediada (intensidad log)",
+  "Real-petal shadow (log intensity)": "Sombra de pétalos reales (intensidad log)",
+  "Leaked starlight in the image": "Luz estelar filtrada en la imagen",
+  "At these settings the petal edges cross so many Fresnel zones that the exact shadow would take too long here; it is computed from {l} nm upwards. Lengthen the wavelength, shrink the shade or move it further away.": "Con estos ajustes los bordes de los pétalos cruzan tantas zonas de Fresnel que la sombra exacta tardaría demasiado aquí; se calcula a partir de {l} nm. Alargue la longitud de onda, reduzca la pantalla o aléjela.",
+  "computed from {l} nm upwards": "calculado a partir de {l} nm",
 };

@@ -101,11 +101,12 @@ export function shadowLab(o) {
 // k = π/λz, each piece of Ω traversed anticlockwise. The integrand stays finite on the edge, so no
 // inside/outside test is needed. Ω is the hub (r ≤ a) plus N petals; petal j covers, at radius r,
 // the angles c_j ± ψ_j(r), ψ = πA(r)/N, which meet their neighbours at the hub. Errors:
-//   shift  one petal moved outwards along its axis by d (its base stays sealed to the hub, as
-//          on a real shade whose petals overlap the hub's edge; moved inwards it slides over it),
+//   shift  one petal slid rigidly outwards along its axis by d: its edges also turn by −d sin ψ/r,
+//          so along the valleys, where it touched its neighbours, thin slits open (its base stays
+//          sealed to the hub, as on a real shade whose petals overlap the hub's edge),
 //   clock  one petal turned about the centre so that its tip moves sideways by d,
 //   width  every edge moved outwards along its normal by d (negative: thinner petals).
-// They are applied to first order in d/r (exact to ~d²/r, under a nanometre for millimetre errors).
+// They are applied to first order in d (the outline is then right to under 0.1 µm for millimetre errors).
 // Where a petal would overlap its neighbour the two edges are clipped to their mid-line, so Ω
 // is their union and nothing is counted twice.
 
@@ -140,9 +141,18 @@ function hyperA012(r, o) {
 function rawEdges(j, r, o, N, err) {
   const { kind = 'none', d = 0, petal = 0 } = err || {}, me = j === petal;
   let c = (2 * Math.PI * j) / N;
-  const rr = kind === 'shift' && me ? r - d : r;
   if (kind === 'clock' && me) c += d / (o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n));
-  const [A, A1, A2] = hyperA012(rr, o);
+  if (kind === 'shift' && me) {
+    // a rigid slide by d along the axis takes the edge point at (r, ψ) to radius r + d cos ψ and
+    // half-angle ψ − d sin ψ / r; to first order in d the new edge at radius r is
+    //   ψ(r) = πA(r − d cos ψ₀)/N − d sin ψ₀ / r,   ψ₀ = πA(r)/N
+    const [B, B1] = hyperA012(r, o), p0 = (Math.PI * B) / N, p0d = (Math.PI * B1) / N, cs = Math.cos(p0), sn = Math.sin(p0);
+    const [A, A1] = hyperA012(r - d * cs, o);
+    const psi = (Math.PI * A) / N - (d * sn) / r;
+    const dpsi = ((Math.PI * A1) / N) * (1 + d * sn * p0d) - (d * cs * p0d) / r + (d * sn) / (r * r);
+    return [c - psi, c + psi, -dpsi, dpsi];
+  }
+  const [A, A1, A2] = hyperA012(r, o);
   let psi = (Math.PI * A) / N, dpsi = (Math.PI * A1) / N;
   if (kind === 'width') {
     // a normal offset d of an edge whose slope is g = r dψ/dr turns it by d√(1+g²)/r
@@ -170,10 +180,20 @@ export const petalEdges = (j, r, o, N, err = null) => edges(j, r, o, N, err).sli
 // anticlockwise around each piece. opts: { panels (per petal edge), order, hub (points on the hub) }.
 // Without explicit counts they follow the number of Fresnel zones the edge crosses as seen from the
 // farthest field point (opts.lam: the shortest wavelength, opts.z, opts.rhoMax).
+const autoPanels = (o, lz, rho) => { const Rt = o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n); return Math.max(12, Math.ceil(((Rt + rho) ** 2 - Math.max(0, o.a - rho) ** 2) / lz / 2.5)); };
+const autoHub = (o, lz, rho) => 64 * Math.ceil((256 + (16 * o.a * (o.a + rho)) / lz) / 64);
+// About how many edge points petalOutline uses (12 per panel, 2N edges, hub, tips and bases).
+export const petalNodes = (o, N, lam, z, rho) => 24 * N * autoPanels(o, lam * z, rho) + autoHub(o, lam * z, rho) + 24 * N;
+// The shortest wavelength whose outline stays within maxNodes edge points (the work grows as 1/λ).
+export function petalMinLam(o, N, z, rho, maxNodes) {
+  let lo = 1e-8, hi = 1e-3;
+  if (petalNodes(o, N, hi, z, rho) > maxNodes) return Infinity;
+  for (let i = 0; i < 60; i++) { const m = Math.sqrt(lo * hi); if (petalNodes(o, N, m, z, rho) > maxNodes) lo = m; else hi = m; }
+  return hi;
+}
 export function petalOutline(o, N, err = null, opts = {}) {
-  const lz = (opts.lam || 300e-9) * (opts.z || 8e7), rho = opts.rhoMax || 0, Rt = o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n);
-  const zones = ((Rt + rho) ** 2 - Math.max(0, o.a - rho) ** 2) / lz;
-  const P = opts.panels || Math.max(12, Math.ceil(zones / 2.5)), q = gaussLegendre(opts.order || 12), nh = opts.hub || 64 * Math.ceil((256 + (16 * o.a * (o.a + rho)) / lz) / 64);
+  const lz = (opts.lam || 300e-9) * (opts.z || 8e7), rho = opts.rhoMax || 0;
+  const P = opts.panels || autoPanels(o, lz, rho), q = gaussLegendre(opts.order || 12), nh = opts.hub || autoHub(o, lz, rho);
   const X = [], Y = [], TX = [], TY = [];
   const push = (x, y, tx, ty) => { X.push(x); Y.push(y); TX.push(tx); TY.push(ty); };
   // the hub, anticlockwise (trapezoid rule: exact for a periodic integrand to spectral accuracy)
