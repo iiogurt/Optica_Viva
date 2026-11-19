@@ -7,6 +7,7 @@ import vm from 'node:vm';
 import { GROUPS, COUNT } from '../js/lib/phenomena.js';
 import { DETAILS, READING } from '../js/lib/phenomena-details.js';
 import { LAB_REFS } from '../js/lib/labrefs.js';
+import { SYMBOLS } from '../js/lib/phenomena-symbols.js';
 
 // the vendored UMD build, evaluated as CommonJS (the package is "type": "module")
 const sandbox = { module: { exports: {} } };
@@ -57,4 +58,24 @@ test('every entry has references: its laboratory\'s, or further reading for its 
   }
   for (const id of Object.keys(READING)) assert.ok(entries.some((e) => e.g.id === id && !e.lab), `READING for ${id}, which has no unsimulated entry`);
   for (const r of [...Object.values(LAB_REFS), ...Object.values(READING)].flat()) assert.ok(!/<(?!\/?(em|i|b|strong|sub|sup|a)\b)/.test(r), `unexpected markup: ${r}`);
+});
+
+// TeX compared without spacing, braces and sizing commands
+const norm = (s) => s.replace(/\\(left|right|big|Big|bigg|Bigg|textstyle|displaystyle)\b/g, '').replace(/\\[,;:! ]/g, '').replace(/\\tfrac/g, '\\frac').replace(/[{}\s]/g, '');
+
+test('every entry has a symbol legend, and every symbol in it occurs in the equation', () => {
+  const names = new Set(entries.map((e) => e.name));
+  for (const k of Object.keys(SYMBOLS)) assert.ok(names.has(k), `legend for an unknown entry: ${k}`);
+  for (const e of entries) {
+    const leg = SYMBOLS[e.name];
+    assert.ok(Array.isArray(leg) && leg.length, `${e.name}: no legend`);
+    const eq = norm(e.eq), seen = new Set();
+    for (const [sym, meaning] of leg) {
+      assert.ok(typeof meaning === 'string' && meaning.length > 2, `${e.name}: ${sym} has no meaning`);
+      assert.ok(eq.includes(norm(sym)), `${e.name}: ${sym} is not in ${e.eq}`);
+      assert.ok(!seen.has(sym), `${e.name}: ${sym} twice`);
+      seen.add(sym);
+      assert.doesNotThrow(() => katex.renderToString(sym, { throwOnError: true }), `${e.name}: ${sym} does not render`);
+    }
+  }
 });

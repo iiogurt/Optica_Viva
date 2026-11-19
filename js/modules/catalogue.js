@@ -3,6 +3,7 @@ import { header } from '../lib/page.js';
 import { GROUPS, COUNT } from '../lib/phenomena.js';
 import { DETAILS, READING } from '../lib/phenomena-details.js';
 import { LAB_REFS } from '../lib/labrefs.js';
+import { SYMBOLS } from '../lib/phenomena-symbols.js';
 import { MODULES } from '../app.js';
 import { t, N_ } from '../lib/i18n.js';
 
@@ -70,6 +71,12 @@ export default function mount(root, meta) {
     if (on && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = on.offsetLeft - (nav.clientWidth - on.offsetWidth) / 2;
   }
 
+  // what each symbol of the equation stands for
+  function legendEl(e) {
+    const leg = SYMBOLS[e.name];
+    if (!leg) return '';
+    return h('div.entry-legend', {}, h('span.k', {}, t('Symbols')), h('dl', {}, ...leg.flatMap(([sym, meaning]) => [h('dt', {}, tex(sym)), h('dd', {}, meaning)])));
+  }
   function refsEl(e) {
     const list = e.lab ? LAB_REFS[e.lab] : READING[e.group.id];
     if (!list || !list.length) return '';
@@ -85,6 +92,7 @@ export default function mount(root, meta) {
       h('span.entry-doms', {}, ...e.doms.split('').map((d) => h('span.tag.' + DOM[d][0], {}, t(DOM[d][1])))));
     const el = h('article.entry', { id: 'entry-' + e.id, style: { '--c': HUES[e.gi % HUES.length] } }, btn, body);
     el._build = () => build();
+    el._lab = e.lab; el._name = t(e.name);
     let built = false;
     const build = () => {
       if (built) return;
@@ -96,6 +104,7 @@ export default function mount(root, meta) {
         example ? h('div.entry-example', {}, h('span.k', {}, t('Example')), prose(example)) : '',
         prose(`<p>${more}</p>`),
         h('div.entry-eq', {}, h('span.k', {}, t('Equation')), h('div.eq', {}, tex('\\displaystyle ' + e.eq, true))),
+        legendEl(e),
         // the laboratory's own references, or general texts for the group when no laboratory simulates it
         refsEl(e),
         h('div.entry-foot', {},
@@ -156,7 +165,21 @@ export default function mount(root, meta) {
 
   // Printing shows every entry of the view opened (the print style sheet ignores .open), so all their
   // bodies are built first. Ctrl+P does the same through beforeprint.
-  const buildAll = () => pane.querySelectorAll('.entry').forEach((el) => el._build && el._build());
+  // On paper a laboratory's references are printed once, under its first entry; later entries of the
+  // same laboratory point back to it.
+  const buildAll = () => {
+    const first = new Map();
+    pane.querySelectorAll('.entry').forEach((el) => {
+      if (el._build) el._build();
+      const refs = el.querySelector('.entry-refs');
+      if (!el._lab || !refs) return;
+      refs.querySelector('.cat-refs-same')?.remove();
+      refs.classList.remove('same-lab');
+      if (!first.has(el._lab)) { first.set(el._lab, el._name); return; }
+      refs.classList.add('same-lab');
+      refs.append(h('p.print-only.cat-refs-same', {}, t('References of the laboratory: as for {name} above.', { name: first.get(el._lab) })));
+    });
+  };
   function printView() { buildAll(); window.print(); }
   window.addEventListener('beforeprint', buildAll);
   document.documentElement.classList.add('cat-printable');
