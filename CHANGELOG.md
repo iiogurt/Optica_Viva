@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.71.0] - 2026-11-19
+
 ### Added
 - **Starshade: real petals.** The shadow is now also computed exactly for the binary petal outline in two dimensions, from the Fresnel integral collapsed onto the edge (the boundary-diffraction form, E = 1 + (1/2π)∮(e^{iks²} − 1) dα), with Gauss–Legendre panels sized to the Fresnel zones and a trig-free sum along grid rows. The number of petals now matters. Three petal errors can be set: one petal turned sideways, every edge moved outwards along its normal, or one petal slid rigidly outwards along its axis (which opens thin slits along the valleys); neighbouring petals that would overlap are merged. Over a 4 m telescope at 80 000 km a 1 mm turn raises the leak about ninefold, edges 0.1 mm too wide 27-fold, a 1 mm slide less than fourfold. Shades that would need more than 30 000 edge points (big shades, short distances, short wavelengths) are computed only at the wavelengths that fit, and the page says so. New pictures: the shadow over the telescope with the real petals, and the telescope's image of the leaked starlight in contrast units, which puts the leak beside the faulty petal just outside the inner working angle. The readouts give the suppression with real petals and the brightest leak beyond the inner working angle; the spectrum gains a real-petal curve. On the axis the edge integral equals the radial model for any number of petals; off it, it agrees with the Bessel series of the petal terms (J_N, J_2N, …) to 10⁻¹² in field, and its azimuthal mean is the radial model. Glossary entries: inner working angle, Bessel function, Fraunhofer transform, error budget.
 
@@ -1116,7 +1118,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.70.1...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.71.0...HEAD
+[1.71.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.70.1...v1.71.0
 [1.70.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.70.0...v1.70.1
 [1.70.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.69.0...v1.70.0
 [1.69.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.68.0...v1.69.0
