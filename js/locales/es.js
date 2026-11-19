@@ -3993,4 +3993,7 @@ export default {
   "Leaked starlight in the image": "Luz estelar filtrada en la imagen",
   "At these settings the petal edges cross so many Fresnel zones that the exact shadow would take too long here; it is computed from {l} nm upwards. Lengthen the wavelength, shrink the shade or move it further away.": "Con estos ajustes los bordes de los pétalos cruzan tantas zonas de Fresnel que la sombra exacta tardaría demasiado aquí; se calcula a partir de {l} nm. Alargue la longitud de onda, reduzca la pantalla o aléjela.",
   "computed from {l} nm upwards": "calculado a partir de {l} nm",
+  "Print or save as PDF": "Imprimir o guardar como PDF",
+  "Print this group with every entry opened, or save it as a PDF from the print dialogue": "Imprimir este grupo con todas las entradas abiertas, o guardarlo como PDF desde el diálogo de impresión",
+  "Optica Viva, catalogue of optical phenomena · {url} · {date}": "Optica Viva, catálogo de fenómenos ópticos · {url} · {date}",
 };

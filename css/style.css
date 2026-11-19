@@ -614,3 +614,44 @@ dialog.glassmap::backdrop { background: rgba(0, 0, 0, 0.6); }
 .v3d-none { padding: 34px 16px 18px; }
 .v3d-msg { margin: 0; color: var(--fg-dim); font-size: 0.9rem; }
 .v3d-none canvas { display: none; }
+
+/* Catalogue: print or save as PDF. Light paper, no site chrome, every entry of the view opened
+   (their bodies are built on beforeprint), entries kept whole across pages. */
+.print-only { display: none; }
+@media print {
+  @page { margin: 15mm 14mm; }
+  html.cat-printable {
+    --bg: #fff; --bg-2: #fff; --panel: #fff; --panel-2: #fff;
+    --line: #d6d8de; --line-2: #c4c7cf; --fg: #15171c; --fg-dim: #4a4f5c; --fg-faint: #6b7080; --accent: #a35a00; --accent-2: #0a6c8f;
+    color-scheme: light;
+  }
+  html.cat-printable body { background: #fff; color: var(--fg); }
+  html.cat-printable .app { display: block; }
+  html.cat-printable main { padding: 0; }
+  html.cat-printable :is(.sidebar, .nav-toggle, .skip-link, .mod-head .tools, .lang-note, .ladder, .cat-nav, .cat-tools, .cat-actions, .cat-pager, .entry-foot, .entry-related) { display: none !important; }
+  html.cat-printable .cat-layout { display: block; }
+  html.cat-printable .print-only { display: block; }
+  html.cat-printable .cat-print-source { font: 10px/1.4 var(--font-mono); color: var(--fg-faint); margin: 6px 0 0; word-break: break-all; }
+  html.cat-printable .cat-ghead { border-left-color: #888; }
+  html.cat-printable .cat-entries { display: block; }
+  html.cat-printable .entry { break-inside: avoid; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; box-shadow: none; margin: 0; padding: 4px 0 2px; }
+  html.cat-printable .entry-head { display: block; padding: 6px 0 2px; }
+  html.cat-printable .entry-name { font-size: 13px; }
+  html.cat-printable .entry-name::before { content: none; }
+  html.cat-printable .entry-desc { display: block; margin-top: 2px; }
+  html.cat-printable .entry-doms { display: none; }
+  html.cat-printable .entry-lab { color: var(--accent); border-color: var(--accent); }
+  html.cat-printable .entry-body { display: block !important; padding: 0 0 6px; }
+  html.cat-printable .entry-example { background: #f4f5f7; border-left-color: #999; }
+  html.cat-printable :is(.cat-ghead .k, .entry-example .k, .entry-eq .k) { color: var(--fg-dim); }
+  html.cat-printable .entry-eq .eq { overflow: visible; }
+  html.cat-printable .prose { color: var(--fg); max-width: none; font-size: 12.5px; line-height: 1.45; }
+  html.cat-printable .prose p { margin: 0 0 6px; }
+  html.cat-printable .entry-example { padding: 5px 10px; margin: 6px 0; }
+  html.cat-printable .entry-example .prose { font-size: 12px; margin-top: 2px; }
+  html.cat-printable .entry-desc { font-size: 12px; }
+  html.cat-printable .entry-eq { margin: 2px 0; }
+  html.cat-printable .entry-eq .katex-display { margin: 4px 0; }
+  html.cat-printable .prose em { color: var(--fg); }
+  html.cat-printable .prose .katex-display { background: none; border: 0; padding: 4px 0; margin: 6px 0; }
+}

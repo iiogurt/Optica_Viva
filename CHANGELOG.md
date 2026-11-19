@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Catalogue: print or save as PDF.** A group's *Print or save as PDF* button (and Ctrl+P) prints the group with every entry opened: example, explanation and equation. A print style sheet sets dark type on white, leaves out the sidebar, navigator, search and buttons, keeps each entry on one page, and adds the group's link and the date. The PDF comes from the browser's own print dialogue, with no library. Smoke test in print media.
+
 ## [1.71.0] - 2026-11-19
 
 ### Added

@@ -210,6 +210,21 @@ try {
     console.log(`${wide.length ? '✗' : '✓'} no page-wide overflow at 375 and 320 px${wide.length ? '  ' + wide.join(' | ') : ''}`);
     if (wide.length) failed++;
   }
+  // printing a catalogue group (print or save as PDF): every entry opened with its equation, no site
+  // chrome, dark text on white
+  {
+    await page.goto(site.url + '#/catalogue?g=geometrical-image-formation', 3000);
+    await page.cdp('Emulation.setEmulatedMedia', { media: 'print' });
+    const r = await page.eval(`(() => {
+      window.dispatchEvent(new Event('beforeprint'));
+      const es = [...document.querySelectorAll('.entry')], shown = es.filter((e) => e.querySelector('.entry-body').offsetHeight > 0 && e.querySelector('.entry-body .katex'));
+      return { n: es.length, shown: shown.length, sidebar: getComputedStyle(document.querySelector('.sidebar')).display, bg: getComputedStyle(document.body).backgroundColor, nav: getComputedStyle(document.querySelector('.cat-nav')).display };
+    })()`);
+    await page.cdp('Emulation.setEmulatedMedia', { media: '' });
+    const ok = r.n > 10 && r.shown === r.n && r.sidebar === 'none' && r.nav === 'none' && r.bg === 'rgb(255, 255, 255)' && !page.errors().length;
+    console.log(`${ok ? '✓' : '✗'} catalogue print: ${r.shown}/${r.n} entries opened, chrome hidden, white paper${ok ? '' : '  ' + JSON.stringify(r)}`);
+    if (!ok) failed++;
+  }
   // the simulation starts on the first screen: beside the idea on wide screens, under a short idea otherwise
   {
     const bad = [];

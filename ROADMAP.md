@@ -66,6 +66,7 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.69 Traced relative illumination](#v169-traced-relative-illumination)
   - [v1.70 Integral-field spectroscopy](#v170-integral-field-spectroscopy)
   - [v1.71 Real starshade petals](#v171-real-starshade-petals)
+  - [v1.72 Printable catalogue](#v172-printable-catalogue)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -89,7 +90,7 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"] --> D14["v1.12–1.13<br/>missions · 3 labs"] --> D15["v1.14<br/>4 more labs"] --> D16["v1.15<br/>your own gear"] --> D17["v1.16<br/>tours · exercises · PWA"] --> D18["v1.17<br/>classic lenses · mirrors · TMA"] --> D19["v1.18<br/>glass catalogue · tolerancing · DE/FR/ES"] --> D20["v1.19<br/>translated controls · parallel workers"] --> D21["v1.20–1.23<br/>3-D views"] --> D22["v1.24–1.26<br/>whole interface in DE/FR/ES"] --> D23["v1.27–1.30<br/>halos · waves · black hole"] --> D24["v1.31–1.35<br/>live camera · validation fixes"] --> D25["v1.36–1.41<br/>presentation"] --> D26["v1.42–1.44<br/>mission pictures"] --> D27["v1.45–1.65<br/>21 new laboratories"] --> D28["v1.66<br/>TM-30 fidelity and gamut"] --> D29["v1.67<br/>TLCI-2012"] --> D30["v1.68<br/>TLMF · colourist's advice"] --> D31["v1.69<br/>traced relative illumination"] --> D32["v1.70<br/>integral-field spectroscopy"] --> D33["v1.71<br/>real starshade petals"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"] --> D14["v1.12–1.13<br/>missions · 3 labs"] --> D15["v1.14<br/>4 more labs"] --> D16["v1.15<br/>your own gear"] --> D17["v1.16<br/>tours · exercises · PWA"] --> D18["v1.17<br/>classic lenses · mirrors · TMA"] --> D19["v1.18<br/>glass catalogue · tolerancing · DE/FR/ES"] --> D20["v1.19<br/>translated controls · parallel workers"] --> D21["v1.20–1.23<br/>3-D views"] --> D22["v1.24–1.26<br/>whole interface in DE/FR/ES"] --> D23["v1.27–1.30<br/>halos · waves · black hole"] --> D24["v1.31–1.35<br/>live camera · validation fixes"] --> D25["v1.36–1.41<br/>presentation"] --> D26["v1.42–1.44<br/>mission pictures"] --> D27["v1.45–1.65<br/>21 new laboratories"] --> D28["v1.66<br/>TM-30 fidelity and gamut"] --> D29["v1.67<br/>TLCI-2012"] --> D30["v1.68<br/>TLMF · colourist's advice"] --> D31["v1.69<br/>traced relative illumination"] --> D32["v1.70<br/>integral-field spectroscopy"] --> D33["v1.71<br/>real starshade petals"] --> D34["v1.72<br/>printable catalogue"]
     end
     subgraph Next["Planned"]
         direction TB
@@ -708,6 +709,10 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P3 · M** **Starshade petals in two dimensions** (`#/starshade`): the exact Fresnel field of the binary outline from its edge integral, petal errors (a turned petal, wider edges, a petal slid along its axis), the shadow over the aperture and the telescope's image of the leaked starlight. *From the backlog (v1.9). Agrees with the Bessel series of the petal terms to 10⁻¹² in field and, on the axis and in azimuthal mean, with the radial model; Bessel J₀ made accurate to 10⁻¹².*
 
+### v1.72 Printable catalogue
+
+- [x] **P3 · S** **Print or save a catalogue group as PDF** (`#/catalogue`): every entry opened, a light print style sheet without the site's chrome, entries kept whole across pages, the group's link and date. *From the backlog (catalogue explorer). The browser's print dialogue makes the PDF; checked in print media by the smoke test.*
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -732,7 +737,7 @@ Ideas worth keeping but not yet scheduled:
 - *(from v1.67 TLCI)* A mid-scale external check of TLCI and TLMF against the EBU's own software (its download is blocked to automated clients here).
 - *(from v1.9 starshade; petal terms and shape errors done in v1.71)* Sunlight scattered by the petal edges (glint); numerically optimised occulter profiles (Vanderbei, Cady & Kasdin); random edge errors with a spatial spectrum, as in the error budgets.
 - *(from v1.9 field-dependent PSF)* Three-mirror anastigmats (JWST, Roman) with fifth-order terms from real-ray tracing through mirrors, and field-dependent Zernike maps in the style of STPSF.
-- *(from the catalogue explorer)* Per-entry references and symbol legends for the equations; a printable or PDF export of a catalogue group.
+- *(from the catalogue explorer; the printable/PDF export of a group done in v1.72)* Per-entry references and symbol legends for the equations.
 
 ---
 
