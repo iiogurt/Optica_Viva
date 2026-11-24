@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.75.0] - 2026-11-24
+
 ### Added
 - **Starshade: an optimised petal profile.** The field behind the shade is linear in its profile A(r), so the darkest profile is the solution of a linear program, as in Vanderbei, Cady & Kasdin (2007). A button finds it for a shade whose tip radius is a chosen share of the hypergaussian's. The program covers the telescope and 400–1000 nm, with the profile monotone, between 0 and 1, and bent no more sharply than the hypergaussian. Worst points found by a dense check, evenly spaced in Fresnel number, are added and the program is solved again. The result is checked independently with the radial integral. With a 20 % smaller tip radius the worst leak over the band is about 2 × 10⁻¹¹, against 2.4 × 10⁻⁷ for the full-size hypergaussian at 1000 nm. New: a chart of both profiles, overlays on the shadow profile and suppression spectrum, the dense simplex solver `js/lib/lp.js` (tested against duality certificates) and the worker task `occulterLP`.
 
@@ -1142,7 +1144,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.74.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.75.0...HEAD
+[1.75.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.74.0...v1.75.0
 [1.74.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.73.0...v1.74.0
 [1.73.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.72.0...v1.73.0
 [1.72.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.71.0...v1.72.0
