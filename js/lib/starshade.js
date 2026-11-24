@@ -1,5 +1,6 @@
 import { fft2d } from './fft.js';
 import { uniform } from './random.js';
+import { simplex } from './lp.js';
 
 // Starshades: Fresnel diffraction behind a circularly symmetric occulter that blocks a fraction
 // A(r) ∈ [0, 1] of each circle of radius r (a petalled shade with petal width A(r)·2πr/N, in
@@ -43,7 +44,15 @@ export function besselJ0(x) {
 export const OCCULTERS = {
   disk: { A: (r, o) => (r <= o.R ? 1 : 0), Rmax: (o) => o.R },
   hyper: { A: (r, o) => (r <= o.a ? 1 : Math.exp(-(((r - o.a) / o.b) ** o.n))), Rmax: (o) => o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n) },
+  // a tabulated profile: A at nodes r0 + i·dr (i = 0 … A.length − 1, the last at R), linear between
+  table: { A: (r, o) => tableA(r, o), Rmax: (o) => o.R },
 };
+function tableA(r, o) {
+  if (r <= o.r0) return 1;
+  const t = (r - o.r0) / o.dr, i = Math.floor(t), A = o.A;
+  if (i >= A.length - 1) return r <= o.R ? A[A.length - 1] : 0;
+  return A[i] + (A[i + 1] - A[i]) * (t - i);
+}
 
 // Complex fields [re, im] at radii ρs. The integral is taken in u = r², where the Fresnel phase
 // e^{iku} is linear; each step integrates it exactly (Filon midpoint rule), so an opaque disk
@@ -88,7 +97,7 @@ export const holeAxial = (F) => 4 * Math.sin((Math.PI * F) / 2) ** 2;
 export function shadowLab(o) {
   const nr = o.nr || 96, rhos = Array.from({ length: nr }, (_, i) => (i / (nr - 1)) * o.rhoMax);
   const prof = o.lams.map((l) => intensity(shadowField(o.kind, o, l, o.z, rhos, o.steps)));
-  const na = 12, ar = Array.from({ length: na }, (_, i) => ((i + 0.5) / na) * (o.D / 2));
+  const na = 8, ar = Array.from({ length: na }, (_, i) => ((i + 0.5) / na) * (o.D / 2));
   const supp = o.lams.map((l) => { const I = intensity(shadowField(o.kind, o, l, o.z, ar, o.steps)); return I.reduce((s, v, i) => s + v * ar[i], 0) / ar.reduce((s, r) => s + r, 0); });
   return { rhos, prof, supp };
 }
@@ -482,4 +491,113 @@ export function petalImage(p) {
     I[y * n + x] = (re[k] * re[k] + im[k] * im[k]) * norm;
   }
   return { I, n, pix: p.lam / (n * (p.D / G)) };
+}
+
+// ---------------------------------------------------------------------------------------------
+// An optimised occulter, as a linear program in the spirit of Vanderbei, Cady & Kasdin (2007). The
+// field is linear in the profile, so with A = 1 − Σ dᵢ rampᵢ(r) (ramps of width dr starting at
+// rᵢ = r0 + i·dr, dᵢ ≥ 0, Σdᵢ ≤ 1) the profile is monotone, between 0 and 1 and continuous, and
+//   E(ρ, λ) = E_disk(R) + Σ dᵢ Cᵢ(ρ, λ).
+// The program minimises the bound c on |Re E| and |Im E| over sample radii ρ ≤ rhoMax and
+// wavelengths in [lamMin, lamMax], with the curvature |A″| ≤ K (|dᵢ₊₁ − dᵢ| ≤ K dr²). Samples are
+// added where a dense check finds the field largest (constraint generation), until the dense
+// maximum of |E|² is within `slack` of 2c² (the bound on |E|² the box gives) or `rounds` run out.
+// o = { R, r0, nr, K, z, lamMin, lamMax, rhoMax, steps, rounds, slack }.
+// The columns with one Richardson step (steps and 2·steps), as in shadowField: the midpoint rule's
+// O(Δu²) error off the axis would otherwise reach 10⁻⁵ in field, which the program would exploit.
+export function occulterColumns(o, lam, rho) {
+  const st = o.steps || 4000, a = columnsAt(o, lam, rho, st), b = columnsAt(o, lam, rho, 2 * st), R = (x, y) => (4 * y - x) / 3;
+  return { D: [R(a.D[0], b.D[0]), R(a.D[1], b.D[1])], C: b.C.map((v, i) => R(a.C[i], v)) };
+}
+function columnsAt(o, lam, rho, steps) {
+  const { R, r0, nr, z } = o, dr = (R - r0) / (nr - 1), du = (R * R) / steps;
+  const k = Math.PI / (lam * z), wgt = (2 * Math.sin((k * du) / 2)) / k, q = 2 * k * rho;
+  // g(u) per Filon step, and its suffix sums
+  const gr = new Float64Array(steps + 1), gi = new Float64Array(steps + 1), rs = new Float64Array(steps);
+  for (let s = 0; s < steps; s++) {
+    const u = (s + 0.5) * du, r = Math.sqrt(u), g = (rho ? besselJ0(q * r) : 1) * wgt;
+    rs[s] = r; gr[s] = Math.cos(k * u) * g; gi[s] = Math.sin(k * u) * g;
+  }
+  const Dr = gr.reduce((a, v) => a + v, 0), Di = gi.reduce((a, v) => a + v, 0);
+  for (let s = steps - 1; s >= 0; s--) { gr[s] += gr[s + 1]; gi[s] += gi[s + 1]; }
+  const idx = (r) => Math.min(steps, Math.max(0, Math.ceil((r * r) / du - 0.5)));
+  const C = new Float64Array(2 * nr);
+  for (let i = 0; i < nr; i++) {
+    const ri = r0 + i * dr, s0 = idx(ri), s1 = idx(ri + dr);
+    let cr = gr[s1], ci = gi[s1];
+    for (let s = s0; s < s1; s++) { const w = (rs[s] - ri) / dr, g0r = gr[s] - gr[s + 1], g0i = gi[s] - gi[s + 1]; cr += w * g0r; ci += w * g0i; }
+    C[2 * i] = -cr; C[2 * i + 1] = -ci;
+  }
+  // E = 1 + i(π/λz) e^{ikρ²} ∫ A e^{iku} J₀ du
+  const pre = Math.PI / (lam * z), ph = k * rho * rho, er = Math.cos(ph), ei = Math.sin(ph);
+  const f = (xr, xi) => [-pre * (er * xi + ei * xr), pre * (er * xr - ei * xi)];
+  const d = f(Dr, Di);
+  for (let i = 0; i < nr; i++) { const c = f(C[2 * i], C[2 * i + 1]); C[2 * i] = c[0]; C[2 * i + 1] = c[1]; }
+  return { D: [1 + d[0], d[1]], C };
+}
+export function optimiseOcculter(o) {
+  const { nr, K, rhoMax, lamMin, lamMax } = o, dr = (o.R - o.r0) / (nr - 1), kap = K * dr * dr, n = nr + 1;
+  const base = [], bh = [];
+  const row = (pairs) => { const a = new Float64Array(n); for (const [i, v] of pairs) a[i] = v; return a; };
+  for (let i = 0; i + 1 < nr; i++) { base.push(row([[i + 1, 1], [i, -1]]), row([[i + 1, -1], [i, 1]])); bh.push(kap, kap); }
+  // the slope starts and ends within the curvature limit too, and the profile reaches no lower than 0
+  base.push(row([[0, 1]]), row([[nr - 1, 1]]), row(Array.from({ length: nr }, (_, i) => [i, 1]))); bh.push(kap, kap, 1);
+  const rows = [], rh = [], seen = new Set();
+  const add = (lam, rho) => {
+    const key = `${lam}|${rho}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    const s = occulterColumns(o, lam, rho);
+    for (const part of [0, 1]) for (const sg of [1, -1]) {
+      const a = new Float64Array(n);
+      for (let i = 0; i < nr; i++) a[i] = sg * s.C[2 * i + part];
+      a[nr] = -1; rows.push(a); rh.push(-sg * s.D[part]);
+    }
+    return true;
+  };
+  // wavelengths spaced evenly in 1/λ, i.e. in Fresnel number: the field varies fastest at short λ
+  const lams = (m) => Array.from({ length: m }, (_, i) => 1 / (1 / lamMax + ((1 / lamMin - 1 / lamMax) * i) / (m - 1)));
+  for (const l of lams(o.nl0 || 11)) for (const p of [0, rhoMax / 2, rhoMax]) add(l, p);
+  const dense = (o.dense || []).length ? o.dense : lams(81).flatMap((l) => [0, 0.25, 0.5, 0.75, 1].map((f) => [l, f * rhoMax]));
+  const cols = dense.map(([l, p]) => occulterColumns(o, l, p));
+  const cost = new Float64Array(n); cost[nr] = 1;
+  let res = null, worst = 0, rounds = 0, pivots = 0;
+  for (; rounds < (o.rounds || 12); rounds++) {
+    res = simplex([...rows, ...base], [...rh, ...bh], cost, { enter: nr });
+    pivots += res.pivots;
+    const I = cols.map((s) => { let er = s.D[0], ei = s.D[1]; for (let i = 0; i < nr; i++) { er += res.x[i] * s.C[2 * i]; ei += res.x[i] * s.C[2 * i + 1]; } return er * er + ei * ei; });
+    worst = Math.max(...I);
+    if (worst <= (o.slack || 1.5) * 2 * res.value ** 2) { rounds++; break; }
+    // the worst few dense samples join the program
+    const order = I.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+    let added = 0;
+    for (const [v, i] of order) { if (added >= 4 || v <= 2 * res.value ** 2) break; if (add(...dense[i])) added++; }
+    if (!added) { rounds++; break; }
+  }
+  // A at node i = 1 − Σ_{j<i} dⱼ: every earlier ramp is complete there (the last node is R itself)
+  const A = [];
+  let s = 0;
+  for (let i = 0; i < nr; i++) { A.push(Math.min(1, Math.max(0, 1 - s))); s += res.x[i]; }
+  return { R: o.R, r0: o.r0, dr, A, c: res.value, worst, rounds, pivots, samples: rows.length / 4 };
+}
+
+// The page's optimised shade: the program above for a tip radius `frac` × the hypergaussian's, over
+// the telescope (ρ ≤ D/2) and 400–1000 nm, then checked independently with shadowField (finer steps,
+// a dense grid in ρ and in 1/λ): the aperture-averaged suppression across the spectrum, the profile
+// of the shadow at lamC, and the worst |E|² over the band for both shades.
+// p = { a, b, n, z, D, frac, K, nr, rounds, specLams, lamC, rhos }.
+export const OPT_BAND = [400e-9, 1000e-9];
+export function optimisedLab(p) {
+  const hy = { a: p.a, b: p.b, n: p.n }, R = p.frac * OCCULTERS.hyper.Rmax(hy), st = 8000;
+  const t = optimiseOcculter({ R, r0: 0.2 * R, nr: p.nr || 60, K: p.K, z: p.z, lamMin: OPT_BAND[0], lamMax: OPT_BAND[1], rhoMax: p.D / 2, rounds: p.rounds || 3 });
+  const na = 8, ar = Array.from({ length: na }, (_, i) => ((i + 0.5) / na) * (p.D / 2)), wsum = ar.reduce((a, r) => a + r, 0);
+  const spec = p.specLams.map((l) => intensity(shadowField('table', t, l, p.z, ar, st)).reduce((a, v, i) => a + v * ar[i], 0) / wsum);
+  const prof = intensity(shadowField('table', t, p.lamC, p.z, p.rhos, st));
+  const rs = [0, 0.25, 0.5, 0.75, 1].map((f) => (f * p.D) / 2), worst = { opt: 0, hyper: 0 };
+  for (let i = 0; i < 41; i++) {
+    const l = 1 / (1 / OPT_BAND[1] + ((1 / OPT_BAND[0] - 1 / OPT_BAND[1]) * i) / 40);
+    worst.opt = Math.max(worst.opt, ...intensity(shadowField('table', t, l, p.z, rs, st)));
+    worst.hyper = Math.max(worst.hyper, ...intensity(shadowField('hyper', hy, l, p.z, rs, 4000)));
+  }
+  return { tbl: t, spec, prof, worst };
 }

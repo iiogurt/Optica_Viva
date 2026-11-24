@@ -954,3 +954,13 @@ test('starshade edge ripple: the exact edge integral equals first-order perturba
   const f0 = petalField(petalOutline(o, 16, null, { lam, z, rhoMax: 2 }), lam, z, px, py), f = petalField(petalOutline(o, 16, e, { lam, z, rhoMax: 2 }), lam, z, px, py), g = rippleField(o, 16, e, lam, z, px, py);
   assert.ok(Math.hypot(f[0] - f0[0] - g[0], f[1] - f0[1] - g[1]) < 2e-3 * Math.hypot(g[0], g[1]), `full ${f[0] - f0[0]}, ${f[1] - f0[1]}; first order ${g[0]}, ${g[1]}`);
 });
+
+test('an optimised starshade 20 % smaller keeps the leak below 10⁻¹⁰ over 400–1000 nm', async () => {
+  const { OCCULTERS, shadowField, intensity, optimiseOcculter } = await import('../js/lib/starshade.js');
+  // linear program in the spirit of Vanderbei, Cady & Kasdin (2007), checked with the radial integral
+  const R = 0.8 * OCCULTERS.hyper.Rmax({ a: 12.5, b: 12.5, n: 6 }), z = 8e7;
+  const o = optimiseOcculter({ R, r0: 0.2 * R, nr: 40, K: 0.059, z, lamMin: 400e-9, lamMax: 1000e-9, rhoMax: 2, rounds: 3 });
+  let worst = 0;
+  for (let i = 0; i <= 20; i++) worst = Math.max(worst, ...intensity(shadowField('table', o, 1 / (1 / 1000e-9 + ((1 / 400e-9 - 1 / 1000e-9) * i) / 20), z, [0, 1, 2], 12000)));
+  assert.ok(worst < 1e-10, `worst leak ${worst}`);
+});
