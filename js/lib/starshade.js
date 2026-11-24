@@ -1,4 +1,5 @@
 import { fft2d } from './fft.js';
+import { uniform } from './random.js';
 
 // Starshades: Fresnel diffraction behind a circularly symmetric occulter that blocks a fraction
 // A(r) ∈ [0, 1] of each circle of radius r (a petalled shade with petal width A(r)·2πr/N, in
@@ -137,6 +138,54 @@ function hyperA012(r, o) {
   return [A, A1, (-n / o.b) * (A1 * t ** (n - 1) + (A * (n - 1) * t ** (n - 2)) / o.b)];
 }
 
+// Random ripple along every edge, the error that starshade error budgets describe by its spatial
+// spectrum. Each of the 2N edges is moved along its normal by its own
+//   δ(r) = σ Σₘ cₘ sin(2πr/ℓₘ + φₘ),
+// with M periods ℓₘ spaced evenly in log between lmin and lmax, amplitudes from a power-law
+// spectrum S(f) ∝ f^−β (so cₘ² ∝ f^(1−β) on the log-spaced frequencies), scaled to RMS σ, and
+// phases from the seeded generator. err = { kind: 'random', d: σ (m), seed, lmin, lmax, beta, M }.
+export const RIPPLE = { lmin: 0.25, lmax: 8, beta: 2, M: 24 };
+// The periods ℓₘ (m) and amplitudes cₘ (Σ cₘ²/2 = 1) of the ripple's spectrum.
+export function rippleSpectrum(err = {}) {
+  const { lmin, lmax, beta, M } = { ...RIPPLE, ...err }, periods = new Float64Array(M), c = new Float64Array(M);
+  let p = 0;
+  for (let m = 0; m < M; m++) {
+    periods[m] = lmin * (lmax / lmin) ** (M > 1 ? m / (M - 1) : 0);
+    c[m] = (1 / periods[m]) ** ((1 - beta) / 2); p += (c[m] * c[m]) / 2;
+  }
+  for (let m = 0; m < M; m++) c[m] /= Math.sqrt(p);
+  return { periods, c };
+}
+const ripples = new WeakMap();
+function rippleTable(err, N) {
+  let T = ripples.get(err);
+  if (T && T.N === N) return T;
+  const { periods, c } = rippleSpectrum(err), M = periods.length, u = uniform(err.seed || 1);
+  const k = periods.map((l) => (2 * Math.PI) / l), ph = new Float64Array(2 * N * M);
+  for (let i = 0; i < ph.length; i++) ph[i] = 2 * Math.PI * u();
+  T = { N, M, k, c, ph };
+  ripples.set(err, T);
+  return T;
+}
+// Where the edge is free to ripple, w(r) and dw/dr: the ripple fades out in the valleys, where
+// neighbouring petals meet (factor 1 − A⁸: 0.08 where A = 0.99, 0.57 at 0.9, 0.94 at 0.7), and at
+// the tip, where the petal is narrower than a real one can be made (factor 1 − exp(−(h/h₀)²) of the
+// half-width h = πrA/N, h₀ = 1 mm). Edges then never cross, and the field stays linear in σ.
+export const TIP_H0 = 1e-3;
+function rippleWeight(r, o, N) {
+  const [A, A1] = hyperA012(r, o), a = 1 - A ** 8, a1 = -8 * A ** 7 * A1;
+  const u = (Math.PI * r * A) / (N * TIP_H0), u1 = (Math.PI * (A + r * A1)) / (N * TIP_H0), e = Math.exp(-u * u), b = 1 - e, b1 = 2 * u * u1 * e;
+  return [a * b, a1 * b + a * b1];
+}
+// δ and dδ/dr (m) of edge `side` (0: the lower angle, 1: the upper) of petal j at radius r;
+// positive δ moves the edge outwards, widening the petal.
+export function edgeRipple(err, N, j, side, r) {
+  const T = rippleTable(err, N), o = (2 * j + side) * T.M;
+  let v = 0, v1 = 0;
+  for (let m = 0; m < T.M; m++) { const a = T.k[m] * r + T.ph[o + m]; v += T.c[m] * Math.sin(a); v1 += T.c[m] * T.k[m] * Math.cos(a); }
+  return [err.d * v, err.d * v1];
+}
+
 // Edge angles of petal j at radius r before clipping, with their derivatives: [lo, hi, lo′, hi′].
 function rawEdges(j, r, o, N, err) {
   const { kind = 'none', d = 0, petal = 0 } = err || {}, me = j === petal;
@@ -154,6 +203,15 @@ function rawEdges(j, r, o, N, err) {
   }
   const [A, A1, A2] = hyperA012(r, o);
   let psi = (Math.PI * A) / N, dpsi = (Math.PI * A1) / N;
+  if (kind === 'random') {
+    // each edge moved along its own normal by δ(r): its angle changes by δ√(1+g²)/r, as for 'width'
+    const g = (r * Math.PI * A1) / N, g1 = (Math.PI * (A1 + r * A2)) / N, q = Math.sqrt(1 + g * g), dq = (g * g1) / (q * r) - q / (r * r);
+    const [w, w1] = rippleWeight(r, o, N);
+    let [dl, dl1] = edgeRipple(err, N, j, 0, r), [dh, dh1] = edgeRipple(err, N, j, 1, r);
+    [dl, dl1, dh, dh1] = [w * dl, w * dl1 + w1 * dl, w * dh, w * dh1 + w1 * dh];
+    const al = (dl * q) / r, ah = (dh * q) / r, al1 = (dl1 * q) / r + dl * dq, ah1 = (dh1 * q) / r + dh * dq;
+    return [c - psi - al, c + psi + ah, -dpsi - al1, dpsi + ah1];
+  }
   if (kind === 'width') {
     // a normal offset d of an edge whose slope is g = r dψ/dr turns it by d√(1+g²)/r
     const g = (r * Math.PI * A1) / N, g1 = (Math.PI * (A1 + r * A2)) / N, q = Math.sqrt(1 + g * g);
@@ -182,24 +240,28 @@ export const petalEdges = (j, r, o, N, err = null) => edges(j, r, o, N, err).sli
 // farthest field point (opts.lam: the shortest wavelength, opts.z, opts.rhoMax).
 const autoPanels = (o, lz, rho) => { const Rt = o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n); return Math.max(12, Math.ceil(((Rt + rho) ** 2 - Math.max(0, o.a - rho) ** 2) / lz / 2.5)); };
 const autoHub = (o, lz, rho) => 64 * Math.ceil((256 + (16 * o.a * (o.a + rho)) / lz) / 64);
+// A rippled edge also needs a panel per 1.7 shortest ripple periods, on top of those for the
+// Fresnel zones, because the two phases add (12-point Gauss–Legendre then integrates the ripple's
+// effect to 10⁻⁶).
+const ripplePanels = (o, err) => (err && err.kind === 'random' ? Math.ceil((0.6 * o.b * Math.pow(Math.log(1e8), 1 / o.n)) / ({ ...RIPPLE, ...err }).lmin) : 0);
 // About how many edge points petalOutline uses (12 per panel, 2N edges, hub, tips and bases).
-export const petalNodes = (o, N, lam, z, rho) => 24 * N * autoPanels(o, lam * z, rho) + autoHub(o, lam * z, rho) + 24 * N;
+export const petalNodes = (o, N, lam, z, rho, err = null) => 24 * N * (autoPanels(o, lam * z, rho) + ripplePanels(o, err)) + autoHub(o, lam * z, rho) + 24 * N;
 // The shortest wavelength whose outline stays within maxNodes edge points (the work grows as 1/λ).
-export function petalMinLam(o, N, z, rho, maxNodes) {
+export function petalMinLam(o, N, z, rho, maxNodes, err = null) {
   let lo = 1e-8, hi = 1e-3;
-  if (petalNodes(o, N, hi, z, rho) > maxNodes) return Infinity;
-  for (let i = 0; i < 60; i++) { const m = Math.sqrt(lo * hi); if (petalNodes(o, N, m, z, rho) > maxNodes) lo = m; else hi = m; }
+  if (petalNodes(o, N, hi, z, rho, err) > maxNodes) return Infinity;
+  for (let i = 0; i < 60; i++) { const m = Math.sqrt(lo * hi); if (petalNodes(o, N, m, z, rho, err) > maxNodes) lo = m; else hi = m; }
   return hi;
 }
 export function petalOutline(o, N, err = null, opts = {}) {
   const lz = (opts.lam || 300e-9) * (opts.z || 8e7), rho = opts.rhoMax || 0;
-  const P = opts.panels || autoPanels(o, lz, rho), q = gaussLegendre(opts.order || 12), nh = opts.hub || autoHub(o, lz, rho);
+  const { kind = 'none', d = 0 } = err || {};
+  const Rend = o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n) + (kind === 'shift' ? Math.max(0, d) : 0);
+  const P = opts.panels || autoPanels(o, lz, rho) + ripplePanels(o, err), q = gaussLegendre(opts.order || 12), nh = opts.hub || autoHub(o, lz, rho);
   const X = [], Y = [], TX = [], TY = [];
   const push = (x, y, tx, ty) => { X.push(x); Y.push(y); TX.push(tx); TY.push(ty); };
   // the hub, anticlockwise (trapezoid rule: exact for a periodic integrand to spectral accuracy)
   for (let i = 0; i < nh; i++) { const t = (2 * Math.PI * i) / nh, w = (2 * Math.PI) / nh; push(o.a * Math.cos(t), o.a * Math.sin(t), -o.a * Math.sin(t) * w, o.a * Math.cos(t) * w); }
-  const { kind = 'none', d = 0 } = err || {};
-  const Rend = o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n) + (kind === 'shift' ? Math.max(0, d) : 0);
   for (let j = 0; j < N; j++) {
     const E = (r) => edges(j, r, o, N, err), rb = o.a;
     // where an edge starts or stops being clipped it has a kink: put a panel boundary there, so that
@@ -233,6 +295,67 @@ export function petalOutline(o, N, err = null, opts = {}) {
     }
   }
   return { x: Float64Array.from(X), y: Float64Array.from(Y), tx: Float64Array.from(TX), ty: Float64Array.from(TY) };
+}
+
+// First-order perturbation theory for edge ripple. Moving an edge outwards by δ along its normal
+// adds the strip δ ds to the shade, so the field changes by
+//   δE(p) = −(1/iλz) ∫ e^{ik|p − x(s)|²} δ(s) ds = (i/λz) ∫ e^{iks²} δ(r) √(1 + g²) dr
+// along each of the 2N edges (k = π/λz, g = r dψ/dr). For a ripple δ = σ√2 w(r) sin(Kr + φ) with a
+// random phase, the expected |δE|² over φ is (σ²/2(λz)²)(|I₊|² + |I₋|²), I± = ∫ e^{iks²} q w e^{±iKr} dr,
+// summed over the edges, whose phases are independent. Returns, for each period ℓ (K = 2π/ℓ), the
+// added intensity per unit σ² (m⁻²), averaged over the points.
+function rippleIntegrals(o, N, lam, z, px, py, Ks) {
+  const k = Math.PI / (lam * z), Rend = o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n);
+  const kmax = Math.max(...Ks), rho = Math.max(0, ...px.map((x, i) => Math.hypot(x, py[i])));
+  // panels: the Fresnel zones crossed and 1.7 ripple periods per 12-point panel, doubled for the
+  // steep rise of the weight near the tip (then converged to 10⁻⁶)
+  const P = 2 * Math.max(autoPanels(o, lam * z, rho), Math.ceil(((Rend - o.a) * kmax) / (2 * Math.PI) / 1.7)), q = gaussLegendre(12);
+  const rs = [], ws = [];
+  for (let p = 0; p < P; p++) {
+    const r0 = o.a + ((Rend - o.a) * p) / P, hr = (Rend - o.a) / P / 2;
+    for (let i = 0; i < q.x.length; i++) {
+      const r = r0 + hr * (1 + q.x[i]), [A, A1] = hyperA012(r, o), g = (r * Math.PI * A1) / N;
+      rs.push(r); ws.push(hr * q.w[i] * Math.sqrt(1 + g * g) * rippleWeight(r, o, N)[0]);
+    }
+  }
+  const n = rs.length, psi = rs.map((r) => (Math.PI * hyperA(r, o)) / N);
+  // out[p][e][m] = [I₊ re, im, I₋ re, im]
+  return { n, rs, ws, psi, k, P, Ks, at(pxi, pyi, e) {
+    const c = (2 * Math.PI * (e >> 1)) / N, sgn = e & 1 ? 1 : -1, out = new Float64Array(4 * Ks.length);
+    for (let i = 0; i < n; i++) {
+      const th = c + sgn * psi[i], x = rs[i] * Math.cos(th), y = rs[i] * Math.sin(th), ph = k * ((pxi - x) ** 2 + (pyi - y) ** 2);
+      for (let m = 0; m < Ks.length; m++) {
+        const a = ph + Ks[m] * rs[i], b = ph - Ks[m] * rs[i];
+        out[4 * m] += ws[i] * Math.cos(a); out[4 * m + 1] += ws[i] * Math.sin(a);
+        out[4 * m + 2] += ws[i] * Math.cos(b); out[4 * m + 3] += ws[i] * Math.sin(b);
+      }
+    }
+    return out;
+  } };
+}
+export function rippleSensitivity(o, N, lam, z, px, py, periods) {
+  const Ks = periods.map((l) => (2 * Math.PI) / l), R = rippleIntegrals(o, N, lam, z, px, py, Ks), out = new Float64Array(periods.length);
+  for (let p = 0; p < px.length; p++) for (let e = 0; e < 2 * N; e++) {
+    const I = R.at(px[p], py[p], e);
+    for (let m = 0; m < Ks.length; m++) out[m] += (I[4 * m] ** 2 + I[4 * m + 1] ** 2 + I[4 * m + 2] ** 2 + I[4 * m + 3] ** 2) / 2;
+  }
+  const f = 1 / ((lam * z) ** 2 * px.length);
+  return out.map((v) => v * f);
+}
+// The first-order field change [re, im] at the points for one particular ripple err (its own phases).
+export function rippleField(o, N, err, lam, z, px, py) {
+  const T = rippleTable(err, N), R = rippleIntegrals(o, N, lam, z, px, py, Array.from(T.k)), out = new Float64Array(2 * px.length), lz = lam * z;
+  for (let p = 0; p < px.length; p++) for (let e = 0; e < 2 * N; e++) {
+    const I = R.at(px[p], py[p], e);
+    // δ = σ Σ cₘ sin(Kr + φ) = σ Σ cₘ (e^{iφ}e^{iKr} − e^{−iφ}e^{−iKr})/2i; δE = (i/λz)∫e^{iks²} q w δ dr
+    for (let m = 0; m < T.M; m++) {
+      const phi = T.ph[e * T.M + m], cp = Math.cos(phi), sp = Math.sin(phi), A = (err.d * T.c[m]) / (2 * lz);
+      // (i/2i)(e^{iφ}I₊ − e^{−iφ}I₋) = ½(e^{iφ}I₊ − e^{−iφ}I₋)
+      out[2 * p] += A * (cp * I[4 * m] - sp * I[4 * m + 1] - (cp * I[4 * m + 2] + sp * I[4 * m + 3]));
+      out[2 * p + 1] += A * (cp * I[4 * m + 1] + sp * I[4 * m] - (cp * I[4 * m + 3] - sp * I[4 * m + 2]));
+    }
+  }
+  return out;
 }
 
 // The field [re, im] at points (px, py) behind the outline, at wavelength lam and distance z.

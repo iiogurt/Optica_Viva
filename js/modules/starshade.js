@@ -4,7 +4,7 @@ import { header, lab, idea, rule, theory, references, liveCalc } from '../lib/pa
 import { latest, run } from '../lib/compute.js';
 import { plot, range } from '../lib/plot.js';
 import { lut, wavelengthRGB } from '../lib/color.js';
-import { OCCULTERS, fresnelNumber, iwa, apertureGrid, petalEdges, petalMinLam } from '../lib/starshade.js';
+import { OCCULTERS, fresnelNumber, iwa, apertureGrid, petalEdges, petalMinLam, rippleSpectrum, RIPPLE } from '../lib/starshade.js';
 import { view3d } from '../lib/gl3d.js';
 import { starshadeScene } from '../lib/starshade3d.js';
 import { t } from '../lib/i18n.js';
@@ -31,8 +31,9 @@ export default function mount(root, meta) {
     z: { type: 'range', label: 'Telescope–starshade distance', min: 10000, max: 150000, step: 1000, value: 80000, unit: 'km' },
     D: { type: 'range', label: 'Telescope diameter', min: 1, max: 8, step: 0.1, value: 4, unit: 'm' },
     lam: { type: 'range', label: 'Wavelength for the shadow map', min: 300, max: 1100, step: 10, value: 550, unit: 'nm' },
-    err: { type: 'select', label: 'Petal error', value: 'none', options: [['none', 'Perfect petals'], ['clock', 'One petal turned sideways'], ['width', 'Every petal wider (negative: narrower)'], ['shift', 'One petal slid outwards along its axis']] },
-    d: { type: 'range', label: 'Size of the error (at the petal tip or edge)', min: -1000, max: 1000, step: 10, value: 500, unit: 'µm', when: (st) => st.err !== 'none' },
+    err: { type: 'select', label: 'Petal error', value: 'none', options: [['none', 'Perfect petals'], ['clock', 'One petal turned sideways'], ['width', 'Every petal wider (negative: narrower)'], ['shift', 'One petal slid outwards along its axis'], ['random', 'Random ripple along every edge']] },
+    d: { type: 'range', label: 'Size of the error (at the petal tip or edge)', min: -1000, max: 1000, step: 10, value: 500, unit: 'µm', when: (st) => st.err !== 'none', hint: 'For the random ripple: its RMS along each edge' },
+    seed: { type: 'range', label: 'Random draw', min: 1, max: 20, step: 1, value: 1, when: (st) => st.err === 'random' },
   }, () => update());
   const ro = h('div');
   const calc = liveCalc();
@@ -44,8 +45,9 @@ export default function mount(root, meta) {
   const ap = stage({ aspect: 1, label: 'Real-petal shadow (log intensity)', draw: drawAp, minH: 200 });
   const img = stage({ aspect: 1, label: 'Leaked starlight in the image', draw: drawImg, minH: 200 });
   const note2 = h('p.note', {}, t('Computing the exact shadow of the petals…'));
+  const rip = stage({ aspect: 2.1, label: '', draw: drawRip, cls: 'plain', minH: 220 });
   const v3 = view3d({ label: '3-D: the telescope, the starshade tens of thousands of kilometres away, and its shadow on the telescope', aspect: 1.9, minH: 260, yaw: -0.7, pitch: 0.35 });
-  root.append(lab([h('div.grid-2', {}, shape.el, map.el), note, h('div.grid-2', {}, ap.el, img.el), note2, v3.el, h('div.card', { style: { padding: '6px' } }, prof.el), h('div.card', { style: { padding: '6px' } }, spec.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  root.append(lab([h('div.grid-2', {}, shape.el, map.el), note, h('div.grid-2', {}, ap.el, img.el), note2, v3.el, h('div.card', { style: { padding: '6px' } }, prof.el), h('div.card', { style: { padding: '6px' } }, spec.el), h('div.card', { style: { padding: '6px' } }, rip.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
 
   const job = latest('starshade');
   let R = null;
@@ -73,7 +75,7 @@ export default function mount(root, meta) {
     \end{aligned}`);
     // the azimuthally averaged model does not depend on the petals: skip it when only they change
     const rk = JSON.stringify([st.a, st.b, st.n, st.z, st.D, st.lam]);
-    if (R && R.rk === rk) { show(); runPetals(); return; }
+    if (R && R.rk === rk) { show(); runPetals(); runRipple(); return; }
     note.textContent = t('Computing the Fresnel integrals in the worker…');
     const p = { kind: 'hyper', a: st.a, b: st.b, n: st.n, z, D: st.D, lams: lams(st), lamC: lam, rhoMax: Math.max(1.4 * Rt, st.D), nr: 120, specLams, steps: 2000 };
     job('starshade', p).then((r) => {
@@ -82,6 +84,31 @@ export default function mount(root, meta) {
       show3d(st, z, r.rhos, r.prof[R.p.lams.indexOf(lam)]);
     });
     runPetals();
+    runRipple();
+  }
+
+  // Which ripple periods matter: the leak added per unit RMS² at each period of the ripple's
+  // spectrum, by first-order perturbation theory (averaged over the random phases, so no draw is
+  // needed), at 8 points over the aperture. About a second and a half on a Raspberry Pi 4.
+  const ripJob = latest('rippleSens'), ripPeriods = Array.from(rippleSpectrum().periods);
+  const ripKey = (st) => JSON.stringify([st.a, st.b, st.n, st.N, st.z, st.D, st.lam]);
+  let RS = null, rTimer = 0;
+  function runRipple() {
+    const st0 = ctl.state;
+    if (st0.err !== 'random' || (RS && RS.key === ripKey(st0))) { rip.redraw(); return; }
+    clearTimeout(rTimer);
+    rTimer = setTimeout(() => {
+      const st = { ...ctl.state }, key = ripKey(st), px = [], py = [];
+      for (const f of [0.35, 0.8]) for (let k = 0; k < 4; k++) { const th = ((k + 0.5) * Math.PI) / 2; px.push((f * st.D * Math.cos(th)) / 2); py.push((f * st.D * Math.sin(th)) / 2); }
+      ripJob('rippleSens', { o: { a: st.a, b: st.b, n: st.n }, N: st.N, lam: st.lam * 1e-9, z: st.z * 1e3, px, py, periods: ripPeriods }).then((S) => { RS = { key, S }; show(); }, (e) => console.error(e));
+    }, RS ? 150 : 0);
+    rip.redraw();
+  }
+  // expected added leak of the ripple on the page, over all draws: σ² Σ (cₘ²/2) S(ℓₘ)
+  function rippleExpected(st) {
+    if (!RS || RS.key !== ripKey(st)) return null;
+    const { c } = rippleSpectrum(), s2 = (st.d * 1e-6) ** 2;
+    return RS.S.reduce((acc, v, m) => acc + (c[m] * c[m] * v * s2) / 2, 0);
   }
 
   // Real petals: the exact two-dimensional field over the aperture (a G×G grid, for the map and the
@@ -90,7 +117,9 @@ export default function mount(root, meta) {
   // so it runs where a dragged slider pauses.
   const G = 48, GS = 10, MAXNODES = 30000, specP = specLams.filter((_, i) => i % 2 === 0);
   let PR = null, pTimer = 0, pTicket = 0;
-  const petalKey = (st) => JSON.stringify([st.a, st.b, st.n, st.N, st.z, st.D, st.lam, st.err, st.err === 'none' ? 0 : st.d]);
+  // the error as the library takes it: d in metres; the random ripple's RMS is |d|, its phases set by the draw
+  const errOf = (st) => (st.err === 'none' ? null : st.err === 'random' ? { kind: 'random', d: Math.abs(st.d) * 1e-6, seed: st.seed } : { kind: st.err, d: st.d * 1e-6, petal: 0 });
+  const petalKey = (st) => JSON.stringify([st.a, st.b, st.n, st.N, st.z, st.D, st.lam, st.err, st.err === 'none' ? 0 : st.d, st.err === 'random' ? st.seed : 0]);
   function runPetals() {
     const st0 = ctl.state;
     if (PR && PR.key === petalKey(st0)) return;
@@ -98,11 +127,11 @@ export default function mount(root, meta) {
     clearTimeout(pTimer);
     pTimer = setTimeout(() => {
       const st = { ...ctl.state }, my = ++pTicket, key = petalKey(st), z = st.z * 1e3, lam = st.lam * 1e-9;
-      const o = { a: st.a, b: st.b, n: st.n }, err = st.err === 'none' ? null : { kind: st.err, d: st.d * 1e-6, petal: 0 };
+      const o = { a: st.a, b: st.b, n: st.n }, err = errOf(st);
       const grid = apertureGrid(st.D, G), sg = apertureGrid(st.D, GS), rhoMax = st.D / Math.SQRT2;
       // a work budget: the edge needs more points the more Fresnel zones it crosses (a big shade, a
       // short distance, short wavelengths); wavelengths that would need more than MAXNODES are left out
-      const lmin = Math.max(specP[0], petalMinLam(o, st.N, z, rhoMax, MAXNODES)), sl = specP.filter((l) => l >= lmin);
+      const lmin = Math.max(specP[0], petalMinLam(o, st.N, z, rhoMax, MAXNODES, err)), sl = specP.filter((l) => l >= lmin);
       if (lam < lmin) { PR = { key, st, z, tooBig: lmin }; show(); return; }
       // the map's grid at the chosen wavelength, then each wavelength of the spectrum on a coarser grid
       const items = [{ lam, x0: grid.x0, dx: grid.dx, nx: G, ys: grid.ys }, ...sl.map((l) => ({ lam: l, x0: sg.x0, dx: sg.dx, nx: GS, ys: sg.ys }))];
@@ -142,6 +171,7 @@ export default function mount(root, meta) {
       ['Suppression over the aperture, real petals', P ? P.mean.toExponential(1) : none],
       ['Brightest leak beyond the inner working angle', P ? t('{c} at {th} mas', { c: L.best.toExponential(1), th: (L.at * MAS).toFixed(0) }) : none],
       ['Same-size opaque disk', t('{s} (Poisson spot)', { s: R.diskSupp.toExponential(1) })],
+      ...(st.err === 'random' ? [[t('Leak added by the ripple, expected over all draws'), rippleExpected(st) != null ? rippleExpected(st).toExponential(1) : '…']] : []),
       ['Band with suppression < 10⁻¹⁰', P && P.sl.length === specP.length ? band(P.sl, P.spec, 1e-10) : band(specLams, R.specSupp, 1e-10)],
     ]));
     const v2 = P ? P.mean : sp;
@@ -149,7 +179,7 @@ export default function mount(root, meta) {
     note.textContent = t('Shadow of a hypergaussian starshade (a = {a} m, b = {b} m, n = {n}) at {z} km. The telescope aperture is the dashed circle. Scalar Fresnel diffraction, azimuthally averaged petals.', { a: R.st.a, b: R.st.b, n: R.st.n, z: Math.round(R.st.z) });
     if (big) note2.textContent = t('At these settings the petal edges cross so many Fresnel zones that the exact shadow would take too long here; it is computed from {l} nm upwards. Lengthen the wavelength, shrink the shade or move it further away.', { l: Math.ceil(big * 1e9 / 10) * 10 });
     if (P) note2.textContent = t("Exact Fresnel field of the {N} binary petals over the {D} m telescope (left, 10⁻¹³ … 10⁻⁶) and the image the telescope makes of the light that leaks past them (right, contrast 10⁻¹⁴ … 10⁻⁸ relative to the star's peak; the dashed circle is the inner working angle). Both are oriented like the drawing of the shade, so a leak shows up beside the petal that causes it.", { N: P.st.N, D: P.st.D });
-    [map, prof, spec, ap, img].forEach((x) => x.redraw());
+    [map, prof, spec, ap, img, rip].forEach((x) => x.redraw());
   }
   function band(ls, s, thr) {
     const ok = ls.filter((_, i) => s[i] < thr);
@@ -171,7 +201,7 @@ export default function mount(root, meta) {
     ctx.beginPath(); ctx.arc(cx, cy, sc * st.a, 0, 2 * Math.PI); ctx.fill();
     if (st.err !== 'none') {
       // the petal with the error (the error itself, a fraction of a millimetre, is far too small to see)
-      const err = { kind: st.err, d: st.d * 1e-6, petal: 0 }, js = st.err === 'width' ? [...Array(st.N).keys()] : [0];
+      const err = errOf(st), js = st.err === 'width' || st.err === 'random' ? [...Array(st.N).keys()] : [0];
       ctx.fillStyle = 'rgba(255,181,71,0.85)';
       for (const j of js) {
         ctx.beginPath();
@@ -264,6 +294,26 @@ export default function mount(root, meta) {
     });
   }
 
+  function drawRip(ctx, w, hh) {
+    const st = ctl.state, ok = RS && RS.key === ripKey(st);
+    if (st.err !== 'random' || !ok || !R) {
+      plot(ctx, w, hh, { title: 'Leak per ripple period', x: { min: RIPPLE.lmin, max: RIPPLE.lmax, log: true, label: 'ripple period along the edge (m)' }, y: { min: 1e-16, max: 1e-8, log: true, label: 'added suppression' }, series: [] });
+      ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '12px "Inter", sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(st.err !== 'random' ? t('Choose the petal error “Random ripple along every edge” to see which ripple periods leak.') : t('Computing the leak per ripple period…'), w / 2, hh / 2);
+      ctx.textAlign = 'left';
+      return;
+    }
+    const s2 = (st.d * 1e-6) ** 2, data = ripPeriods.map((l, m) => [l, Math.max(1e-16, RS.S[m] * s2)]), k = R.p.lams.indexOf(R.st.lam * 1e-9);
+    let top = R.supp[k];
+    for (const [, v] of data) top = Math.max(top, v);
+    const ymax = 10 ** Math.ceil(Math.log10(top));
+    plot(ctx, w, hh, {
+      title: t('Leak added by {s} µm RMS of ripple at a single period', { s: Math.abs(st.d) }), x: { min: RIPPLE.lmin, max: RIPPLE.lmax, log: true, label: 'ripple period along the edge (m)' }, y: { min: ymax * 1e-6, max: ymax, log: true, label: 'added suppression' },
+      series: [{ data, color: '#6ad7ff', width: 2.2, label: t('one period at a time') }, { data: [[RIPPLE.lmin, R.supp[k]], [RIPPLE.lmax, R.supp[k]]], color: '#ffb547', width: 1.4, dash: [5, 3], label: t('perfect petals (azimuthal average)') }],
+      legend: true, vlines: [{ x: (st.lam * 1e-9 * st.z * 1e3) / (st.a + st.b), color: 'rgba(255,255,255,0.35)' }],
+    });
+  }
+
   update();
 
   root.append(rule(String.raw`\[F = \frac{R^2}{\lambda z},\qquad \theta_\text{IWA} \approx \frac{R}{z}\]
@@ -291,6 +341,9 @@ export default function mount(root, meta) {
 <li>One petal can be slid outwards along its own axis, with its base still sealed to the hub.</li>
 </ul>
 <p>Where a petal would overlap its neighbour the two are merged, so nothing is counted twice. Over a 4 m telescope behind the default shade, at 550 nm, a petal turned so that its tip moves 1 mm sideways raises the leak about ninefold. Edges a tenth of a millimetre too wide raise it 27-fold. A petal slid 1 mm outwards raises it less than fourfold, because its smooth profile still cancels most of the edge waves; what leaks comes through the thin slits it opens along the valleys, where it had touched its neighbours. The leaked light is not spread evenly. In the telescope's image (the Fraunhofer transform of the field over the aperture, in units of the unblocked star's peak) it appears beside the faulty petal, near its tip, which is just outside the inner working angle and exactly where planets are sought. Starshade error budgets (Shaklan et al. 2010) are built from sensitivities like these, one for every kind of error.</p>
+<p>The fourth kind of error is the one error budgets describe by its spatial spectrum: a random ripple along every edge. Here each of the \(2N\) edges moves along its normal by \(\delta(r) = \sigma\sum_m c_m\sin(2\pi r/\ell_m + \varphi_m)\), with 24 periods \(\ell_m\) from 0.25 to 8 m, a power spectrum falling as \(f^{-2}\), RMS \(\sigma\) and random phases (the draw). The ripple fades out in the valleys, where neighbouring petals meet, and where a petal tip is narrower than about a millimetre, as no real tip is sharper. To first order a displacement \(\delta\) adds the strip \(\delta\,ds\) to the shade, so</p>
+\[\delta E(\mathbf p) = \frac{i}{\lambda z}\oint_{\text{edges}} e^{i\pi s^2/\lambda z}\,\delta\,ds,\]
+<p>and the exact edge integral agrees with it to 0.2 %. Averaged over the random phases, it gives the bottom chart: the leak from one period at a time. It peaks sharply where the ripple's period matches the spacing of the Fresnel zones on the outer petals, \(\ell \approx \lambda z/r\) (the line is at \(\lambda z/(a+b)\)). There the ripple keeps step with the zones and its contributions add up along the edge, while much shorter or longer periods cancel themselves. For the default shade at 550 nm, 100 µm RMS spread over the whole spectrum adds about \(3.6\times10^{-10}\), some 60 times the leak of the perfect shade, nearly all of it from periods between 1.3 and 2.5 m.</p>
 <h3>The geometry in 3-D</h3>
 <p>The 3-D view keeps the distances along the line of sight to scale and enlarges everything across it by one round factor, typically \(5\times10^5\). A 66 m starshade 80 000 km away subtends 170 mas, about the size of a coin seen from 15 km. Because both directions across are enlarged alike, angles are enlarged by the same factor and the line of sight that grazes the petal tips is the inner working angle \((a+b)/z\). The telescope sits deep inside the geometric shadow, a cylinder of radius \(a+b\). The coloured disc around the pupil is the computed shadow: the apodised petals keep the light that diffracts round the edge out of the centre, so the pupil sees \(10^{-10}\) or less where a plain disc would put the bright Poisson spot.</p>
 <h3>The trade-offs</h3>
@@ -298,7 +351,7 @@ export default function mount(root, meta) {
 <h3>Numerical method and approximations</h3>
 <p>The azimuthal average is integrated in \(u = r^2\), where the Fresnel phase is linear. Each step integrates the phase exactly (Filon's midpoint rule), which makes the opaque core exact; one Richardson step removes the \(O(\Delta u^2)\) error left by \(J_0\) off axis. \(J_0\) itself is summed from its power series up to an argument of 12 and from Hankel's asymptotic series beyond, accurate to \(10^{-12}\); the usual polynomial fits are good only to \(5\times10^{-8}\), which is too coarse for a field of \(10^{-6}\). At 2000 steps the intensity has converged to better than \(10^{-14}\).</p>
 <p>The two-dimensional field is computed on a \(48\times48\) grid over the aperture at the chosen wavelength and on a \(10\times10\) grid for each point of the spectrum. Along a grid row the phase of each edge point changes by a fixed factor, so the sum needs no sines or cosines. The image is a 512-point FFT of the aperture field. Doubling the edge points changes the result by less than one part in a million.</p>
-<p>Not included: edge scattering of sunlight, vector diffraction at the edges, the petals' thickness, and the finite size of the star (about 1 mas, much smaller than the shadow). The errors are applied to first order in their size; for millimetre errors the outline is then right to better than a tenth of a micrometre.</p>
+<p>Not included: edge scattering of sunlight, vector diffraction at the edges, the petals' thickness, and the finite size of the star (about 1 mas, much smaller than the shadow). The errors are applied to first order in their size; for millimetre errors the outline is then right to better than a tenth of a micrometre. The ripple's spectrum (its range of periods and its slope) is illustrative, not that of a particular design's error budget.</p>
 </div></div>`));
   root.append(references([
     'W. Cash, “Detection of Earth-like planets around nearby stars using a petal-shaped occulter”, <em>Nature</em> 442, 51 (2006).',
@@ -309,5 +362,5 @@ export default function mount(root, meta) {
     'M. Born &amp; E. Wolf, <em>Principles of Optics</em>, 7th ed., §8.8 (Fresnel diffraction, Lommel functions).',
   ]));
 
-  return () => { clearTimeout(pTimer); pTicket++; [shape, map, prof, spec, ap, img, v3].forEach((x) => x.destroy()); };
+  return () => { clearTimeout(pTimer); pTicket++; clearTimeout(rTimer); [shape, map, prof, spec, ap, img, rip, v3].forEach((x) => x.destroy()); };
 }
