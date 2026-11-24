@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Starshade: sunlight glinting off the petal edges.** With the Sun behind the shade, an edge rounded to a radius a reflects sunlight towards the telescope wherever its outward normal points at the Sun's azimuth. In geometrical optics the radiant intensity there is R S a R_c / 4cos(β/2), confirmed to 1 % by a brute-force sum over a reflecting torus. The Sun's disc is averaged over, which keeps the result finite where the outline straightens. New controls set the Sun's angle and direction, the edge radius, the reflectance and the star's distance. A new panel shows the spots blurred into the telescope's Airy patterns, gold dots mark them on the drawing, and readouts give the brightest point and the total, both relative to a Sun-like star. Averaged over the Sun's azimuth, the glinting radii add up to the free edge length / 2π to 0.3 %. The diffraction of sunlight at the edges is not included.
+
 ## [1.76.0] - 2026-11-24
 
 ### Added
