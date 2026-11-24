@@ -139,9 +139,21 @@ export function gaussLegendre(n) {
   const r = { x, w }; GL.set(n, r); return r;
 }
 
-const hyperA = (r, o) => (r <= o.a ? 1 : Math.exp(-(((r - o.a) / o.b) ** o.n)));
-// A and its first two derivatives in r
+// The petal profile of a shade o: the hypergaussian { a, b, n } or a tabulated profile
+// { kind: 'table', R, r0, dr, A } (linear between its nodes, so its edges have kinks there: the
+// outline puts panel boundaries at the nodes). A and its first two derivatives in r; where the
+// petals start (base) and end (tip).
+const isTable = (o) => o.kind === 'table';
+const baseR = (o) => (isTable(o) ? o.r0 : o.a);
+const tipR = (o) => (isTable(o) ? o.R : o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n));
+const hyperA = (r, o) => (isTable(o) ? tableA(r, o) : r <= o.a ? 1 : Math.exp(-(((r - o.a) / o.b) ** o.n)));
 function hyperA012(r, o) {
+  if (isTable(o)) {
+    if (r <= o.r0) return [1, 0, 0];
+    if (r >= o.R) return [r > o.R ? 0 : o.A[o.A.length - 1], 0, 0];
+    const t = (r - o.r0) / o.dr, i = Math.min(o.A.length - 2, Math.floor(t)), s = (o.A[i + 1] - o.A[i]) / o.dr;
+    return [o.A[i] + s * (r - o.r0 - i * o.dr), s, 0];
+  }
   if (r <= o.a) return [1, 0, 0];
   const t = (r - o.a) / o.b, n = o.n, A = Math.exp(-(t ** n)), A1 = (-A * n * t ** (n - 1)) / o.b;
   return [A, A1, (-n / o.b) * (A1 * t ** (n - 1) + (A * (n - 1) * t ** (n - 2)) / o.b)];
@@ -199,7 +211,7 @@ export function edgeRipple(err, N, j, side, r) {
 function rawEdges(j, r, o, N, err) {
   const { kind = 'none', d = 0, petal = 0 } = err || {}, me = j === petal;
   let c = (2 * Math.PI * j) / N;
-  if (kind === 'clock' && me) c += d / (o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n));
+  if (kind === 'clock' && me) c += d / tipR(o);
   if (kind === 'shift' && me) {
     // a rigid slide by d along the axis takes the edge point at (r, ψ) to radius r + d cos ψ and
     // half-angle ψ − d sin ψ / r; to first order in d the new edge at radius r is
@@ -247,12 +259,12 @@ export const petalEdges = (j, r, o, N, err = null) => edges(j, r, o, N, err).sli
 // anticlockwise around each piece. opts: { panels (per petal edge), order, hub (points on the hub) }.
 // Without explicit counts they follow the number of Fresnel zones the edge crosses as seen from the
 // farthest field point (opts.lam: the shortest wavelength, opts.z, opts.rhoMax).
-const autoPanels = (o, lz, rho) => { const Rt = o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n); return Math.max(12, Math.ceil(((Rt + rho) ** 2 - Math.max(0, o.a - rho) ** 2) / lz / 2.5)); };
-const autoHub = (o, lz, rho) => 64 * Math.ceil((256 + (16 * o.a * (o.a + rho)) / lz) / 64);
+const autoPanels = (o, lz, rho) => { const Rt = tipR(o); return Math.max(12, Math.ceil(((Rt + rho) ** 2 - Math.max(0, baseR(o) - rho) ** 2) / lz / 2.5)); };
+const autoHub = (o, lz, rho) => 64 * Math.ceil((256 + (16 * baseR(o) * (baseR(o) + rho)) / lz) / 64);
 // A rippled edge also needs a panel per 1.7 shortest ripple periods, on top of those for the
 // Fresnel zones, because the two phases add (12-point Gauss–Legendre then integrates the ripple's
 // effect to 10⁻⁶).
-const ripplePanels = (o, err) => (err && err.kind === 'random' ? Math.ceil((0.6 * o.b * Math.pow(Math.log(1e8), 1 / o.n)) / ({ ...RIPPLE, ...err }).lmin) : 0);
+const ripplePanels = (o, err) => (err && err.kind === 'random' ? Math.ceil((0.6 * (tipR(o) - baseR(o))) / ({ ...RIPPLE, ...err }).lmin) : 0);
 // About how many edge points petalOutline uses (12 per panel, 2N edges, hub, tips and bases).
 export const petalNodes = (o, N, lam, z, rho, err = null) => 24 * N * (autoPanels(o, lam * z, rho) + ripplePanels(o, err)) + autoHub(o, lam * z, rho) + 24 * N;
 // The shortest wavelength whose outline stays within maxNodes edge points (the work grows as 1/λ).
@@ -265,14 +277,14 @@ export function petalMinLam(o, N, z, rho, maxNodes, err = null) {
 export function petalOutline(o, N, err = null, opts = {}) {
   const lz = (opts.lam || 300e-9) * (opts.z || 8e7), rho = opts.rhoMax || 0;
   const { kind = 'none', d = 0 } = err || {};
-  const Rend = o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n) + (kind === 'shift' ? Math.max(0, d) : 0);
+  const Rend = tipR(o) + (kind === 'shift' ? Math.max(0, d) : 0), a0 = baseR(o);
   const P = opts.panels || autoPanels(o, lz, rho) + ripplePanels(o, err), q = gaussLegendre(opts.order || 12), nh = opts.hub || autoHub(o, lz, rho);
   const X = [], Y = [], TX = [], TY = [];
   const push = (x, y, tx, ty) => { X.push(x); Y.push(y); TX.push(tx); TY.push(ty); };
   // the hub, anticlockwise (trapezoid rule: exact for a periodic integrand to spectral accuracy)
-  for (let i = 0; i < nh; i++) { const t = (2 * Math.PI * i) / nh, w = (2 * Math.PI) / nh; push(o.a * Math.cos(t), o.a * Math.sin(t), -o.a * Math.sin(t) * w, o.a * Math.cos(t) * w); }
+  for (let i = 0; i < nh; i++) { const t = (2 * Math.PI * i) / nh, w = (2 * Math.PI) / nh; push(a0 * Math.cos(t), a0 * Math.sin(t), -a0 * Math.sin(t) * w, a0 * Math.cos(t) * w); }
   for (let j = 0; j < N; j++) {
-    const E = (r) => edges(j, r, o, N, err), rb = o.a;
+    const E = (r) => edges(j, r, o, N, err), rb = a0;
     // where an edge starts or stops being clipped it has a kink: put a panel boundary there, so that
     // every panel integrates a smooth curve and keeps Gauss–Legendre's accuracy
     const sig = (r) => E(r).slice(4).join();
@@ -281,7 +293,10 @@ export function petalOutline(o, N, err = null, opts = {}) {
       const r0 = rb + ((Rend - rb) * (i - 1)) / ns, r1 = rb + ((Rend - rb) * i) / ns;
       if (sig(r0) !== sig(r1)) { let lo = r0, hi = r1; for (let it = 0; it < 60; it++) { const m = (lo + hi) / 2; if (sig(m) === sig(r0)) lo = m; else hi = m; } cuts.push((lo + hi) / 2); }
     }
+    // a tabulated profile bends at its nodes
+    if (isTable(o)) for (let i = 1; i < o.A.length - 1; i++) cuts.push(o.r0 + i * o.dr);
     cuts.push(Rend);
+    cuts.sort((x, y) => x - y);
     for (const side of [0, 1]) {
       for (let c = 0; c + 1 < cuts.length; c++) {
         const s0 = cuts[c], s1 = cuts[c + 1], np = Math.max(1, Math.round((P * (s1 - s0)) / (Rend - rb)));
@@ -314,14 +329,14 @@ export function petalOutline(o, N, err = null, opts = {}) {
 // summed over the edges, whose phases are independent. Returns, for each period ℓ (K = 2π/ℓ), the
 // added intensity per unit σ² (m⁻²), averaged over the points.
 function rippleIntegrals(o, N, lam, z, px, py, Ks) {
-  const k = Math.PI / (lam * z), Rend = o.a + o.b * Math.pow(Math.log(1e8), 1 / o.n);
+  const k = Math.PI / (lam * z), Rend = tipR(o), a0 = baseR(o);
   const kmax = Math.max(...Ks), rho = Math.max(0, ...px.map((x, i) => Math.hypot(x, py[i])));
   // panels: the Fresnel zones crossed and 1.7 ripple periods per 12-point panel, doubled for the
   // steep rise of the weight near the tip (then converged to 10⁻⁶)
-  const P = 2 * Math.max(autoPanels(o, lam * z, rho), Math.ceil(((Rend - o.a) * kmax) / (2 * Math.PI) / 1.7)), q = gaussLegendre(12);
+  const P = 2 * Math.max(autoPanels(o, lam * z, rho), Math.ceil(((Rend - a0) * kmax) / (2 * Math.PI) / 1.7)), q = gaussLegendre(12);
   const rs = [], ws = [];
   for (let p = 0; p < P; p++) {
-    const r0 = o.a + ((Rend - o.a) * p) / P, hr = (Rend - o.a) / P / 2;
+    const r0 = a0 + ((Rend - a0) * p) / P, hr = (Rend - a0) / P / 2;
     for (let i = 0; i < q.x.length; i++) {
       const r = r0 + hr * (1 + q.x[i]), [A, A1] = hyperA012(r, o), g = (r * Math.PI * A1) / N;
       rs.push(r); ws.push(hr * q.w[i] * Math.sqrt(1 + g * g) * rippleWeight(r, o, N)[0]);
@@ -409,7 +424,7 @@ export function petalSeriesField(o, N, lam, z, rho, phi, jmax = 4, steps = 20000
   return [(4 * b[0] - a[0]) / 3, (4 * b[1] - a[1]) / 3];
 }
 function seriesFilon(o, N, lam, z, rho, phi, jmax, steps) {
-  const k = Math.PI / (lam * z), Rm = OCCULTERS.hyper.Rmax(o), U = Rm * Rm, du = U / steps, q = 2 * k * rho;
+  const k = Math.PI / (lam * z), Rm = tipR(o), U = Rm * Rm, du = U / steps, q = 2 * k * rho;
   // coefficients c_j = 2 sin(jπA)/jπ · (−i)^{jN} cos(jNφ); (−i)^m cycles 1, −i, −1, i
   const ph = [[1, 0], [0, -1], [-1, 0], [0, 1]];
   let re = 0, im = 0;
