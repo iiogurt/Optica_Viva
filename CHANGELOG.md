@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.73.0] - 2026-11-24
+
 ### Added
 - **Field-dependent PSF: field maps from real rays.** At 11 × 11 field points, 316 rays are traced exactly through Hubble's mirrors or a three-mirror anastigmat with JWST's first-order layout, and a 28-term Zernike fit (through sixth order) gives each point's wavefront. A full-field display draws astigmatism as lines and coma as arrows over the RMS map, and a chart plots the Zernike terms against field angle. The page's errors (primary conic, secondary despace, decentre and tilt) move the traced mirrors too. For Hubble the traced coefficients match the third-order theory to about 1 %, and the zeros of the traced astigmatism fall on the nodal-theory nodes. In the anastigmat, coma grows as H³ and astigmatism as H⁴: fifth-order terms, as the aperture scaling also shows. `aimRay` accepts a field point given as two angles. The worker task is `fieldMap`, in `js/lib/fieldtrace.js`.
 
@@ -1132,7 +1134,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.72.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.73.0...HEAD
+[1.73.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.72.0...v1.73.0
 [1.72.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.71.0...v1.72.0
 [1.71.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.70.1...v1.71.0
 [1.70.1]: https://github.com/iiogurt/Optica_Viva/compare/v1.70.0...v1.70.1
