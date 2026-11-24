@@ -314,3 +314,39 @@ test('edge glint: flux ratio ∝ R a d²/z², spots on edges facing the Sun, and
   const im = glintImage([q], { z: 8e7, D: 4, lam: 550e-9, half: 1e-6, n: 64 });
   assert.ok(Math.abs(im.peak / q.C - 1) < 1e-9, 'peak = flux ratio');
 });
+
+test("knife-edge diffraction of sunlight: Keller's coefficient against Sommerfeld's exact half-plane solution", () => {
+  // ∫_0^a e^{iτ²} dτ by Simpson, F(a) = e^{−iπ/4}/√π ∫_a^∞ e^{iτ²} dτ
+  const I0 = (a) => { const n = Math.max(2000, Math.ceil(Math.abs(a) * 3000)) * 2, h = a / n; let re = 0, im = 0; for (let i = 0; i <= n; i++) { const t = i * h, w = i === 0 || i === n ? 1 : i % 2 ? 4 : 2; re += w * Math.cos(t * t); im += w * Math.sin(t * t); } return [(re * h) / 3, (im * h) / 3]; };
+  const SP = Math.sqrt(Math.PI), c = Math.SQRT1_2;
+  const F = (a) => { const [r, i] = I0(a), tr = (SP / 2) * c - r, ti = (SP / 2) * c - i; return [(c * tr + c * ti) / SP, (c * ti - c * tr) / SP]; };
+  const mul = (p, q) => [p[0] * q[0] - p[1] * q[1], p[0] * q[1] + p[1] * q[0]], e = (x) => [Math.cos(x), Math.sin(x)];
+  const k = 1, rho = 400, ph = 1.5 * Math.PI;
+  for (const deg of [40, 60, 85]) {
+    const b = (deg * Math.PI) / 180;
+    let avg = 0;
+    for (const pp of [Math.PI / 2 + b, Math.PI / 2 - b]) for (const sg of [1, -1]) {
+      const g1 = -k * rho * Math.cos(ph - pp), g2 = -k * rho * Math.cos(ph + pp);
+      const u = [0, 1].map((m) => mul(F(-Math.sqrt(2 * k * rho) * Math.cos((ph - pp) / 2)), e(g1))[m] - sg * mul(F(-Math.sqrt(2 * k * rho) * Math.cos((ph + pp) / 2)), e(g2))[m]);
+      // remove the geometrical-optics waves where they exist: the diffracted wave is left
+      if (Math.cos((ph - pp) / 2) > 0) { u[0] -= Math.cos(g1); u[1] -= Math.sin(g1); }
+      if (Math.cos((ph + pp) / 2) > 0) { u[0] += sg * Math.cos(g2); u[1] += sg * Math.sin(g2); }
+      const exact = (u[0] ** 2 + u[1] ** 2) * rho, keller = (1 / (8 * Math.PI * k)) * (1 / Math.cos((ph - pp) / 2) - sg / Math.cos((ph + pp) / 2)) ** 2;
+      assert.ok(Math.abs(exact / keller - 1) < 1e-3, `${deg}°, φ′ = ${pp}: exact ${exact}, Keller ${keller}`);
+      avg += keller / 2;
+      if (sg === -1) { assert.ok(Math.abs(avg / ((2 * Math.PI) / k / (4 * Math.PI ** 2 * Math.sin(b) ** 2)) - 1) < 1e-12, 'unpolarised |D|² = λ/(4π² sin²β)'); avg = 0; }
+    }
+  }
+});
+
+test('glint: diffraction spots on edges facing the Sun and away from it, C_d = λ⟨R_c⟩(d/AU)²/(4π² sin³β z²)', async () => {
+  const { glintSpots } = await import('../js/lib/starshade.js');
+  const o = { a: 12.5, b: 12.5, n: 6 }, p = { beta: 1, phiS: 0.4, a: 0, refl: 0.1, z: 8e7, dpc: 10, lam: 550e-9 };
+  const g = glintSpots(o, 16, p), h = glintSpots(o, 16, { ...p, a: 10e-6 });
+  assert.equal(g.reflected, 0, 'a knife edge reflects nothing');
+  assert.ok(g.spots.every((q) => q.kind === 'diffract') && Math.abs(h.diffracted - g.diffracted) < 1e-6 * g.diffracted, 'diffraction does not depend on a (where the same edges are free)');
+  const AU = 206264.806 * 10;
+  for (const q of g.spots) assert.ok(Math.abs(q.C / ((550e-9 * q.Rc * AU * AU) / (4 * Math.PI ** 2 * Math.sin(1) ** 3 * 8e7 * 8e7)) - 1) < 1e-12);
+  // both orientations: more diffraction spots than reflection spots
+  assert.ok(h.spots.filter((q) => q.kind === 'diffract').length > h.spots.filter((q) => q.kind === 'reflect').length);
+});

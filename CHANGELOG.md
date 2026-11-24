@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ## [Unreleased]
 
 ### Added
+- **Starshade: diffraction of sunlight at the petal edges.** Besides the reflection off rounded edges, every edge diffracts sunlight as a knife edge does, at edges facing the Sun and facing away from it. Keller's half-plane coefficient averaged over polarisation gives |D|² = λ/(4π² sin²β), checked against Sommerfeld's exact half-plane solution to 10⁻⁴, so each spot has C_d = λ⟨R_c⟩(d/AU)²/(4π² sin³β z²). The edge radius slider now starts at 0, a knife edge that only diffracts. Diffraction spots are blue on the drawing, and a readout splits the glint into reflected and diffracted.
 - **Starshade 3-D view with the optimised profile.** With *Real petals with the optimised profile* switched on, the 3-D view draws the optimised shade, its inner-working-angle line at its own radius, and its own shadow on the telescope's plane. `starshadeScene` and `outline` in `starshade3d.js` take a tabulated profile.
 
 ## [1.77.0] - 2026-11-24

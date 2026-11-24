@@ -632,11 +632,18 @@ export function optimisedLab(p) {
 //   C = R a ⟨R_c⟩ (d / 1 AU)² / (4 cos(β/2) z²).
 // Edges closer to a neighbour, or petals narrower, than 4a are not free and do not glint; nor do the
 // tips of tabulated profiles (their truncation arcs). Light from different spots adds incoherently.
+// The edge also diffracts sunlight, which remains for a knife edge (a → 0). Keller's coefficient of a
+// half-plane, D = −e^{−iπ/4}/(2√(2πk)) [sec((φ−φ′)/2) ∓ sec((φ+φ′)/2)], with the Sun at φ′ = π/2 ± β
+// from the sheet and the telescope at φ = 3π/2, gives |D|² = λ/(4π² sin²β) averaged over the two
+// polarisations, for edges facing the Sun and facing away from it alike. The power it spreads per
+// radian and unit length replaces a sin(β/2)/2 of the reflection, so one diffraction spot has
+//   C_d = λ ⟨R_c⟩ (d / 1 AU)² / (4π² sin³β z²)   (p.lam > 0; independent of a and of R).
 export const SUN_ALPHA = 6.957e8 / 1.495978707e11; // the Sun's angular radius from 1 AU (rad)
 export const PARSEC_AU = 206264.806;
 const wrap = (x) => x - 2 * Math.PI * Math.round(x / (2 * Math.PI));
-// p = { beta, phiS (rad), a (m), refl, z (m), dpc, M (samples per edge) }. Returns the spots
-// { x, y (m in the shade's plane), Rc (⟨R_c⟩, m), C } and the total flux ratio.
+// p = { beta, phiS (rad), a (m), refl, z (m), dpc, lam (m, for the diffraction; 0 leaves it out),
+// M (samples per edge) }. Returns the spots { x, y (m in the shade's plane), Rc (⟨R_c⟩, m), C, kind }
+// and the flux ratios: total, reflected, diffracted.
 export function glintSpots(o, N, p) {
   const w = SUN_ALPHA / Math.sin(p.beta), M = p.M || 3000, r0 = baseR(o), r1 = tipR(o), spots = [];
   const W = (x) => (Math.abs(x) < w ? (2 / (Math.PI * w * w)) * Math.sqrt(w * w - x * x) : 0);
@@ -645,7 +652,7 @@ export function glintSpots(o, N, p) {
   const rs = Array.from({ length: M + 1 }, (_, i) => r0 + ((r1 - r0) * i) / M);
   if (isTable(o)) for (let i = 1; i < o.A.length - 1; i++) rs.push(o.r0 + i * o.dr);
   rs.sort((x, y) => x - y);
-  for (let j = 0; j < N; j++) for (const side of [0, 1]) {
+  const sweep = (target) => { const spots = []; for (let j = 0; j < N; j++) for (const side of [0, 1]) {
     const c = (2 * Math.PI * j) / N, sg = side ? 1 : -1;
     // position and outward normal angle at r, using the profile's slope on the side of r given by e
     const at = (r, e) => {
@@ -660,13 +667,13 @@ export function glintSpots(o, N, p) {
       const ra = rs[i], rb = rs[i + 1];
       if (rb - ra < 1e-12) continue;
       const eps = (rb - ra) * 1e-6, A0 = at(ra, eps), B0 = at(rb, -eps);
-      const da = wrap(A0.phi - p.phiS), db = wrap(B0.phi - p.phiS);
+      const da = wrap(A0.phi - target), db = wrap(B0.phi - target);
       let got = 0, gx = 0, gy = 0;
       if (A0.free && B0.free && !(Math.min(da, db) > w || Math.max(da, db) < -w) && Math.abs(da - db) < Math.PI) {
         // integrate W along the segment, finely enough to resolve the window
         const K = Math.max(4, Math.ceil((Math.abs(db - da) / w) * 40)), L = Math.hypot(B0.x - A0.x, B0.y - A0.y) / K;
         for (let q = 0; q < K; q++) {
-          const f = (q + 0.5) / K, r = ra + (rb - ra) * f, P = at(r, 0), wt = W(wrap(P.phi - p.phiS)) * L;
+          const f = (q + 0.5) / K, r = ra + (rb - ra) * f, P = at(r, 0), wt = W(wrap(P.phi - target)) * L;
           got += wt; gx += wt * P.x; gy += wt * P.y;
         }
       }
@@ -674,9 +681,15 @@ export function glintSpots(o, N, p) {
       else if (cur) { spots.push(cur); cur = null; }
     }
     if (cur) spots.push(cur);
-  }
-  const out = spots.map((q) => ({ x: q.sx / q.Rc, y: q.sy / q.Rc, Rc: q.Rc, C: k * q.Rc }));
-  return { spots: out, total: out.reduce((acc, q) => acc + q.C, 0), k };
+  } return spots; };
+  const mk = (list, coef, kind) => list.map((q) => ({ x: q.sx / q.Rc, y: q.sy / q.Rc, Rc: q.Rc, C: coef * q.Rc, kind }));
+  // reflection: edges facing the Sun; diffraction (a knife edge, Keller's coefficient averaged over
+  // polarisation, |D|² = λ/4π² sin²β): edges facing the Sun and edges facing away from it
+  const toward = sweep(p.phiS), refl = p.a > 0 ? mk(toward, k, 'reflect') : [];
+  const kd = p.lam ? (p.lam * (p.dpc * PARSEC_AU) ** 2) / (4 * Math.PI ** 2 * Math.sin(p.beta) ** 3 * p.z * p.z) : 0;
+  const diff = kd ? [...mk(toward, kd, 'diffract'), ...mk(sweep(p.phiS + Math.PI), kd, 'diffract')] : [];
+  const out = [...refl, ...diff], sum = (l) => l.reduce((acc, q) => acc + q.C, 0);
+  return { spots: out, total: sum(out), reflected: sum(refl), diffracted: sum(diff), k, kd };
 }
 // The glint as the telescope images it (unobscured circular aperture D, wavelength lam): each spot's
 // Airy pattern, peak = its flux ratio, on an n × n grid spanning ±half (rad), oriented like the

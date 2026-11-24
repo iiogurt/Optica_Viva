@@ -39,7 +39,7 @@ export default function mount(root, meta) {
     hs: { type: 'heading', label: 'Sunlight on the edges' },
     beta: { type: 'range', label: 'Sun angle from the line of sight', min: 40, max: 90, step: 1, value: 60, unit: '°', hint: 'The Sun is behind the shade, which keeps the side facing the telescope dark' },
     phis: { type: 'range', label: 'Direction of the Sun in the shade’s plane', min: 0, max: 355, step: 5, value: 30, unit: '°' },
-    ae: { type: 'range', label: 'Radius of the rounded edges', min: 2, max: 50, step: 1, value: 10, unit: 'µm', hint: 'The reflection model needs it much larger than the wavelength' },
+    ae: { type: 'range', label: 'Radius of the rounded edges', min: 0, max: 50, step: 1, value: 10, unit: 'µm', hint: 'The reflection model needs it much larger than the wavelength; 0 is a knife edge, which only diffracts' },
     refl: { type: 'range', label: 'Reflectance of the edges', min: 0.01, max: 1, step: 0.01, value: 0.1 },
     dpc: { type: 'range', label: 'Distance of the star (a twin of the Sun)', min: 3, max: 30, step: 1, value: 10, unit: 'pc' },
     popt: { type: 'toggle', label: 'Real petals with the optimised profile', value: false, hint: 'Once optimised: the drawing, the exact shadow, the errors and the image use it' },
@@ -197,7 +197,7 @@ export default function mount(root, meta) {
   function glintNow(st) {
     const key = glintKey(st);
     if (GLT && GLT.key === key) return GLT;
-    const sh = shadeOf(st), z = st.z * 1e3, g = glintSpots(sh.o, st.N, { beta: (st.beta * Math.PI) / 180, phiS: (st.phis * Math.PI) / 180, a: st.ae * 1e-6, refl: st.refl, z, dpc: st.dpc });
+    const sh = shadeOf(st), z = st.z * 1e3, g = glintSpots(sh.o, st.N, { beta: (st.beta * Math.PI) / 180, phiS: (st.phis * Math.PI) / 180, a: st.ae * 1e-6, refl: st.refl, z, dpc: st.dpc, lam: st.lam * 1e-9 });
     const im = glintImage(g.spots, { z, D: st.D, lam: st.lam * 1e-9, half: (1.5 * sh.Rm) / z, n: 128 });
     GLT = { key, st: { ...st }, sh, z, ...g, im };
     return GLT;
@@ -216,6 +216,7 @@ export default function mount(root, meta) {
       ...(st.err === 'random' ? [[t('Leak added by the ripple, expected over all draws'), rippleExpected(st) != null ? rippleExpected(st).toExponential(1) : '…']] : []),
       ['Edge glint: brightest point in the image', glintNow(st).im.peak.toExponential(1)],
       ['Edge glint: all spots together', t('{c} in {n} spots', { c: glintNow(st).total.toExponential(1), n: glintNow(st).spots.length })],
+      ['Edge glint: reflected, diffracted', `${glintNow(st).reflected.toExponential(1)}, ${glintNow(st).diffracted.toExponential(1)}`],
       ['Band with suppression < 10⁻¹⁰', P && P.sl.length === specP.length ? band(P.sl, P.spec, 1e-10) : band(specLams, R.specSupp, 1e-10)],
     ]));
     const v2 = P ? P.mean : sp;
@@ -224,7 +225,7 @@ export default function mount(root, meta) {
     if (big) note2.textContent = t('At these settings the petal edges cross so many Fresnel zones that the exact shadow would take too long here; it is computed from {l} nm upwards. Lengthen the wavelength, shrink the shade or move it further away.', { l: Math.ceil(big * 1e9 / 10) * 10 });
     if (P) note2.textContent = t("Exact Fresnel field of the {N} binary petals over the {D} m telescope (left, 10⁻¹³ … 10⁻⁶) and the image the telescope makes of the light that leaks past them (right, contrast 10⁻¹⁴ … 10⁻⁸ relative to the star's peak; the dashed circle is the inner working angle). Both are oriented like the drawing of the shade, so a leak shows up beside the petal that causes it.", { N: P.st.N, D: P.st.D }) + (P.sh.opt ? ' ' + t('The petals have the optimised profile (tip radius {R} m).', { R: P.sh.Rm.toFixed(1) }) : '');
     showOpt(st);
-    { const g = glintNow(st); glNote.textContent = t('Sunlight reflected by the rounded petal edges (radius {a} µm, reflectance {R}) with the Sun {b}° from the line of sight, as a share of a Sun-like star {d} pc away; contrast 10⁻¹⁴ … 10⁻⁸, the dashed circle is the inner working angle. Each spot is a stretch of edge whose outward normal faces the Sun; the {D} m telescope blurs them into Airy patterns at {l} nm. Geometrical optics, for edges much rounder than the wavelength; the diffraction of sunlight at the edges is not included.', { a: g.st.ae, R: g.st.refl, b: g.st.beta, d: g.st.dpc, D: g.st.D, l: g.st.lam }); }
+    { const g = glintNow(st); glNote.textContent = t('Sunlight reflected by the rounded petal edges (radius {a} µm, reflectance {R}) with the Sun {b}° from the line of sight, as a share of a Sun-like star {d} pc away; contrast 10⁻¹⁴ … 10⁻⁸, the dashed circle is the inner working angle. Reflection (gold on the drawing) comes from edges whose outward normal faces the Sun, in geometrical optics for edges much rounder than the wavelength; diffraction (blue) from edges facing the Sun or away from it, as at a knife edge. The {D} m telescope blurs every spot into its Airy pattern at {l} nm.', { a: g.st.ae, R: g.st.refl, b: g.st.beta, d: g.st.dpc, D: g.st.D, l: g.st.lam }); }
     [shape, map, prof, spec, ap, img, rip, opt, gl].forEach((x) => x.redraw());
   }
   function band(ls, s, thr) {
@@ -260,8 +261,8 @@ export default function mount(root, meta) {
     // where the edges glint in sunlight (gold), the Sun's direction marked on the rim
     if (R) {
       const g = glintNow(st), ph = (st.phis * Math.PI) / 180;
+      for (const q of g.spots) { ctx.fillStyle = q.kind === 'reflect' ? 'rgba(255,214,102,0.95)' : 'rgba(106,215,255,0.9)'; ctx.beginPath(); ctx.arc(cx + sc * q.x, cy + sc * q.y, q.kind === 'reflect' ? 3.5 : 2.5, 0, 2 * Math.PI); ctx.fill(); }
       ctx.fillStyle = 'rgba(255,214,102,0.95)';
-      for (const q of g.spots) { ctx.beginPath(); ctx.arc(cx + sc * q.x, cy + sc * q.y, 3.5, 0, 2 * Math.PI); ctx.fill(); }
       ctx.beginPath(); ctx.arc(cx + (Math.min(w, hh) / 2 - 6) * Math.cos(ph), cy + (Math.min(w, hh) / 2 - 6) * Math.sin(ph), 4, 0, 2 * Math.PI); ctx.fill();
     }
     ctx.strokeStyle = 'rgba(255,181,71,0.7)'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(cx, cy, sc * sh.rI, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
@@ -425,7 +426,7 @@ export default function mount(root, meta) {
 
   root.append(rule(String.raw`\[F = \frac{R^2}{\lambda z},\qquad \theta_\text{IWA} \approx \frac{R}{z}\]
 <p>The Fresnel number \(F\) of a starshade of radius \(R\) at distance \(z\) measures how deep its shadow can be; deep shadows need \(F\) of order 10 or more. A starshade of 25 m radius at 80 000 km in 550 nm light has \(F = 25^2/(550 \times 10^{-9} \times 8 \times 10^{7}) = 14\), and it hides a region of \(25/(8 \times 10^{7})\) rad = 64 mas around the star, the inner working angle. Planets farther out are visible.</p>`,
-    String.raw`These are scaling rules. The actual suppression depends on the petal shape, on manufacturing and deployment accurate to a fraction of a millimetre (the petal error controls show how much), and on sunlight glinting off the petal edges (reflection only, in geometrical optics). The scalar Fresnel model used here also ignores polarisation and the thickness of the petals.`));
+    String.raw`These are scaling rules. The actual suppression depends on the petal shape, on manufacturing and deployment accurate to a fraction of a millimetre (the petal error controls show how much), and on sunlight glinting off the petal edges (reflection in geometrical optics, plus knife-edge diffraction). The scalar Fresnel model used here also ignores polarisation and the thickness of the petals.`));
   root.append(theory('Casting a shadow ten billion times darker', String.raw`
 <div class="theory-cols"><div>
 <h3>Fresnel diffraction behind an occulter</h3>
@@ -462,11 +463,14 @@ export default function mount(root, meta) {
 \[J = \frac{R\,S\,a\,R_c}{4\cos(\beta/2)}.\]
 <p>A brute-force sum over the patches of a reflecting torus agrees with this to 1 %. The Sun is not a point: its disc, 0.27° in radius, spreads the matching normals over \(\pm\alpha_\odot/\sin\beta\), so \(R_c\) becomes its average over that window. This stays finite where the outline's curvature passes through zero. As a share of a Sun-like star at a distance \(d\), one glint spot is</p>
 \[C = \frac{R\,a\,\langle R_c\rangle}{4\cos(\beta/2)\,z^2}\left(\frac{d}{1\ \text{AU}}\right)^2,\]
-<p>because the shade is 1 AU from the Sun and the solar constant cancels. Averaged over the Sun's azimuth, the glinting radii add up to the length of free edge divided by \(2\pi\), which the page checks to 0.3 %. The spots are incoherent with each other and with the starlight, and the telescope blurs each into its Airy pattern. For the default shade with edges of 10 µm radius and reflectance 0.1, the Sun 60° from the line of sight and a star 10 pc away, the brightest glint in the image is about \(4\times10^{-9}\), forty times a planet at \(10^{-10}\). It scales with \(a\) and \(R\), hence sharp, dark edges. The model needs \(a \gg \lambda\): sharper edges need wave theory, and the diffraction of sunlight by the edge, which remains as \(a \to 0\), is not included. Edges closer than \(4a\) to a neighbour and petals narrower than \(4a\) do not glint, and the tips of a tabulated profile (its truncation arcs) are left out.</p>
+<p>because the shade is 1 AU from the Sun and the solar constant cancels. Averaged over the Sun's azimuth, the glinting radii add up to the length of free edge divided by \(2\pi\), which the page checks to 0.3 %. The spots are incoherent with each other and with the starlight, and the telescope blurs each into its Airy pattern. For the default shade with edges of 10 µm radius and reflectance 0.1, the Sun 60° from the line of sight and a star 10 pc away, the brightest glint in the image is about \(4\times10^{-9}\), forty times a planet at \(10^{-10}\). It scales with \(a\) and \(R\), hence sharp, dark edges. The reflection needs \(a \gg \lambda\).</p>
+<p>The edge also diffracts sunlight, and that remains for a knife edge (\(a \to 0\)). In the plane across the edge the sheet is a half-plane, the Sun lies at \(\varphi' = \pi/2 \pm \beta\) from it and the telescope at \(\varphi = 3\pi/2\). Keller's diffraction coefficient \(D = -\tfrac{e^{-i\pi/4}}{2\sqrt{2\pi k}}\left[\sec\tfrac{\varphi-\varphi'}{2} \mp \sec\tfrac{\varphi+\varphi'}{2}\right]\), averaged over the two polarisations, gives \(|D|^2 = \lambda/(4\pi^2\sin^2\beta)\) for edges facing the Sun and facing away from it alike. It matches Sommerfeld's exact solution for the half-plane to \(10^{-4}\), which the page checks. The diffracted power per radian replaces the reflected one, so a diffraction spot has</p>
+\[C_d = \frac{\lambda\,\langle R_c\rangle}{4\pi^2\sin^3\beta\,z^2}\left(\frac{d}{1\ \text{AU}}\right)^2,\]
+<p>independent of \(a\) and of the reflectance. For the default shade at 550 nm, the diffracted spots together give about \(1.6\times10^{-9}\), against \(1.1\times10^{-8}\) reflected by edges of 10 µm radius and reflectance 0.1. Rounding the edges down to a few micrometres removes most of the reflection but not this floor. Between the two limits, edges of radius close to \(\lambda\), neither model holds. Edges closer than \(4a\) to a neighbour and petals narrower than \(4a\) do not glint, and the tips of a tabulated profile (its truncation arcs) are left out.</p>
 <h3>Numerical method and approximations</h3>
 <p>The azimuthal average is integrated in \(u = r^2\), where the Fresnel phase is linear. Each step integrates the phase exactly (Filon's midpoint rule), which makes the opaque core exact; one Richardson step removes the \(O(\Delta u^2)\) error left by \(J_0\) off axis. \(J_0\) itself is summed from its power series up to an argument of 12 and from Hankel's asymptotic series beyond, accurate to \(10^{-12}\); the usual polynomial fits are good only to \(5\times10^{-8}\), which is too coarse for a field of \(10^{-6}\). At 2000 steps the intensity has converged to better than \(10^{-14}\).</p>
 <p>The two-dimensional field is computed on a \(48\times48\) grid over the aperture at the chosen wavelength and on a \(10\times10\) grid for each point of the spectrum. Along a grid row the phase of each edge point changes by a fixed factor, so the sum needs no sines or cosines. The image is a 512-point FFT of the aperture field. Doubling the edge points changes the result by less than one part in a million.</p>
-<p>With “Real petals with the optimised profile” switched on, the drawing, the exact shadow, the petal errors and the image use the optimised profile; its edges bend at the profile's nodes, which become panel boundaries of the edge integral. So does the 3-D view, with the optimised shade's own shadow. Not included: the diffraction of sunlight at the edges (only its reflection, the glint), vector diffraction at the edges, the petals' thickness, and the finite size of the star (about 1 mas, much smaller than the shadow). The errors are applied to first order in their size; for millimetre errors the outline is then right to better than a tenth of a micrometre. The ripple's spectrum (its range of periods and its slope) is illustrative, not that of a particular design's error budget.</p>
+<p>With “Real petals with the optimised profile” switched on, the drawing, the exact shadow, the petal errors and the image use the optimised profile; its edges bend at the profile's nodes, which become panel boundaries of the edge integral. So does the 3-D view, with the optimised shade's own shadow. Not included: vector diffraction at the edges (the sunlight's diffraction uses the scalar half-plane, averaged over polarisation), the petals' thickness, and the finite size of the star (about 1 mas, much smaller than the shadow). The errors are applied to first order in their size; for millimetre errors the outline is then right to better than a tenth of a micrometre. The ripple's spectrum (its range of periods and its slope) is illustrative, not that of a particular design's error budget.</p>
 </div></div>`));
   root.append(references([
     'W. Cash, “Detection of Earth-like planets around nearby stars using a petal-shaped occulter”, <em>Nature</em> 442, 51 (2006).',
