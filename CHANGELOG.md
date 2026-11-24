@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.76.0] - 2026-11-24
+
 ### Added
 - **Starshade: real petals with the optimised profile.** A switch gives the drawing, the exact two-dimensional shadow, the petal errors (turn, width, slide, ripple) and the telescope's image the profile found by linear programming. The petal code now takes any profile: the hypergaussian or a tabulated one, whose edges bend at its nodes, so these become panel boundaries of the edge integral. The inner working angle of a tabulated profile is drawn where A falls to 1/e, as a + b is for the hypergaussian. On the axis the edge integral matches the radial integral, and off it the Bessel series of the petal terms (now also for tabulated profiles), to 3 × 10⁻¹⁰ in field.
 
@@ -1147,7 +1149,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.75.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.76.0...HEAD
+[1.76.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.75.0...v1.76.0
 [1.75.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.74.0...v1.75.0
 [1.74.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.73.0...v1.74.0
 [1.73.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.72.0...v1.73.0
