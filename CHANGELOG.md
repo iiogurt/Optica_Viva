@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.74.0] - 2026-11-24
+
 ### Added
 - **Starshade: random ripple along every edge.** A fourth petal error, the kind starshade error budgets describe by its spatial spectrum. Each of the 2N edges moves along its normal by its own sum of 24 sinusoids, with periods from 0.25 to 8 m, a power-law spectrum, a chosen RMS and a seeded random draw. The ripple fades out in the valleys, where neighbouring petals meet, and at tips narrower than a millimetre. First-order perturbation theory, δE = (i/λz)∮e^{iπs²/λz}δ ds, agrees with the exact edge integral to 0.2 %. Averaged over the random phases it gives a new chart of the leak from each ripple period, which peaks at λz/(a+b), where the ripple keeps step with the Fresnel zones on the outer petals. A readout gives the leak expected over all draws. For the default shade, 100 µm RMS adds about 3.6 × 10⁻¹⁰, 98 % of it from periods of 1.3–2.5 m. New worker task: `rippleSens`.
 
@@ -1137,7 +1139,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.73.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.74.0...HEAD
+[1.74.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.73.0...v1.74.0
 [1.73.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.72.0...v1.73.0
 [1.72.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.71.0...v1.72.0
 [1.71.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.70.1...v1.71.0
