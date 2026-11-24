@@ -223,3 +223,27 @@ test('edge ripple leaks most at the period λz/r of the Fresnel zones at the pet
     assert.ok(S[k] < S[m] / 100, `at ${ls[k]} m: ${S[k]} vs ${S[m]}`);
   }
 });
+
+test('a tabulated profile reproduces the hypergaussian, and an optimised one beats it 20 % smaller', async () => {
+  const { OCCULTERS, shadowField, intensity, optimiseOcculter } = await import('../js/lib/starshade.js');
+  const hy = { a: 12.5, b: 12.5, n: 6 }, Rh = OCCULTERS.hyper.Rmax(hy), z = 8e7, nr = 3000, r0 = 5;
+  const tab = { R: Rh, r0, dr: (Rh - r0) / (nr - 1), A: Array.from({ length: nr }, (_, i) => OCCULTERS.hyper.A(r0 + (i * (Rh - r0)) / (nr - 1), hy)) };
+  for (const lam of [500e-9, 900e-9]) {
+    const a = shadowField('table', tab, lam, z, [0, 1.5], 8000), b = shadowField('hyper', hy, lam, z, [0, 1.5], 8000);
+    a.forEach(([x, y], i) => assert.ok(Math.hypot(x - b[i][0], y - b[i][1]) < 1e-7, `${lam}: ${x}, ${y} vs ${b[i]}`));
+  }
+  // the program: 40 nodes, curvature no sharper than the hypergaussian's (0.059 m⁻²), tip radius 0.8 × 32.8 m
+  const R = 0.8 * Rh, K = 0.059, o = optimiseOcculter({ R, r0: 0.2 * R, nr: 40, K, z, lamMin: 400e-9, lamMax: 1000e-9, rhoMax: 2, rounds: 3 });
+  const A = o.A;
+  for (let i = 0; i + 1 < A.length; i++) assert.ok(A[i + 1] <= A[i] + 1e-12 && A[i + 1] >= -1e-12, `monotone at ${i}`);
+  for (let i = 1; i + 1 < A.length; i++) assert.ok(Math.abs(A[i + 1] - 2 * A[i] + A[i - 1]) <= K * o.dr ** 2 * (1 + 1e-6) + 1e-12, `curvature at ${i}`);
+  let worst = 0, hyper = 0;
+  for (let i = 0; i <= 30; i++) {
+    const lam = 1 / (1 / 1000e-9 + ((1 / 400e-9 - 1 / 1000e-9) * i) / 30), rs = [0, 0.5, 1, 1.5, 2];
+    worst = Math.max(worst, ...intensity(shadowField('table', o, lam, z, rs, 12000)));
+    hyper = Math.max(hyper, ...intensity(shadowField('hyper', hy, lam, z, rs, 4000)));
+  }
+  // the program's bound holds off its samples (|E|² ≤ 2c², with some room between samples)
+  assert.ok(worst < 4 * 2 * o.c ** 2, `checked ${worst}, bound ${2 * o.c ** 2}`);
+  assert.ok(worst < 1e-10 && worst < hyper / 1000, `optimised ${worst}, hypergaussian ${hyper}`);
+});

@@ -34,6 +34,8 @@ export default function mount(root, meta) {
     err: { type: 'select', label: 'Petal error', value: 'none', options: [['none', 'Perfect petals'], ['clock', 'One petal turned sideways'], ['width', 'Every petal wider (negative: narrower)'], ['shift', 'One petal slid outwards along its axis'], ['random', 'Random ripple along every edge']] },
     d: { type: 'range', label: 'Size of the error (at the petal tip or edge)', min: -1000, max: 1000, step: 10, value: 500, unit: 'µm', when: (st) => st.err !== 'none', hint: 'For the random ripple: its RMS along each edge' },
     seed: { type: 'range', label: 'Random draw', min: 1, max: 20, step: 1, value: 1, when: (st) => st.err === 'random' },
+    ho: { type: 'heading', label: 'Optimised profile' },
+    frac: { type: 'range', label: 'Tip radius of the optimised shade (share of this one’s)', min: 60, max: 100, step: 5, value: 80, unit: '%' },
   }, () => update());
   const ro = h('div');
   const calc = liveCalc();
@@ -45,9 +47,12 @@ export default function mount(root, meta) {
   const ap = stage({ aspect: 1, label: 'Real-petal shadow (log intensity)', draw: drawAp, minH: 200 });
   const img = stage({ aspect: 1, label: 'Leaked starlight in the image', draw: drawImg, minH: 200 });
   const note2 = h('p.note', {}, t('Computing the exact shadow of the petals…'));
+  const opt = stage({ aspect: 2.1, label: '', draw: drawOpt, cls: 'plain', minH: 220 });
+  const optNote = h('p.note', {}, t('Press the button to find the best profile for a shade of this size by linear programming (about five seconds on a Raspberry Pi 4).'));
+  const optBtn = h('button.btn', { type: 'button', onclick: () => runOpt() }, t('Optimise the profile'));
   const rip = stage({ aspect: 2.1, label: '', draw: drawRip, cls: 'plain', minH: 220 });
   const v3 = view3d({ label: '3-D: the telescope, the starshade tens of thousands of kilometres away, and its shadow on the telescope', aspect: 1.9, minH: 260, yaw: -0.7, pitch: 0.35 });
-  root.append(lab([h('div.grid-2', {}, shape.el, map.el), note, h('div.grid-2', {}, ap.el, img.el), note2, v3.el, h('div.card', { style: { padding: '6px' } }, prof.el), h('div.card', { style: { padding: '6px' } }, spec.el), h('div.card', { style: { padding: '6px' } }, rip.el)], [h('div.card', {}, ctl.el), h('div.card', {}, ro), calc.el]));
+  root.append(lab([h('div.grid-2', {}, shape.el, map.el), note, h('div.grid-2', {}, ap.el, img.el), note2, v3.el, h('div.card', { style: { padding: '6px' } }, prof.el), h('div.card', { style: { padding: '6px' } }, spec.el), h('div.card', { style: { padding: '6px' } }, rip.el), h('div.card', { style: { padding: '6px' } }, opt.el), optNote], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '8px' } }, optBtn)), h('div.card', {}, ro), calc.el]));
 
   const job = latest('starshade');
   let R = null;
@@ -179,7 +184,8 @@ export default function mount(root, meta) {
     note.textContent = t('Shadow of a hypergaussian starshade (a = {a} m, b = {b} m, n = {n}) at {z} km. The telescope aperture is the dashed circle. Scalar Fresnel diffraction, azimuthally averaged petals.', { a: R.st.a, b: R.st.b, n: R.st.n, z: Math.round(R.st.z) });
     if (big) note2.textContent = t('At these settings the petal edges cross so many Fresnel zones that the exact shadow would take too long here; it is computed from {l} nm upwards. Lengthen the wavelength, shrink the shade or move it further away.', { l: Math.ceil(big * 1e9 / 10) * 10 });
     if (P) note2.textContent = t("Exact Fresnel field of the {N} binary petals over the {D} m telescope (left, 10⁻¹³ … 10⁻⁶) and the image the telescope makes of the light that leaks past them (right, contrast 10⁻¹⁴ … 10⁻⁸ relative to the star's peak; the dashed circle is the inner working angle). Both are oriented like the drawing of the shade, so a leak shows up beside the petal that causes it.", { N: P.st.N, D: P.st.D });
-    [map, prof, spec, ap, img, rip].forEach((x) => x.redraw());
+    showOpt(st);
+    [map, prof, spec, ap, img, rip, opt].forEach((x) => x.redraw());
   }
   function band(ls, s, thr) {
     const ok = ls.filter((_, i) => s[i] < thr);
@@ -276,6 +282,7 @@ export default function mount(root, meta) {
       series: [
         { data: R.rhos.map((r, i) => [r, Math.max(1e-16, R.disk[i])]), color: 'rgba(255,255,255,0.45)', width: 1.4, dash: [4, 3], label: t('opaque disk, {l} nm', { l: R.st.lam }) },
         ...R.p.lams.map((l, j) => ({ data: R.rhos.map((r, i) => [r, Math.max(1e-16, R.prof[j][i])]), color: css(l), width: 2, label: t('starshade, {l} nm', { l: Math.round(l * 1e9) }) })),
+        ...(optNow(ctl.state) && OP.prof.length === R.rhos.length ? [{ data: R.rhos.map((r, i) => [r, Math.max(1e-16, OP.prof[i])]), color: '#7fd68f', width: 1.6, dash: [6, 3], label: t('optimised, {l} nm', { l: R.st.lam }) }] : []),
       ],
       bands: [{ x: [0, R.st.D / 2], color: 'rgba(106,215,255,0.08)' }], hlines: [{ y: 1e-10, color: 'rgba(255,181,71,0.5)' }],
       legend: true,
@@ -288,12 +295,49 @@ export default function mount(root, meta) {
       series: [
         { data: specLams.map((l, i) => [l * 1e9, Math.max(1e-16, R.specSupp[i])]), color: '#ffb547', width: 2.2, label: t('azimuthal average') },
         ...(PR && PR.key === petalKey(ctl.state) && !PR.tooBig ? [{ data: PR.sl.map((l, i) => [l * 1e9, Math.max(1e-16, PR.spec[i])]), color: '#6ad7ff', width: 2, label: t('{N} real petals', { N: PR.st.N }) }] : []),
+        ...(optNow(ctl.state) ? [{ data: specLams.map((l, i) => [l * 1e9, Math.max(1e-16, OP.spec[i])]), color: '#7fd68f', width: 2, label: t('optimised, tip radius {R} m', { R: OP.tbl.R.toFixed(1) }) }] : []),
       ],
       legend: true,
       bands: [{ y: [1e-16, 1e-10], color: 'rgba(120,230,160,0.06)' }], vlines: [{ x: R.st.lam, color: 'rgba(255,255,255,0.35)' }], hlines: [{ y: 1e-10, color: 'rgba(255,181,71,0.5)' }],
     });
   }
 
+  // The optimised profile: a linear program over the profile A(r) for a shade with the chosen tip
+  // radius, over the telescope and 400–1000 nm, with the hypergaussian's own sharpest bend as the
+  // limit on |A″|; then checked with the exact radial integral. Run on request.
+  const optJob = latest('occulterLP'), K_HYPER = (st) => { let m = 0; const A = (r) => OCCULTERS.hyper.A(r, st), hstep = 1e-3; for (let r = st.a; r < OCCULTERS.hyper.Rmax(st); r += 0.02) m = Math.max(m, Math.abs((A(r + hstep) - 2 * A(r) + A(r - hstep)) / hstep ** 2)); return m; };
+  const optKey = (st) => JSON.stringify([st.a, st.b, st.n, st.z, st.D, st.lam, st.frac]);
+  let OP = null, optBusy = false;
+  function runOpt() {
+    if (!R) return;
+    const st = { ...ctl.state }, key = optKey(st), K = K_HYPER(st);
+    optBusy = true; optBtn.disabled = true;
+    optNote.textContent = t('Solving the linear program and checking the result…');
+    opt.redraw();
+    optJob('occulterLP', { a: st.a, b: st.b, n: st.n, z: st.z * 1e3, D: st.D, frac: st.frac / 100, K, specLams, lamC: st.lam * 1e-9, rhos: R.rhos }).then((r) => {
+      OP = { key, st, K, ...r };
+      optBusy = false; optBtn.disabled = false;
+      show();
+    }, (e) => { optBusy = false; optBtn.disabled = false; optNote.textContent = t('The optimisation failed: {e}', { e: e.message }); });
+  }
+  const optNow = (st) => (OP && OP.key === optKey(st) ? OP : null);
+  function showOpt(st) {
+    const O = optNow(st);
+    if (optBusy) return;
+    if (!O) { optNote.textContent = OP ? t('The settings have changed: press the button to optimise again.') : t('Press the button to find the best profile for a shade of this size by linear programming (about five seconds on a Raspberry Pi 4).'); return; }
+    optNote.innerHTML = t('Optimised profile, tip radius {R} m (this hypergaussian: {H} m), monotone and no more sharply curved than the hypergaussian (|A″| ≤ {K} m⁻²). Worst leak over the {D} m telescope at 400–1000 nm, from the exact radial integral: <strong>{o}</strong>, against {h} for the hypergaussian. Azimuthally averaged model only: the real-petal panels above keep the hypergaussian.', { R: O.tbl.R.toFixed(1), H: OCCULTERS.hyper.Rmax(st).toFixed(1), K: O.K.toFixed(3), D: st.D, o: O.worst.opt.toExponential(1), h: O.worst.hyper.toExponential(1) });
+  }
+  function drawOpt(ctx, w, hh) {
+    const st = ctl.state, O = optNow(st), Rm = OCCULTERS.hyper.Rmax(st), xs = Array.from({ length: 200 }, (_, i) => (Rm * 1.02 * i) / 199);
+    plot(ctx, w, hh, {
+      title: 'Petal profile A(r): the share of each circle the shade covers', x: { min: 0, max: Rm * 1.02, label: 'radius (m)' }, y: { min: 0, max: 1.05, label: 'A(r)' },
+      series: [
+        { data: xs.map((r) => [r, OCCULTERS.hyper.A(r, st)]), color: '#ffb547', width: 2.2, label: t('hypergaussian') },
+        ...(O ? [{ data: xs.map((r) => [r, OCCULTERS.table.A(r, O.tbl)]), color: '#7fd68f', width: 2.2, label: t('optimised, tip radius {R} m', { R: O.tbl.R.toFixed(1) }) }] : []),
+      ],
+      legend: true,
+    });
+  }
   function drawRip(ctx, w, hh) {
     const st = ctl.state, ok = RS && RS.key === ripKey(st);
     if (st.err !== 'random' || !ok || !R) {
@@ -329,6 +373,8 @@ export default function mount(root, meta) {
 <p>A smooth transmission profile that falls from 0 to 1 over many Fresnel zones makes the edge contributions cancel. A screen with graded grey transmission cannot be built to \(10^{-10}\) accuracy, but a binary screen can: \(N\) petals whose angular width at radius \(r\) is \(2\pi A(r)/N\) block exactly the fraction \(A(r)\) of each circle. Expanding the petals in a Fourier series in angle, \(A + \sum_j \tfrac{2\sin(j\pi A)}{j\pi}\cos(jN\theta)\), adds to the field terms in \(J_{N}, J_{2N},\dots\) of argument \(2\pi r\rho/\lambda z\). They vanish on the axis and grow like \((\pi r\rho/\lambda z)^N/N!\) away from it. At the edge of a 4 m telescope behind the default shade that argument reaches about 10 at the petal tips. There, 16 petals change the shadow only slightly, while 8 petals let three times as much light into the aperture as the average predicts. Over an 8 m telescope 16 petals let in 60 % more, and 24 petals bring it back to the average. Cash's hypergaussian</p>
 \[A(r) = \exp\!\left[-\left(\frac{r-a}{b}\right)^n\right]\quad(r > a),\qquad A = 1\ (r\le a)\]
 <p>gives suppression below \(10^{-10}\) over a broad band when \(a\), \(b\) and \(z\) are chosen so that \(F\lesssim 15\) at the longest wavelength. Numerically optimised profiles (Vanderbei, Cady and Kasdin) do better with smaller shades.</p>
+<h3>An optimised profile</h3>
+<p>The field is linear in the profile \(A(r)\), so the profile that keeps the shadow darkest is the solution of a linear program, the approach of Vanderbei, Cady and Kasdin (2007). On this page \(A\) is piecewise linear on 60 nodes from \(0.2R\) to the tip radius \(R\), written as \(A = 1 - \sum_i d_i\,\mathrm{ramp}_i(r)\) with \(d_i \ge 0\) and \(\sum_i d_i \le 1\). It therefore falls monotonically from 1 and never below 0. Its bend is limited to \(|A''| \le K\), with \(K\) the hypergaussian's own sharpest bend, so the result is no harder to make. The program minimises a bound \(c\) on \(|\mathrm{Re}\,E|\) and \(|\mathrm{Im}\,E|\) at sample radii over the telescope and at wavelengths from 400 to 1000 nm, evenly spaced in \(1/\lambda\) (the Fresnel number). A dense check then adds the worst points and the program is solved again, three times over. A simplex method (Harris's ratio test, which avoids the tiny pivots that would wreck a dense tableau) takes a few seconds. The profile is then checked independently with the radial integral above, on a finer grid. For the default shade, a 4 m telescope and 80 000 km, a profile with a 20 % smaller tip radius keeps the worst leak over the band near \(2\times10^{-11}\), where the hypergaussian reaches \(2\times10^{-7}\) at 1000 nm. At full size it stays below \(10^{-13}\). Outside the band it is worse, because the program optimised only what it was asked to. Real designs add limits this page leaves out, such as the narrowest petal tip and gap that can be made, and tolerances for deployment and manufacturing.</p>
 </div><div>
 <h3>Real petals: the shadow in two dimensions</h3>
 <p>For a binary screen the area integral collapses onto its edge. With \(\mathbf s\) the vector from the field point \(\mathbf p\) to the edge and \(\alpha\) its direction, \(\nabla\cdot\big[\mathbf s\,(e^{iks^2}-1)/(2iks^2)\big] = e^{iks^2}\) with \(k=\pi/\lambda z\), so</p>
@@ -351,7 +397,7 @@ export default function mount(root, meta) {
 <h3>Numerical method and approximations</h3>
 <p>The azimuthal average is integrated in \(u = r^2\), where the Fresnel phase is linear. Each step integrates the phase exactly (Filon's midpoint rule), which makes the opaque core exact; one Richardson step removes the \(O(\Delta u^2)\) error left by \(J_0\) off axis. \(J_0\) itself is summed from its power series up to an argument of 12 and from Hankel's asymptotic series beyond, accurate to \(10^{-12}\); the usual polynomial fits are good only to \(5\times10^{-8}\), which is too coarse for a field of \(10^{-6}\). At 2000 steps the intensity has converged to better than \(10^{-14}\).</p>
 <p>The two-dimensional field is computed on a \(48\times48\) grid over the aperture at the chosen wavelength and on a \(10\times10\) grid for each point of the spectrum. Along a grid row the phase of each edge point changes by a fixed factor, so the sum needs no sines or cosines. The image is a 512-point FFT of the aperture field. Doubling the edge points changes the result by less than one part in a million.</p>
-<p>Not included: edge scattering of sunlight, vector diffraction at the edges, the petals' thickness, and the finite size of the star (about 1 mas, much smaller than the shadow). The errors are applied to first order in their size; for millimetre errors the outline is then right to better than a tenth of a micrometre. The ripple's spectrum (its range of periods and its slope) is illustrative, not that of a particular design's error budget.</p>
+<p>The optimised profile is analysed with the azimuthally averaged model only; the real-petal panels, the errors and the 3-D view keep the hypergaussian. Not included: edge scattering of sunlight, vector diffraction at the edges, the petals' thickness, and the finite size of the star (about 1 mas, much smaller than the shadow). The errors are applied to first order in their size; for millimetre errors the outline is then right to better than a tenth of a micrometre. The ripple's spectrum (its range of periods and its slope) is illustrative, not that of a particular design's error budget.</p>
 </div></div>`));
   root.append(references([
     'W. Cash, “Detection of Earth-like planets around nearby stars using a petal-shaped occulter”, <em>Nature</em> 442, 51 (2006).',
@@ -362,5 +408,5 @@ export default function mount(root, meta) {
     'M. Born &amp; E. Wolf, <em>Principles of Optics</em>, 7th ed., §8.8 (Fresnel diffraction, Lommel functions).',
   ]));
 
-  return () => { clearTimeout(pTimer); pTicket++; clearTimeout(rTimer); [shape, map, prof, spec, ap, img, rip, v3].forEach((x) => x.destroy()); };
+  return () => { clearTimeout(pTimer); pTicket++; clearTimeout(rTimer); [shape, map, prof, spec, ap, img, rip, opt, v3].forEach((x) => x.destroy()); };
 }

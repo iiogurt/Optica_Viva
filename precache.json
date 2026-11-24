@@ -81,6 +81,7 @@
     "js/lib/lightfield.js",
     "js/lib/lighting.js",
     "js/lib/ligo.js",
+    "js/lib/lp.js",
     "js/lib/lucky.js",
     "js/lib/macro.js",
     "js/lib/mesh3d.js",
