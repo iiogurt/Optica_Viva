@@ -20,12 +20,13 @@ export function enlargement(Rt, z) {
 
 // The starshade's outline (metres, in its plane) for N petals of the profile A(r): each petal is
 // π A(r)/N wide either side of its axis; the outline is star-shaped about the centre.
+// o: the hypergaussian { a, b, n } or a tabulated profile { kind: 'table', R, r0, dr, A } (petals from r0).
 export function outline(o, N, steps = 40) {
-  const occ = OCCULTERS.hyper, Rm = occ.Rmax(o), pts = [];
+  const tab = o.kind === 'table', occ = tab ? OCCULTERS.table : OCCULTERS.hyper, Rm = occ.Rmax(o), base = tab ? o.r0 : o.a, pts = [];
   for (let k = 0; k < N; k++) {
     const ax = (2 * Math.PI * k) / N;
-    for (let i = 0; i <= steps; i++) { const r = o.a + ((Rm - o.a) * i) / steps, hf = (Math.PI * occ.A(r, o)) / N; pts.push([r * Math.cos(ax - hf), r * Math.sin(ax - hf)]); }
-    for (let i = steps; i >= 0; i--) { const r = o.a + ((Rm - o.a) * i) / steps, hf = (Math.PI * occ.A(r, o)) / N; pts.push([r * Math.cos(ax + hf), r * Math.sin(ax + hf)]); }
+    for (let i = 0; i <= steps; i++) { const r = base + ((Rm - base) * i) / steps, hf = (Math.PI * occ.A(r, o)) / N; pts.push([r * Math.cos(ax - hf), r * Math.sin(ax - hf)]); }
+    for (let i = steps; i >= 0; i--) { const r = base + ((Rm - base) * i) / steps, hf = (Math.PI * occ.A(r, o)) / N; pts.push([r * Math.cos(ax + hf), r * Math.sin(ax + hf)]); }
   }
   return pts;
 }
@@ -38,12 +39,14 @@ function fan(c, ring, z, colors = null) {
 }
 const circle = (r, z, n = 96) => Array.from({ length: n + 1 }, (_, k) => [r * Math.cos((k / n) * 2 * Math.PI), r * Math.sin((k / n) * 2 * Math.PI), z]);
 
-// m = { a, b, n (profile), N (petals), z (m), D (m), lamNm, rhos (m), prof (intensity at rhos) }
-export function starshadeScene({ a, b, n, N, z, D, lamNm, rhos = [], prof = [] }) {
-  const meshes = [], lines = [], labels = [];
-  const Rt = a + b, Rm = OCCULTERS.hyper.Rmax({ a, b, n }), E = enlargement(Rt, z), s = E / 1e6, Z = z / 1e6;
+// m = { a, b, n (profile), N (petals), z (m), D (m), lamNm, rhos (m), prof (intensity at rhos) }, and
+// optionally shape (a tabulated profile, used instead of the hypergaussian) with rI, the radius of
+// its inner working angle
+export function starshadeScene({ a, b, n, N, z, D, lamNm, rhos = [], prof = [], shape = null, rI = null }) {
+  const meshes = [], lines = [], labels = [], o = shape || { a, b, n };
+  const Rt = shape ? rI : a + b, Rm = shape ? OCCULTERS.table.Rmax(shape) : OCCULTERS.hyper.Rmax(o), E = enlargement(Rt, z), s = E / 1e6, Z = z / 1e6;
   // the starshade at z, enlarged across
-  meshes.push({ mesh: fan([0, 0], outline({ a, b, n }, N).map(([x, y]) => [x * s, y * s]), Z), color: [0.82, 0.86, 0.94] });
+  meshes.push({ mesh: fan([0, 0], outline(o, N).map(([x, y]) => [x * s, y * s]), Z), color: [0.82, 0.86, 0.94] });
   labels.push({ p: [0, Rm * s * 1.25, Z], text: 'starshade, {d} m tip to tip', vars: { d: (2 * Rm).toFixed(0) }, color: '#dfe6f2' });
   // starlight from beyond the starshade, parallel to the axis: grazing past it, and its geometric shadow
   for (let k = 0; k < 8; k++) {
