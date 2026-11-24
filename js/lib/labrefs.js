@@ -114,7 +114,8 @@ export const LAB_REFS = {
     "D. J. Schroeder, <em>Astronomical Optics</em>, 2nd ed., Academic Press (2000), ch. 6 and 9.",
     "K. P. Thompson, “Description of the third-order optical aberrations of near-circular pupil optical systems without symmetry”, <em>J. Opt. Soc. Am. A</em> 22, 1389 (2005).",
     "L. Allen <em>et al.</em>, <em>The Hubble Space Telescope Optical Systems Failure Report</em>, NASA TM-103443 (1990).",
-    "M. D. Perrin <em>et al.</em>, “Updated point spread function simulations for JWST with WebbPSF”, <em>Proc. SPIE</em> 9143, 91433X (2014)."
+    "M. D. Perrin <em>et al.</em>, “Updated point spread function simulations for JWST with WebbPSF”, <em>Proc. SPIE</em> 9143, 91433X (2014).",
+    "D. Korsch, “Anastigmatic three-mirror telescope,” <i>Applied Optics</i> 16, 2074–2077 (1977)."
   ],
   "film": [
     "T. H. James (ed.), <em>The Theory of the Photographic Process</em>, 4th ed., Macmillan (1977): latent-image formation, characteristic curve, reciprocity.",

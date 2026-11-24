@@ -863,7 +863,7 @@ The **CCD equation for stacks**: a faint galaxy behind a sky set by the **Bortle
 **Field-dependent PSF** · `#/fieldpsf`<br>
 <img src="docs/screenshots/fieldpsf.webp" alt="A 5 by 5 mosaic of PSFs across the field of a Ritchey–Chrétien telescope, a map of RMS wavefront error with astigmatic nodes, and RMS vs field for three designs" width="70%">
 
-**Seidel sums traced mirror by mirror** for Cassegrain, **Ritchey–Chrétien** and Dall–Kirkham telescopes, with FFT PSFs on a 5 × 5 grid across the field. A decentred or tilted secondary shows **nodal aberration theory** at work: field-constant coma and binodal astigmatism. The despace and conic-error sliders reproduce **Hubble's 1990 spherical aberration** (K₁ = −1.0139).
+**Seidel sums traced mirror by mirror** for Cassegrain, **Ritchey–Chrétien** and Dall–Kirkham telescopes, with FFT PSFs on a 5 × 5 grid across the field. A decentred or tilted secondary shows **nodal aberration theory** at work: field-constant coma and binodal astigmatism. The despace and conic-error sliders reproduce **Hubble's 1990 spherical aberration** (K₁ = −1.0139). Below, **real rays** traced through Hubble's mirrors or a **three-mirror anastigmat** with JWST's first-order layout give a **full-field display**: Zernike astigmatism and coma at 11 × 11 field points, the traced zeros of the astigmatism beside the nodes of the theory, and the Zernike terms against field angle, where the anastigmat's fifth-order coma and astigmatism grow as H³ and H⁴.
 
 </td>
 </tr>
@@ -1107,6 +1107,7 @@ Optica_Viva/
 │   │   ├── irphoto.js         Infrared and ultraviolet photography: spectra, filters, camera signal, achromat focus, the scene
 │   │   ├── halation.js        Halation in the film base and diffusion filters: kernels, night street, FFT convolution
 │   │   ├── fieldpsf.js        Two-mirror telescopes: Seidel sums through mirrors, RC/DK conics, nodal aberrations, PSFs across the field
+│   │   ├── fieldtrace.js      Real-ray field maps: Zernike fits through sixth order across the field of Hubble and a three-mirror anastigmat
 │   │   ├── earthobs.js        Earth observation: GSD, push-broom and TDI, Q, MTF, rendered ground
 │   │   ├── eclipse.js         Eclipse mission: Espenak's exposure guide, framing, drift
 │   │   ├── equipment.js       Camera bodies, planetary cameras and telescopes for the missions
@@ -1332,6 +1333,8 @@ The numerical core was checked against published or analytically known values. E
 | Secondary despace focus sensitivity | Δz<sub>focus</sub> = (m² + 1) δ to 0.2 % | Wilson, *Reflecting Telescope Optics* |
 | Hubble's primary, K = −1.0139 instead of −1.0023 | 2.2 µm too flat at the edge; W₀₄₀ = 2 × sag error | Allen report (1990) |
 | Decentred RC secondary | coma constant over the field; two astigmatic nodes | Thompson (2005) |
+| Real rays through Hubble's mirrors against third order: astigmatism at 0.02°, coma of a secondary moved 100 µm or tilted 30″, spherical aberration of the 1990 primary | Zernike coefficients within 3 % (the traced prescription and the first-order model differ by about 1 %); astigmatism zeros on the nodal-theory nodes to 0.01′ | Seidel sums; Thompson (2005) |
+| Three-mirror anastigmat (Korsch, JWST layout), real rays | coma ∝ H³, astigmatism ∝ H⁴ (no third-order terms); halving the aperture divides secondary astigmatism by 16 and secondary coma by 32 | fifth-order wavefront expansion; Korsch (1977) |
 | FFT Strehl vs Maréchal at Strehl ≈ 0.8 | within 3 % | exp(−σ²) |
 | Hypergaussian starshade, a = b = 12.5 m, n = 6, 80 000 km | < 10⁻⁹ within 2 m of the axis at 400–700 nm | Cash (2006) |
 | Real petals: edge integral against the Bessel series of the petal terms (8 petals, up to 6 m off the axis) | agree to 10⁻¹² in field; on the axis and in azimuthal mean equal to the radial model | Fourier series of the petals in angle; Cady (2012) |
@@ -1477,7 +1480,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Airglow & zodiacal light | V band; uniform airglow layer without waves or night-to-night changes; zodiacal light without seasonal or colour changes; atmospheric scattering of sky light ignored | No starlight, Milky Way, Moon or light pollution |
 | Mirages | Horizontally uniform, steady air; one wavelength; dry air; smooth model profiles | No shimmer, no green flash, no tilted or moving layers |
 | Stacking | Gaussian approximation to the Poisson noise of each pixel; perfect calibration and alignment; one broad band | No colour, flat-field errors or satellite trails |
-| Field-dependent PSF | Third-order (Seidel) aberrations; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No fifth-order terms, three-mirror designs, segment or polishing errors |
+| Field-dependent PSF | Third-order (Seidel) aberrations for the PSFs; exact real rays (28 Zernike terms, full circular pupil) for the field maps of Hubble and a centred, unfolded three-mirror anastigmat; secondary misalignment only; monochromatic scalar FFT PSFs, centred (no distortion or pointing); detector flat or on the medial surface | No PSFs from the traced wavefronts, off-axis or folded three-mirror designs, segment or polishing errors |
 | Starshade | Scalar Fresnel diffraction; azimuthally averaged transmission for the profiles and the wide map, the exact binary outline (edge integral) over the aperture; three kinds of petal error, to first order in their size; point star | No edge scattering of sunlight, no random edge errors, no petal thickness or vector effects |
 | Lucky imaging | Single frozen screen, monochromatic, no photon or read noise, selection on the true Strehl | Real selection uses a noisy reference star; anisoplanatism ignored |
 | ADC | Plane-parallel refraction (≈ 1 % below z = 70°), dry air, thin prisms; Gaussian seeing ∝ λ^−0.2 | No water vapour, curvature or ADC aberrations |

@@ -936,3 +936,13 @@ test('starshade petals: the Fresnel edge integral reproduces the Bessel series o
   const f = petalField(petalOutline(o, 8, null, { lam, z, rhoMax: 2 }), lam, z, [2], [0]), g = petalSeriesField(o, 8, lam, z, 2, 0, 6);
   assert.ok(Math.abs(f[0] - g[0]) < 1e-12 && Math.abs(f[1] - g[1]) < 1e-12, `edge ${f[0]}, ${f[1]}; series ${g[0]}, ${g[1]}`);
 });
+
+test("real rays through Hubble's mirrors: astigmatism at 0.02° equals the Seidel value", async () => {
+  const { prepare, pupilFit, wavefrontAt } = await import('../js/lib/fieldtrace.js');
+  const { twoMirror, conics, seidelTwoMirror, fieldPoly, THREF } = await import('../js/lib/fieldpsf.js');
+  // Z6 = (M_xx − M_yy)/(2√6) of W₂₂₂(H·ρ)² at H = 0.02° along x; the prescriptions differ by ~1 %
+  const tel = twoMirror({ D: 2.4, N: 24, N1: 2.3, b: 1.5 }), c = conics(tel, 'rc'), H = 0.02 / ((THREF * 180) / Math.PI);
+  const p = fieldPoly(seidelTwoMirror(tel, c.K1, c.K2), [H, 0]), z6 = ((p.M[0] - p.M[2]) / (2 * Math.sqrt(6))) * 1e9;
+  const tr = wavefrontAt(prepare('hubble'), [0.02, 0], pupilFit(20)).z[5];
+  assert.ok(Math.abs(tr / z6 - 1) < 0.02, `traced ${tr} nm, Seidel ${z6} nm`);
+});

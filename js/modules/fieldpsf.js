@@ -5,6 +5,7 @@ import { latest } from '../lib/compute.js';
 import { plot } from '../lib/plot.js';
 import { lut } from '../lib/color.js';
 import { twoMirror, conics, seidelTwoMirror, fieldPoly, rmsPoly, astigNodes, sum, THREF } from '../lib/fieldpsf.js';
+import { J, cellH, astigOf, comaOf } from '../lib/fieldtrace.js';
 import { t, N_ } from '../lib/i18n.js';
 
 const INF = lut('inferno'), VIR = lut('viridis');
@@ -35,18 +36,40 @@ export default function mount(root, meta) {
     dz: { type: 'range', label: 'Secondary despace (towards the primary)', min: -300, max: 300, step: 1, value: 0, unit: 'µm' },
     dx: { type: 'range', label: 'Secondary decentre', min: -200, max: 200, step: 2, value: 0, unit: 'µm' },
     tx: { type: 'range', label: 'Secondary tilt', min: -60, max: 60, step: 1, value: 0, unit: '″' },
+    hr: { type: 'heading', label: 'Real rays' },
+    sys: { type: 'select', label: 'Traced telescope', value: 'hubble', options: [['hubble', 'Hubble (as designed)'], ['tma', 'Three-mirror anastigmat (JWST layout)']], hint: 'The same field and errors, traced exactly through the mirrors' },
   }, () => update());
   const hubble = h('button.btn', { type: 'button', onclick: () => { ctl.set.tel('hubble'); ctl.set.form('rc'); ctl.set.dK(-0.0116); ctl.set.dz(0); ctl.set.dx(0); ctl.set.tx(0); update(); } }, t('Hubble in 1990: K₁ = −1.0139'));
-  const ro = h('div');
+  const ro = h('div'), ro2 = h('div');
   const calc = liveCalc();
   const mosaic = stage({ aspect: 1, label: 'PSFs across the field, with Strehl', draw: drawMosaic, minH: 260 });
   const map = stage({ aspect: 1, label: 'RMS wavefront error over the field', draw: drawMap, minH: 260 });
   const curve = stage({ aspect: 2.2, label: '', draw: drawCurve, cls: 'plain', minH: 220 });
   const note = h('p.note', {}, t('Computing PSFs in the worker…'));
-  root.append(lab([h('div.grid-2', {}, mosaic.el, map.el), note, h('div.card', { style: { padding: '6px' } }, curve.el)], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '8px' } }, hubble)), h('div.card', {}, ro), calc.el]));
+  const ffd = stage({ aspect: 1, label: 'Full-field display from real rays', draw: drawFFD, minH: 260 });
+  const terms = stage({ aspect: 1, label: '', draw: drawTerms, cls: 'plain', minH: 260 });
+  const note2 = h('p.note', {}, t('Tracing rays across the field…'));
+  root.append(lab([h('div.grid-2', {}, mosaic.el, map.el), note, h('div.card', { style: { padding: '6px' } }, curve.el), h('div.grid-2', {}, ffd.el, h('div.card', { style: { padding: '6px' } }, terms.el)), note2], [h('div.card', {}, ctl.el, h('div', { style: { marginTop: '8px' } }, hubble)), h('div.card', {}, ro, ro2), calc.el]));
 
-  const job = latest('fieldPSF');
-  let R = null, S = null;
+  const job = latest('fieldPSF'), traceJob = latest('fieldMap');
+  let R = null, S = null, F = null, timer = 0;
+  // real rays: about a second on a Raspberry Pi 4, so only where a dragged slider pauses
+  let lastKey = '';
+  function traceMap() {
+    const st = ctl.state, key = JSON.stringify([st.sys, st.dK, st.dz, st.dx, st.tx, st.field, st.curved]);
+    // the wavelength and the telescope of the panels above do not change the traced wavefront
+    if (F && key === lastKey) { showTraced(); return; }
+    lastKey = key;
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      const q = ctl.state, err = { dK: q.dK, dz: q.dz * 1e-6, dx: q.dx * 1e-6, tx: q.tx / 206265 };
+      traceJob('fieldMap', { id: q.sys, err, field: q.field / 60, G: 11, nc: 24, curved: q.curved, n: 20 }).then((r) => {
+        F = { ...r, st: { ...q } };
+        showTraced();
+      }, (e) => console.error(e));
+    }, F ? 150 : 0);
+    if (F && F.st.sys !== st.sys) { F = null; ffd.redraw(); terms.redraw(); }
+  }
   function model(st) {
     const T = TELS[st.tel], t = twoMirror(T), c = conics(t, st.form), K1 = c.K1 + st.dK, sd = seidelTwoMirror(t, K1, c.K2, st.dz * 1e-6);
     const mis = { dx: st.dx * 1e-6, dy: 0, tx: (st.tx / 206265), ty: 0 };
@@ -81,6 +104,7 @@ export default function mount(root, meta) {
     &\quad(H = ${texNum(st.field, 3)}'\text{, field edge})
     \end{aligned}`);
     map.redraw(); curve.redraw();
+    traceMap();
     note.textContent = t('Computing PSFs in the worker…');
     job('fieldPSF', { tel, K1, K2, dz: st.dz * 1e-6, mis, field: st.field * ARCMIN, grid: 5, lam, eps: T.eps, spiders: 4, n: 128, Dpx: 48, crop: 64, curved: st.curved }).then((r) => {
       R = r;
@@ -151,6 +175,95 @@ export default function mount(root, meta) {
     });
   }
 
+  // growth exponent n of a term ∝ Hⁿ along +x, between half the field and its edge (real rays)
+  function growth(f) {
+    const c = F.curve, nc = c.x.length, k1 = Math.round(nc / 3 - 0.5), k2 = Math.round((2 * nc) / 3 - 0.5);
+    const a = f(k1), b = f(k2);
+    return a > 1e-3 && b > 1e-3 ? (Math.log(b / a) / Math.log(c.x[k2] / c.x[k1])).toFixed(1) : '–';
+  }
+  const am = (deg) => { const v = (deg * 60).toFixed(1); return v === '-0.0' ? '0.0' : v; }; // arcminutes, without a negative zero
+  const amp = (k, a, b) => Math.hypot(F.curve.z[k * J + a], F.curve.z[k * J + b]);
+  function showTraced() {
+    const st = F.st, lam = ctl.state.lam;
+    let worst = 0;
+    for (const v of F.rms) if (v > worst) worst = v;
+    const zs = F.zeros, ok = zs.roots.length && zs.r2 > 0.9;
+    const zeroText = ok ? zs.roots.map((r) => `(${am(r[0])}′, ${am(r[1])}′)`).join(', ') : t('not a quadratic: higher orders dominate');
+    ro2.replaceChildren(readouts([
+      ['Real rays: largest RMS in the field', `${worst.toFixed(worst < 10 ? 2 : 0)} nm (λ/${(lam / worst).toFixed(worst > lam ? 2 : 0)})`],
+      ['Real rays: growth of astigmatism, coma (n in Hⁿ)', `${growth((k) => amp(k, 4, 5))}, ${growth((k) => amp(k, 6, 7))}`],
+      ['Real rays: zeros of the astigmatism', zeroText],
+    ]));
+    note2.textContent = t('{n} × {n} field points traced with {r} rays each; Zernike fit through sixth order over the full circular pupil (no central obstruction). Detector: {d}.', { n: F.G, r: F.rays, d: st.curved ? t('on the aligned design’s focal surface') : t('flat, at the nominal focus') })
+      + (st.sys === 'tma' ? ' ' + t('The three-mirror anastigmat is a Korsch design with JWST’s first-order layout, made for this page, centred and unfolded: not JWST’s own prescription or measured field dependence.') : '');
+    ffd.redraw(); terms.redraw();
+  }
+  function drawFFD(ctx, w, hh) {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
+    if (!F) return;
+    const { G, rms, z, half } = F, lam = ctl.state.lam;
+    let top = lam / 28, smax = lam / 28;
+    for (let k = 0; k < G * G; k++) {
+      top = Math.max(top, rms[k]);
+      smax = Math.max(smax, Math.hypot(...astigOf(z, k * J)), Math.hypot(...comaOf(z, k * J)));
+    }
+    const sz = Math.min(w, hh) - 4, x0 = (w - sz) / 2, y0 = (hh - sz) / 2, cs = sz / G;
+    paintMap(ffd, { x: x0, y: y0, w: sz, h: sz }, { a: rms, w: G, h: G, lut: VIR, value: (v) => (v / top) * 0.8 }, `${keyOf(F)}|${top}`);
+    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, 0, w, 26);
+    ctx.lineCap = 'round';
+    for (let j = 0; j < G; j++) for (let i = 0; i < G; i++) {
+      const k = j * G + i, cx = x0 + (i + 0.5) * cs, cy = y0 + (j + 0.5) * cs;
+      // astigmatism: a line along its axis (half the angle of Z6 + iZ5), length ∝ amplitude
+      const [ar, ai] = astigOf(z, k * J), La = (0.46 * cs * Math.hypot(ar, ai)) / smax, ph = Math.atan2(ai, ar) / 2;
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(cx - La * Math.cos(ph), cy + La * Math.sin(ph)); ctx.lineTo(cx + La * Math.cos(ph), cy - La * Math.sin(ph)); ctx.stroke();
+      // coma: an arrow from the field point in the direction of Z8 + iZ7
+      const [cr, ci] = comaOf(z, k * J), Lc = (0.46 * cs * Math.hypot(cr, ci)) / smax, pc = Math.atan2(ci, cr);
+      ctx.strokeStyle = '#6ad7ff'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Lc * Math.cos(pc), cy - Lc * Math.sin(pc)); ctx.stroke();
+      ctx.fillStyle = '#6ad7ff'; ctx.beginPath(); ctx.arc(cx, cy, 1.6, 0, 2 * Math.PI); ctx.fill();
+    }
+    const P = (H) => [x0 + sz / 2 + (H[0] / half) * (sz / 2), y0 + sz / 2 - (H[1] / half) * (sz / 2)];
+    const inside = ([px, py]) => px > x0 - 4 && px < x0 + sz + 4 && py > y0 - 4 && py < y0 + sz + 4;
+    if (F.zeros.r2 > 0.9) {
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      for (const r of F.zeros.roots) { const [px, py] = P(r); if (!inside([px, py])) continue; ctx.beginPath(); ctx.moveTo(px, py - 8); ctx.lineTo(px + 8, py); ctx.lineTo(px, py + 8); ctx.lineTo(px - 8, py); ctx.closePath(); ctx.stroke(); }
+    }
+    // the nodes of third-order theory, when both panels show the same telescope
+    if (S && F.st.sys === 'hubble' && ctl.state.tel === 'hubble') {
+      ctx.strokeStyle = '#ffb547'; ctx.lineWidth = 2;
+      for (const n of S.nodes) { const [px, py] = P([(n[0] * THREF * 180) / Math.PI, (n[1] * THREF * 180) / Math.PI]); if (!inside([px, py])) continue; ctx.beginPath(); ctx.moveTo(px - 5, py - 5); ctx.lineTo(px + 5, py + 5); ctx.moveTo(px - 5, py + 5); ctx.lineTo(px + 5, py - 5); ctx.stroke(); }
+    }
+    ctx.lineWidth = 1; ctx.lineCap = 'butt';
+    const lbl = t('0 … {top} nm · lines: astigmatism · cyan: coma · ◇ zeros', { top: top.toFixed(top < 10 ? 1 : 0) });
+    ctx.font = '10.5px "JetBrains Mono", monospace'; ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(4, hh - 22, ctx.measureText(lbl).width + 8, 18);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillText(lbl, 8, hh - 9);
+  }
+  function drawTerms(ctx, w, hh) {
+    if (!F) return;
+    const c = F.curve, nc = c.x.length, xs = Array.from(c.x, (v) => v * 60), Z = (k, j) => Math.abs(c.z[k * J + j]);
+    const defs = [
+      [N_('RMS'), '#ffffff', (k) => c.rms[k], 2.2],
+      [N_('Defocus'), '#ff8f6b', (k) => Z(k, 3)],
+      [N_('Astigmatism'), '#ffb547', (k) => amp(k, 4, 5)],
+      [N_('Coma'), '#6ad7ff', (k) => amp(k, 6, 7)],
+      [N_('Trefoil'), '#c58bff', (k) => amp(k, 8, 9)],
+      [N_('Spherical'), '#7fd68f', (k) => Z(k, 10)],
+      [N_('Secondary astigmatism'), '#ff8fb8', (k) => amp(k, 11, 12)],
+    ];
+    let top = 0;
+    const series = defs.map(([label, color, f, width]) => {
+      const data = xs.map((x, k) => [x, f(k)]);
+      for (const [, v] of data) if (v > top) top = v;
+      return { data, color, width: width || 1.4, label };
+    });
+    const ymax = 10 ** Math.ceil(Math.log10(Math.max(top, 1e-3))), lam = ctl.state.lam;
+    plot(ctx, w, hh, {
+      title: 'Zernike terms along the field (+x), real rays', x: { min: xs[0], max: xs[nc - 1], log: true, label: 'field angle (arcmin)' }, y: { min: ymax * 1e-5, max: ymax, log: true, label: 'amplitude (nm)' },
+      series, hlines: lam / 14 < ymax ? [{ y: lam / 14, color: 'rgba(120,230,160,0.6)' }] : [], vlines: [{ x: F.st.field, color: 'rgba(255,255,255,0.25)' }], legend: true,
+    });
+  }
+
   update();
 
   root.append(rule(String.raw`\[W_\text{coma} \propto H,\qquad W_\text{astigmatism} \propto H^2\]
@@ -169,8 +282,11 @@ export default function mount(root, meta) {
 <p>When the secondary is decentred or tilted, each surface's aberration field is centred on its own point \(\boldsymbol\sigma_j\), and \(\mathbf H\) becomes \(\mathbf H - \boldsymbol\sigma_j\) in that surface's terms (Thompson 2005). For the sphere, \(\boldsymbol\sigma = n c\,\boldsymbol\delta_\text{CoC}/\bar A\), set by the displacement of its centre of curvature. For the conic cap, \(\boldsymbol\sigma = \boldsymbol\delta_\text{vertex}/\bar y\). Because an RC has \(\sum W_{131} = 0\), a decentred secondary leaves coma that is the <em>same at every field point</em>. Astigmatism, a quadratic in \(\mathbf H\), acquires two zeros, the <em>binodal</em> pattern. Both are what wavefront sensing across the field of a real observatory reveals.</p>
 <h3>Hubble's spherical aberration</h3>
 <p>Hubble's primary was polished to \(K_1 = -1.0139\) instead of \(-1.0023\): 2.2 µm too flat at the edge. Doubled on reflection, this gives \(W_{040}\approx 4.5\) µm, about 0.3 µm RMS at best focus, and the core of the PSF lost most of its light. Press the button and refocus with the despace slider (best focus is near +190 µm, where defocus balances \(W_{040}\)): the Strehl never recovers. COSTAR and WFPC2 corrected it in 1993 with optics that had the opposite spherical aberration.</p>
+<h3>Real rays and the three-mirror anastigmat</h3>
+<p>The lower panels do not use the expansion. At each of 11 × 11 field points, 316 rays are aimed through a grid on the primary mirror (the aperture stop) and traced exactly through the conic mirrors. Their optical paths are compared with the reference sphere centred where the chief ray meets the detector, and a least-squares fit of the 28 Zernike polynomials through sixth radial order gives defocus \(Z_4\), astigmatism \(Z_5, Z_6\), coma \(Z_7, Z_8\) and the higher terms. In the full-field display each white line has the length of the astigmatism and lies along its axis, at half the angle of \(Z_6 + iZ_5\); each cyan arrow shows the coma \(Z_8 + iZ_7\). For Hubble the traced coefficients agree with the third-order values above to about 1 %, and a quadratic fitted to the traced astigmatism has its zeros on the nodes of nodal aberration theory.</p>
+<p>A three-mirror anastigmat (Korsch 1977) uses its third mirror to make \(S_I = S_{II} = S_{III} = 0\), and radii with \(1/R_1 - 1/R_2 + 1/R_3 = 0\) flatten its field. What remains is of fifth order: terms of total degree six in field and aperture, such as elliptical coma \(W_{331}H^3\rho^3\cos\theta\) and \(W_{422}H^4\rho^2\cos^2\theta\). The traced coma therefore grows as \(H^3\) rather than \(H\), and the astigmatism about as \(H^4\) rather than \(H^2\), so the sharp field is much wider. The design here is centred and unfolded. JWST and Roman use their mirrors off axis and fold the beam, and STPSF interpolates measured and modelled Zernike maps across each of their instruments.</p>
 <h3>Approximations</h3>
-<p>Third order only. Fifth-order terms matter in fast systems and at large fields, and a three-mirror anastigmat (JWST, Roman) cancels \(S_I\)–\(S_{III}\), leaving higher orders and manufacturing residuals. STPSF therefore interpolates measured and modelled Zernike maps across each instrument. Monochromatic scalar FFT PSFs; distortion and pointing shifts are removed, so every stamp is centred; no detector sampling or jitter.</p>
+<p>The upper panels are third order only. The real-ray panels include every order, but fit 28 Zernike terms over the full circular pupil (the central obstruction is ignored there). The detector is flat at the nominal focus, or follows the aligned design's focal surface, fitted as \(c_1H^2 + c_2H^4 + c_3H^6\). Manufacturing errors of the surfaces are left out. Monochromatic scalar FFT PSFs; distortion and pointing shifts are removed, so every stamp is centred; no detector sampling or jitter.</p>
 </div></div>`));
   root.append(references([
     'W. T. Welford, <em>Aberrations of Optical Systems</em>, Adam Hilger (1986), ch. 8.',
@@ -178,7 +294,8 @@ export default function mount(root, meta) {
     'K. P. Thompson, “Description of the third-order optical aberrations of near-circular pupil optical systems without symmetry”, <em>J. Opt. Soc. Am. A</em> 22, 1389 (2005).',
     'L. Allen <em>et al.</em>, <em>The Hubble Space Telescope Optical Systems Failure Report</em>, NASA TM-103443 (1990).',
     'M. D. Perrin <em>et al.</em>, “Updated point spread function simulations for JWST with WebbPSF”, <em>Proc. SPIE</em> 9143, 91433X (2014).',
+    'D. Korsch, “Anastigmatic three-mirror telescope,” <i>Applied Optics</i> 16, 2074–2077 (1977).',
   ]));
 
-  return () => [mosaic, map, curve].forEach((x) => x.destroy());
+  return () => { clearTimeout(timer); [mosaic, map, curve, ffd, terms].forEach((x) => x.destroy()); };
 }

@@ -435,16 +435,19 @@ function stopCoords(lens, lambda, p0, d0, zv) {
 }
 
 // Real-ray aiming: find the launch point (on plane z0, direction set by field angle θ)
-// whose ray passes the stop at normalised pupil coordinates (px, py).
+// whose ray passes the stop at normalised pupil coordinates (px, py). θ is a meridional angle
+// (degrees, in the y–z plane) or a pair [θx, θy] for a field point anywhere in the field: the
+// ray's direction is then (tan θx, tan θy, 1), normalised.
 export function aimRay(lens, lambda, thetaDeg, px, py, par) {
   par = par || paraxial(lens, lambda);
   const zv = par.zv;
-  const th = thetaDeg * Math.PI / 180;
-  const d = [0, Math.sin(th), Math.cos(th)];
+  const [thx, thy] = Array.isArray(thetaDeg) ? thetaDeg.map((v) => v * Math.PI / 180) : [0, thetaDeg * Math.PI / 180];
+  const tx0 = Math.tan(thx), ty0 = Math.tan(thy), dn = Math.hypot(tx0, ty0, 1);
+  const d = thx ? [tx0 / dn, ty0 / dn, 1 / dn] : [0, Math.sin(thy), Math.cos(thy)];
   const z0 = -20;
   const rEP = lens.epd / 2;
   // paraxial initial guess through the entrance pupil
-  let x = px * rEP, y = py * rEP + (z0 - par.zEP) * Math.tan(th);
+  let x = px * rEP + (z0 - par.zEP) * tx0, y = py * rEP + (z0 - par.zEP) * ty0;
   const tx = px * par.stopR, ty = py * par.stopR;
   if (stopIndex(lens) === 0 && zv.length) {
     // the stop is the first surface: aim directly

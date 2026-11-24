@@ -46,6 +46,7 @@
     "js/lib/fdtd.js",
     "js/lib/fft.js",
     "js/lib/fieldpsf.js",
+    "js/lib/fieldtrace.js",
     "js/lib/film.js",
     "js/lib/flare3d.js",
     "js/lib/flarescene.js",
