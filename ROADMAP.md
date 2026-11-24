@@ -72,6 +72,7 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.75 Optimised starshade profile](#v175-optimised-starshade-profile)
   - [v1.76 Real petals with the optimised profile](#v176-real-petals-with-the-optimised-profile)
   - [v1.77 Sunlight glinting off starshade edges](#v177-sunlight-glinting-off-starshade-edges)
+  - [v1.78 Knife-edge diffraction and the optimised shade in 3-D](#v178-knife-edge-diffraction-and-the-optimised-shade-in-3-d)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -95,7 +96,7 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"] --> D14["v1.12–1.13<br/>missions · 3 labs"] --> D15["v1.14<br/>4 more labs"] --> D16["v1.15<br/>your own gear"] --> D17["v1.16<br/>tours · exercises · PWA"] --> D18["v1.17<br/>classic lenses · mirrors · TMA"] --> D19["v1.18<br/>glass catalogue · tolerancing · DE/FR/ES"] --> D20["v1.19<br/>translated controls · parallel workers"] --> D21["v1.20–1.23<br/>3-D views"] --> D22["v1.24–1.26<br/>whole interface in DE/FR/ES"] --> D23["v1.27–1.30<br/>halos · waves · black hole"] --> D24["v1.31–1.35<br/>live camera · validation fixes"] --> D25["v1.36–1.41<br/>presentation"] --> D26["v1.42–1.44<br/>mission pictures"] --> D27["v1.45–1.65<br/>21 new laboratories"] --> D28["v1.66<br/>TM-30 fidelity and gamut"] --> D29["v1.67<br/>TLCI-2012"] --> D30["v1.68<br/>TLMF · colourist's advice"] --> D31["v1.69<br/>traced relative illumination"] --> D32["v1.70<br/>integral-field spectroscopy"] --> D33["v1.71<br/>real starshade petals"] --> D34["v1.72<br/>catalogue: print · references · legends"] --> D35["v1.73<br/>real-ray field maps"] --> D36["v1.74<br/>starshade edge ripple"] --> D37["v1.75<br/>optimised starshade"] --> D38["v1.76<br/>optimised real petals"] --> D39["v1.77<br/>edge glint"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"] --> D14["v1.12–1.13<br/>missions · 3 labs"] --> D15["v1.14<br/>4 more labs"] --> D16["v1.15<br/>your own gear"] --> D17["v1.16<br/>tours · exercises · PWA"] --> D18["v1.17<br/>classic lenses · mirrors · TMA"] --> D19["v1.18<br/>glass catalogue · tolerancing · DE/FR/ES"] --> D20["v1.19<br/>translated controls · parallel workers"] --> D21["v1.20–1.23<br/>3-D views"] --> D22["v1.24–1.26<br/>whole interface in DE/FR/ES"] --> D23["v1.27–1.30<br/>halos · waves · black hole"] --> D24["v1.31–1.35<br/>live camera · validation fixes"] --> D25["v1.36–1.41<br/>presentation"] --> D26["v1.42–1.44<br/>mission pictures"] --> D27["v1.45–1.65<br/>21 new laboratories"] --> D28["v1.66<br/>TM-30 fidelity and gamut"] --> D29["v1.67<br/>TLCI-2012"] --> D30["v1.68<br/>TLMF · colourist's advice"] --> D31["v1.69<br/>traced relative illumination"] --> D32["v1.70<br/>integral-field spectroscopy"] --> D33["v1.71<br/>real starshade petals"] --> D34["v1.72<br/>catalogue: print · references · legends"] --> D35["v1.73<br/>real-ray field maps"] --> D36["v1.74<br/>starshade edge ripple"] --> D37["v1.75<br/>optimised starshade"] --> D38["v1.76<br/>optimised real petals"] --> D39["v1.77<br/>edge glint"] --> D40["v1.78<br/>edge diffraction · optimised 3-D"]
     end
     subgraph Next["Planned"]
         direction TB
@@ -740,6 +741,11 @@ Candidates, in order of how much the third dimension adds:
 
 - [x] **P3 · M** **Edge glint** (`#/starshade`): rounded petal edges reflecting the Sun towards the telescope, in geometrical optics with the Sun's disc; spots, their image and their brightness relative to a Sun-like star; checked by a brute-force torus and by conservation over the Sun's azimuth. *From the backlog (v1.9 starshade).*
 
+### v1.78 Knife-edge diffraction and the optimised shade in 3-D
+
+- [x] **P3 · S** **Diffraction of sunlight at the petal edges** (`#/starshade`): Keller's half-plane coefficient, checked against Sommerfeld's exact solution; edges facing and away from the Sun. *Follows v1.77.*
+- [x] **P3 · S** **The optimised shade in the 3-D view**, with its own inner working angle and shadow (#357).
+
 ### v2.0 Learning platform
 
 - [x] **P2 · M** **Catalogue explorer**: groups on their own views, an explanation and worked example for every entry, 56 new phenomena, deep links to single entries (PR #66).
@@ -762,7 +768,7 @@ Ideas worth keeping but not yet scheduled:
 - *(from v1.36)* **Wide-gamut output** (Display P3 canvases) for spectral colours: needs the colours kept outside sRGB through the computation (the PSF clips negative components today) and a P3 screen to check it on; gains nothing on sRGB screens.
 
 - *(from v1.67 TLCI)* A mid-scale external check of TLCI and TLMF against the EBU's own software (its download is blocked to automated clients here).
-- *(from v1.9 starshade; petal terms and shape errors done in v1.71, random edge ripple in v1.74, an optimised profile in v1.75, real petals with it in v1.76, edge glint in v1.77)* Diffraction of sunlight at sharp edges (a ≈ λ); edge-error spectra taken from a published error budget; minimum petal-tip and gap widths in the optimisation.
+- *(from v1.9 starshade; petal terms and shape errors done in v1.71, random edge ripple in v1.74, an optimised profile in v1.75, real petals with it in v1.76, edge glint in v1.77, knife-edge diffraction and the optimised 3-D view in v1.78)* Edges of radius close to λ (between reflection and knife-edge diffraction); edge-error spectra taken from a published error budget; minimum petal-tip and gap widths in the optimisation.
 - *(from v1.9 field-dependent PSF; real-ray Zernike maps of a centred three-mirror anastigmat done in v1.73)* Off-axis, folded three-mirror designs (JWST, Roman) from published prescriptions; PSFs computed from the traced wavefronts; the central obstruction in the real-ray fit.
 - *(from the catalogue explorer; print, references and symbol legends done in v1.72)* Primary sources for each entry rather than for its laboratory or group; translated legends (with the explanations, owner-gated).
 
