@@ -36,8 +36,11 @@ export default function mount(root, meta) {
     seed: { type: 'range', label: 'Random draw', min: 1, max: 20, step: 1, value: 1, when: (st) => st.err === 'random' },
     ho: { type: 'heading', label: 'Optimised profile' },
     frac: { type: 'range', label: 'Tip radius of the optimised shade (share of this one’s)', min: 60, max: 100, step: 5, value: 80, unit: '%' },
+    popt: { type: 'toggle', label: 'Real petals with the optimised profile', value: false, hint: 'Once optimised: the drawing, the exact shadow, the errors and the image use it' },
   }, () => update());
   const ro = h('div');
+  // the optimised profile, once computed (see runOpt below)
+  let OP = null, optBusy = false;
   const calc = liveCalc();
   const shape = stage({ aspect: 1, label: 'Starshade seen from the telescope', draw: drawShape, minH: 200 });
   const map = stage({ aspect: 1, label: 'Averaged shadow (log intensity)', draw: drawMap, minH: 200 });
@@ -124,7 +127,19 @@ export default function mount(root, meta) {
   let PR = null, pTimer = 0, pTicket = 0;
   // the error as the library takes it: d in metres; the random ripple's RMS is |d|, its phases set by the draw
   const errOf = (st) => (st.err === 'none' ? null : st.err === 'random' ? { kind: 'random', d: Math.abs(st.d) * 1e-6, seed: st.seed } : { kind: st.err, d: st.d * 1e-6, petal: 0 });
-  const petalKey = (st) => JSON.stringify([st.a, st.b, st.n, st.N, st.z, st.D, st.lam, st.err, st.err === 'none' ? 0 : st.d, st.err === 'random' ? st.seed : 0]);
+  const petalKey = (st) => JSON.stringify([st.a, st.b, st.n, st.N, st.z, st.D, st.lam, st.err, st.err === 'none' ? 0 : st.d, st.err === 'random' ? st.seed : 0, usesOpt(st) ? OP.key + OP.tbl.c : 0]);
+  // the shade the real-petal panels use: the hypergaussian, or the optimised profile when chosen and
+  // still valid. rI: the radius of the inner working angle, where A falls to 1/e (a + b for Cash's)
+  const usesOpt = (st) => !!(st.popt && optNow(st));
+  function shadeOf(st) {
+    if (usesOpt(st)) {
+      const T = OP.tbl, o = { kind: 'table', R: T.R, r0: T.r0, dr: T.dr, A: T.A }, A = (r) => OCCULTERS.table.A(r, T);
+      let rI = T.R;
+      for (let r = T.r0; r < T.R; r += T.dr / 8) if (A(r) < Math.exp(-1)) { rI = r; break; }
+      return { o, Rm: T.R, base: T.r0, A, rI, opt: true };
+    }
+    return { o: { a: st.a, b: st.b, n: st.n }, Rm: OCCULTERS.hyper.Rmax(st), base: st.a, A: (r) => OCCULTERS.hyper.A(r, st), rI: st.a + st.b, opt: false };
+  }
   function runPetals() {
     const st0 = ctl.state;
     if (PR && PR.key === petalKey(st0)) return;
@@ -132,7 +147,7 @@ export default function mount(root, meta) {
     clearTimeout(pTimer);
     pTimer = setTimeout(() => {
       const st = { ...ctl.state }, my = ++pTicket, key = petalKey(st), z = st.z * 1e3, lam = st.lam * 1e-9;
-      const o = { a: st.a, b: st.b, n: st.n }, err = errOf(st);
+      const sh = shadeOf(st), o = sh.o, err = errOf(st);
       const grid = apertureGrid(st.D, G), sg = apertureGrid(st.D, GS), rhoMax = st.D / Math.SQRT2;
       // a work budget: the edge needs more points the more Fresnel zones it crosses (a big shade, a
       // short distance, short wavelengths); wavelengths that would need more than MAXNODES are left out
@@ -149,7 +164,7 @@ export default function mount(root, meta) {
         for (const q of grid.idx) mean += Iap[q] / grid.idx.length;
         return run('petalImage', { field, idx: grid.idx, G, D: st.D, lam, n: 512 }).then((im) => {
           if (my !== pTicket) return;
-          PR = { key, st, Iap, mean, spec, sl, im, z };
+          PR = { key, st, Iap, mean, spec, sl, im, z, sh };
           show();
         });
       }).catch((e) => console.error(e));
@@ -157,7 +172,7 @@ export default function mount(root, meta) {
   }
   // the brightest leak in the image between the inner working angle and twice the tip radius
   function leak(P) {
-    const { I, n, pix } = P.im, st = P.st, th0 = (st.a + st.b) / P.z, th1 = (2 * OCCULTERS.hyper.Rmax(st)) / P.z;
+    const { I, n, pix } = P.im, th0 = P.sh.rI / P.z, th1 = (2 * P.sh.Rm) / P.z;
     let best = 0, at = 0;
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
       const th = Math.hypot(x - n / 2, y - n / 2) * pix;
@@ -183,7 +198,7 @@ export default function mount(root, meta) {
     calc.say(t('At {v1} thousand km the starshade dims the starlight over the telescope to <strong>{v2}</strong> of its unblocked level, against {v3} for a plain disc of the same size. Planets can be seen from <strong>{th} mas</strong> from the star outwards.', { v1: fmt(R.st.z / 1000, 3), v2: fmt(v2, 2), v3: fmt(R.diskSupp, 2), th: th.toFixed(0) }));
     note.textContent = t('Shadow of a hypergaussian starshade (a = {a} m, b = {b} m, n = {n}) at {z} km. The telescope aperture is the dashed circle. Scalar Fresnel diffraction, azimuthally averaged petals.', { a: R.st.a, b: R.st.b, n: R.st.n, z: Math.round(R.st.z) });
     if (big) note2.textContent = t('At these settings the petal edges cross so many Fresnel zones that the exact shadow would take too long here; it is computed from {l} nm upwards. Lengthen the wavelength, shrink the shade or move it further away.', { l: Math.ceil(big * 1e9 / 10) * 10 });
-    if (P) note2.textContent = t("Exact Fresnel field of the {N} binary petals over the {D} m telescope (left, 10⁻¹³ … 10⁻⁶) and the image the telescope makes of the light that leaks past them (right, contrast 10⁻¹⁴ … 10⁻⁸ relative to the star's peak; the dashed circle is the inner working angle). Both are oriented like the drawing of the shade, so a leak shows up beside the petal that causes it.", { N: P.st.N, D: P.st.D });
+    if (P) note2.textContent = t("Exact Fresnel field of the {N} binary petals over the {D} m telescope (left, 10⁻¹³ … 10⁻⁶) and the image the telescope makes of the light that leaks past them (right, contrast 10⁻¹⁴ … 10⁻⁸ relative to the star's peak; the dashed circle is the inner working angle). Both are oriented like the drawing of the shade, so a leak shows up beside the petal that causes it.", { N: P.st.N, D: P.st.D }) + (P.sh.opt ? ' ' + t('The petals have the optimised profile (tip radius {R} m).', { R: P.sh.Rm.toFixed(1) }) : '');
     showOpt(st);
     [map, prof, spec, ap, img, rip, opt].forEach((x) => x.redraw());
   }
@@ -192,34 +207,34 @@ export default function mount(root, meta) {
     return ok.length ? `${Math.round(ok[0] * 1e9)}–${Math.round(ok[ok.length - 1] * 1e9)} nm` : 'none';
   }
   function drawShape(ctx, w, hh) {
-    const st = ctl.state, occ = OCCULTERS.hyper, Rm = occ.Rmax(st), sc = (Math.min(w, hh) / 2 - 10) / Rm, cx = w / 2, cy = hh / 2;
+    const st = ctl.state, sh = shadeOf(st), Rm = sh.Rm, sc = (Math.min(w, hh) / 2 - 10) / Rm, cx = w / 2, cy = hh / 2;
     ctx.fillStyle = '#05070c'; ctx.fillRect(0, 0, w, hh);
     ctx.fillStyle = '#c9d4e6'; ctx.beginPath();
     const steps = 80;
     for (let k = 0; k < st.N; k++) {
       const ax = (2 * Math.PI * k) / st.N, pts = [];
-      for (let i = 0; i <= steps; i++) { const r = st.a + ((Rm - st.a) * i) / steps, half = (Math.PI * occ.A(r, st)) / st.N; pts.push([r, half]); }
+      for (let i = 0; i <= steps; i++) { const r = sh.base + ((Rm - sh.base) * i) / steps, half = (Math.PI * sh.A(r)) / st.N; pts.push([r, half]); }
       pts.forEach(([r, hf], i) => { const x = cx + sc * r * Math.cos(ax - hf), y = cy + sc * r * Math.sin(ax - hf); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
       for (let i = pts.length - 1; i >= 0; i--) { const [r, hf] = pts[i]; ctx.lineTo(cx + sc * r * Math.cos(ax + hf), cy + sc * r * Math.sin(ax + hf)); }
       ctx.closePath();
     }
     ctx.fill();
-    ctx.beginPath(); ctx.arc(cx, cy, sc * st.a, 0, 2 * Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, sc * sh.base, 0, 2 * Math.PI); ctx.fill();
     if (st.err !== 'none') {
       // the petal with the error (the error itself, a fraction of a millimetre, is far too small to see)
       const err = errOf(st), js = st.err === 'width' || st.err === 'random' ? [...Array(st.N).keys()] : [0];
       ctx.fillStyle = 'rgba(255,181,71,0.85)';
       for (const j of js) {
         ctx.beginPath();
-        const rs = Array.from({ length: steps + 1 }, (_, i) => st.a + ((Rm - st.a) * i) / steps), e = rs.map((r) => petalEdges(j, r, st, st.N, err));
+        const rs = Array.from({ length: steps + 1 }, (_, i) => sh.base + ((Rm - sh.base) * i) / steps), e = rs.map((r) => petalEdges(j, r, sh.o, st.N, err));
         rs.forEach((r, i) => { const x = cx + sc * r * Math.cos(e[i][0]), y = cy + sc * r * Math.sin(e[i][0]); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
         for (let i = steps; i >= 0; i--) ctx.lineTo(cx + sc * rs[i] * Math.cos(e[i][1]), cy + sc * rs[i] * Math.sin(e[i][1]));
         ctx.closePath(); ctx.fill();
       }
     }
-    ctx.strokeStyle = 'rgba(255,181,71,0.7)'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(cx, cy, sc * (st.a + st.b), 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = 'rgba(255,181,71,0.7)'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(cx, cy, sc * sh.rI, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '11px "JetBrains Mono", monospace';
-    ctx.fillText(t('diameter {v1} m tip to tip', { v1: (2 * Rm).toFixed(0) }), 8, hh - 24); ctx.fillStyle = 'rgba(255,181,71,0.9)'; ctx.fillText(t('a + b (IWA radius)'), 8, hh - 9);
+    ctx.fillText(t('diameter {v1} m tip to tip', { v1: (2 * Rm).toFixed(0) }), 8, hh - 24); ctx.fillStyle = 'rgba(255,181,71,0.9)'; ctx.fillText(sh.opt ? t('optimised profile; A = 1/e (IWA radius)') : t('a + b (IWA radius)'), 8, hh - 9);
   }
   function drawMap(ctx, w, hh) {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, hh);
@@ -263,12 +278,12 @@ export default function mount(root, meta) {
     const P = PR;
     if (P && P.tooBig) { tooBigText(ctx, w, hh, P.tooBig); return; }
     if (!P) return;
-    const { I, n, pix } = P.im, Th = (1.5 * OCCULTERS.hyper.Rmax(P.st)) / P.z, half = Math.min(n / 2 - 1, Th / pix);
+    const { I, n, pix } = P.im, Th = (1.5 * P.sh.Rm) / P.z, half = Math.min(n / 2 - 1, Th / pix);
     const sz = Math.min(w, hh) - 4, x0 = (w - sz) / 2, y0 = (hh - sz) / 2;
     paintMap(img, { x: x0, y: y0, w: sz, h: sz }, { a: I, w: n, h: n, x0: n / 2 - half, y0: n / 2 - half, cw: 2 * half, ch: 2 * half, lut: INF, pre: (v) => Math.log10(Math.max(v, 1e-16)), value: (v) => (v + 14) / 6 }, P.key);
     // the inner working angle and the petal tips
     const s = sz / (2 * half * pix), cx = w / 2, cy = hh / 2;
-    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.arc(cx, cy, s * ((P.st.a + P.st.b) / P.z), 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.arc(cx, cy, s * (P.sh.rI / P.z), 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, 0, w, 26);
     const txt = t('±{v} mas; contrast 10⁻¹⁴ … 10⁻⁸', { v: Math.round(half * pix * MAS) });
     ctx.font = '11px "JetBrains Mono", monospace'; ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(4, hh - 22, ctx.measureText(txt).width + 8, 18);
@@ -307,7 +322,6 @@ export default function mount(root, meta) {
   // limit on |A″|; then checked with the exact radial integral. Run on request.
   const optJob = latest('occulterLP'), K_HYPER = (st) => { let m = 0; const A = (r) => OCCULTERS.hyper.A(r, st), hstep = 1e-3; for (let r = st.a; r < OCCULTERS.hyper.Rmax(st); r += 0.02) m = Math.max(m, Math.abs((A(r + hstep) - 2 * A(r) + A(r - hstep)) / hstep ** 2)); return m; };
   const optKey = (st) => JSON.stringify([st.a, st.b, st.n, st.z, st.D, st.lam, st.frac]);
-  let OP = null, optBusy = false;
   function runOpt() {
     if (!R) return;
     const st = { ...ctl.state }, key = optKey(st), K = K_HYPER(st);
@@ -318,6 +332,7 @@ export default function mount(root, meta) {
       OP = { key, st, K, ...r };
       optBusy = false; optBtn.disabled = false;
       show();
+      if (ctl.state.popt) { shape.redraw(); runPetals(); }
     }, (e) => { optBusy = false; optBtn.disabled = false; optNote.textContent = t('The optimisation failed: {e}', { e: e.message }); });
   }
   const optNow = (st) => (OP && OP.key === optKey(st) ? OP : null);
@@ -325,7 +340,7 @@ export default function mount(root, meta) {
     const O = optNow(st);
     if (optBusy) return;
     if (!O) { optNote.textContent = OP ? t('The settings have changed: press the button to optimise again.') : t('Press the button to find the best profile for a shade of this size by linear programming (about five seconds on a Raspberry Pi 4).'); return; }
-    optNote.innerHTML = t('Optimised profile, tip radius {R} m (this hypergaussian: {H} m), monotone and no more sharply curved than the hypergaussian (|A″| ≤ {K} m⁻²). Worst leak over the {D} m telescope at 400–1000 nm, from the exact radial integral: <strong>{o}</strong>, against {h} for the hypergaussian. Azimuthally averaged model only: the real-petal panels above keep the hypergaussian.', { R: O.tbl.R.toFixed(1), H: OCCULTERS.hyper.Rmax(st).toFixed(1), K: O.K.toFixed(3), D: st.D, o: O.worst.opt.toExponential(1), h: O.worst.hyper.toExponential(1) });
+    optNote.innerHTML = t('Optimised profile, tip radius {R} m (this hypergaussian: {H} m), monotone and no more sharply curved than the hypergaussian (|A″| ≤ {K} m⁻²). Worst leak over the {D} m telescope at 400–1000 nm, from the exact radial integral: <strong>{o}</strong>, against {h} for the hypergaussian. Switch on “Real petals with the optimised profile” to see its exact shadow and image.', { R: O.tbl.R.toFixed(1), H: OCCULTERS.hyper.Rmax(st).toFixed(1), K: O.K.toFixed(3), D: st.D, o: O.worst.opt.toExponential(1), h: O.worst.hyper.toExponential(1) });
   }
   function drawOpt(ctx, w, hh) {
     const st = ctl.state, O = optNow(st), Rm = OCCULTERS.hyper.Rmax(st), xs = Array.from({ length: 200 }, (_, i) => (Rm * 1.02 * i) / 199);
@@ -397,7 +412,7 @@ export default function mount(root, meta) {
 <h3>Numerical method and approximations</h3>
 <p>The azimuthal average is integrated in \(u = r^2\), where the Fresnel phase is linear. Each step integrates the phase exactly (Filon's midpoint rule), which makes the opaque core exact; one Richardson step removes the \(O(\Delta u^2)\) error left by \(J_0\) off axis. \(J_0\) itself is summed from its power series up to an argument of 12 and from Hankel's asymptotic series beyond, accurate to \(10^{-12}\); the usual polynomial fits are good only to \(5\times10^{-8}\), which is too coarse for a field of \(10^{-6}\). At 2000 steps the intensity has converged to better than \(10^{-14}\).</p>
 <p>The two-dimensional field is computed on a \(48\times48\) grid over the aperture at the chosen wavelength and on a \(10\times10\) grid for each point of the spectrum. Along a grid row the phase of each edge point changes by a fixed factor, so the sum needs no sines or cosines. The image is a 512-point FFT of the aperture field. Doubling the edge points changes the result by less than one part in a million.</p>
-<p>The optimised profile is analysed with the azimuthally averaged model only; the real-petal panels, the errors and the 3-D view keep the hypergaussian. Not included: edge scattering of sunlight, vector diffraction at the edges, the petals' thickness, and the finite size of the star (about 1 mas, much smaller than the shadow). The errors are applied to first order in their size; for millimetre errors the outline is then right to better than a tenth of a micrometre. The ripple's spectrum (its range of periods and its slope) is illustrative, not that of a particular design's error budget.</p>
+<p>With “Real petals with the optimised profile” switched on, the drawing, the exact shadow, the petal errors and the image use the optimised profile; its edges bend at the profile's nodes, which become panel boundaries of the edge integral. The 3-D view keeps the hypergaussian. Not included: edge scattering of sunlight, vector diffraction at the edges, the petals' thickness, and the finite size of the star (about 1 mas, much smaller than the shadow). The errors are applied to first order in their size; for millimetre errors the outline is then right to better than a tenth of a micrometre. The ripple's spectrum (its range of periods and its slope) is illustrative, not that of a particular design's error budget.</p>
 </div></div>`));
   root.append(references([
     'W. Cash, “Detection of Earth-like planets around nearby stars using a petal-shaped occulter”, <em>Nature</em> 442, 51 (2006).',

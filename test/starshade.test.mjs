@@ -247,3 +247,18 @@ test('a tabulated profile reproduces the hypergaussian, and an optimised one bea
   assert.ok(worst < 4 * 2 * o.c ** 2, `checked ${worst}, bound ${2 * o.c ** 2}`);
   assert.ok(worst < 1e-10 && worst < hyper / 1000, `optimised ${worst}, hypergaussian ${hyper}`);
 });
+
+test('real petals with a tabulated profile: the edge integral against the radial integral and the Bessel series', async () => {
+  const { OCCULTERS, shadowField, petalOutline, petalField, petalSeriesField } = await import('../js/lib/starshade.js');
+  // a coarse table (30 nodes) of the hypergaussian, so the petal edges have kinks at the nodes
+  const hy = { a: 12.5, b: 12.5, n: 6 }, R = OCCULTERS.hyper.Rmax(hy), r0 = 8, nr = 30, dr = (R - r0) / (nr - 1);
+  const tb = { kind: 'table', R, r0, dr, A: Array.from({ length: nr }, (_, i) => OCCULTERS.hyper.A(r0 + i * dr, hy)) };
+  const z = 8e7, lam = 550e-9, f = petalField(petalOutline(tb, 16, null, { lam, z, rhoMax: 2 }), lam, z, [0, 2], [0, 1]);
+  // the radial and series sums converge slowly over the kinks: many steps
+  const ax = shadowField('table', tb, lam, z, [0], 192000)[0], se = petalSeriesField(tb, 16, lam, z, Math.hypot(2, 1), Math.atan2(1, 2), 6, 80000);
+  assert.ok(Math.hypot(f[0] - ax[0], f[1] - ax[1]) < 3e-10, `axis: edge ${f[0]}, ${f[1]}; radial ${ax}`);
+  assert.ok(Math.hypot(f[2] - se[0], f[3] - se[1]) < 3e-10, `off axis: edge ${f[2]}, ${f[3]}; series ${se}`);
+  // doubling the panels changes nothing: the nodes are panel boundaries
+  const g = petalField(petalOutline(tb, 16, null, { lam, z, rhoMax: 2, panels: 80 }), lam, z, [2], [1]);
+  assert.ok(Math.hypot(g[0] - f[2], g[1] - f[3]) < 1e-12, 'converged');
+});
