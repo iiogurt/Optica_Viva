@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.78.0] - 2026-11-24
+
 ### Added
 - **Starshade: diffraction of sunlight at the petal edges.** Besides the reflection off rounded edges, every edge diffracts sunlight as a knife edge does, at edges facing the Sun and facing away from it. Keller's half-plane coefficient averaged over polarisation gives |D|² = λ/(4π² sin²β), checked against Sommerfeld's exact half-plane solution to 10⁻⁴, so each spot has C_d = λ⟨R_c⟩(d/AU)²/(4π² sin³β z²). The edge radius slider now starts at 0, a knife edge that only diffracts. Diffraction spots are blue on the drawing, and a readout splits the glint into reflected and diffracted.
 - **Starshade 3-D view with the optimised profile.** With *Real petals with the optimised profile* switched on, the 3-D view draws the optimised shade, its inner-working-angle line at its own radius, and its own shadow on the telescope's plane. `starshadeScene` and `outline` in `starshade3d.js` take a tabulated profile.
@@ -1158,7 +1160,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.77.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.78.0...HEAD
+[1.78.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.77.0...v1.78.0
 [1.77.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.76.0...v1.77.0
 [1.76.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.75.0...v1.76.0
 [1.75.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.74.0...v1.75.0
