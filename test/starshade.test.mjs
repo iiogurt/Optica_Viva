@@ -262,3 +262,55 @@ test('real petals with a tabulated profile: the edge integral against the radial
   const g = petalField(petalOutline(tb, 16, null, { lam, z, rhoMax: 2, panels: 80 }), lam, z, [2], [1]);
   assert.ok(Math.hypot(g[0] - f[2], g[1] - f[3]) < 1e-12, 'converged');
 });
+
+test('edge glint: a reflecting torus sends R S a R_c / 4cos(β/2) towards the telescope (brute force)', () => {
+  // patches of a torus (tube radius a around a circle of radius Rc in the shade's plane), lit along d,
+  // reflected into a 2 mrad cone around the telescope direction e = −z: J = S a (Rc + a cos v)/(4 cos v), v = β/2
+  const a = 0.01, Rc = 1, g = 2e-3;
+  for (const deg of [35, 60, 85]) {
+    const b = (deg * Math.PI) / 180, d = [-Math.sin(b), 0, -Math.cos(b)];
+    let P = 0;
+    const nu = 1500, nv = 1500, du = 0.006, dv = 0.004;
+    for (let i = 0; i < nu; i++) {
+      const u = -du + (2 * du * (i + 0.5)) / nu;
+      for (let j = 0; j < nv; j++) {
+        const v = -b / 2 - dv + (2 * dv * (j + 0.5)) / nv, n = [Math.cos(v) * Math.cos(u), Math.cos(v) * Math.sin(u), Math.sin(v)];
+        const ci = -(n[0] * d[0] + n[1] * d[1] + n[2] * d[2]);
+        if (ci <= 0 || -(d[2] + 2 * ci * n[2]) < Math.cos(g)) continue;
+        P += ci * (Rc + a * Math.cos(v)) * a * ((2 * du) / nu) * ((2 * dv) / nv);
+      }
+    }
+    const J = P / (2 * Math.PI * (1 - Math.cos(g))), v = b / 2;
+    assert.ok(Math.abs(J / ((a * (Rc + a * Math.cos(v))) / (4 * Math.cos(v))) - 1) < 0.01, `${deg}°: ${J}`);
+  }
+});
+
+test("edge glint: averaged over the Sun's azimuth the glinting radius adds up to the free edge length / 2π", async () => {
+  const { OCCULTERS, glintSpots } = await import('../js/lib/starshade.js');
+  const o = { a: 12.5, b: 12.5, n: 6 }, N = 2, base = { beta: Math.PI / 3, a: 10e-6, refl: 0.1, z: 8e7, dpc: 10, M: 600 };
+  // the free edge length, from a fine polyline with the same rule (gaps and widths over 4a)
+  const R1 = OCCULTERS.hyper.Rmax(o), psi = (r) => (Math.PI * OCCULTERS.hyper.A(r, o)) / N, M = 100000;
+  let L = 0;
+  for (let i = 0; i < M; i++) {
+    const ra = o.a + ((R1 - o.a) * i) / M, rb = o.a + ((R1 - o.a) * (i + 1)) / M, rm = (ra + rb) / 2;
+    if (rm * ((2 * Math.PI) / N - 2 * psi(rm)) > 4 * base.a && 2 * rm * psi(rm) > 4 * base.a) L += Math.hypot(rb * Math.cos(psi(rb)) - ra * Math.cos(psi(ra)), rb * Math.sin(psi(rb)) - ra * Math.sin(psi(ra)));
+  }
+  // the Sun's window is ±5.4 mrad: the azimuth grid must be finer
+  const K = 1600;
+  let acc = 0;
+  for (let i = 0; i < K; i++) acc += glintSpots(o, N, { ...base, phiS: (2 * Math.PI * (i + 0.5)) / K }).spots.reduce((s, q) => s + q.Rc, 0) / K;
+  assert.ok(Math.abs(acc / ((2 * N * L) / (2 * Math.PI)) - 1) < 3e-3, `mean ${acc}, L/2π ${(2 * N * L) / (2 * Math.PI)}`);
+});
+
+test('edge glint: flux ratio ∝ R a d²/z², spots on edges facing the Sun, and the image peak of one spot is its flux', async () => {
+  const { glintSpots, glintImage } = await import('../js/lib/starshade.js');
+  const o = { a: 12.5, b: 12.5, n: 6 }, p = { beta: 1, phiS: 0.4, a: 10e-6, refl: 0.1, z: 8e7, dpc: 10 };
+  const g = glintSpots(o, 16, p), h = glintSpots(o, 16, { ...p, a: 20e-6, refl: 0.2, dpc: 20, z: 4e7 });
+  assert.ok(g.spots.length > 0);
+  assert.ok(Math.abs(h.total / g.total - 2 * 2 * 4 * 4) < 1e-9 * h.total, `${h.total / g.total}`);
+  // C = R a ⟨Rc⟩ (d/AU)² / (4 cos(β/2) z²) for each spot
+  const q = g.spots[0], AU = 206264.806 * 10;
+  assert.ok(Math.abs(q.C / ((0.1 * 10e-6 * q.Rc * AU * AU) / (4 * Math.cos(0.5) * 8e7 * 8e7)) - 1) < 1e-12);
+  const im = glintImage([q], { z: 8e7, D: 4, lam: 550e-9, half: 1e-6, n: 64 });
+  assert.ok(Math.abs(im.peak / q.C - 1) < 1e-9, 'peak = flux ratio');
+});

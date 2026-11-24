@@ -1,6 +1,7 @@
 import { fft2d } from './fft.js';
 import { uniform } from './random.js';
 import { simplex } from './lp.js';
+import { besselJ1 } from './pupil.js';
 
 // Starshades: Fresnel diffraction behind a circularly symmetric occulter that blocks a fraction
 // A(r) ∈ [0, 1] of each circle of radius r (a petalled shade with petal width A(r)·2πr/N, in
@@ -615,4 +616,88 @@ export function optimisedLab(p) {
     worst.hyper = Math.max(worst.hyper, ...intensity(shadowField('hyper', hy, l, p.z, rs, 4000)));
   }
   return { tbl: t, spec, prof, worst };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Sunlight glinting off the petal edges. Each edge is modelled as a reflecting tube of radius a (the
+// edge's rounding, a ≫ λ) along the outline. With the Sun behind the shade at angle β from the line
+// of sight, the scattering angle is β, and the light reaches the telescope only from points whose
+// outward normal in the shade's plane points to the Sun's azimuth φ_s. There the surface's Gaussian
+// curvature is cos(β/2)/(a R_c) (a torus, R_c the outline's radius of curvature), so a point Sun
+// gives the radiant intensity J = R S a R_c / (4 cos(β/2)) (geometrical optics: J = R S/4K).
+// The Sun's disc (angular radius α☉) spreads the matching normals over ±α☉/sin β, so R_c becomes
+// ⟨R_c⟩ = ∫ W(φ(s) − φ_s) ds with W the disc's chord weighting; this stays finite where the
+// outline's curvature passes through zero. Relative to a solar twin at d parsecs (the shade is 1 AU
+// from the Sun, so the solar constant cancels) one glint spot has the flux ratio
+//   C = R a ⟨R_c⟩ (d / 1 AU)² / (4 cos(β/2) z²).
+// Edges closer to a neighbour, or petals narrower, than 4a are not free and do not glint; nor do the
+// tips of tabulated profiles (their truncation arcs). Light from different spots adds incoherently.
+export const SUN_ALPHA = 6.957e8 / 1.495978707e11; // the Sun's angular radius from 1 AU (rad)
+export const PARSEC_AU = 206264.806;
+const wrap = (x) => x - 2 * Math.PI * Math.round(x / (2 * Math.PI));
+// p = { beta, phiS (rad), a (m), refl, z (m), dpc, M (samples per edge) }. Returns the spots
+// { x, y (m in the shade's plane), Rc (⟨R_c⟩, m), C } and the total flux ratio.
+export function glintSpots(o, N, p) {
+  const w = SUN_ALPHA / Math.sin(p.beta), M = p.M || 3000, r0 = baseR(o), r1 = tipR(o), spots = [];
+  const W = (x) => (Math.abs(x) < w ? (2 / (Math.PI * w * w)) * Math.sqrt(w * w - x * x) : 0);
+  const k = (p.refl * p.a * (p.dpc * PARSEC_AU) ** 2) / (4 * Math.cos(p.beta / 2) * p.z * p.z);
+  // sample radii, with the nodes of a tabulated profile among them (its edges bend there)
+  const rs = Array.from({ length: M + 1 }, (_, i) => r0 + ((r1 - r0) * i) / M);
+  if (isTable(o)) for (let i = 1; i < o.A.length - 1; i++) rs.push(o.r0 + i * o.dr);
+  rs.sort((x, y) => x - y);
+  for (let j = 0; j < N; j++) for (const side of [0, 1]) {
+    const c = (2 * Math.PI * j) / N, sg = side ? 1 : -1;
+    // position and outward normal angle at r, using the profile's slope on the side of r given by e
+    const at = (r, e) => {
+      const [A, A1] = hyperA012(r + e, o), psi = (Math.PI * A) / N, th = c + sg * psi, t1 = (sg * Math.PI * A1) / N;
+      const tx = Math.cos(th) - r * t1 * Math.sin(th), ty = Math.sin(th) + r * t1 * Math.cos(th);
+      // the petal lies clockwise of its upper edge and anticlockwise of its lower one
+      const nx = side ? -ty : ty, ny = side ? tx : -tx;
+      return { x: r * Math.cos(th), y: r * Math.sin(th), phi: Math.atan2(ny, nx), free: r * (2 * Math.PI / N - 2 * psi) > 4 * p.a && 2 * r * psi > 4 * p.a };
+    };
+    let cur = null;
+    for (let i = 0; i + 1 < rs.length; i++) {
+      const ra = rs[i], rb = rs[i + 1];
+      if (rb - ra < 1e-12) continue;
+      const eps = (rb - ra) * 1e-6, A0 = at(ra, eps), B0 = at(rb, -eps);
+      const da = wrap(A0.phi - p.phiS), db = wrap(B0.phi - p.phiS);
+      let got = 0, gx = 0, gy = 0;
+      if (A0.free && B0.free && !(Math.min(da, db) > w || Math.max(da, db) < -w) && Math.abs(da - db) < Math.PI) {
+        // integrate W along the segment, finely enough to resolve the window
+        const K = Math.max(4, Math.ceil((Math.abs(db - da) / w) * 40)), L = Math.hypot(B0.x - A0.x, B0.y - A0.y) / K;
+        for (let q = 0; q < K; q++) {
+          const f = (q + 0.5) / K, r = ra + (rb - ra) * f, P = at(r, 0), wt = W(wrap(P.phi - p.phiS)) * L;
+          got += wt; gx += wt * P.x; gy += wt * P.y;
+        }
+      }
+      if (got > 0) { if (!cur) cur = { Rc: 0, sx: 0, sy: 0 }; cur.Rc += got; cur.sx += gx; cur.sy += gy; }
+      else if (cur) { spots.push(cur); cur = null; }
+    }
+    if (cur) spots.push(cur);
+  }
+  const out = spots.map((q) => ({ x: q.sx / q.Rc, y: q.sy / q.Rc, Rc: q.Rc, C: k * q.Rc }));
+  return { spots: out, total: out.reduce((acc, q) => acc + q.C, 0), k };
+}
+// The glint as the telescope images it (unobscured circular aperture D, wavelength lam): each spot's
+// Airy pattern, peak = its flux ratio, on an n × n grid spanning ±half (rad), oriented like the
+// drawing of the shade (row y at angle +y: the drawing puts +y downwards). Returns { I, n, pix, peak }.
+export function glintImage(spots, p) {
+  const n = p.n || 128, pix = (2 * p.half) / n, I = new Float32Array(n * n), s = (Math.PI * p.D) / p.lam;
+  let peak = 0;
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    const tx = (x + 0.5 - n / 2) * pix, ty = (y + 0.5 - n / 2) * pix;
+    let v = 0;
+    for (const q of spots) {
+      const u = s * Math.hypot(tx - q.x / p.z, ty - q.y / p.z);
+      v += q.C * (u < 1e-9 ? 1 : (2 * besselJ1(u) / u) ** 2);
+    }
+    I[y * n + x] = v; if (v > peak) peak = v;
+  }
+  // the peak can fall between pixels: evaluate it at the spots too
+  for (const q of spots) {
+    let v = 0;
+    for (const r of spots) { const u = s * Math.hypot((q.x - r.x) / p.z, (q.y - r.y) / p.z); v += r.C * (u < 1e-9 ? 1 : (2 * besselJ1(u) / u) ** 2); }
+    if (v > peak) peak = v;
+  }
+  return { I, n, pix, peak };
 }

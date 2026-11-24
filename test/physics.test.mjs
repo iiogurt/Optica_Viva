@@ -964,3 +964,16 @@ test('an optimised starshade 20 % smaller keeps the leak below 10⁻¹⁰ over 4
   for (let i = 0; i <= 20; i++) worst = Math.max(worst, ...intensity(shadowField('table', o, 1 / (1 / 1000e-9 + ((1 / 400e-9 - 1 / 1000e-9) * i) / 20), z, [0, 1, 2], 12000)));
   assert.ok(worst < 1e-10, `worst leak ${worst}`);
 });
+
+test('starshade edge glint: a reflecting torus reflects S a R_c / 4cos(β/2) towards the telescope', () => {
+  // patch-by-patch brute force at β = 60°, a = 0.01, R_c = 1, into a 2 mrad cone (J = S/4K, K = cos(β/2)/(a(R_c + a cos(β/2))))
+  const a = 0.01, Rc = 1, g = 2e-3, b = Math.PI / 3, d = [-Math.sin(b), 0, -Math.cos(b)], nu = 1200, nv = 1200, du = 0.006, dv = 0.004;
+  let P = 0;
+  for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) {
+    const u = -du + (2 * du * (i + 0.5)) / nu, v = -b / 2 - dv + (2 * dv * (j + 0.5)) / nv, n = [Math.cos(v) * Math.cos(u), Math.cos(v) * Math.sin(u), Math.sin(v)];
+    const ci = -(n[0] * d[0] + n[1] * d[1] + n[2] * d[2]);
+    if (ci > 0 && -(d[2] + 2 * ci * n[2]) >= Math.cos(g)) P += ci * (Rc + a * Math.cos(v)) * a * ((2 * du) / nu) * ((2 * dv) / nv);
+  }
+  const J = P / (2 * Math.PI * (1 - Math.cos(g))), want = (a * (Rc + a * Math.cos(b / 2))) / (4 * Math.cos(b / 2));
+  assert.ok(Math.abs(J / want - 1) < 0.01, `${J} vs ${want}`);
+});
