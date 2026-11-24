@@ -762,7 +762,7 @@ Ideas worth keeping but not yet scheduled:
 - *(from v1.36)* **Wide-gamut output** (Display P3 canvases) for spectral colours: needs the colours kept outside sRGB through the computation (the PSF clips negative components today) and a P3 screen to check it on; gains nothing on sRGB screens.
 
 - *(from v1.67 TLCI)* A mid-scale external check of TLCI and TLMF against the EBU's own software (its download is blocked to automated clients here).
-- *(from v1.9 starshade; petal terms and shape errors done in v1.71, random edge ripple in v1.74, an optimised profile in v1.75, real petals with it in v1.76, edge glint in v1.77)* Diffraction of sunlight at sharp edges (a ≈ λ); edge-error spectra taken from a published error budget; minimum petal-tip and gap widths in the optimisation; the optimised profile in the 3-D view.
+- *(from v1.9 starshade; petal terms and shape errors done in v1.71, random edge ripple in v1.74, an optimised profile in v1.75, real petals with it in v1.76, edge glint in v1.77)* Diffraction of sunlight at sharp edges (a ≈ λ); edge-error spectra taken from a published error budget; minimum petal-tip and gap widths in the optimisation.
 - *(from v1.9 field-dependent PSF; real-ray Zernike maps of a centred three-mirror anastigmat done in v1.73)* Off-axis, folded three-mirror designs (JWST, Roman) from published prescriptions; PSFs computed from the traced wavefronts; the central obstruction in the real-ray fit.
 - *(from the catalogue explorer; print, references and symbol legends done in v1.72)* Primary sources for each entry rather than for its laboratory or group; translated legends (with the explanations, owner-gated).
 

@@ -314,6 +314,22 @@ test('starshade 3-D: the outline matches the apodisation, the planet line grazes
   assert.ok(lum(iMin) < lum(iMax), 'dark where the shadow is deep');
 });
 
+test('starshade 3-D with a tabulated profile: petals of width 2πA(r)/N from its base, the IWA line at its own radius', async () => {
+  const { OCCULTERS } = await import('../js/lib/starshade.js');
+  const { starshadeScene, outline } = await import('../js/lib/starshade3d.js');
+  const tb = { kind: 'table', R: 26, r0: 5, dr: 1, A: Array.from({ length: 22 }, (_, i) => Math.max(0, 1 - (i / 21) ** 2)) }, N = 12;
+  const pts = outline(tb, N, 40);
+  near(Math.hypot(...pts[0]), 5, 1e-12, 'petals start at r0');
+  for (const i of [5, 20, 35]) {
+    const [x1, y1] = pts[i], [x2, y2] = pts[80 - i + 1], r = Math.hypot(x1, y1);
+    near((Math.abs(Math.atan2(y2, x2) - Math.atan2(y1, x1)) * N) / (2 * Math.PI), OCCULTERS.table.A(r, tb), 1e-9, `petal width at r = ${r.toFixed(1)} m`);
+  }
+  const sc = starshadeScene({ a: 12.5, b: 12.5, n: 6, N, z: 8e7, D: 4, lamNm: 550, shape: tb, rI: 20 });
+  const pl = sc.lines.find((l) => l.color[0] === 0.42);
+  near(pl.points[1][0] / pl.points[1][2], (20 / 8e7) * sc.E, 1e-12, 'IWA line slope');
+  assert.ok(sc.labels.some((l) => l.vars && l.vars.d === (2 * 26).toFixed(0)), 'tip-to-tip label');
+});
+
 test('bokeh 3-D: the iris shape, a round disc on axis as big as the thin lens predicts, and the barrel cutting a cat\'s eye in the corner', async () => {
   const { irisRadius, hull, bokehScene } = await import('../js/lib/bokeh3d.js');
   // straight blades: an edge's middle at the top, cos(π/N); circumradius 1 at a vertex, π/N round from it

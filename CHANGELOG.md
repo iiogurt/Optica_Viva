@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Starshade 3-D view with the optimised profile.** With *Real petals with the optimised profile* switched on, the 3-D view draws the optimised shade, its inner-working-angle line at its own radius, and its own shadow on the telescope's plane. `starshadeScene` and `outline` in `starshade3d.js` take a tabulated profile.
+
 ## [1.77.0] - 2026-11-24
 
 ### Added

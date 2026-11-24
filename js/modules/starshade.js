@@ -74,7 +74,9 @@ export default function mount(root, meta) {
   let z3d = 0;
   function show3d(st, z, rhos, prof) {
     const keep = z3d > 0 && z / z3d < 1.5 && z3d / z < 1.5;
-    v3.setScene(starshadeScene({ a: st.a, b: st.b, n: st.n, N: st.N, z, D: st.D, lamNm: st.lam, rhos, prof }), keep);
+    // with the optimised profile switched on, the 3-D view shows it and its own shadow
+    const sh = shadeOf(st), op = sh.opt && OP.prof.length === rhos.length ? { shape: sh.o, rI: sh.rI, prof: OP.prof } : {};
+    v3.setScene(starshadeScene({ a: st.a, b: st.b, n: st.n, N: st.N, z, D: st.D, lamNm: st.lam, rhos, prof, ...op }), keep);
     if (!keep) z3d = z;
   }
   function update() {
@@ -378,7 +380,7 @@ export default function mount(root, meta) {
       OP = { key, st, K, ...r };
       optBusy = false; optBtn.disabled = false;
       show();
-      if (ctl.state.popt) { shape.redraw(); runPetals(); }
+      if (ctl.state.popt) { const q = ctl.state; shape.redraw(); runPetals(); show3d(q, q.z * 1e3, R.rhos, R.prof[R.p.lams.indexOf(R.st.lam * 1e-9)]); }
     }, (e) => { optBusy = false; optBtn.disabled = false; optNote.textContent = t('The optimisation failed: {e}', { e: e.message }); });
   }
   const optNow = (st) => (OP && OP.key === optKey(st) ? OP : null);
@@ -464,7 +466,7 @@ export default function mount(root, meta) {
 <h3>Numerical method and approximations</h3>
 <p>The azimuthal average is integrated in \(u = r^2\), where the Fresnel phase is linear. Each step integrates the phase exactly (Filon's midpoint rule), which makes the opaque core exact; one Richardson step removes the \(O(\Delta u^2)\) error left by \(J_0\) off axis. \(J_0\) itself is summed from its power series up to an argument of 12 and from Hankel's asymptotic series beyond, accurate to \(10^{-12}\); the usual polynomial fits are good only to \(5\times10^{-8}\), which is too coarse for a field of \(10^{-6}\). At 2000 steps the intensity has converged to better than \(10^{-14}\).</p>
 <p>The two-dimensional field is computed on a \(48\times48\) grid over the aperture at the chosen wavelength and on a \(10\times10\) grid for each point of the spectrum. Along a grid row the phase of each edge point changes by a fixed factor, so the sum needs no sines or cosines. The image is a 512-point FFT of the aperture field. Doubling the edge points changes the result by less than one part in a million.</p>
-<p>With “Real petals with the optimised profile” switched on, the drawing, the exact shadow, the petal errors and the image use the optimised profile; its edges bend at the profile's nodes, which become panel boundaries of the edge integral. The 3-D view keeps the hypergaussian. Not included: the diffraction of sunlight at the edges (only its reflection, the glint), vector diffraction at the edges, the petals' thickness, and the finite size of the star (about 1 mas, much smaller than the shadow). The errors are applied to first order in their size; for millimetre errors the outline is then right to better than a tenth of a micrometre. The ripple's spectrum (its range of periods and its slope) is illustrative, not that of a particular design's error budget.</p>
+<p>With “Real petals with the optimised profile” switched on, the drawing, the exact shadow, the petal errors and the image use the optimised profile; its edges bend at the profile's nodes, which become panel boundaries of the edge integral. So does the 3-D view, with the optimised shade's own shadow. Not included: the diffraction of sunlight at the edges (only its reflection, the glint), vector diffraction at the edges, the petals' thickness, and the finite size of the star (about 1 mas, much smaller than the shadow). The errors are applied to first order in their size; for millimetre errors the outline is then right to better than a tenth of a micrometre. The ripple's spectrum (its range of periods and its slope) is illustrative, not that of a particular design's error budget.</p>
 </div></div>`));
   root.append(references([
     'W. Cash, “Detection of Earth-like planets around nearby stars using a petal-shaped occulter”, <em>Nature</em> 442, 51 (2006).',
