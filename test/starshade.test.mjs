@@ -193,3 +193,33 @@ test("the telescope's image: an open aperture peaks at contrast 1, and a turned 
   }
   assert.ok(bx > 0 && Math.abs(by) < bx / 2, `brightest leak at (${bx}, ${by}) px`);
 });
+
+test('edge ripple: RMS σ, the field linear in it and equal to first-order perturbation theory', async () => {
+  const { edgeRipple, rippleField, petalOutline, petalField } = await import('../js/lib/starshade.js');
+  const err = { kind: 'random', d: 1e-4, seed: 7 };
+  let s2 = 0;
+  const n = 20000;
+  for (let i = 0; i < n; i++) s2 += edgeRipple(err, 16, 3, 1, (400 * i) / n)[0] ** 2 / n;
+  assert.ok(Math.abs(Math.sqrt(s2) / 1e-4 - 1) < 0.05, `RMS ${Math.sqrt(s2)}`);
+  const o = { a: 12.5, b: 12.5, n: 6 }, z = 8e7, lam = 550e-9, px = [0, 0.7, 1.9], py = [0, 0.3, 0.2];
+  const f0 = petalField(petalOutline(o, 16, null, { lam, z, rhoMax: 2 }), lam, z, px, py);
+  for (const e of [{ kind: 'random', d: 1e-7, seed: 3 }, { kind: 'random', d: 1e-7, seed: 5, lmin: 1.6, lmax: 1.6, M: 1 }]) {
+    const f = petalField(petalOutline(o, 16, e, { lam, z, rhoMax: 2 }), lam, z, px, py), g = rippleField(o, 16, e, lam, z, px, py);
+    for (let p = 0; p < px.length; p++) {
+      const dr = f[2 * p] - f0[2 * p], di = f[2 * p + 1] - f0[2 * p + 1], m = Math.hypot(g[2 * p], g[2 * p + 1]);
+      assert.ok(Math.hypot(dr - g[2 * p], di - g[2 * p + 1]) < 2e-3 * m, `point ${p}: full ${dr}, ${di}; first order ${g[2 * p]}, ${g[2 * p + 1]}`);
+    }
+  }
+});
+
+test('edge ripple leaks most at the period λz/r of the Fresnel zones at the petals', async () => {
+  const { rippleSensitivity } = await import('../js/lib/starshade.js');
+  const o = { a: 12.5, b: 12.5, n: 6 }, lam = 550e-9, px = [0.5, -0.8], py = [0.4, 0.3], ls = Array.from({ length: 41 }, (_, i) => 0.4 * 20 ** (i / 40));
+  for (const z of [8e7, 4e7]) {
+    const S = rippleSensitivity(o, 16, lam, z, px, py, ls), m = S.indexOf(Math.max(...S)), pred = (lam * z) / (o.a + o.b);
+    assert.ok(Math.abs(Math.log(ls[m] / pred)) < Math.log(1.25), `z ${z}: peak at ${ls[m]} m, λz/(a+b) = ${pred} m`);
+    // far from it the edge cancels its own ripple: a hundred times less at a fifth of the period
+    const k = ls.findIndex((l) => l > pred / 5);
+    assert.ok(S[k] < S[m] / 100, `at ${ls[k]} m: ${S[k]} vs ${S[m]}`);
+  }
+});

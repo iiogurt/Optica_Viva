@@ -36,7 +36,7 @@ import { luckySim } from './lucky.js';
 import { phaseScreen } from './turbulence.js';
 import { tiltMaps } from './shimmer.js';
 import { sceneMap, convolveBand, psfKernel, SW, SH } from './spectral.js';
-import { shadowLab, petalOutline, petalFieldGrid, petalImage } from './starshade.js';
+import { shadowLab, petalOutline, petalFieldGrid, petalImage, rippleSensitivity } from './starshade.js';
 import { fieldPSFs } from './fieldpsf.js';
 import { fieldMap } from './fieldtrace.js';
 import { makeLight, renderScene } from './lighting.js';
@@ -584,6 +584,11 @@ function petals(p) {
   const out = p.items.map((it) => petalFieldGrid(petalCache.L, it.lam, p.z, it.x0, it.dx, it.nx, it.ys));
   return { result: out, transfer: out.map((f) => f.buffer) };
 }
+// Added leak per unit RMS² of edge ripple at each period, by first-order perturbation theory.
+function rippleSens(p) {
+  const r = rippleSensitivity(p.o, p.N, p.lam, p.z, p.px, p.py, p.periods);
+  return { result: r, transfer: [r.buffer] };
+}
 function petalImageTask(p) {
   const r = petalImage(p);
   return { result: r, transfer: [r.I.buffer] };
@@ -789,4 +794,4 @@ function trailsTask(p) {
   return { result, transfer: [outs.mean.buffer, outs.median.buffer, outs.clip.buffer] };
 }
 
-export const TASKS = { speckleLooks: speckleLooksTask, speckleIncoh: speckleIncohTask, lfRender: lfRenderTask, mlEval: mlEvalTask, mlMap: mlMapTask, nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, ifu: ifuTask, relIllum: relIllumTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, petals, petalImage: petalImageTask, fieldPSF, fieldMap: fieldMapTask, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
+export const TASKS = { speckleLooks: speckleLooksTask, speckleIncoh: speckleIncohTask, lfRender: lfRenderTask, mlEval: mlEvalTask, mlMap: mlMapTask, nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, ifu: ifuTask, relIllum: relIllumTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, petals, petalImage: petalImageTask, rippleSens, fieldPSF, fieldMap: fieldMapTask, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };

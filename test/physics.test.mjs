@@ -946,3 +946,11 @@ test("real rays through Hubble's mirrors: astigmatism at 0.02° equals the Seide
   const tr = wavefrontAt(prepare('hubble'), [0.02, 0], pupilFit(20)).z[5];
   assert.ok(Math.abs(tr / z6 - 1) < 0.02, `traced ${tr} nm, Seidel ${z6} nm`);
 });
+
+test('starshade edge ripple: the exact edge integral equals first-order perturbation theory', async () => {
+  const { petalOutline, petalField, rippleField } = await import('../js/lib/starshade.js');
+  // δE = (i/λz)∮e^{iπs²/λz}δ ds for 0.1 µm RMS of ripple on all 32 edges, 1.9 m off the axis
+  const o = { a: 12.5, b: 12.5, n: 6 }, z = 8e7, lam = 550e-9, e = { kind: 'random', d: 1e-7, seed: 3 }, px = [1.9], py = [0.2];
+  const f0 = petalField(petalOutline(o, 16, null, { lam, z, rhoMax: 2 }), lam, z, px, py), f = petalField(petalOutline(o, 16, e, { lam, z, rhoMax: 2 }), lam, z, px, py), g = rippleField(o, 16, e, lam, z, px, py);
+  assert.ok(Math.hypot(f[0] - f0[0] - g[0], f[1] - f0[1] - g[1]) < 2e-3 * Math.hypot(g[0], g[1]), `full ${f[0] - f0[0]}, ${f[1] - f0[1]}; first order ${g[0]}, ${g[1]}`);
+});
