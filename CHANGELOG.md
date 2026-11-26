@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.81.0] - 2026-11-26
+
 ### Added
 - **New laboratory: Laser guide stars & the cone effect** (`#/lgs`). A laser spot at height H lights a high turbulent layer through a footprint shrunk by 1 − h/H. The error this leaves after correction, with piston and tilt removed, comes from a fourfold integral of the Kolmogorov structure function, evaluated by Monte Carlo over pairs of aperture points. It reproduces Noll's residuals when the laser sits at the layer's height (1.032 and 0.133 against 1.0299 and 0.134), and random phase screens agree within their scatter. The page shows the geometry, one realisation of the layer as the star and the laser see it, d₀, and the Strehl ratio against the laser's height and the telescope's size. The catalogue's entry links to it.
 
@@ -1173,7 +1175,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.80.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.81.0...HEAD
+[1.81.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.80.0...v1.81.0
 [1.80.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.79.0...v1.80.0
 [1.79.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.78.0...v1.79.0
 [1.78.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.77.0...v1.78.0
