@@ -76,6 +76,7 @@ This file records **what has been delivered** and **what is planned** for Optica
   - [v1.79 Pinhole camera](#v179-pinhole-camera)
   - [v1.80 Gaussian laser beams](#v180-gaussian-laser-beams)
   - [v1.81 Laser guide stars and the cone effect](#v181-laser-guide-stars-and-the-cone-effect)
+  - [v1.82 Zone plates and Talbot images](#v182-zone-plates-and-talbot-images)
   - [v2.0 Learning platform](#v20-learning-platform)
 - [Backlog](#backlog)
 - [Research notes and sources](#research-notes-and-sources)
@@ -99,7 +100,7 @@ This file records **what has been delivered** and **what is planned** for Optica
 flowchart LR
     subgraph Done["✅ Delivered"]
         direction TB
-        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"] --> D14["v1.12–1.13<br/>missions · 3 labs"] --> D15["v1.14<br/>4 more labs"] --> D16["v1.15<br/>your own gear"] --> D17["v1.16<br/>tours · exercises · PWA"] --> D18["v1.17<br/>classic lenses · mirrors · TMA"] --> D19["v1.18<br/>glass catalogue · tolerancing · DE/FR/ES"] --> D20["v1.19<br/>translated controls · parallel workers"] --> D21["v1.20–1.23<br/>3-D views"] --> D22["v1.24–1.26<br/>whole interface in DE/FR/ES"] --> D23["v1.27–1.30<br/>halos · waves · black hole"] --> D24["v1.31–1.35<br/>live camera · validation fixes"] --> D25["v1.36–1.41<br/>presentation"] --> D26["v1.42–1.44<br/>mission pictures"] --> D27["v1.45–1.65<br/>21 new laboratories"] --> D28["v1.66<br/>TM-30 fidelity and gamut"] --> D29["v1.67<br/>TLCI-2012"] --> D30["v1.68<br/>TLMF · colourist's advice"] --> D31["v1.69<br/>traced relative illumination"] --> D32["v1.70<br/>integral-field spectroscopy"] --> D33["v1.71<br/>real starshade petals"] --> D34["v1.72<br/>catalogue: print · references · legends"] --> D35["v1.73<br/>real-ray field maps"] --> D36["v1.74<br/>starshade edge ripple"] --> D37["v1.75<br/>optimised starshade"] --> D38["v1.76<br/>optimised real petals"] --> D39["v1.77<br/>edge glint"] --> D40["v1.78<br/>edge diffraction · optimised 3-D"] --> D41["v1.79<br/>pinhole camera"] --> D42["v1.80<br/>Gaussian beams"] --> D43["v1.81<br/>laser guide stars"]
+        D0["v0.1–v0.19<br/>20 laboratories"] --> D1["v1.0<br/>catalogue · stable"] --> D2["v1.0.x<br/>README · roadmap"] --> D3["v1.1<br/>tests · CI · Pages · Safari · a11y"] --> D4["v1.2<br/>worker · faster FFT"] --> D5["v1.3<br/>aspheres · editor · Seidel"] --> D6["v1.4<br/>MTF field · optimiser · tolerancing"] --> D7["v1.5<br/>real-ray flare · traced bokeh"] --> D8["v1.6<br/>polarisation · macro · colour"] --> D9["v1.7<br/>AO loop · spectroscopy"] --> D10["v1.8<br/>7 photo/cine labs"] --> D11["v1.9<br/>7 space labs"] --> D12["v1.10<br/>catalogue explorer"] --> D13["v1.11<br/>simple → exact"] --> D14["v1.12–1.13<br/>missions · 3 labs"] --> D15["v1.14<br/>4 more labs"] --> D16["v1.15<br/>your own gear"] --> D17["v1.16<br/>tours · exercises · PWA"] --> D18["v1.17<br/>classic lenses · mirrors · TMA"] --> D19["v1.18<br/>glass catalogue · tolerancing · DE/FR/ES"] --> D20["v1.19<br/>translated controls · parallel workers"] --> D21["v1.20–1.23<br/>3-D views"] --> D22["v1.24–1.26<br/>whole interface in DE/FR/ES"] --> D23["v1.27–1.30<br/>halos · waves · black hole"] --> D24["v1.31–1.35<br/>live camera · validation fixes"] --> D25["v1.36–1.41<br/>presentation"] --> D26["v1.42–1.44<br/>mission pictures"] --> D27["v1.45–1.65<br/>21 new laboratories"] --> D28["v1.66<br/>TM-30 fidelity and gamut"] --> D29["v1.67<br/>TLCI-2012"] --> D30["v1.68<br/>TLMF · colourist's advice"] --> D31["v1.69<br/>traced relative illumination"] --> D32["v1.70<br/>integral-field spectroscopy"] --> D33["v1.71<br/>real starshade petals"] --> D34["v1.72<br/>catalogue: print · references · legends"] --> D35["v1.73<br/>real-ray field maps"] --> D36["v1.74<br/>starshade edge ripple"] --> D37["v1.75<br/>optimised starshade"] --> D38["v1.76<br/>optimised real petals"] --> D39["v1.77<br/>edge glint"] --> D40["v1.78<br/>edge diffraction · optimised 3-D"] --> D41["v1.79<br/>pinhole camera"] --> D42["v1.80<br/>Gaussian beams"] --> D43["v1.81<br/>laser guide stars"] --> D44["v1.82<br/>zone plates · Talbot"]
     end
     subgraph Next["Planned"]
         direction TB
@@ -112,7 +113,7 @@ flowchart LR
 
 | Area | Delivered | Planned |
 |---|---|---|
-| Laboratories | 75 laboratories, 9 missions, the physics primer and the reference pages (catalogue, gallery, your gear) | see Planned milestones |
+| Laboratories | 76 laboratories, 9 missions, the physics primer and the reference pages (catalogue, gallery, your gear) | see Planned milestones |
 | Catalogue entries | 258, each with details and a worked example | link every new lab |
 | Lens prescriptions | 15: camera lenses from the Petzval to the Biogon, Hubble, a Cassegrain and a three-mirror anastigmat; aspheres, mirrors, model glasses and file import | (none planned) |
 | Automated tests | 592 tests (physics, blur, lens I/O, ghosts, bokeh, polarisation, macro, colour, AO) + link check + browser smoke test in CI | more coverage per new lab |
@@ -760,6 +761,10 @@ Candidates, in order of how much the third dimension adds:
 ### v1.81 Laser guide stars and the cone effect
 
 - [x] **P3 · M** **Laser guide stars & the cone effect** (`#/lgs`): the error from the structure function (piston and tilt removed), checked against Noll and phase screens; d₀, Strehl against laser height and telescope size. *From the catalogue's unsimulated entries; next: Fresnel zone plates and Talbot self-imaging.*
+
+### v1.82 Zone plates and Talbot images
+
+- [x] **P3 · M** **Zone plates & Talbot images** (`#/zoneplate`): exact zone sums, efficiencies 1/π² and 4/π², chromatic focus; Talbot carpets from diffraction orders, exact against paraxial. *From the catalogue's unsimulated entries, which now has none left in the wave-optics group.*
 
 ### v2.0 Learning platform
 

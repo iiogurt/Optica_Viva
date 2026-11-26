@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Zone plates & Talbot images** (`#/zoneplate`). A Fresnel zone plate, whose field on the axis is an exact sum over its zones: N² at the focus, that is 1/π² of a perfect lens of the same size, or 4/π² for a phase plate. It has foci at f/3 and f/5 and a focal length that scales as 1/λ; the focal spot is shown beside the Airy pattern. And a Talbot carpet behind a grating, built from its diffraction orders with exact or paraxial phases: self-images at 2d²/λ, half-period-shifted ones halfway, and a measure of how well the grating re-forms along the way. Checks: the zone-plate sums; the quarter-Talbot identity; and conservation of light at every distance. The catalogue's *Fresnel zone plates* and *Talbot self-imaging* entries link to it.
+
 ## [1.81.0] - 2026-11-26
 
 ### Added

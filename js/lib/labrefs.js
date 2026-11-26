@@ -562,6 +562,11 @@ export const LAB_REFS = {
     "J. Rigby et al., \"The science performance of JWST as characterized in commissioning\", PASP 135, 048001 (2023).",
     "D. S. Acton et al., \"Wavefront sensing and controls for the James Webb Space Telescope\", Proc. SPIE 8442 (2012)."
   ],
+  "zoneplate": [
+    "H. F. Talbot, “Facts relating to optical science. No. IV”, <em>Philosophical Magazine</em> (December 1836).",
+    "Lord Rayleigh, “On copying diffraction-gratings, and on some phenomena connected therewith”, <em>Philosophical Magazine</em> (5) 11, 196–205 (1881).",
+    "M. Born &amp; E. Wolf, <i>Principles of Optics</i>, 7th ed., Cambridge University Press (1999), ch. 8: Fresnel zones and diffraction."
+  ],
   "zoom": [
     "R. Kingslake, \"The development of the zoom lens\", J. SMPTE 69, 534 (1960).",
     "A. D. Clark, <i>Zoom Lenses</i>, Adam Hilger (1973).",

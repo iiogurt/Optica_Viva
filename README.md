@@ -571,6 +571,16 @@ A scene **rendered wavelength by wavelength**: 24 colour patches, a Siemens star
 <tr>
 <td valign="top" colspan="2">
 
+**Zone plates & Talbot images** · `#/zoneplate`<br>
+<img src="docs/screenshots/zoneplate.webp" alt="A Fresnel zone plate; light along its axis with foci at f, f/3 and f/5; its focal spot beside a perfect lens; a Talbot carpet behind a grating; how well the grating re-forms along the way" width="70%">
+
+**Images by diffraction alone**: a Fresnel zone plate, its field on the axis an exact sum over zones (N² at the focus, 1/π² of a perfect lens, 4/π² for a phase plate), foci at f/3 and f/5, a focal length that scales as 1/λ, and its focal spot; a Talbot carpet behind a grating from its diffraction orders, self-images at 2d²/λ and shifted ones halfway, and how exact propagation softens them for fine gratings.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Laser guide stars & the cone effect** · `#/lgs`<br>
 <img src="docs/screenshots/lgs.webp" alt="The cylinder of starlight and the cone of laser light crossing a high turbulent layer; one realisation of the layer as the star and the laser see it and their difference; Strehl ratio against the laser's height; the error against telescope size" width="70%">
 
@@ -1172,6 +1182,7 @@ Optica_Viva/
 │   │   ├── zoom.js            Zoom lens: four thin groups, compensator cam, paraxial trace, pupil and focus error
 │   │   ├── pinhole.js         Pinhole camera: Fresnel pattern behind a hole, closed-form transfer function, sharpest pinhole, photograph
 │   │   ├── gaussbeam.js       Gaussian beams: q-parameter through a thin lens, Self's formula, Fresnel-integral check with a clear aperture
+│   │   ├── zoneplate.js       Zone plates (exact axial sum over zones, focal profile) and Talbot carpets (diffraction orders, exact or paraxial)
 │   │   ├── lgs.js             Laser guide stars: cone-effect error from the structure function, phase-screen check, d₀
 │   │   ├── haze.js            Haze: Rayleigh from first principles, Ångström aerosol, Koschmieder airlight, spectral colours
 │   │   ├── speckle.js         Speckle: coherent imaging by FFT, Abbe partial coherence, diffuser and polarisation averaging, statistics
@@ -1467,6 +1478,7 @@ The numerical core was checked against published or analytically known values. E
 | Pinhole camera: axis, transfer function and the sharpest hole (f = 100 mm, 550 nm) | I(0) = 4 sin²(πN/2) exactly; transfer function = Hankel transform of the pattern to 2·10⁻³; brightest centre per unit light at N = 0.742 (tan x = 2x), c = 1.72; half-light circle c = 1.50; MTF50 c = 1.38 | Fresnel diffraction; Rayleigh (1891): c ≈ 1.9 |
 | Gaussian beam focused by a lens (633 nm, w₀ = 0.5 mm, lens 1 m away, f = 100 mm) | q-parameter and Self's formula agree to 10⁻¹²; waist 32.6 µm at 103.83 mm; Fresnel integral 1/e² radii at ±2 z′_R match to 2·10⁻⁴; power through a clear radius a is (πw²/2)(1 − e^{−2a²/w²}) to 1 %; largest focal shift f²/2z_R at s = f + z_R | Kogelnik &amp; Li (1966); Self (1983) |
 | Laser guide star cone effect, structure-function integral | laser at the layer's height (α = 0): 1.032 (piston removed) and 0.133 (tilt removed) × (D/r₀)^{5/3}; random phase screens at α = 0.7 agree to within their 10 % scatter; σ² ∝ D^{5/3} | Noll (1976): 1.0299, 0.134 |
+| Fresnel zone plate (40 zones, f = 100 mm, 550 nm) and Talbot carpet (20 µm grating) | focus N² = 1600 exactly: 1/π² (amplitude), 4/π² (phase) of a perfect lens; f ∝ 1/λ; paraxial self-image at 2d²/λ with correlation 1, half-period shift at z_T/2, I(z_T/4) = c₀² + (T − c₀)²; mean irradiance = Σ c_m² at every distance | Fresnel zones; Talbot (1836), Rayleigh (1881) |
 | Haze: Rayleigh scattering and visual range | σ_R(532 nm) = 5.16 × 10⁻³¹ m²; β_R(550)/β_R(850) between λ⁴ and λ^4.2; clean-air visual range 341 km; contrast exactly 2 % at V; Ångström ratios; phase functions normalised; Rayleigh fully polarised at 90°; a distant ridge takes the horizon sky's colour | Bucholtz (1995): 5.168 × 10⁻³¹ m² (0.1 %); Koschmieder (1924) |
 | Laser speckle: statistics, grain shape, averaging, edge | Contrast 1 and P(I > ⟨I⟩) = e⁻¹ for a rough surface; intensity autocovariance |2J₁(v)/v|² at 1–3 px (first zero 1.22λN); contrast 1/√M for 4 and 16 frames, 1/√2 for two polarisations; gamma law normalised with mean 1; coherent edge overshoot (1/2 + Si(π)/π)² = 1.187, none for incoherent light; OTF(NA/λ) = 0.391 | Goodman (1975, 2020); Gibbs: match (contrast 0.04–0.08 statistical; edge 0.015 on the grid) |
 | Light field: disparity and refocusing | Centroid of a small card moves (D/N)(1 − b/b_z)/p microlenses per view (1.61, 0.57 and −0.50 at 0.45, 0.8 and 4 m); refocusing to its depth raises its peak; 69 of 81 views inside the round aperture; refocus range N·f#·p, N times an ordinary camera's | Ng et al. (2005): match (0.05 microlens) |
@@ -1520,6 +1532,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Pinhole camera | Scalar Fresnel diffraction near the axis, a thin opaque sheet, one wavelength per colour, the chart treated as on the axis | No obliquity or thickness of the hole off axis, no cos⁴ fall-off, no film grain |
 | Gaussian beams | Paraxial scalar optics, thin aberration-free lenses, one wavelength; M² beams as their embedded Gaussian | No higher-order or multimode profiles, no thick lenses or aberrations |
 | Laser guide stars | Kolmogorov turbulence in two thin layers, a point-like laser spot, tilt from a natural star, Strehl from e^{−σ²}; the cone effect alone | No sodium-layer thickness, spot elongation, tomography with several lasers, or other AO errors |
+| Zone plates & Talbot | Scalar diffraction of a plane wave of one wavelength, paraxial zone radii, thin ideal zones and bars, an infinite grating with 40 orders at most | No zone-placement errors, finite grating or partially coherent light |
 | Haze | Uniform horizontal air, single scattering, sunlight not dimmed before scattering, unpolarised aerosol; illustrative sky above the horizon and ridge lighting | No clouds, multiple scattering, humidity growth of aerosols or temperature inversions |
 | Laser speckle | Scalar, aberration-free round pupil; surface heights uncorrelated between pixels, no shadowing or multiple scattering; Abbe source points half a cut-off apart (partly correlated patterns); fully random diffuser | Subjective speckle only (seen through a lens); no wavelength diversity, no photon noise |
 | Light field | Ideal microlenses matched to the main lens, no diffraction or crosstalk between microlenses; one ray per pixel (no anti-aliasing); flat cards without lighting; refocusing without the magnification change | No focused (plenoptic 2.0) layout, no depth estimation from the views |

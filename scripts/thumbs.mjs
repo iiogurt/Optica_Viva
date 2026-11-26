@@ -21,7 +21,7 @@ const PICK = {
 const NTH = { lgs: 1, ifu: 2, zoom: 1, thermal: 1, detectors: 4, zernike: 3, gear: 1, trails: 3, hdrdisplay: 2 };
 const ALL = 'figure.stage canvas:not(.stage-over)';
 // lab → extra milliseconds to wait, for pictures that build up over several passes
-const SETTLE = { lgs: 6000, gaussbeam: 4000, pinhole: 9000, atmospheric: 9000, speckle: 4000, ifu: 6000 };
+const SETTLE = { zoneplate: 4000, lgs: 6000, gaussbeam: 4000, pinhole: 9000, atmospheric: 9000, speckle: 4000, ifu: 6000 };
 // the cards on the home page: laboratories in READY with a blurb (js/app.js needs a browser, so it
 // is read as text)
 const APP = readFileSync(resolve(ROOT, 'js/app.js'), 'utf8');
