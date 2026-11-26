@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.79.0] - 2026-11-26
+
 ### Added
 - **New laboratory: Pinhole camera** (`#/pinhole`). The exact Fresnel diffraction pattern behind a round hole, with the subject at any distance. The transfer function comes in closed form (the overlap of two shifted pupils with a linear phase), and it turns negative for large holes (contrast reversal). The sharpest pinhole is found by three measures, 1.72, 1.50 and 1.38 √(fλ), against Rayleigh's 1.9. The page also gives the f-number and sunlit exposure, and photographs a star chart through the hole at 610, 550 and 465 nm. Checks: the axis against 4 sin²(πN/2), the transfer function against the Hankel transform of the pattern, the Airy and shadow limits, and energy conservation. The catalogue's *Pinhole camera* entry now links to it.
 
@@ -1163,7 +1165,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.78.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.79.0...HEAD
+[1.79.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.78.0...v1.79.0
 [1.78.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.77.0...v1.78.0
 [1.77.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.76.0...v1.77.0
 [1.76.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.75.0...v1.76.0
