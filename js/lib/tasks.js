@@ -40,6 +40,7 @@ import { shadowLab, petalOutline, petalFieldGrid, petalImage, rippleSensitivity,
 import { fieldPSFs } from './fieldpsf.js';
 import { fieldMap } from './fieldtrace.js';
 import { sweep as pinholeSweep, photograph as pinholePhoto } from './pinhole.js';
+import { beamLab } from './gaussbeam.js';
 import { makeLight, renderScene } from './lighting.js';
 import { runAF } from './autofocus.js';
 import { portraitShot } from './portrait.js';
@@ -597,6 +598,8 @@ function occulterLP(p) {
 // The pinhole camera (see js/lib/pinhole.js): sharpness against the pinhole, and the photograph.
 function pinholeSweepTask(p) { return { result: pinholeSweep(p), transfer: [] }; }
 function pinholePhotoTask(p) { const r = pinholePhoto(p); return { result: r, transfer: [r.img.buffer] }; }
+// Gaussian beams: the field behind the lens (see js/lib/gaussbeam.js).
+function gaussBeamTask(p) { return { result: beamLab(p), transfer: [] }; }
 function petalImageTask(p) {
   const r = petalImage(p);
   return { result: r, transfer: [r.I.buffer] };
@@ -802,4 +805,4 @@ function trailsTask(p) {
   return { result, transfer: [outs.mean.buffer, outs.median.buffer, outs.clip.buffer] };
 }
 
-export const TASKS = { speckleLooks: speckleLooksTask, speckleIncoh: speckleIncohTask, lfRender: lfRenderTask, mlEval: mlEvalTask, mlMap: mlMapTask, nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, ifu: ifuTask, relIllum: relIllumTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, petals, petalImage: petalImageTask, rippleSens, occulterLP, pinholeSweep: pinholeSweepTask, pinholePhoto: pinholePhotoTask, fieldPSF, fieldMap: fieldMapTask, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };
+export const TASKS = { speckleLooks: speckleLooksTask, speckleIncoh: speckleIncohTask, lfRender: lfRenderTask, mlEval: mlEvalTask, mlMap: mlMapTask, nightsky: nightskyTask, glint: glintTask, startracker: startrackerTask, lasercom: lasercomTask, rv: rvTask, rvMC: rvMCTask, ligo: ligoTask, trails: trailsTask, corrections: correctionsTask, sky: skyTask, halation: halationTask, caustics: causticsTask, ifu: ifuTask, relIllum: relIllumTask, mirage: mirageTask, portraitShot: portraitShotTask, benchRays, bhRows, waveInit, waveStep, haloRays, dropMie, psfLab, zernikeLab, otfCurves, coronagraph, segPhasing, lensPSF, lensMTF, optimiseLens, tolerance, flareGhosts, flareScene3d, bokehTraced, bokehScene3d, defocusPSF, polarLake, macroRuler, aoLoop, pyramid, panorama, hdr, shake, eye, film, aperture, lucky, starshade, petals, petalImage: petalImageTask, rippleSens, occulterLP, pinholeSweep: pinholeSweepTask, pinholePhoto: pinholePhotoTask, gaussBeam: gaussBeamTask, fieldPSF, fieldMap: fieldMapTask, lighting, autofocus, tiltScene: tiltSceneTask, blurLevels, tiltStore, tiltBlend: tiltBlendTask, shiftRows: shiftTask, dofGround, diskBlur: diskBlurTask, projectionRows: projectionTask, lensRows: lensRowsTask, lensSide, perspectiveRows: perspectiveTask, seeingReset, seeingStep, shimmerMaps, camBokeh, spectralBand };

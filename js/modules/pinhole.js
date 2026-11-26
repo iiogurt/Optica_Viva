@@ -97,7 +97,7 @@ export default function mount(root, meta) {
     }, P.key);
   }
   function drawPSF(ctx, w, hh) {
-    if (!P) return;
+    if (!P) { plot(ctx, w, hh, { title: 'Image of a point: irradiance across the film', x: { min: 0, max: 1, label: 'distance from the image point (mm)' }, y: { min: 0, max: 1, label: 'irradiance (relative to the hole)' }, series: [] }); return; }
     const pr = P.profiles, g = P.g, reach = 1000 * Math.min(pr[0].rs[pr[0].rs.length - 1], Math.max(geomBlur(g.d, g.f, g.u), airyBlur(g.d, g.f, g.lam || 550e-9))), cols = ['#ff7a6a', '#7fd68f', '#6aa8ff'];
     const gb = geomBlur(g.d, g.f, g.u) * 1000, top = Math.max(...pr.map((p) => Math.max(...p.I)));
     plot(ctx, w, hh, {
