@@ -143,6 +143,11 @@ export const LAB_REFS = {
     "I. H. Malitson, \"Interspecimen comparison of the refractive index of fused silica\", JOSA 55, 1205 (1965).",
     "SCHOTT AG, Optical Glass Data Sheets (Sellmeier coefficients)."
   ],
+  "gaussbeam": [
+    "H. Kogelnik &amp; T. Li, “Laser beams and resonators”, <em>Applied Optics</em> 5, 1550–1567 (1966).",
+    "S. A. Self, “Focusing of spherical Gaussian beams”, <em>Applied Optics</em> 22, 658–661 (1983).",
+    "A. E. Siegman, <i>Lasers</i>, University Science Books (1986), ch. 16–17."
+  ],
   "gear": [
     "ISO 12233:2017, <i>Photography — Electronic still picture imaging — Resolution and spatial frequency responses</i>.",
     "P. D. Burns, \"Slanted-edge MTF for digital camera and scanner analysis\", Proc. IS&amp;T PICS Conference, 135 (2000).",

@@ -114,7 +114,7 @@ export const GROUPS = [
       [N_('Coherent vs incoherent imaging'), 'speckle', 'ps', N_('With laser light a lens filters the field, sharply cut off at NA/λ, and edges ring; with ordinary light it filters the intensity with the OTF out to 2NA/λ.'), r`H_\text{coh}(f)=P(\lambda f),\ \ \text{OTF}=P\star P`],
       [N_('Thin-film interference'), 'flare', 'pvs', N_('Reflections from film boundaries interfere: coatings, oil slicks, Newton\'s rings.'), r`2n d\cos\theta=m\lambda`],
       [N_('Encircled energy'), 'psf', 'pvs', N_('The fraction of light within a radius: 84 % lies inside the first dark ring of the Airy pattern.'), r`\mathrm{EE}(v)=1-J_0^2(v)-J_1^2(v)`],
-      [N_('Gaussian beams'), null, 'pvs', N_('Laser beams keep a Gaussian profile; the waist and the Rayleigh range are tied together by diffraction.'), r`w(z)=w_0\sqrt{1+(z/z_R)^2},\ z_R=\frac{\pi w_0^2}{\lambda}`],
+      [N_('Gaussian beams'), 'gaussbeam', 'pvs', N_('Laser beams keep a Gaussian profile; the waist and the Rayleigh range are tied together by diffraction.'), r`w(z)=w_0\sqrt{1+(z/z_R)^2},\ z_R=\frac{\pi w_0^2}{\lambda}`],
       [N_('Fresnel zone plates'), null, 'ps', N_('Alternating clear and opaque zones focus light by diffraction, with a focal length inversely proportional to wavelength.'), r`r_n=\sqrt{n\lambda f}`],
       [N_('Talbot self-imaging'), null, 's', N_('A periodic grating re-images itself at multiples of the Talbot distance; used in wavefront sensing and X-ray phase imaging.'), r`z_T=\frac{2d^2}{\lambda}`],
     ],

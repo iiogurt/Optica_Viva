@@ -561,6 +561,16 @@ A scene **rendered wavelength by wavelength**: 24 colour patches, a Siemens star
 <tr>
 <td valign="top" colspan="2">
 
+**Gaussian laser beams** · `#/gaussbeam`<br>
+<img src="docs/screenshots/gaussbeam.webp" alt="A laser beam from its waist to a lens and through the focus; the computed focal spot; its profile beside the Gaussian; the beam radius through the focus with computed points and the Gouy phase" width="70%">
+
+**A laser beam and a lens**: the waist, the Rayleigh range and the far-field angle, the complex beam parameter through a thin lens (the waist lands beyond the focal plane, most of all when the lens is a Rayleigh range farther than f from the laser's waist), the Gouy phase, beam quality M² and its embedded Gaussian; the focused spot computed independently by the Fresnel integral, matching the q-parameter laws to 10⁻⁴, and the diffraction rings when the lens clips the beam.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
 **Haze & aerial perspective** · `#/haze`<br>
 <img src="docs/screenshots/haze.webp" alt="Seven ridges from 0.4 to 70 km fading into a pale blue haze under a blue sky; contrast against distance at four wavelengths with the 2 % threshold; extinction against wavelength for molecules and haze" width="70%">
 
@@ -1151,6 +1161,7 @@ Optica_Viva/
 │   │   ├── ligo.js            LIGO: quantum noise, standard quantum limit, squeezing, inspiral SNR, whitened data, Q-map
 │   │   ├── zoom.js            Zoom lens: four thin groups, compensator cam, paraxial trace, pupil and focus error
 │   │   ├── pinhole.js         Pinhole camera: Fresnel pattern behind a hole, closed-form transfer function, sharpest pinhole, photograph
+│   │   ├── gaussbeam.js       Gaussian beams: q-parameter through a thin lens, Self's formula, Fresnel-integral check with a clear aperture
 │   │   ├── haze.js            Haze: Rayleigh from first principles, Ångström aerosol, Koschmieder airlight, spectral colours
 │   │   ├── speckle.js         Speckle: coherent imaging by FFT, Abbe partial coherence, diffuser and polarisation averaging, statistics
 │   │   ├── lightfield.js      Light field: microlens camera, ray-traced 4-D light field, shift-and-add refocusing, blur geometry
@@ -1443,6 +1454,7 @@ The numerical core was checked against published or analytically known values. E
 | Phase angle & sun glint | Disk-integrated Lambert and Lommel–Seeliger spheres at 0–135°; half Moon; mirror-direction glint; glint integrated over the hemisphere (U = 2 m/s, θs = 30°) | [sin α + (π−α) cos α]/π and 1 − sin(α/2) tan(α/2) ln cot(α/4) (0.002); 2.6 mag = ×11 (Allen); R/(4σ² cos²θs); Fresnel reflectance of flat water (5 %) |
 | Zoom lens: parfocality and constant aperture | Focal length by ray trace and by ray-transfer matrices at 30.5–100 mm; back focus = f₄ (parfocal); afocal front; f = M·f₄; f/D_EP = N; compensator error δ moves the image by −(f₄/f₃)²δ at every focal length; chief ray through the stop | exact (10⁻⁹) |
 | Pinhole camera: axis, transfer function and the sharpest hole (f = 100 mm, 550 nm) | I(0) = 4 sin²(πN/2) exactly; transfer function = Hankel transform of the pattern to 2·10⁻³; brightest centre per unit light at N = 0.742 (tan x = 2x), c = 1.72; half-light circle c = 1.50; MTF50 c = 1.38 | Fresnel diffraction; Rayleigh (1891): c ≈ 1.9 |
+| Gaussian beam focused by a lens (633 nm, w₀ = 0.5 mm, lens 1 m away, f = 100 mm) | q-parameter and Self's formula agree to 10⁻¹²; waist 32.6 µm at 103.83 mm; Fresnel integral 1/e² radii at ±2 z′_R match to 2·10⁻⁴; power through a clear radius a is (πw²/2)(1 − e^{−2a²/w²}) to 1 %; largest focal shift f²/2z_R at s = f + z_R | Kogelnik &amp; Li (1966); Self (1983) |
 | Haze: Rayleigh scattering and visual range | σ_R(532 nm) = 5.16 × 10⁻³¹ m²; β_R(550)/β_R(850) between λ⁴ and λ^4.2; clean-air visual range 341 km; contrast exactly 2 % at V; Ångström ratios; phase functions normalised; Rayleigh fully polarised at 90°; a distant ridge takes the horizon sky's colour | Bucholtz (1995): 5.168 × 10⁻³¹ m² (0.1 %); Koschmieder (1924) |
 | Laser speckle: statistics, grain shape, averaging, edge | Contrast 1 and P(I > ⟨I⟩) = e⁻¹ for a rough surface; intensity autocovariance |2J₁(v)/v|² at 1–3 px (first zero 1.22λN); contrast 1/√M for 4 and 16 frames, 1/√2 for two polarisations; gamma law normalised with mean 1; coherent edge overshoot (1/2 + Si(π)/π)² = 1.187, none for incoherent light; OTF(NA/λ) = 0.391 | Goodman (1975, 2020); Gibbs: match (contrast 0.04–0.08 statistical; edge 0.015 on the grid) |
 | Light field: disparity and refocusing | Centroid of a small card moves (D/N)(1 − b/b_z)/p microlenses per view (1.61, 0.57 and −0.50 at 0.45, 0.8 and 4 m); refocusing to its depth raises its peak; 69 of 81 views inside the round aperture; refocus range N·f#·p, N times an ordinary camera's | Ng et al. (2005): match (0.05 microlens) |
@@ -1494,6 +1506,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Phase angle & sun glint | Uniform spheres without atmosphere; Lommel–Seeliger without roughness or opposition surge; isotropic Cox–Munk slopes without shadowing, foam or light from below the surface | Island and the sea's colour illustrative; each picture exposed for its brightest point |
 | Zoom lens | Thin groups, paraxial, object at infinity, no aberrations (which in real zooms vary with focal length and dominate their design); one compensator | No focusing group motion, no floating groups, no breathing |
 | Pinhole camera | Scalar Fresnel diffraction near the axis, a thin opaque sheet, one wavelength per colour, the chart treated as on the axis | No obliquity or thickness of the hole off axis, no cos⁴ fall-off, no film grain |
+| Gaussian beams | Paraxial scalar optics, thin aberration-free lenses, one wavelength; M² beams as their embedded Gaussian | No higher-order or multimode profiles, no thick lenses or aberrations |
 | Haze | Uniform horizontal air, single scattering, sunlight not dimmed before scattering, unpolarised aerosol; illustrative sky above the horizon and ridge lighting | No clouds, multiple scattering, humidity growth of aerosols or temperature inversions |
 | Laser speckle | Scalar, aberration-free round pupil; surface heights uncorrelated between pixels, no shadowing or multiple scattering; Abbe source points half a cut-off apart (partly correlated patterns); fully random diffuser | Subjective speckle only (seen through a lens); no wavelength diversity, no photon noise |
 | Light field | Ideal microlenses matched to the main lens, no diffraction or crosstalk between microlenses; one ray per pixel (no anti-aliasing); flat cards without lighting; refocusing without the magnification change | No focused (plenoptic 2.0) layout, no depth estimation from the views |

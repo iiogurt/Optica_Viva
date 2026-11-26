@@ -984,3 +984,10 @@ test('pinhole camera: the brightest centre per unit light is at N = 0.742 (tan x
   // sin²x/x is largest where tan x = 2x: x = 1.16556, N = 2x/π
   assert.ok(Math.abs(s.best.conc.N - (2 * 1.16556) / Math.PI) < 0.004, `N = ${s.best.conc.N}`);
 });
+
+test("Gaussian beam: the waist after a lens from the q-parameter equals Self's formula, and lies beyond f", async () => {
+  const { focus, selfImage, rayleigh } = await import('../js/lib/gaussbeam.js');
+  // 633 nm, w₀ = 0.5 mm (z_R = 1.241 m), lens 1 m away, f = 100 mm: waist 103.83 mm behind it, 32.6 µm radius
+  const F = focus(0.5e-3, 633e-9, 1, 1, 0.1);
+  assert.ok(Math.abs(F.sp - selfImage(1, 0.1, rayleigh(0.5e-3, 633e-9))) < 1e-12 && Math.abs(F.sp - 0.10383) < 1e-5 && Math.abs(F.w0p - 32.62e-6) < 0.01e-6, `${F.sp}, ${F.w0p}`);
+});
