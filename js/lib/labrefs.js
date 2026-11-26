@@ -222,6 +222,12 @@ export const LAB_REFS = {
     "R. Narayan &amp; M. Bartelmann, \"Lectures on gravitational lensing\", arXiv:astro-ph/9606001 (1996).",
     "T. Treu, \"Strong lensing by galaxies\", ARA&amp;A 48, 87 (2010)."
   ],
+  "lgs": [
+    "R. Foy &amp; A. Labeyrie, <em>Astronomy &amp; Astrophysics</em> 152, L29–L31 (1985): the laser guide star proposed for astronomy.",
+    "J. W. Hardy, <em>Adaptive Optics for Astronomical Telescopes</em>, Oxford University Press (1998).",
+    "F. Roddier (ed.), <em>Adaptive Optics in Astronomy</em>, Cambridge University Press (1999).",
+    "R. J. Noll, “Zernike polynomials and atmospheric turbulence”, <em>J. Opt. Soc. Am.</em> 66, 207 (1976)."
+  ],
   "lightfield": [
     "E. H. Adelson &amp; J. Y. A. Wang, \"Single lens stereo with a plenoptic camera\", IEEE Trans. Pattern Anal. Mach. Intell. 14, 99 (1992).",
     "M. Levoy &amp; P. Hanrahan, \"Light field rendering\", Proc. SIGGRAPH 1996, 31.",

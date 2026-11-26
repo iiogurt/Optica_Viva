@@ -991,3 +991,9 @@ test("Gaussian beam: the waist after a lens from the q-parameter equals Self's f
   const F = focus(0.5e-3, 633e-9, 1, 1, 0.1);
   assert.ok(Math.abs(F.sp - selfImage(1, 0.1, rayleigh(0.5e-3, 633e-9))) < 1e-12 && Math.abs(F.sp - 0.10383) < 1e-5 && Math.abs(F.w0p - 32.62e-6) < 0.01e-6, `${F.sp}, ${F.w0p}`);
 });
+
+test("laser guide star at the layer's own height: the cone-effect integral gives Noll's tilt-removed residual 0.134 (D/r₀)^{5/3}", async () => {
+  const { coneF } = await import('../js/lib/lgs.js');
+  const v = 6.88 * coneF(0, { tilt: true, n: 300000 });
+  assert.ok(Math.abs(v - 0.134) < 0.003, `${v}`);
+});

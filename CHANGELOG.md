@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **New laboratory: Laser guide stars & the cone effect** (`#/lgs`). A laser spot at height H lights a high turbulent layer through a footprint shrunk by 1 − h/H. The error this leaves after correction, with piston and tilt removed, comes from a fourfold integral of the Kolmogorov structure function, evaluated by Monte Carlo over pairs of aperture points. It reproduces Noll's residuals when the laser sits at the layer's height (1.032 and 0.133 against 1.0299 and 0.134), and random phase screens agree within their scatter. The page shows the geometry, one realisation of the layer as the star and the laser see it, d₀, and the Strehl ratio against the laser's height and the telescope's size. The catalogue's entry links to it.
+
 ## [1.80.0] - 2026-11-26
 
 ### Added
