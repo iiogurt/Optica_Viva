@@ -35,7 +35,7 @@ export const GROUPS = [
       [N_('Lagrange invariant'), 'raytracer', 'pvs', N_('Built from the marginal and chief rays, it is conserved through any paraxial system and fixes the trade between field and aperture.'), r`\mathcal H=n(\bar u y-u\bar y)`],
       [N_('Vergence & dioptres'), 'eye', 'pv', N_('Optical power and the curvature of a ray bundle in reciprocal metres; powers of thin elements in contact add.'), r`P=\frac{n}{f},\quad V'=V+P`],
       [N_('Image circle & coverage'), 'tiltshift', 'pv', N_('A lens forms a usable image only inside a circle; the sensor diagonal plus any shift or tilt must stay within it.'), r`\varnothing\ge\sqrt{w^2+h^2}`],
-      [N_('Pinhole camera'), null, 'p', N_('Without a lens, sharpness balances the geometric shadow of the hole against its diffraction.'), r`d_\text{opt}\approx1.9\sqrt{f\lambda}`],
+      [N_('Pinhole camera'), 'pinhole', 'p', N_('Without a lens, sharpness balances the geometric shadow of the hole against its diffraction.'), r`d_\text{opt}\approx1.9\sqrt{f\lambda}`],
     ],
   },
   {

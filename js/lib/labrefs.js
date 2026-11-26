@@ -351,6 +351,11 @@ export const LAB_REFS = {
     "SMIA 1.0 Part 5: Camera characterisation specification (TV distortion).",
     "M. Kemp, <i>The Science of Art: Optical Themes in Western Art</i>, Yale (1990): perspective."
   ],
+  "pinhole": [
+    "Lord Rayleigh (J. W. Strutt), “On pin-hole photography”, <em>Philosophical Magazine</em> 31, 87–99 (1891).",
+    "M. Young, “Pinhole optics”, <em>Applied Optics</em> 10, 2763–2767 (1971).",
+    "M. Born &amp; E. Wolf, <i>Principles of Optics</i>, 7th ed., Cambridge University Press (1999), ch. 8: Fresnel diffraction at a circular aperture."
+  ],
   "polarisation": [
     "M. Born &amp; E. Wolf, <em>Principles of Optics</em>, 7th ed., §1.5 (Fresnel formulae) and §10.8 (Stokes parameters), Cambridge University Press (1999).",
     "E. Collett, <em>Field Guide to Polarization</em>, SPIE Press (2005); D. Goldstein, <em>Polarized Light</em>, 3rd ed., CRC Press (2011).",
