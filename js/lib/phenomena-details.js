@@ -286,7 +286,6 @@ const KJ = 'R. Kingslake &amp; R. B. Johnson, <em>Lens Design Fundamentals</em>,
 const RAY = 'S. F. Ray, <em>Applied Photographic Optics</em>, 3rd ed., Focal Press (2002).';
 const GOODMAN = 'J. W. Goodman, <em>Introduction to Fourier Optics</em>, 4th ed., W. H. Freeman (2017).';
 export const READING = {
-  'geometrical-image-formation': [HECHT, RAY],
   'monochromatic-aberrations': [KJ, BW, SMITH],
   'diffraction-and-wave-optics': [BW, GOODMAN, HECHT],
   'radiometry-and-illumination': [RAY, SMITH],

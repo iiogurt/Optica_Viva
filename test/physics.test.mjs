@@ -977,3 +977,10 @@ test('starshade edge glint: a reflecting torus reflects S a R_c / 4cos(β/2) tow
   const J = P / (2 * Math.PI * (1 - Math.cos(g))), want = (a * (Rc + a * Math.cos(b / 2))) / (4 * Math.cos(b / 2));
   assert.ok(Math.abs(J / want - 1) < 0.01, `${J} vs ${want}`);
 });
+
+test('pinhole camera: the brightest centre per unit light is at N = 0.742 (tan x = 2x), d = 1.72 √(fλ)', async () => {
+  const { sweep } = await import('../js/lib/pinhole.js');
+  const s = sweep({ f: 0.1, u: Infinity, lam: 550e-9, dmin: 0.1e-3, dmax: 1e-3, n: 16 });
+  // sin²x/x is largest where tan x = 2x: x = 1.16556, N = 2x/π
+  assert.ok(Math.abs(s.best.conc.N - (2 * 1.16556) / Math.PI) < 0.004, `N = ${s.best.conc.N}`);
+});
