@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.80.0] - 2026-11-26
+
 ### Added
 - **New laboratory: Gaussian laser beams** (`#/gaussbeam`). The waist, the Rayleigh range and the far-field angle, and the complex beam parameter through a thin lens. The waist lands beyond the focal plane, by up to f²/2z_R when the lens is z_R farther than f from the laser's waist (Self 1983). Also the Gouy phase, and beam quality M² with its embedded Gaussian. The focused spot is computed independently by the Fresnel integral through the lens's clear aperture, and shows rings when the lens clips the beam. Checks: the matrix route against Self's formula; Fresnel widths against the q-parameter to 2·10⁻⁴; and the power through the aperture. The catalogue's *Gaussian beams* entry links to it.
 
@@ -1168,7 +1170,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.79.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.80.0...HEAD
+[1.80.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.79.0...v1.80.0
 [1.79.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.78.0...v1.79.0
 [1.78.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.77.0...v1.78.0
 [1.77.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.76.0...v1.77.0
