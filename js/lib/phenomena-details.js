@@ -287,7 +287,6 @@ const RAY = 'S. F. Ray, <em>Applied Photographic Optics</em>, 3rd ed., Focal Pre
 const GOODMAN = 'J. W. Goodman, <em>Introduction to Fourier Optics</em>, 4th ed., W. H. Freeman (2017).';
 export const READING = {
   'monochromatic-aberrations': [KJ, BW, SMITH],
-  'diffraction-and-wave-optics': [BW, GOODMAN, HECHT],
   'radiometry-and-illumination': [RAY, SMITH],
   'stray-light': [SMITH, HECHT, RAY],
   polarisation: [BW, HECHT],

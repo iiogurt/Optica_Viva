@@ -997,3 +997,9 @@ test("laser guide star at the layer's own height: the cone-effect integral gives
   const v = 6.88 * coneF(0, { tilt: true, n: 300000 });
   assert.ok(Math.abs(v - 0.134) < 0.003, `${v}`);
 });
+
+test('Fresnel zone plate: N² at the focus, 1/π² of a perfect lens of the same aperture', async () => {
+  const { axialI, lensPeak } = await import('../js/lib/zoneplate.js');
+  const zp = { f: 0.1, lam0: 550e-9, N: 40, kind: 'amplitude' };
+  assert.ok(Math.abs(axialI(zp, 550e-9, 0.1) - 1600) < 1e-6 && Math.abs(axialI(zp, 550e-9, 0.1) / lensPeak(zp, 550e-9) - 1 / Math.PI ** 2) < 1e-12);
+});
