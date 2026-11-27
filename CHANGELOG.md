@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [1.83.0] - 2026-11-27
+
 ### Added
 - **New laboratory: Sensor (red-dot) flare** (`#/sensorflare`). The grid of red dots around a bright source. The sensor's microlenses act as a reflective two-dimensional grating, with order shares from the Fourier coefficients of the reflected phase over one cell. Each order travels to the IR-cut filter and back, and lands as a defocused image of the aperture, about 2d/N across. Every disc is drawn exactly for every wavelength from 400 to 780 nm, so stopping down past N = p/λ (f/6.2 for 4 µm pixels in red light) separates the dots. The dots are red because the light has crossed the filter once and been reflected by it once: T(1 − T) peaks at the cut-off edge, which moves to the blue at oblique angles. An absorbing-glass filter makes them several stops fainter and grey. Street lamp, LED or the Sun, whose image widens every dot (they then separate only above 1/(λ/p − r☉/d), or never); a side view and the order shares. Which surface reflects the light back is not settled (accounts name the IR-cut filter, the cover glass, the low-pass filter stack or the lens), and the page says so. Checks: square-wave and sinusoidal phase gratings (cos²(φ/2), (2/π)² sin²(φ/2), J_m²); orders from a finite patch of pixels; energy and position of each disc; the gap that opens exactly above N = p/λ; and the direct image's energy. Worker task `sensorFlare`. The catalogue's *Sensor (red-dot) flare* entry links to it.
 
@@ -1186,7 +1188,8 @@ All planned laboratories are complete; this release marks the first stable versi
 - KaTeX 0.16.11 vendored for offline math rendering.
 - README, CHANGELOG, `.gitignore`, `.editorconfig` and `package.json`.
 
-[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.82.0...HEAD
+[Unreleased]: https://github.com/iiogurt/Optica_Viva/compare/v1.83.0...HEAD
+[1.83.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.82.0...v1.83.0
 [1.82.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.81.0...v1.82.0
 [1.81.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.80.0...v1.81.0
 [1.80.0]: https://github.com/iiogurt/Optica_Viva/compare/v1.79.0...v1.80.0
