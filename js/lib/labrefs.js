@@ -432,6 +432,12 @@ export const LAB_REFS = {
     "J. R. Janesick, <i>Photon Transfer: DN → λ</i>, SPIE Press (2007).",
     "ISO 12232:2019, Digital still cameras: determination of exposure index and ISO speed ratings."
   ],
+  "sensorflare": [
+    "M. Born &amp; E. Wolf, <i>Principles of Optics</i>, 7th ed., Cambridge University Press (1999), ch. 8: diffraction gratings.",
+    "J. W. Goodman, <i>Introduction to Fourier Optics</i>, 4th ed., W. H. Freeman (2017): thin phase elements and their Fourier coefficients.",
+    "H. A. Macleod, <i>Thin-Film Optical Filters</i>, 4th ed., CRC Press (2010): edge filters and the shift of their edge with the angle of incidence.",
+    "RED Digital Cinema, “DSMC – Flare Grid Pattern”, support article: the grid of red dots, more visible as the lens is stopped down."
+  ],
   "shake": [
     "CIPA DC-011, <em>Measurement method and notation of image stabilization performance of digital cameras</em> (CIPA, 2012/2024).",
     "B. Golik, “Development of a test method for image stabilizing systems”, diploma thesis, Cologne University of Applied Sciences (2006).",

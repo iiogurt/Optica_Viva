@@ -1003,3 +1003,9 @@ test('Fresnel zone plate: N² at the focus, 1/π² of a perfect lens of the same
   const zp = { f: 0.1, lam0: 550e-9, N: 40, kind: 'amplitude' };
   assert.ok(Math.abs(axialI(zp, 550e-9, 0.1) - 1600) < 1e-6 && Math.abs(axialI(zp, 550e-9, 0.1) / lensPeak(zp, 550e-9) - 1 / Math.PI ** 2) < 1e-12);
 });
+
+test('binary phase grating of a reflecting sensor cell: η₀ = cos²(φ/2), η±1 = (2/π)² sin²(φ/2)', async () => {
+  const { cellOrders } = await import('../js/lib/sensorflare.js');
+  const e = cellOrders((u) => (u < 0.5 ? Math.PI / 2 : 0), 128).eta;
+  assert.ok(Math.abs(e(0, 0) - 0.5) < 1e-12 && Math.abs(e(1, 0) - 2 / Math.PI ** 2) < 1e-4);
+});
