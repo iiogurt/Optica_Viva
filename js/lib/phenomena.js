@@ -152,7 +152,7 @@ export const GROUPS = [
       [N_('Ghost images'), 'flare', 'pvs', N_('Double reflections form defocused aperture images along the line through the source.'), r`N_\text{ghost}=\frac{k(k-1)}{2}`],
       [N_('Anti-reflection coatings'), 'flare', 'pvs', N_('Thin-film interference cancels reflection; multilayers and nanostructures broaden it.'), r`n_c=\sqrt{n_0n_s},\ d=\frac{\lambda}{4n_c}`],
       [N_('Veiling glare'), 'flare', 'pv', N_('Scattered light lifts shadows and lowers contrast.'), r`C'=\frac{C}{1+g/L_\text{mean}}`],
-      [N_('Sensor (red-dot) flare'), null, 'p', N_('The sensor\'s periodic microstructure diffracts light back to the lens and onto the sensor again.'), r`p\sin\theta_m=m\lambda`],
+      [N_('Sensor (red-dot) flare'), 'sensorflare', 'p', N_('The sensor\'s periodic microstructure diffracts light back to the lens and onto the sensor again.'), r`p\sin\theta_m=m\lambda`],
       [N_('Filter ghosts'), 'flare', 'pv', N_('Flat filters in front of the lens create near-in-focus ghosts of bright sources.'), r`R_\text{filter}^2`],
       [N_('Surface-roughness scatter'), null, 'ps', N_('Micro-roughness scatters a fraction of light set by RMS height.'), r`\mathrm{TIS}\approx\left(\frac{4\pi\sigma\cos\theta}{\lambda}\right)^2`],
       [N_('Baffles & stray-light suppression'), 'telescope', 's', N_('Vanes, black coatings and field stops block unintended paths.'), r`\mathrm{PST}(\theta)=\frac{E_\text{det}(\theta)}{E_\text{in}}`],

@@ -6,7 +6,7 @@
 
 **A living laboratory of the optics behind photography, cinematography and space telescopes.**
 
-Seventy-two interactive laboratories, nine missions, a physics primer and a catalogue of 258 phenomena.
+Seventy-seven interactive laboratories, nine missions, a physics primer and a catalogue of 258 phenomena.
 Everything is computed from first principles, live in your browser.
 
 [![Live demo](https://img.shields.io/badge/live%20demo-iiogurt.github.io%2FOptica__Viva-ffb547?logo=githubpages&logoColor=white)](https://iiogurt.github.io/Optica_Viva/)
@@ -417,6 +417,16 @@ Light traced **exactly through air whose temperature changes with height**: the 
 <img src="docs/screenshots/sampling.webp" alt="Zone plate: continuous, mono-sampled and Bayer-demosaiced">
 
 Zone plate, fabric, stripes and bricks sampled through pixel apertures and a birefringent OLPF. RGGB mosaics are demosaiced with bilinear or **Malvar–He–Cutler** interpolation, with measured false colour and a spectral-folding chart. **Your camera** on a coarse virtual sensor shows moiré and false colour in fine fabric, screens or text, with and without a low-pass filter.
+
+</td>
+</tr>
+<tr>
+<td valign="top" colspan="2">
+
+**Sensor (red-dot) flare** · `#/sensorflare`<br>
+<img src="docs/screenshots/sensorflare.webp" alt="A grid of red dots around a bright street lamp on the sensor, with the controls for the source, the aperture, the pixels and the IR-cut filter" width="70%">
+
+**The grid of red dots around a bright source**: the sensor's microlenses diffract light back up as a reflective grating, the IR-cut filter reflects it down again, and every order lands as a defocused image of the aperture, drawn exactly at every wavelength. The dots separate above N = p/λ and are red because the light crossed the filter once and was reflected by it once, so the product T(1 − T) peaks at the filter's edge. An absorbing filter makes them grey and several stops fainter, and the Sun spreads the whole pattern over its disc.
 
 </td>
 </tr>
@@ -1276,6 +1286,7 @@ Optica_Viva/
 │   │   ├── thinfilm.js        Fresnel equations, transfer-matrix coatings
 │   │   ├── thumbs.js          Home-page card pictures: which laboratories have one, which are featured
 │   │   ├── satellite.js       Satellite mission: focal length, mirror, TDI stages, data rate
+│   │   ├── sensorflare.js     Sensor (red-dot) flare: microlens grating orders, the round trip to the IR-cut filter, each order's disc drawn exactly per wavelength
 │   │   ├── sensors.js         Sensor and film formats
 │   │   ├── phenomena.js       Catalogue data (258 entries in 13 groups)
 │   │   ├── phenomena-details.js  Explanation and worked example for every catalogue entry; further reading per group
@@ -1478,6 +1489,7 @@ The numerical core was checked against published or analytically known values. E
 | Pinhole camera: axis, transfer function and the sharpest hole (f = 100 mm, 550 nm) | I(0) = 4 sin²(πN/2) exactly; transfer function = Hankel transform of the pattern to 2·10⁻³; brightest centre per unit light at N = 0.742 (tan x = 2x), c = 1.72; half-light circle c = 1.50; MTF50 c = 1.38 | Fresnel diffraction; Rayleigh (1891): c ≈ 1.9 |
 | Gaussian beam focused by a lens (633 nm, w₀ = 0.5 mm, lens 1 m away, f = 100 mm) | q-parameter and Self's formula agree to 10⁻¹²; waist 32.6 µm at 103.83 mm; Fresnel integral 1/e² radii at ±2 z′_R match to 2·10⁻⁴; power through a clear radius a is (πw²/2)(1 − e^{−2a²/w²}) to 1 %; largest focal shift f²/2z_R at s = f + z_R | Kogelnik &amp; Li (1966); Self (1983) |
 | Laser guide star cone effect, structure-function integral | laser at the layer's height (α = 0): 1.032 (piston removed) and 0.133 (tilt removed) × (D/r₀)^{5/3}; random phase screens at α = 0.7 agree to within their 10 % scatter; σ² ∝ D^{5/3} | Noll (1976): 1.0299, 0.134 |
+| Sensor (red-dot) flare: binary phase grating, 4 µm pixels at 650 nm, filter 1 mm above the sensor | η₀ = cos²(φ/2), η±1 = (2/π)² sin²(φ/2) to 10⁻⁴, sinusoidal phase J_m² to 10⁻¹⁰; first order at 9.35°, landing 0.329 mm away (disc centroid within 1 %, energy within 0.2 %); dots separate exactly above N = p/λ = 6.15 | grating equation; Fourier coefficients of a thin phase element |
 | Fresnel zone plate (40 zones, f = 100 mm, 550 nm) and Talbot carpet (20 µm grating) | focus N² = 1600 exactly: 1/π² (amplitude), 4/π² (phase) of a perfect lens; f ∝ 1/λ; paraxial self-image at 2d²/λ with correlation 1, half-period shift at z_T/2, I(z_T/4) = c₀² + (T − c₀)²; mean irradiance = Σ c_m² at every distance | Fresnel zones; Talbot (1836), Rayleigh (1881) |
 | Haze: Rayleigh scattering and visual range | σ_R(532 nm) = 5.16 × 10⁻³¹ m²; β_R(550)/β_R(850) between λ⁴ and λ^4.2; clean-air visual range 341 km; contrast exactly 2 % at V; Ångström ratios; phase functions normalised; Rayleigh fully polarised at 90°; a distant ridge takes the horizon sky's colour | Bucholtz (1995): 5.168 × 10⁻³¹ m² (0.1 %); Koschmieder (1924) |
 | Laser speckle: statistics, grain shape, averaging, edge | Contrast 1 and P(I > ⟨I⟩) = e⁻¹ for a rough surface; intensity autocovariance |2J₁(v)/v|² at 1–3 px (first zero 1.22λN); contrast 1/√M for 4 and 16 frames, 1/√2 for two polarisations; gamma law normalised with mean 1; coherent edge overshoot (1/2 + Si(π)/π)² = 1.187, none for incoherent light; OTF(NA/λ) = 0.391 | Goodman (1975, 2020); Gibbs: match (contrast 0.04–0.08 statistical; edge 0.015 on the grid) |
@@ -1532,6 +1544,7 @@ Every page states its model's assumptions. The main simplifications are:
 | Pinhole camera | Scalar Fresnel diffraction near the axis, a thin opaque sheet, one wavelength per colour, the chart treated as on the axis | No obliquity or thickness of the hole off axis, no cos⁴ fall-off, no film grain |
 | Gaussian beams | Paraxial scalar optics, thin aberration-free lenses, one wavelength; M² beams as their embedded Gaussian | No higher-order or multimode profiles, no thick lenses or aberrations |
 | Laser guide stars | Kolmogorov turbulence in two thin layers, a point-like laser spot, tilt from a natural star, Strehl from e^{−σ²}; the cone effect alone | No sodium-layer thickness, spot elongation, tomography with several lasers, or other AO errors |
+| Sensor (red-dot) flare | Scalar thin-element orders of a paraboloidal microlens, one reflection at the sensor and one at the filter, light arriving around the normal, model filter edge (n_eff = 1.7) and pixel sensitivities | Absolute brightness rests on model reflectances; no polarisation, no colour-filter (2p) orders, no lens ghosts |
 | Zone plates & Talbot | Scalar diffraction of a plane wave of one wavelength, paraxial zone radii, thin ideal zones and bars, an infinite grating with 40 orders at most | No zone-placement errors, finite grating or partially coherent light |
 | Haze | Uniform horizontal air, single scattering, sunlight not dimmed before scattering, unpolarised aerosol; illustrative sky above the horizon and ridge lighting | No clouds, multiple scattering, humidity growth of aerosols or temperature inversions |
 | Laser speckle | Scalar, aberration-free round pupil; surface heights uncorrelated between pixels, no shadowing or multiple scattering; Abbe source points half a cut-off apart (partly correlated patterns); fully random diffuser | Subjective speckle only (seen through a lens); no wavelength diversity, no photon noise |
