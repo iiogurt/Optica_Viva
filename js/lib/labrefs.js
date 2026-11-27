@@ -436,7 +436,7 @@ export const LAB_REFS = {
     "M. Born &amp; E. Wolf, <i>Principles of Optics</i>, 7th ed., Cambridge University Press (1999), ch. 8: diffraction gratings.",
     "J. W. Goodman, <i>Introduction to Fourier Optics</i>, 4th ed., W. H. Freeman (2017): thin phase elements and their Fourier coefficients.",
     "H. A. Macleod, <i>Thin-Film Optical Filters</i>, 4th ed., CRC Press (2010): edge filters and the shift of their edge with the angle of incidence.",
-    "RED Digital Cinema, “DSMC – Flare Grid Pattern”, support article: the grid of red dots, more visible as the lens is stopped down."
+    "RED Digital Cinema, “DSMC – Flare Grid Pattern”, support article: red dots at f/8–f/11 and smaller, attributed there to the optical low-pass filter in front of the sensor."
   ],
   "shake": [
     "CIPA DC-011, <em>Measurement method and notation of image stabilization performance of digital cameras</em> (CIPA, 2012/2024).",

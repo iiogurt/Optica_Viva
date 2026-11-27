@@ -4215,7 +4215,7 @@ export default {
   "does not move": "no se desplaza",
   "Red light leaves the sensor’s grid at <strong>{th}°</strong> and lands <strong>{dx} mm</strong> from the source after the round trip to the filter; each dot is <strong>{dia} mm</strong> across, so at f/{N} the dots are <strong>{sep}</strong>.": "La luz roja sale de la rejilla del sensor a <strong>{th}°</strong> y cae a <strong>{dx} mm</strong> de la fuente tras ir y volver del filtro; cada punto mide <strong>{dia} mm</strong>, así que a f/{N} los puntos están <strong>{sep}</strong>.",
   "separate": "separados",
-  "merged into a haze": "fundidos en un velo",
+  "overlapping": "solapados",
   "IR-cut filter": "filtro de corte IR",
   "passes, straight in": "transmitida, de frente",
   "reflected at {a}°": "reflejada a {a}°",
@@ -4248,4 +4248,6 @@ export default {
   "The sensor around the source, drawn order by order and wavelength by wavelength": "El sensor alrededor de la fuente, dibujado orden por orden y longitud de onda por longitud de onda",
   "Side view (not to scale): 650 nm orders go up to the filter and back": "Vista lateral (no a escala): los órdenes a 650 nm suben al filtro y vuelven",
   "A grid of red dots around the Sun or a street lamp: the sensor's microlenses diffract the light back up, the IR-cut filter reflects it down again, and stopping down makes the dots separate.": "Una rejilla de puntos rojos alrededor del Sol o de una farola: las microlentes del sensor difractan la luz hacia arriba, el filtro de corte IR la refleja hacia abajo y al cerrar el diafragma los puntos se separan.",
+  "Dot diameter ≈ 2d/N + the Sun's image": "Diámetro de los puntos ≈ 2d/N + imagen del Sol",
+  "never: the Sun's image is too large": "nunca: la imagen del Sol es demasiado grande",
 };

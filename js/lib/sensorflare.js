@@ -77,8 +77,12 @@ export function airy(v) {
 // Where light leaving the sensor with direction sines s returns after reflection at height d.
 export const landing = (s, d) => (2 * d * s) / Math.sqrt(1 - s * s);
 // The adjacent orders' discs (direction-sine radius σ = 1/2N, spacing λ/p) just touch at N = p/λ:
-// above it the dots are separate.
-export const criticalN = (p, lam) => p / lam;
+// above it the dots are separate. An extended source whose image has radius rs widens every dot by
+// 2rs; near the axis (spacing ≈ 2dλ/p, dot ≈ 2d/N + 2rs) they then separate above
+// N = 1/(λ/p − rs/d), and never if rs/d ≥ λ/p.
+export const criticalN = (p, lam, d = 1, rs = 0) => (lam / p > rs / d ? 1 / (lam / p - rs / d) : Infinity);
+// The diameter of a dot near the axis: the aperture's image after the round trip, plus the source's.
+export const dotDiameter = (d, N, rs = 0) => (2 * d) / N + 2 * rs;
 
 // All returning orders: for each order (m, n) and wavelength, the direction sines of its centre and
 // its energy as a fraction of the source's light in that wavelength, with the filter's passage on

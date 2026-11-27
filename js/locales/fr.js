@@ -4215,7 +4215,7 @@ export default {
   "does not move": "ne se déplace pas",
   "Red light leaves the sensor’s grid at <strong>{th}°</strong> and lands <strong>{dx} mm</strong> from the source after the round trip to the filter; each dot is <strong>{dia} mm</strong> across, so at f/{N} the dots are <strong>{sep}</strong>.": "La lumière rouge quitte la grille du capteur à <strong>{th}°</strong> et retombe à <strong>{dx} mm</strong> de la source après l’aller-retour jusqu’au filtre ; chaque point mesure <strong>{dia} mm</strong>, donc à f/{N} les points sont <strong>{sep}</strong>.",
   "separate": "séparés",
-  "merged into a haze": "fondus en un voile",
+  "overlapping": "chevauchants",
   "IR-cut filter": "filtre anti-IR",
   "passes, straight in": "transmis, en incidence normale",
   "reflected at {a}°": "réfléchi à {a}°",
@@ -4248,4 +4248,6 @@ export default {
   "The sensor around the source, drawn order by order and wavelength by wavelength": "Le capteur autour de la source, dessiné ordre par ordre et longueur d’onde par longueur d’onde",
   "Side view (not to scale): 650 nm orders go up to the filter and back": "Vue de côté (pas à l’échelle) : les ordres à 650 nm montent au filtre et reviennent",
   "A grid of red dots around the Sun or a street lamp: the sensor's microlenses diffract the light back up, the IR-cut filter reflects it down again, and stopping down makes the dots separate.": "Une grille de points rouges autour du Soleil ou d’un lampadaire : les microlentilles du capteur diffractent la lumière vers le haut, le filtre anti-IR la renvoie vers le bas, et fermer le diaphragme sépare les points.",
+  "Dot diameter ≈ 2d/N + the Sun's image": "Diamètre des points ≈ 2d/N + image du Soleil",
+  "never: the Sun's image is too large": "jamais : l’image du Soleil est trop grande",
 };

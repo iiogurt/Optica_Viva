@@ -4215,7 +4215,7 @@ export default {
   "does not move": "wandert nicht",
   "Red light leaves the sensor’s grid at <strong>{th}°</strong> and lands <strong>{dx} mm</strong> from the source after the round trip to the filter; each dot is <strong>{dia} mm</strong> across, so at f/{N} the dots are <strong>{sep}</strong>.": "Rotes Licht verlässt das Raster des Sensors unter <strong>{th}°</strong> und landet nach dem Weg zum Filter und zurück <strong>{dx} mm</strong> von der Quelle entfernt; jeder Punkt ist <strong>{dia} mm</strong> groß, also sind die Punkte bei f/{N} <strong>{sep}</strong>.",
   "separate": "getrennt",
-  "merged into a haze": "zu einem Schleier verschmolzen",
+  "overlapping": "überlappend",
   "IR-cut filter": "IR-Sperrfilter",
   "passes, straight in": "durchgelassen, gerade hinein",
   "reflected at {a}°": "reflektiert unter {a}°",
@@ -4248,4 +4248,6 @@ export default {
   "The sensor around the source, drawn order by order and wavelength by wavelength": "Der Sensor um die Quelle, Ordnung für Ordnung und Wellenlänge für Wellenlänge gezeichnet",
   "Side view (not to scale): 650 nm orders go up to the filter and back": "Seitenansicht (nicht maßstäblich): Ordnungen bei 650 nm laufen zum Filter und zurück",
   "A grid of red dots around the Sun or a street lamp: the sensor's microlenses diffract the light back up, the IR-cut filter reflects it down again, and stopping down makes the dots separate.": "Ein Raster roter Punkte um die Sonne oder eine Straßenlaterne: Die Mikrolinsen des Sensors beugen das Licht zurück nach oben, der IR-Sperrfilter spiegelt es wieder hinunter, und Abblenden trennt die Punkte.",
+  "Dot diameter ≈ 2d/N + the Sun's image": "Punktdurchmesser ≈ 2d/N + Sonnenbild",
+  "never: the Sun's image is too large": "nie: das Sonnenbild ist zu groß",
 };

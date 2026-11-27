@@ -6,17 +6,17 @@ import { plot } from '../lib/plot.js';
 import { paint, encode } from '../lib/pixels.js';
 import { wavelengthCSS } from '../lib/color.js';
 import { latest } from '../lib/compute.js';
-import { LAM, SENS, filterTR, edgeAt, microlensOrders, landing, criticalN } from '../lib/sensorflare.js';
-import { t } from '../lib/i18n.js';
+import { LAM, SENS, filterTR, edgeAt, microlensOrders, landing, criticalN, dotDiameter } from '../lib/sensorflare.js';
+import { t, N_ } from '../lib/i18n.js';
 
 const SUN = (0.5333 / 2) * (Math.PI / 180); // the Sun's angular radius
 
 export default function mount(root, meta) {
   root.append(header({ ...meta, domains: ['photo', 'cinema'] }));
-  root.append(idea(String.raw`<p>Photograph a street lamp or the Sun with the lens stopped down, and a neat grid of red dots may appear around it. The lens is not to blame. The sensor's surface is a regular pattern of tiny lenses, one per pixel, and a regular pattern bends light into a few fixed directions, as the grooves of a CD do (theirs are finer, so a CD spreads the colours wider). That light goes back up, the glass filter just above the sensor reflects it down again, and every direction becomes a dot. Mostly red light makes the trip, because the filter lets red through on the way in but reflects it on the way back.</p>`, [
+  root.append(idea(String.raw`<p>Photograph a street lamp or the Sun with the lens stopped down, and a neat grid of red dots may appear around it. These are not ordinary lens ghosts. The sensor's surface is a regular pattern of tiny lenses, one per pixel, and a regular pattern bends light into a few fixed directions, as the grooves of a CD do (theirs are finer, so a CD spreads the colours wider). That light goes back up, glass just above the sensor reflects it down again, and every direction becomes a dot. Mostly red light makes the trip, because the filter lets red through on the way in but reflects it on the way back.</p>`, [
     'Open the aperture from <strong>f/11</strong> to <strong>f/2.8</strong>: do the dots stay separate?',
     'Switch the filter to <strong>absorbing glass</strong>: what happens to the colour and the brightness of the dots?',
-    'Make the pixels <strong>smaller</strong>: do the dots move closer together or farther apart?',
+    'Make the pixels <strong>smaller</strong>: does the <em>dot spacing</em> readout grow or shrink?',
   ]));
 
   const ctl = controls({
@@ -69,26 +69,26 @@ export default function mount(root, meta) {
   }
 
   function words(st, o) {
-    const l = 650e-9, s1 = l / o.p, th = Math.asin(Math.min(1, s1)), dx = landing(s1, o.d), dia = (2 * o.d) / o.N, Nc = criticalN(o.p, l);
+    const l = 650e-9, s1 = l / o.p, th = Math.asin(Math.min(1, s1)), dx = landing(s1, o.d), rs = sunR(st), dia = dotDiameter(o.d, o.N, rs), Nc = criticalN(o.p, l, o.d, rs);
     const e = microlensOrders(o.h, l, 1), eta = (m, n) => e.find((q) => q.m === m && q.n === n).eta;
     const top = R && R.key === key ? R.dots.find((q) => q.m || q.n) : null;
     const stops = top ? -Math.log2(top.perPixel) : NaN;
     ro.replaceChildren(readouts([
       ['First order at 650 nm', `${fmt((th * 180) / Math.PI, 3)}°`],
       ['Dot spacing (650 nm)', `${fmt(dx * 1000, 3)} mm = ${Math.round(dx / o.p)} px`],
-      ['Dot diameter ≈ 2d/N', `${fmt(dia * 1000, 3)} mm`],
-      ['Dots separate above', `f/${fmt(Nc, 3)}`],
+      [rs ? N_('Dot diameter ≈ 2d/N + the Sun\'s image') : N_('Dot diameter ≈ 2d/N'), `${fmt(dia * 1000, 3)} mm`],
+      ['Dots separate above', Number.isFinite(Nc) ? `f/${fmt(Nc, 3)}` : t('never: the Sun\'s image is too large')],
       ['Filter edge at that angle', st.kind === 'interference' ? `${fmt(edgeAt(o.filter, s1), 4)} nm` : t('does not move')],
       ['Light into orders (0,0), (1,0), (1,1)', `${fmt(100 * eta(0, 0), 3)} %, ${fmt(100 * eta(1, 0), 3)} %, ${fmt(100 * eta(1, 1), 3)} %`],
       ['Brightest dot, below the source', top ? `${fmt(stops, 3)} ${t('stops')} (${top.m}, ${top.n})` : '…'],
     ]));
     const sep = st.N > Nc;
-    calc.say(t('Red light leaves the sensor’s grid at <strong>{th}°</strong> and lands <strong>{dx} mm</strong> from the source after the round trip to the filter; each dot is <strong>{dia} mm</strong> across, so at f/{N} the dots are <strong>{sep}</strong>.', { th: fmt((th * 180) / Math.PI, 3), dx: fmt(dx * 1000, 3), dia: fmt(dia * 1000, 3), N: fmt(st.N, 2), sep: sep ? t('separate') : t('merged into a haze') }));
+    calc.say(t('Red light leaves the sensor’s grid at <strong>{th}°</strong> and lands <strong>{dx} mm</strong> from the source after the round trip to the filter; each dot is <strong>{dia} mm</strong> across, so at f/{N} the dots are <strong>{sep}</strong>.', { th: fmt((th * 180) / Math.PI, 3), dx: fmt(dx * 1000, 3), dia: fmt(dia * 1000, 3), N: fmt(st.N, 2), sep: sep ? t('separate') : t('overlapping') }));
     calc.set(String.raw`\begin{aligned}
     \sin\theta_1 &= \frac{\lambda}{p} = \frac{650\ \text{nm}}{${texNum(st.p, 3)}\ \mu\text{m}} = ${texNum(s1, 3)}\\
     \Delta x &= 2d\tan\theta_1 = ${texNum(dx * 1000, 3)}\ \text{mm}\\
-    \varnothing &\approx \frac{2d}{N} = ${texNum(dia * 1000, 3)}\ \text{mm}\\
-    N_c &= \frac{p}{\lambda} = ${texNum(Nc, 3)}
+    \varnothing &\approx \frac{2d}{N}${rs ? String.raw` + 2r_\odot` : ''} = ${texNum(dia * 1000, 3)}\ \text{mm}\\
+    N_c &= ${rs ? String.raw`\frac{1}{\lambda/p - r_\odot/d}` : String.raw`\frac{p}{\lambda}`} = ${Number.isFinite(Nc) ? texNum(Nc, 3) : String.raw`\infty`}
     \end{aligned}`);
   }
 
@@ -160,11 +160,11 @@ export default function mount(root, meta) {
 
   root.append(rule(String.raw`\[N_c = \frac{p}{\lambda}\]
 <p>The dots are separate when the f-number is larger than the pixel pitch divided by the wavelength. For 4 µm pixels and red light (650 nm), that is f/6.2: at f/11 the dots stand apart, at f/2.8 they merge into a soft red haze. The rule holds for any filter height, because the dots' spacing and their size both grow in proportion to it.</p>`,
-    String.raw`The rule compares the first two orders near the centre; far out, the spacing grows faster than the dots. It assumes the sensor repeats with the pixel pitch; a pattern that repeats every two pixels (the colour filters) adds dots halfway between.`));
+    String.raw`For one wavelength the rule holds for every order. But each dot is made of a band of returned wavelengths, which smears it outwards, more for the far orders; and an extended source such as the Sun widens every dot by its own image (separate above \(1/(\lambda/p - r_\odot/d)\), or never). Both call for a larger f-number. The rule assumes the sensor repeats with the pixel pitch; the colour filters, which repeat every two pixels, would add dots halfway between.`));
   root.append(theory('A grating made of pixels', String.raw`
 <div class="theory-cols"><div>
 <h3>The sensor as a reflective grating</h3>
-<p>A sensor reflects a few per cent of the light that reaches it, mostly at the surface of its microlenses. The microlenses repeat with the pixel pitch \(p\), so the reflected light leaves only in the directions of a two-dimensional grating: order \((m, n)\) has direction sines</p>
+<p>A sensor reflects a few per cent of the light that reaches it, partly at the surface of its microlenses (in this model, all of it). The microlenses repeat with the pixel pitch \(p\), so the reflected light leaves only in the directions of a two-dimensional grating: order \((m, n)\) has direction sines</p>
 \[s_x = s_{x,\text{in}} + \frac{m\lambda}{p},\qquad s_y = s_{y,\text{in}} + \frac{n\lambda}{p}.\]
 <p>The share of the light in each order is the squared Fourier coefficient of the reflected field over one cell, here \(e^{2ikh(x,y)}\) for a microlens of height profile \(h\) (a thin-element, scalar model: the phase is taken on the surface, and the orders' shares add up to 1). A flat surface sends everything back in the zero order; a curved microlens, a convex mirror, spreads the light over many orders, more of them the taller it is.</p>
 <h3>The round trip</h3>
@@ -175,13 +175,13 @@ export default function mount(root, meta) {
 \[\lambda_c(\theta) = \lambda_c\sqrt{1-\frac{\sin^2\theta}{n_\text{eff}^2}},\]
 <p>so the far orders, reflected at larger angles, return a broader band reaching into the orange. An absorbing (blue-glass) filter removes the red instead of reflecting it: what is left is the weak reflection of its coated surface, the same at all wavelengths, and the dots fade by several stops and lose their colour. This is the reason many cameras use hybrid filters with an absorbing layer.</p>
 <h3>Approximations</h3>
-<p>Scalar diffraction with the microlens phase taken on a thin surface (pixels a few wavelengths wide make this rough, especially for the far orders); a paraboloidal microlens filling its square cell; one reflection at the sensor and one at the filter, with the filter's coating facing the sensor, \(n_\text{eff} = 1.7\), and a model filter edge; light arriving around the normal (the centre of the frame); a pupil filled uniformly in direction sines (an aplanatic lens); model sensitivities of the colour pixels. The dots' positions, sizes and colours follow from the geometry; their absolute brightness depends on the sensor's reflectance and the microlens shape, which are model values here. The colours shown are the camera's white-balanced channels taken as display primaries. Real lenses add their own ghosts and veiling glare, not drawn here.</p>
+<p>Which surface sends the light back is not settled: accounts name the IR-cut filter, the sensor's cover glass, the optical low-pass filter stack or the lens's rear element. The model uses one flat reflector at height \(d\) with the spectrum of an interference IR-cut filter, and the grating period of the microlenses, \(p\); the colour filters repeat every \(2p\) and would add orders halfway between. Scalar diffraction with the microlens phase taken on a thin surface (pixels a few wavelengths wide make this rough, especially for the far orders); a paraboloidal microlens filling its square cell; one reflection at the sensor and one at the filter, with the filter's coating facing the sensor, \(n_\text{eff} = 1.7\), and a model filter edge; light arriving around the normal (the centre of the frame); a pupil filled uniformly in direction sines (an aplanatic lens); model sensitivities of the colour pixels. The dots' positions, sizes and colours follow from the geometry; their absolute brightness depends on the sensor's reflectance and the microlens shape, which are model values here. The colours shown are the camera's white-balanced channels taken as display primaries. Real lenses add their own ghosts and veiling glare, not drawn here.</p>
 </div></div>`));
   root.append(references([
     'M. Born &amp; E. Wolf, <i>Principles of Optics</i>, 7th ed., Cambridge University Press (1999), ch. 8: diffraction gratings.',
     'J. W. Goodman, <i>Introduction to Fourier Optics</i>, 4th ed., W. H. Freeman (2017): thin phase elements and their Fourier coefficients.',
     'H. A. Macleod, <i>Thin-Film Optical Filters</i>, 4th ed., CRC Press (2010): edge filters and the shift of their edge with the angle of incidence.',
-    'RED Digital Cinema, “DSMC – Flare Grid Pattern”, support article: the grid of red dots, more visible as the lens is stopped down.',
+    'RED Digital Cinema, “DSMC – Flare Grid Pattern”, support article: red dots at f/8–f/11 and smaller, attributed there to the optical low-pass filter in front of the sensor.',
   ]));
 
   return () => { clearTimeout(timer); [photo, side, spec, ord].forEach((x) => x.destroy()); };

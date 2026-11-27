@@ -2,7 +2,7 @@
 // and the picture drawn from them.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LAM, SOURCES, cellOrders, microlensOrders, filterTR, edgeAt, NEFF, landing, criticalN, returnOrders, orderRGB, flareImage, flareSummary, airy, blurDisc } from '../js/lib/sensorflare.js';
+import { LAM, SOURCES, cellOrders, microlensOrders, filterTR, edgeAt, NEFF, landing, criticalN, dotDiameter, returnOrders, orderRGB, flareImage, flareSummary, airy, blurDisc } from '../js/lib/sensorflare.js';
 import { fft1d } from '../js/lib/fft.js';
 
 const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg}: got ${a}, expected ${b} ± ${tol}`);
@@ -104,4 +104,23 @@ test('reflecting filters make red dots; absorbing glass makes them faint and gre
   assert.ok(abs.rgb[0] < 3 * abs.rgb[1], `less red: ${abs.rgb}`);
   // a flat sensor surface has only the zero order: one halo around the source, no dots
   assert.ok(returnOrders({ ...base, h: 0 }).every((e) => (e.m === 0 && e.n === 0) || e.w.every((v) => v < 1e-20)));
+});
+
+test('an extended source widens every dot: they separate later, or never', () => {
+  const d = 1e-3, rs = 0.03e-3, nc = criticalN(4e-6, 650e-9, d, rs);
+  near(nc, 1 / (650e-9 / 4e-6 - rs / d), 1e-9, 'N_c with the Sun');
+  assert.ok(nc > criticalN(4e-6, 650e-9), 'later than for a point');
+  assert.equal(criticalN(4e-6, 650e-9, d, 0.2e-3), Infinity, 'never when the image is too big');
+  near(dotDiameter(d, 11, rs), 2 * d / 11 + 2 * rs, 1e-18, 'dot diameter');
+  // the rendered picture agrees: a gap between orders 0 and 1 just above N_c, none just below
+  const half = 0.5e-3, n = 800, pix = (2 * half) / n;
+  const gap = (N) => {
+    const o = { ...base, N, src: mono }, two = returnOrders(o).filter((e) => e.n === 0 && (e.m === 0 || e.m === 1)), img = blurDisc(flareImage(o, { n, half, core: false }, two).img, n, rs / pix);
+    const i0 = Math.round(half / pix), i1 = Math.round((landing(650e-9 / o.p, d) + half) / pix);
+    let lo = Infinity, top = 0;
+    for (let i = i0; i <= i1; i++) { const v = img[3 * ((n / 2) * n + i)]; lo = Math.min(lo, v); top = Math.max(top, v); }
+    return lo / top;
+  };
+  assert.ok(gap(nc * 1.1) < 1e-3, `gap above: ${gap(nc * 1.1)}`);
+  assert.ok(gap(nc * 0.9) > 0.05, `overlap below: ${gap(nc * 0.9)}`);
 });
